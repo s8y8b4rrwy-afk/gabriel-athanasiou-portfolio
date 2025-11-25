@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/functions": "^2.8.1",
     "@remix-run/router": "1.15.3",
     "airtable": "^0.12.2",
     "react": "^19.2.0",

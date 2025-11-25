@@ -1,10 +1,10 @@
 /**
- * Netlify Function: Generate dynamic sitemap.xml
- * Serves at: /.netlify/functions/sitemap
- * Redirect to /sitemap.xml in netlify.toml
+ * Netlify Function (On-Demand Builder): Generate dynamic sitemap.xml
+ * Serves at: /.netlify/functions/sitemap (redirected from /sitemap.xml)
  */
 
-const Airtable = require('airtable');
+import { builder } from '@netlify/functions';
+import Airtable from 'airtable';
 
 const normalizeTitle = (title) => {
     if (!title) return 'Untitled';
@@ -42,7 +42,7 @@ const makeUniqueSlug = (base, used, fallbackId) => {
     }
 };
 
-exports.handler = async function(event, context) {
+const sitemapHandler = async (event, context) => {
   const token = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_API_KEY;
   const baseId = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
   
@@ -50,7 +50,8 @@ exports.handler = async function(event, context) {
     return { 
       statusCode: 500, 
       headers: { 'Content-Type': 'application/xml' },
-      body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'
+      body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+      ttl: 300
     };
   }
 
@@ -137,16 +138,28 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/xml; charset=utf-8' },
-      body: xml
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+        'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400'
+      },
+      body: xml,
+      ttl: 86400
     };
 
   } catch (error) {
     console.error('Sitemap generation error:', error);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/xml' },
-      body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'
+      headers: {
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'public, max-age=300',
+        'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=300'
+      },
+      body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+      ttl: 300
     };
   }
 };
+
+export const handler = builder(sitemapHandler);

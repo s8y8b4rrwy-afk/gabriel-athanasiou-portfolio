@@ -1,7 +1,6 @@
-
-
-const Airtable = require('airtable');
-const https = require('https');
+import { builder } from '@netlify/functions';
+import Airtable from 'airtable';
+import * as https from 'node:https';
 
 const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop";
 
@@ -156,11 +155,14 @@ const parseCreditsText = (text) => {
     });
 };
 
-exports.handler = async function(event, context) {
-  if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Missing Keys' }) };
-  }
-  const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
+const getDataHandler = async (event, context) => {
+    const token = process.env.AIRTABLE_API_KEY || process.env.VITE_AIRTABLE_TOKEN;
+    const baseId = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID;
+
+    if (!token || !baseId) {
+        return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Missing Keys' }), ttl: 300 };
+    }
+    const base = new Airtable({ apiKey: token }).base(baseId);
 
   try {
     const projectRecords = await base('Projects').select().all();
@@ -374,9 +376,29 @@ exports.handler = async function(event, context) {
         // non-fatal
     }
 
-    return { statusCode: 200, body: JSON.stringify({ projects, posts, config }) };
+        return { 
+            statusCode: 200, 
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Cache-Control': 'public, max-age=300',
+                'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=900, stale-while-revalidate=86400'
+            },
+            body: JSON.stringify({ projects, posts, config }),
+            ttl: 900
+        };
 
   } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to fetch' }) };
+        return { 
+            statusCode: 500, 
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Cache-Control': 'public, max-age=120',
+                'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=120'
+            },
+            body: JSON.stringify({ error: 'Failed to fetch' }),
+            ttl: 120
+        };
   }
 };
+
+export const handler = builder(getDataHandler);
