@@ -77,13 +77,27 @@ jobs:
         if: steps.check_code.outputs.code_changed == 'true'
         run: |
           echo "🚀 Triggering Netlify deploy (code changed)..."
-          curl -X POST -d '{}' "https://api.netlify.com/build_hooks/${{ secrets.NETLIFY_BUILD_HOOK }}"
+          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
+          # Handle both full URL and just the token
+          if [[ "$HOOK_URL" == http* ]]; then
+            curl -X POST -d '{}' "$HOOK_URL"
+          else
+            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
+          fi
+          echo "Deploy triggered successfully"
 
       - name: Trigger Netlify Deploy (Content Changed)
         if: steps.generate.outputs.content_changed == 'true' && steps.check_code.outputs.code_changed == 'false'
         run: |
           echo "📝 Triggering Netlify deploy (content changed)..."
-          curl -X POST -d '{}' "https://api.netlify.com/build_hooks/${{ secrets.NETLIFY_BUILD_HOOK }}"
+          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
+          # Handle both full URL and just the token
+          if [[ "$HOOK_URL" == http* ]]; then
+            curl -X POST -d '{}' "$HOOK_URL"
+          else
+            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
+          fi
+          echo "Deploy triggered successfully"
 
       - name: Skip Deploy
         if: steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
