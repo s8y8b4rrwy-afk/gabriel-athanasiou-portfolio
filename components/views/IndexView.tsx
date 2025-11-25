@@ -176,10 +176,10 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                 
                                 <div className="flex justify-between items-start text-white">
                                     <div>
-                                        <div className="text-[10px] font-medium tracking-widest uppercase opacity-70 mb-1">
+                                        <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1 tracking-tight`}>{p.title}</h2>
+                                        <div className="text-[10px] font-medium tracking-widest uppercase opacity-70">
                                             {p.brand ? p.brand : p.client}
                                         </div>
-                                        <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-2 tracking-tight`}>{p.title}</h2>
                                     </div>
                                     <div className="text-right">
                                         {THEME.filmography.grid.showYear ? (
