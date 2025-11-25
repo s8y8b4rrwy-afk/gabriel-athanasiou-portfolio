@@ -150,56 +150,58 @@ export const SocialShare: React.FC<SocialShareProps> = ({
   }
 
   return (
-    <div className={`flex flex-wrap gap-6 items-center ${className}`}>
-      <span className={`${THEME.typography.meta} text-white text-xs uppercase tracking-widest font-medium opacity-100`}>Share</span>
+    <div className={`flex flex-col md:flex-row md:flex-wrap md:gap-6 gap-3 items-start md:items-center ${className}`}>
+      <span className={`${THEME.typography.meta} text-white text-xs uppercase tracking-widest font-medium opacity-100 mb-2 md:mb-0`}>Share</span>
       
-      <ShareLink
-        icon={
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
-            <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7z"/>
-          </svg>
-        }
-        label="Twitter"
-        href={shareLinks.twitter}
-      />
-
-      <ShareLink
-        icon={
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
-            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
-            <circle cx="4" cy="4" r="2"/>
-          </svg>
-        }
-        label="LinkedIn"
-        href={shareLinks.linkedin}
-      />
-
-      <ShareLink
-        icon={
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
-            <path d="M18 2h-3a6 6 0 00-6 6v3H7v4h2v8h4v-8h3l1-4h-4V8a2 2 0 012-2h3z"/>
-          </svg>
-        }
-        label="Facebook"
-        href={shareLinks.facebook}
-      />
-
-      <ShareLink
-        icon={
-          copied ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white flex-shrink-0">
-              <polyline points="20 6 9 17 4 12"/>
+      <div className="flex flex-wrap gap-3 md:gap-6">
+        <ShareLink
+          icon={
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
+              <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7z"/>
             </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white flex-shrink-0">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          }
+          label="Twitter"
+          href={shareLinks.twitter}
+        />
+
+        <ShareLink
+          icon={
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
+              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+              <circle cx="4" cy="4" r="2"/>
             </svg>
-          )
-        }
-        label={copied ? 'Copied!' : 'Copy Link'}
-        onClick={handleCopyLink}
-      />
+          }
+          label="LinkedIn"
+          href={shareLinks.linkedin}
+        />
+
+        <ShareLink
+          icon={
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
+              <path d="M18 2h-3a6 6 0 00-6 6v3H7v4h2v8h4v-8h3l1-4h-4V8a2 2 0 012-2h3z"/>
+            </svg>
+          }
+          label="Facebook"
+          href={shareLinks.facebook}
+        />
+
+        <ShareLink
+          icon={
+            copied ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white flex-shrink-0">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white flex-shrink-0">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+            )
+          }
+          label={copied ? 'Copied!' : 'Copy Link'}
+          onClick={handleCopyLink}
+        />
+      </div>
     </div>
   );
 };
