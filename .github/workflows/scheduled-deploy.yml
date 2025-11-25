@@ -98,6 +98,7 @@ jobs:
           git add public/share-meta.json public/share-meta.hash
           git commit -m "chore: update share-meta manifest [deploy]"
           git push origin HEAD:main
+          echo "commit_created=true" >> $GITHUB_OUTPUT
 
       - name: Ensure deploy marker commit
         if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
@@ -108,48 +109,12 @@ jobs:
             echo "Latest commit lacks deploy marker. Creating empty deploy commit."
             git commit --allow-empty -m "chore: scheduled deploy [deploy]"
             git push origin HEAD:main
+            echo "commit_created=true" >> $GITHUB_OUTPUT
           else
             echo "Deploy marker already present in latest commit."
+            echo "commit_created=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Trigger Netlify Deploy (Code Changed)
-        if: steps.check_code.outputs.code_changed == 'true'
-        run: |
-          echo "🚀 Triggering Netlify deploy (code changed)..."
-          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
-          # Handle both full URL and just the token
-          if [[ "$HOOK_URL" == http* ]]; then
-            curl -X POST -d '{}' "$HOOK_URL"
-          else
-            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
-          fi
-          echo "Deploy triggered successfully"
-
-      - name: Trigger Netlify Deploy (Content Changed)
-        if: steps.generate.outputs.content_changed == 'true' && steps.check_code.outputs.code_changed == 'false'
-        run: |
-          echo "📝 Triggering Netlify deploy (content changed)..."
-          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
-          # Handle both full URL and just the token
-          if [[ "$HOOK_URL" == http* ]]; then
-            curl -X POST -d '{}' "$HOOK_URL"
-          else
-            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
-          fi
-          echo "Deploy triggered successfully"
-
-      - name: Trigger Netlify Deploy (Manual Trigger)
-        if: github.event_name == 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
-        run: |
-          echo "🔧 Manual trigger detected - deploying anyway..."
-          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
-          # Handle both full URL and just the token
-          if [[ "$HOOK_URL" == http* ]]; then
-            curl -X POST -d '{}' "$HOOK_URL"
-          else
-            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
-          fi
-          echo "Deploy triggered successfully"
 
       - name: Skip Deploy
         if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
