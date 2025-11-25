@@ -1,0 +1,52 @@
+name: Scheduled Netlify Deploy
+
+on:
+  # Run every Sunday at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * 0'
+  
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to check for changes
+      
+      - name: Check for changes since last deploy
+        id: check_changes
+        run: |
+          # Get the last commit from the last successful workflow run
+          LAST_DEPLOY_SHA=$(gh run list --workflow=scheduled-deploy.yml --status=success --limit=1 --json headSha --jq '.[0].headSha' || echo "")
+          
+          if [ -z "$LAST_DEPLOY_SHA" ]; then
+            echo "No previous deploy found. Will deploy."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            CURRENT_SHA=$(git rev-parse HEAD)
+            if [ "$LAST_DEPLOY_SHA" = "$CURRENT_SHA" ]; then
+              echo "No changes since last deploy. Skipping."
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected. Will deploy."
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Trigger Netlify Deploy
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          echo "Triggering Netlify deploy..."
+          curl -X POST -d '{}' "https://api.netlify.com/build_hooks/${{ secrets.NETLIFY_BUILD_HOOK }}"
+      
+      - name: Skip Deploy
+        if: steps.check_changes.outputs.has_changes == 'false'
+        run: |
+          echo "✅ No changes detected. Skipping deploy to save build credits."
