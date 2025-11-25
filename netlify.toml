@@ -4,7 +4,7 @@ functions = "netlify/functions"
 publish = "dist"
 
 [dev]
-targetPort = 5173
+targetPort = 3003
 port = 8888
 
 # Redirect /sitemap.xml to the dynamic sitemap function
