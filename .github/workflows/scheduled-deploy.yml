@@ -14,6 +14,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gh
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -58,10 +63,15 @@ jobs:
         run: |
           node scripts/generate-share-meta.mjs
           echo "Manifest generated. Checking for diff..."
-          if git diff --quiet public/share-meta.json public/share-meta.hash; then
+          if [ ! -f public/share-meta.json ] || [ ! -f public/share-meta.hash ]; then
+            echo "No manifest files found; treating as no content change."
             echo "content_changed=false" >> $GITHUB_OUTPUT
           else
-            echo "content_changed=true" >> $GITHUB_OUTPUT
+            if git diff --quiet -- public/share-meta.json public/share-meta.hash; then
+              echo "content_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "content_changed=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Commit updated manifest
@@ -99,6 +109,19 @@ jobs:
           fi
           echo "Deploy triggered successfully"
 
+      - name: Trigger Netlify Deploy (Manual Trigger)
+        if: github.event_name == 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        run: |
+          echo "🔧 Manual trigger detected - deploying anyway..."
+          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
+          # Handle both full URL and just the token
+          if [[ "$HOOK_URL" == http* ]]; then
+            curl -X POST -d '{}' "$HOOK_URL"
+          else
+            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
+          fi
+          echo "Deploy triggered successfully"
+
       - name: Skip Deploy
-        if: steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
         run: echo "✅ No changes detected. Skipping deploy to save build credits."

@@ -1,0 +1,36 @@
+name: Manual Deploy to Netlify
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for deployment (optional)'
+        required: false
+        default: 'Manual content update'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Netlify Build
+        run: |
+          echo "🚀 Triggering Netlify deployment..."
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          
+          HOOK_URL="${{ secrets.NETLIFY_BUILD_HOOK }}"
+          
+          if [ -z "$HOOK_URL" ]; then
+            echo "❌ ERROR: NETLIFY_BUILD_HOOK secret not configured!"
+            echo "Please add your Netlify build hook to GitHub Secrets"
+            exit 1
+          fi
+          
+          # Handle both full URL and just the token
+          if [[ "$HOOK_URL" == http* ]]; then
+            curl -X POST -d '{}' "$HOOK_URL"
+          else
+            curl -X POST -d '{}' "https://api.netlify.com/build_hooks/$HOOK_URL"
+          fi
+          
+          echo "✅ Deploy triggered successfully!"
+          echo "Check your Netlify dashboard for build progress"

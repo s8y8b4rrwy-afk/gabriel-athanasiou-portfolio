@@ -22,6 +22,15 @@ This workflow deploys to Netlify weekly (or on-demand) **only if there are code 
    - Example: If your URL is `https://api.netlify.com/build_hooks/abc123xyz`, enter `abc123xyz`
 6. Click **Add secret**
 
+### 2.1 (Optional) Enable Content-Change Detection
+
+If you want the workflow to deploy when Airtable content changes (even without code changes), add these repository secrets so the manifest generator can run:
+
+- `AIRTABLE_API_KEY` – Your Airtable Personal Access Token
+- `AIRTABLE_BASE_ID` – The Base ID containing your content tables
+
+If these are not set, the workflow still works for code changes and will safely skip content checks.
+
 ### 3. Verify Setup
 
 1. Go to **Actions** tab in your GitHub repo
