@@ -9,10 +9,13 @@ interface SEOProps {
   url?: string;
 }
 
+// Default fallback image (can be overridden by Airtable Settings > Default OG Image)
+const FALLBACK_OG_IMAGE = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
+
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
   description = "Director based in London & Athens. Narrative, Commercial, Music Video.",
-  image = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200",
+  image = FALLBACK_OG_IMAGE,
   type = 'website',
   url
 }) => {

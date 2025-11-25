@@ -111,10 +111,24 @@ async function buildPosts() {
   return items;
 }
 
+async function buildConfig() {
+  try {
+    const records = await fetchAirtableTable('Settings');
+    if (records.length === 0) return {};
+    const f = records[0].fields || {};
+    return {
+      defaultOgImage: (f['Default OG Image'] && f['Default OG Image'][0] && f['Default OG Image'][0].url) || ''
+    };
+  } catch (e) {
+    console.warn('[share-meta] Settings fetch failed, skipping config');
+    return {};
+  }
+}
+
 async function main() {
   try {
-    const [projects, posts] = await Promise.all([buildProjects(), buildPosts()]);
-    const manifest = { generatedAt: new Date().toISOString(), projects, posts };
+    const [projects, posts, config] = await Promise.all([buildProjects(), buildPosts(), buildConfig()]);
+    const manifest = { generatedAt: new Date().toISOString(), projects, posts, config };
     const json = JSON.stringify(manifest, null, 2);
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.writeFileSync(OUTPUT_JSON, json, 'utf8');

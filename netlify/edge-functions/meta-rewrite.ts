@@ -21,13 +21,17 @@ interface ShareManifest {
   posts: ShareItem[];
 }
 
-// Default fallback meta
+// Default fallback meta (will be enhanced from manifest if available)
 const DEFAULT_META = {
   title: "GABRIEL ATHANASIOU | Director",
   description: "Director based in London & Athens. Narrative, Commercial, Music Video.",
   image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200",
   type: "website"
 };
+
+interface ManifestConfig {
+  defaultOgImage?: string;
+}
 
 // Escape HTML special chars for safe meta injection
 function escapeHtml(text: string): string {
@@ -66,9 +70,15 @@ export default async (request: Request, context: Context) => {
     const manifestRes = await fetch(manifestUrl.toString());
     
     let item: ShareItem | undefined;
+    let defaultOgImage = DEFAULT_META.image;
     
     if (manifestRes.ok) {
-      const manifest: ShareManifest = await manifestRes.json();
+      const manifest: ShareManifest & { config?: ManifestConfig } = await manifestRes.json();
+      
+      // Use custom default OG image from Settings if available
+      if (manifest.config?.defaultOgImage) {
+        defaultOgImage = manifest.config.defaultOgImage;
+      }
       
       // Extract slug from path (e.g., /work/example-slug -> example-slug)
       const slug = pathname.split("/").filter(Boolean).pop() || "";
@@ -85,10 +95,10 @@ export default async (request: Request, context: Context) => {
       ? {
           title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
           description: escapeHtml(truncate(item.description, 200)),
-          image: escapeHtml(item.image || DEFAULT_META.image),
+          image: escapeHtml(item.image || defaultOgImage),
           type: item.type === "article" ? "article" : "website"
         }
-      : DEFAULT_META;
+      : { ...DEFAULT_META, image: defaultOgImage };
 
     const canonicalUrl = escapeHtml(url.href);
 

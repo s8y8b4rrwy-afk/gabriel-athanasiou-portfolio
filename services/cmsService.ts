@@ -663,7 +663,8 @@ const fetchSettings = async (): Promise<HomeConfig> => {
                 bio: f['Bio'] || f['Bio Text'] || STATIC_CONFIG.about!.bio,
                 profileImage: f['About Image']?.[0]?.url || STATIC_CONFIG.about!.profileImage
             },
-            allowedRoles: allowedRoles
+            allowedRoles: allowedRoles,
+            defaultOgImage: f['Default OG Image']?.[0]?.url || ''
         };
     } catch (e) { return STATIC_CONFIG; }
 };

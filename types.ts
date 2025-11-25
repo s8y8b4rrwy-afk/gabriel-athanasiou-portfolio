@@ -85,6 +85,7 @@ export interface HomeConfig {
     profileImage?: string;
   };
   allowedRoles?: string[];
+  defaultOgImage?: string;
 }
 
 export enum ViewState {
