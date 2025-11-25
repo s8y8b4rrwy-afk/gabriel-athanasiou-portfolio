@@ -1,0 +1,11 @@
+[build]
+command = "npm run build"
+functions = "netlify/functions"
+publish = "dist"
+
+# Redirect /sitemap.xml to the dynamic sitemap function
+[[redirects]]
+from = "/sitemap.xml"
+to = "/.netlify/functions/sitemap"
+status = 200
+force = true

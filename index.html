@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Tags -->
+    <title>GABRIEL ATHANASIOU | Director</title>
+    <meta name="description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
+    <meta name="keywords" content="director, filmmaker, narrative, commercial, music video, london, athens">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta property="og:title" content="GABRIEL ATHANASIOU | Director">
+    <meta property="og:description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200">
+    <meta property="og:url" content="https://gabrielathanasiou.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GABRIEL ATHANASIOU | Director">
+    <meta name="twitter:description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200">
+    <meta name="twitter:creator" content="@gab_ath">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://gabrielathanasiou.com">
+    
+    <!-- Sitemap -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%23fff'>GA</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23050505' width='180' height='180'/><text x='50%' y='50%' dy='.3em' font-size='80' font-weight='bold' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>GA</dominant-baseline></text></svg>">
+
+    <!-- Tailwind CSS (Pinned Version + Typography) -->
+    <script src="https://cdn.tailwindcss.com/3.4.1?plugins=typography"></script>
+    
+    <!-- Fonts with font-display=swap for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Image optimization: preload hero images -->
+    <link rel="prefetch" as="image" href="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1920">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // These reference the CSS variables set by GlobalStyles.tsx
+                        sans: ['var(--font-sans)', 'sans-serif'],
+                        serif: ['var(--font-serif)', 'serif'],
+                    },
+                    colors: {
+                        // These reference the CSS variables set by GlobalStyles.tsx
+                        'bg-main': 'var(--color-bg-main)',
+                        'text-main': 'var(--color-text-main)',
+                        'text-muted': 'var(--color-text-muted)',
+                    },
+                    transitionTimingFunction: {
+                        'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'view-enter': 'viewEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'view-exit': 'viewExit 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slow-spin': 'slowSpin 45s linear infinite',
+                        'reveal': 'reveal 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        viewEnter: {
+                            '0%': { opacity: '0', filter: 'blur(3px)' },
+                            '100%': { opacity: '1', filter: 'blur(0)' },
+                        },
+                        viewExit: {
+                            '0%': { opacity: '1', filter: 'blur(0)' },
+                            '100%': { opacity: '0', filter: 'blur(3px)' },
+                        },
+                        reveal: {
+                            '0%': { transform: 'scale(1.05)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        slowSpin: {
+                            '0%': { transform: 'scale(3) rotate(0deg)' },
+                            '100%': { transform: 'scale(3) rotate(360deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body { 
+            background-color: #050505; /* Fallback */
+            color: #ffffff; 
+            -webkit-font-smoothing: antialiased; 
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
+        }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Utility for blend modes */
+        .blend-text {
+            mix-blend-mode: difference;
+            color: white;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
+    "@remix-run/router": "https://esm.sh/@remix-run/router@1.15.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
