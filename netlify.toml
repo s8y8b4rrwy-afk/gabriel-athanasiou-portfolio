@@ -2,6 +2,8 @@
 command = "npm run build"
 functions = "netlify/functions"
 publish = "dist"
+ # Only build when commit message contains [deploy] or [force-deploy]
+ ignore = "bash scripts/ignore-netlify-build.sh"
 
 [dev]
 targetPort = 3003

@@ -12,6 +12,23 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add deploy marker commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          # Only create an empty commit if latest commit lacks marker
+          if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
+            git commit --allow-empty -m "chore: manual deploy [deploy]"
+            git push origin HEAD:main
+          else
+            echo "Latest commit already has deploy marker."
+          fi
+
       - name: Trigger Netlify Build
         run: |
           echo "🚀 Triggering Netlify deployment..."
