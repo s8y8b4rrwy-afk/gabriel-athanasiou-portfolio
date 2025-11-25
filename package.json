@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:content": "node scripts/generate-share-meta.mjs",
+    "build": "npm run build:content && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
