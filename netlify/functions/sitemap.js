@@ -43,7 +43,10 @@ const makeUniqueSlug = (base, used, fallbackId) => {
 };
 
 exports.handler = async function(event, context) {
-  if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
+  const token = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_API_KEY;
+  const baseId = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
+  
+  if (!token || !baseId) {
     return { 
       statusCode: 500, 
       headers: { 'Content-Type': 'application/xml' },
@@ -51,8 +54,8 @@ exports.handler = async function(event, context) {
     };
   }
 
-  const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
-  const domain = 'https://gabrielathanasiou.com'; // Update to your actual domain
+  const base = new Airtable({ apiKey: token }).base(baseId);
+  const domain = 'https://directedbygabriel.com'; // Updated domain
 
   try {
     // Fetch projects
