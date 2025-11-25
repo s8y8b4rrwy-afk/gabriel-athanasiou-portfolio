@@ -1,13 +1,15 @@
-name: Daily Content-Aware Netlify Deploy
+name: Smart Netlify Deploy (Code + Content)
 
 on:
-  # Run daily at 2 AM UTC
+  # Daily check for content changes at 2 AM UTC
   schedule:
     - cron: '0 2 * * *'
+  # Weekly check for code changes on Sunday at 3 AM UTC  
+    - cron: '0 3 * * 0'
   workflow_dispatch:
 
 jobs:
-  content-check-and-deploy:
+  check-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,6 +23,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Check for code changes
+        id: check_code
+        run: |
+          LAST_DEPLOY_SHA=$(gh run list --workflow=scheduled-deploy.yml --status=success --limit=1 --json headSha --jq '.[0].headSha' || echo "")
+          
+          if [ -z "$LAST_DEPLOY_SHA" ]; then
+            echo "No previous deploy found. Will check content."
+            echo "code_changed=false" >> $GITHUB_OUTPUT
+          else
+            CURRENT_SHA=$(git rev-parse HEAD)
+            # Exclude manifest-only commits (marked with [ci skip])
+            CHANGES=$(git log $LAST_DEPLOY_SHA..$CURRENT_SHA --oneline --grep="\[ci skip\]" --invert-grep || echo "")
+            if [ -n "$CHANGES" ]; then
+              echo "Code changes detected since last deploy."
+              echo "code_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "No code changes (only manifest updates)."
+              echo "code_changed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install dependencies
         run: npm ci
@@ -48,12 +73,18 @@ jobs:
           git commit -m "chore: update share-meta manifest [ci skip]"
           git push origin HEAD:main
 
-      - name: Trigger Netlify Deploy
-        if: steps.generate.outputs.content_changed == 'true'
+      - name: Trigger Netlify Deploy (Code Changed)
+        if: steps.check_code.outputs.code_changed == 'true'
         run: |
-          echo "Triggering Netlify deploy (content changed)..."
+          echo "🚀 Triggering Netlify deploy (code changed)..."
           curl -X POST -d '{}' "https://api.netlify.com/build_hooks/${{ secrets.NETLIFY_BUILD_HOOK }}"
 
-      - name: Skip Deploy (No Content Change)
-        if: steps.generate.outputs.content_changed == 'false'
-        run: echo "✅ No content changes detected. Skipping deploy."
+      - name: Trigger Netlify Deploy (Content Changed)
+        if: steps.generate.outputs.content_changed == 'true' && steps.check_code.outputs.code_changed == 'false'
+        run: |
+          echo "📝 Triggering Netlify deploy (content changed)..."
+          curl -X POST -d '{}' "https://api.netlify.com/build_hooks/${{ secrets.NETLIFY_BUILD_HOOK }}"
+
+      - name: Skip Deploy
+        if: steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        run: echo "✅ No changes detected. Skipping deploy to save build credits."
