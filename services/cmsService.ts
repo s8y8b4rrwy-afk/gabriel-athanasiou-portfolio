@@ -577,7 +577,7 @@ const fetchSettings = async (): Promise<HomeConfig> => {
                 linkedin: f['LinkedIn URL'] || ''
             },
             about: {
-                bio: f['Bio Text'] || STATIC_CONFIG.about!.bio,
+                bio: f['Bio'] || f['Bio Text'] || STATIC_CONFIG.about!.bio,
                 profileImage: f['About Image']?.[0]?.url || STATIC_CONFIG.about!.profileImage
             },
             allowedRoles: allowedRoles

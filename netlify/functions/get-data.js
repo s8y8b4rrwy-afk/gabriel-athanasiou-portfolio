@@ -361,7 +361,7 @@ const getDataHandler = async (event, context) => {
         linkedin: globalSettings?.get('LinkedIn URL') || ''
       },
       about: {
-          bio: globalSettings?.get('Bio Text') || defaultBio,
+          bio: globalSettings?.get('Bio') || globalSettings?.get('Bio Text') || defaultBio,
           profileImage: globalSettings?.get('About Image')?.[0]?.url || defaultImage
       },
       allowedRoles: allowedRoles
