@@ -276,6 +276,82 @@ const attachSlugs = (projects: Project[], posts: BlogPost[]) => {
     });
 };
 
+// Try loading manifest as optimization (faster than Airtable, zero API usage)
+const tryLoadManifest = async (): Promise<ApiResponse | null> => {
+    try {
+        const response = await fetch('/share-meta.json');
+        if (!response.ok) return null;
+        
+        interface ManifestItem {
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            image: string;
+            type: string;
+            year?: string;
+            date?: string;
+        }
+        
+        interface Manifest {
+            generatedAt: string;
+            projects: ManifestItem[];
+            posts: ManifestItem[];
+        }
+        
+        const manifest: Manifest = await response.json();
+        
+        // Transform minimal manifest items into full Project/BlogPost objects
+        // Note: Manifest only has share fields; missing gallery, credits, etc.
+        // For initial render speed, this is acceptable. Full data fetched on navigation if needed.
+        const projects: Project[] = manifest.projects.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            title: item.title,
+            type: (item.type as ProjectType) || 'Uncategorized',
+            genre: [],
+            client: '',
+            brand: '',
+            year: item.year || '',
+            description: item.description,
+            isFeatured: false,
+            heroImage: item.image,
+            gallery: [item.image].filter(Boolean),
+            videoUrl: '',
+            additionalVideos: [],
+            awards: [],
+            credits: [],
+            externalLinks: [],
+            relatedArticleId: null
+        }));
+        
+        const posts: BlogPost[] = manifest.posts.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            title: item.title,
+            date: item.date || '',
+            tags: [],
+            content: item.description,
+            readingTime: calculateReadingTime(item.description),
+            imageUrl: item.image,
+            relatedProjectId: null,
+            source: 'local',
+            relatedLinks: []
+        }));
+        
+        console.log('[cmsService] Loaded from manifest (fast path)');
+        
+        return {
+            projects,
+            posts,
+            config: STATIC_CONFIG // Use static config for now; could extend manifest
+        };
+    } catch (e) {
+        console.warn('[cmsService] Manifest load failed, will fetch from Airtable');
+        return null;
+    }
+};
+
 export const cmsService = {
   
   fetchAll: async (): Promise<ApiResponse> => {
@@ -287,6 +363,10 @@ export const cmsService = {
       if (cachedData) return cachedData;
 
       try {
+          // OPTIMIZATION: Try loading manifest first (instant, no Airtable call)
+          // Falls back to full Airtable fetch if manifest unavailable or incomplete
+          const manifestData = await tryLoadManifest();
+          
           const [awardsMap, clientsMap, projectsRaw, airtablePosts, instagramPosts, config] = await Promise.all([
               fetchAwardsMap(),
               fetchClientsMap(),
@@ -312,6 +392,9 @@ export const cmsService = {
           return data;
       } catch (error) {
           console.error("Airtable Connection Failed. Switching to Safe Mode.", error);
+          // Try manifest as final fallback
+          const manifestData = await tryLoadManifest();
+          if (manifestData) return manifestData;
           return getSafeData();
       }
   },
