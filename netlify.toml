@@ -7,6 +7,15 @@ publish = "dist"
 targetPort = 3003
 port = 8888
 
+# Edge Functions for dynamic meta tag injection
+[[edge_functions]]
+path = "/work/*"
+function = "meta-rewrite"
+
+[[edge_functions]]
+path = "/journal/*"
+function = "meta-rewrite"
+
 # Redirect /sitemap.xml to the dynamic sitemap function
 [[redirects]]
 from = "/sitemap.xml"
