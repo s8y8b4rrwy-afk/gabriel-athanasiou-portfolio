@@ -29,6 +29,33 @@ export const GlobalStyles: React.FC = () => {
         background: ${THEME.colors.selectionBg};
         color: ${THEME.colors.textMain};
       }
+      
+      /* Blog post link styling */
+      .blog-content a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 2px;
+        transition: all 0.3s ease;
+        display: inline-block;
+      }
+      
+      .blog-content a::after {
+        content: ' →';
+        color: rgba(255, 255, 255, 0.5);
+        transition: color 0.3s ease;
+        font-size: 0.9em;
+        margin-left: 2px;
+      }
+      
+      .blog-content a:hover {
+        color: rgba(255, 255, 255, 1);
+        border-bottom-color: rgba(255, 255, 255, 0.6);
+      }
+      
+      .blog-content a:hover::after {
+        color: rgba(255, 255, 255, 1);
+      }
     `;
     document.head.appendChild(style);
 

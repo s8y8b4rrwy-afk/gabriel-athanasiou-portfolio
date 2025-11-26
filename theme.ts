@@ -151,10 +151,10 @@ export const THEME = {
         rowPadding: "py-5",
         
         // Font sizes
-        projectTitleSize: "text-base md:text-lg",
+        projectTitleSize: "text-lg md:text-xl",
         
         // Toggle Columns (true = visible, false = hidden)
-        showThumbnailMobile: true,
+        showThumbnailMobile: false,
         showYear: true,
         showClient: true,
         showGenre: true,
@@ -163,8 +163,8 @@ export const THEME = {
         // Column Widths (Total 12 cols)
         cols: {
           year: "col-span-1",
-          image: "col-span-3 md:col-span-1", // Mobile vs Desktop
-          title: "col-span-7 md:col-span-4",
+          image: "col-span-0 md:col-span-1", // Mobile vs Desktop
+          title: "col-span-9 md:col-span-4",
           client: "col-span-3",
           genre: "col-span-2",
           type: "col-span-2 md:col-span-2",
@@ -265,6 +265,7 @@ export const THEME = {
       cursor: {
         size: "w-[300px]",
         radius: "rounded-none", // or "rounded-lg"
+        fadeOutDuration: "duration-300", // Fade in/out animation speed
       }
     }
   };

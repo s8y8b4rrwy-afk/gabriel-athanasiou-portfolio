@@ -74,7 +74,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
             </div>
 
             <div className={`${THEME.blog.post.contentWidth} mx-auto px-6 py-20`}>
-                <div className="prose prose-invert prose-lg md:prose-xl font-sans leading-relaxed text-gray-200">
+                <div className="blog-content text-lg leading-relaxed text-gray-300 font-light space-y-6 [&>p]:mb-6 [&>h1]:text-3xl [&>h1]:font-serif [&>h1]:italic [&>h1]:mt-12 [&>h1]:mb-6 [&>h2]:text-2xl [&>h2]:font-serif [&>h2]:italic [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-medium [&>h3]:mt-8 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:space-y-2 [&>blockquote]:border-l-2 [&>blockquote]:border-white/30 [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-gray-400">
                     <div dangerouslySetInnerHTML={{ __html: parseMarkdown(post.content) }} />
                 </div>
                 

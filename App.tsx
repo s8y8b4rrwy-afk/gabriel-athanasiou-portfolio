@@ -60,7 +60,7 @@ export default function App() {
   if (loading) return <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">Loading...</div>;
 
   return (
-    <div className="bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20">
+    <div className="bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased">
       <GlobalStyles />
       <Cursor activeImageUrl={hoveredImage} />
       

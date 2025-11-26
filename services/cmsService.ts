@@ -309,6 +309,7 @@ const tryLoadManifest = async (): Promise<ApiResponse | null> => {
             slug: item.slug,
             title: item.title,
             type: (item.type as ProjectType) || 'Uncategorized',
+            kinds: [],
             genre: [],
             client: '',
             brand: '',
@@ -543,7 +544,11 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
             const year = rawDate ? rawDate.substring(0, 4) : '';
 
             const rawType = f['Project Type'];
-            let type = rawType || f['Kind'] || 'Uncategorized';
+            const rawKind = f['Kind'];
+            let type = rawType || rawKind || 'Uncategorized';
+            
+            // Store raw kinds as array (could be single value or multiple)
+            const kinds = rawKind ? (Array.isArray(rawKind) ? rawKind : [rawKind]) : [];
             
             const typeLower = type ? type.toLowerCase() : '';
             if (typeLower.includes('short') || typeLower.includes('feature') || typeLower.includes('narrative')) {
@@ -584,6 +589,7 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
                 id: record.id,
                 title: normalizeTitle(f['Name']),
                 type: type,
+                kinds: kinds,
                 genre: genres,
                 client: clientName,
                 brand: brandName,

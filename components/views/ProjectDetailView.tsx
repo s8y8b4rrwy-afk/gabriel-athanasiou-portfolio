@@ -257,11 +257,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 
                 <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textMaxWidth}`}>
                     <h1 className={`${THEME.typography.h1} mb-2 leading-tight break-words`}>{project.title}</h1>
-                    <div className={`flex flex-wrap gap-4 md:gap-6 ${THEME.typography.meta}`}>
-                        <span>{project.type !== 'Uncategorized' ? project.type : 'Project'}</span>
-                        <span>—</span>
-                        <span>{project.year}</span>
-                    </div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-gray-300 mt-2 ml-1">
+                        {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')} — {project.year}
+                    </p>
                 </div>
             </div>
 
@@ -291,7 +289,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         )}
                     </div>
 
-                    <div className={`${THEME.typography.body} text-gray-200 mb-12 space-y-6`}>
+                    <div className="text-lg text-gray-300 font-light mb-8 space-y-6">
                         {formatDescription(project.description).map((paragraph, i) => (
                              <p key={i}>{paragraph}</p>
                         ))}
@@ -461,7 +459,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`} 
                     />
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 mix-blend-difference text-white">
-                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project'}</span>
+                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
                         <h2 className={`${THEME.typography.h1} group-hover:scale-105 transition duration-1000 ${THEME.animation.ease}`}>{nextProject.title}</h2>
                     </div>
                 </div>
