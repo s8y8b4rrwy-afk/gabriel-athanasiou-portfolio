@@ -29,7 +29,10 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     // Session Storage Persistence
     const [filter, setFilter] = useState<string>(() => sessionStorage.getItem('filmographyFilter') || THEME.filmography.defaultTab);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => (sessionStorage.getItem('filmographyView') as 'list' | 'grid') || 'grid');
-    
+
+    // Adaptive stagger state
+    const [staggerDelay, setStaggerDelay] = useState<number>(THEME.animation.staggerDelay || 60);
+
     useEffect(() => {
         sessionStorage.setItem('filmographyFilter', filter);
     }, [filter]);
@@ -38,13 +41,28 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
         sessionStorage.setItem('filmographyView', viewMode);
     }, [viewMode]);
 
+    // Listen for scroll and adjust stagger
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollY = window.scrollY || window.pageYOffset;
+            // If scrolled past 800px, reduce stagger to 10ms
+            if (scrollY > 800) {
+                setStaggerDelay(10);
+            } else {
+                setStaggerDelay(THEME.animation.staggerDelay || 60);
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // Tab Visibility Logic
     const availableTypes = Object.values(ProjectType).filter(type => {
         if (!THEME.filmography.hideEmptyTabs) return true;
         if (type === ProjectType.ALL) return true;
         return projects.some(p => p.type === type);
     });
-    
+
     const displayProjects = filter === ProjectType.ALL 
         ? projects 
         : projects.filter(p => p.type === filter);
@@ -119,7 +137,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
                                     onMouseLeave={() => onHover({ url: null, fallback: null })}
                                     className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0 animate-fade-in-up opacity-0`}
-                                    style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'forwards' }}
+                                    style={{ animationDelay: `${i * staggerDelay}ms`, animationFillMode: 'forwards' }}
                                 >
                                     {/* ...existing code... */}
                                     {(showCols.showThumbnailMobile || showCols.showYear) && (
@@ -199,19 +217,11 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
                                 }}
                                 className="group cursor-pointer flex flex-col animate-fade-in-up opacity-0"
-                                style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'forwards' }}
+                                style={{ animationDelay: `${i * staggerDelay}ms`, animationFillMode: 'forwards' }}
                             >
                                 {/* ...existing code... */}
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
-                                    {!p.videoUrl ? (
-                                        <ProceduralThumbnail
-                                            title={p.title}
-                                            year={p.year}
-                                            type={p.type}
-                                            className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
-                                            loading="lazy"
-                                        />
-                                    ) : (
+                                    {p.videoUrl ? (
                                         <OptimizedImage
                                             recordId={p.id}
                                             fallbackUrl={p.heroImage}
@@ -219,6 +229,21 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             alt={p.title}
                                             loading="lazy"
                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                        />
+                                    ) : p.gallery && p.gallery.length > 0 ? (
+                                        <img
+                                            src={p.gallery[0]}
+                                            alt={p.title}
+                                            loading="lazy"
+                                            className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                        />
+                                    ) : (
+                                        <ProceduralThumbnail
+                                            title={p.title}
+                                            year={p.year}
+                                            type={p.type}
+                                            className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                            loading="lazy"
                                         />
                                     )}
                                 </div>
