@@ -109,7 +109,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                             <div className={`${cols.type} text-right`}>Type</div>
                         </div>
 
-                        <div>
+                        <div key={filter}>
                             {displayProjects.map((p, i) => (
                                 <div 
                                     key={p.id}
@@ -118,12 +118,13 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     }}
                                     onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
                                     onMouseLeave={() => onHover({ url: null, fallback: null })}
-                                    className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0`}
-                                    style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'forwards' }}
+                                    className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0 animate-fade-in-up opacity-0`}
+                                    style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'forwards' }}
                                 >
-                                    {/* Mobile Thumbnail / Desktop Year */}
+                                    {/* ...existing code... */}
                                     {(showCols.showThumbnailMobile || showCols.showYear) && (
                                         <div className={`${cols.image} text-text-muted text-[11px] font-mono flex items-center text-white`}>
+                                            {/* ...existing code... */}
                                             {showCols.showThumbnailMobile && (
                                                 <div className="md:hidden w-12 h-8 bg-gray-800 overflow-hidden shrink-0 mr-3">
                                                     {!p.videoUrl ? (
@@ -153,23 +154,20 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             )}
                                         </div>
                                     )}
-                                    
-                                    {/* Title + Mobile Year */}
+                                    {/* ...existing code... */}
                                     <div className={`${cols.title} flex flex-col justify-center text-white`}>
                                         <span className={`${THEME.filmography.list.projectTitleSize} font-serif italic font-normal md:group-hover:translate-x-4 transition-transform ${THEME.animation.medium} ${THEME.animation.ease} opacity-60 group-hover:opacity-100 block`}>
                                             {p.title}
                                         </span>
                                         <span className="md:hidden text-[9px] text-text-muted font-mono mt-1 opacity-60">{p.year}</span>
                                     </div>
-
-                                     {/* Client / Brand (Desktop Only) */}
+                                    {/* ...existing code... */}
                                     {showCols.showClient && (
                                         <div className={`hidden md:block ${cols.client} text-[11px] font-normal text-white opacity-40 group-hover:opacity-80 transition uppercase tracking-wider`}>
                                             {p.type === 'Narrative' ? '–' : (p.brand ? p.brand : p.client)}
                                         </div>
                                     )}
-
-                                    {/* Genre / Tags (Desktop Only) */}
+                                    {/* ...existing code... */}
                                     {showCols.showGenre && (
                                         <div className={`hidden md:flex ${cols.genre} flex-wrap gap-2 items-center text-white`}>
                                             {(p.type === 'Commercial' || p.type === 'Music Video') ? (
@@ -181,8 +179,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             )}
                                         </div>
                                     )}
-
-                                    {/* Type */}
+                                    {/* ...existing code... */}
                                     {showCols.showType && (
                                         <div className={`${cols.type} text-right text-[9px] uppercase tracking-[0.2em] opacity-60 group-hover:opacity-100 text-white`}>
                                             {p.type === 'Uncategorized' ? '-' : p.type}
@@ -194,16 +191,17 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                     </>
                 ) : (
                     // FILMSTRIP VIEW
-                    <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY} px-2`}>
+                    <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY} px-2`} key={filter}>
                         {displayProjects.map((p, i) => (
                             <div 
                                 key={p.id} 
                                 onClick={() => {
                                     navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
                                 }}
-                                className="group cursor-pointer flex flex-col"
-                                style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
+                                className="group cursor-pointer flex flex-col animate-fade-in-up opacity-0"
+                                style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'forwards' }}
                             >
+                                {/* ...existing code... */}
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
                                     {!p.videoUrl ? (
                                         <ProceduralThumbnail
@@ -224,7 +222,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                         />
                                     )}
                                 </div>
-                                
+                                {/* ...existing code... */}
                                 <div className="flex justify-between items-start text-white">
                                     <div>
                                         <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1 tracking-tight`}>{p.title}</h2>
