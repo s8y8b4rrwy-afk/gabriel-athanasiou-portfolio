@@ -33,6 +33,7 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
 
 ## 📖 Documentation
 
+- [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) - **Complete technical documentation** (for AI agents and developers)
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
 - [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
 - [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup
