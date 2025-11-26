@@ -6,6 +6,23 @@
 
 ---
 
+## ⚠️ CRITICAL: Read This First
+
+**FOR ALL AI AGENTS WORKING ON THIS CODEBASE:**
+
+1. **📖 READ THIS ENTIRE DOCUMENT BEFORE MAKING ANY CHANGES**
+2. **✏️ UPDATE THIS DOCUMENTATION AFTER EVERY CHANGE YOU MAKE**
+3. **🔍 Verify documentation accuracy matches current code state**
+
+**Documentation-First Workflow:**
+- Before editing code → Read relevant sections here
+- After editing code → Update this guide immediately
+- Before committing → Verify all documentation is current
+
+**This guide is the source of truth for the entire codebase architecture.**
+
+---
+
 ## 📋 Table of Contents
 
 1. [Project Overview](#project-overview)
@@ -171,6 +188,10 @@ analyticsService.trackVideoPlay(project.id, project.title);
   - Single image: `project-{recordId}.webp` or `journal-{recordId}.webp`
   - Multiple images: `project-{recordId}-0.webp`, `project-{recordId}-1.webp`, etc.
 - **Incremental:** Only processes NEW images (skips existing)
+- **Automatic Cleanup:** Deletes orphaned images removed from Airtable
+  - Compares existing files with current Airtable content
+  - Removes WebP files for deleted projects/posts
+  - Prevents storage waste from old content
 
 #### B. Runtime Helper (`utils/imageOptimization.ts`)
 ```typescript
@@ -806,6 +827,11 @@ cachedData = null;  // Clear cached data
 - [ ] Video play events tracked
 - [ ] Social share events tracked
 
+**Image Optimization:**
+- [ ] New images optimized during build
+- [ ] Orphaned images cleaned up automatically
+- [ ] WebP files served correctly
+
 ---
 
 ## 📚 Additional Resources
@@ -880,6 +906,14 @@ cachedData = null;  // Clear cached data
 - One component per file
 - Co-locate types with usage (or in `types.ts` if shared)
 - Group imports: React → Libraries → Local
+
+### Documentation Requirements
+**MANDATORY for all code changes:**
+1. Update this guide (AI_AGENT_GUIDE.md) immediately after code changes
+2. Update relevant section documentation files (IMAGE_OPTIMIZATION.md, etc.)
+3. Update README.md if user-facing changes
+4. Keep comments in code accurate and up-to-date
+5. Document breaking changes prominently
 
 ---
 

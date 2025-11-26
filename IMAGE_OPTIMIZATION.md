@@ -1,8 +1,10 @@
 # Image Optimization System
 
+> **Last Updated:** November 26, 2025
+
 ## Overview
 
-Your portfolio now includes a **hybrid image optimization system** that automatically fetches, optimizes, and serves images from Netlify's CDN while maintaining seamless fallback to Airtable URLs.
+Your portfolio includes a **hybrid image optimization system** that automatically fetches, optimizes, and serves images from Netlify's CDN while maintaining seamless fallback to Airtable URLs.
 
 ## How It Works
 
@@ -14,6 +16,7 @@ During deployment, the system:
 - Downloads only **new images** (not already optimized)
 - Optimizes images to **WebP format** (1600px width, 92% quality)
 - Saves optimized images to `/public/images/portfolio/`
+- **🆕 Automatically cleans up orphaned images** (deleted from Airtable)
 
 ### 2. Runtime Image Delivery
 
@@ -22,12 +25,14 @@ In your React components:
 - If an optimized image isn't available yet, browser **automatically falls back to Airtable URL**
 - Zero downtime for newly added content
 
-### 3. Incremental Updates
+### 3. Incremental Updates & Cleanup
 
 The optimization script is **smart**:
 - Only processes new images (compares with existing files)
 - Skips already-optimized images
+- **Deletes images for content removed from Airtable**
 - Fast subsequent builds (typically 5-10 seconds for new images only)
+- Prevents storage waste from old content
 
 ## File Structure
 
@@ -46,6 +51,8 @@ The optimization script is **smart**:
 
 1. **Image Optimization** (`npm run optimize:images`)
    - Fetches filtered Airtable records
+   - Builds list of valid image IDs
+   - **Cleans up orphaned images** (not in Airtable anymore)
    - Downloads new images
    - Optimizes to WebP
    - Saves to `/public/images/portfolio/`
@@ -57,6 +64,35 @@ The optimization script is **smart**:
 3. **Vite Build** (`vite build`)
    - Bundles application
    - Includes optimized images in `dist/`
+
+### Example Output:
+
+```
+🖼️  Starting image optimization...
+
+📂 Found 31 existing optimized images
+📦 Fetching featured projects...
+✓ Found 53 featured projects
+📝 Fetching journal entries...
+✓ Found 2 public/scheduled journal entries
+
+🧹 Checking for orphaned images...
+  🗑️  Deleted orphaned: project-recOLDPROJECT.webp
+✓ Cleaned up 1 orphaned image
+
+🔄 Processing images...
+  Downloading: project-recNEWPROJECT...
+  Optimizing: project-recNEWPROJECT...
+  ✓ Saved: project-recNEWPROJECT.webp
+
+📊 Summary:
+  ✓ Processed: 1 new images
+  ⊘ Skipped: 30 existing images
+  🗑️  Deleted: 1 orphaned images
+  📁 Total optimized images: 31
+
+✅ Image optimization complete!
+```
 
 ## Performance Benefits
 
