@@ -50,7 +50,13 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
     return (
         <article className="animate-view-enter bg-bg-main min-h-screen">
-            <SEO title={post.title} description={post.content.substring(0, 150)} image={post.imageUrl} />
+            <SEO 
+                title={post.title} 
+                description={post.content.substring(0, 150)} 
+                image={post.imageUrl}
+                type="article"
+                post={post}
+            />
             <CloseButton onClick={() => navigate('/journal')} />
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>

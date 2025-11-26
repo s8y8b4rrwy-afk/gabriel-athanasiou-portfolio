@@ -169,7 +169,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
 
     return (
         <div className="bg-bg-main animate-view-enter pb-0">
-            <SEO title={project.title} description={project.description} image={project.heroImage} />
+            <SEO 
+                title={project.title} 
+                description={project.description} 
+                image={project.heroImage}
+                type={isNarrative ? 'video.movie' : 'video.other'}
+                project={project}
+            />
             
             {/* --- THEATRE MODE OVERLAY (PORTAL) --- */}
             {isPlaying && hasHeroVideo && createPortal(

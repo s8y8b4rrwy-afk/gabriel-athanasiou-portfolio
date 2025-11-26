@@ -48,13 +48,18 @@ export const generateSitemap = async (): Promise<string> => {
     // Projects
     projects.forEach((project) => {
       const projectUrl = `${baseUrl}/work/${project.slug || project.id}`;
-      const lastmod = project.year || currentDate;
+      // Use project year if available, or current date
+      const lastmod = project.year ? `${project.year}-01-01` : currentDate;
+      
+      // Higher priority for narrative projects and featured work
+      const isNarrative = project.type === 'Narrative';
+      const priority = isNarrative ? '0.9' : (project.isFeatured ? '0.8' : '0.7');
       
       xml += `  <url>
     <loc>${projectUrl}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>${priority}</priority>
   </url>\n`;
     });
 
