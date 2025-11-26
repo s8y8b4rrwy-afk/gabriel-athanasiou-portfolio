@@ -26,7 +26,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     return (
         <section className="animate-view-enter w-full">
             {/* HERO SECTION */}
-            <div className={`relative w-full ${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
+            <div className={`relative w-full h-[70vh] md:h-[80vh] lg:${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
                 {showShowreel ? (
                      <div className="w-full h-full relative">
                         <div className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.8 }}>
