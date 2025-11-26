@@ -1,0 +1,496 @@
+{
+  "generatedAt": "2025-11-26T22:05:53.044Z",
+  "projects": [
+    {
+      "id": "recEegt54sIu0M5ib",
+      "slug": "diesel-express-yourself-2022",
+      "title": "Diesel: Express Yourself",
+      "description": "",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/jH2yo8xePFxplLnBTXg5Ww/VctAtHno1ZAksdLJEjvNML4xg7ZXqe1pYfUANEhcjwjEd1atRMlWsTXmWiPLJ1ql1LIMLRnYvuSHfuDZn9RcKxLAxYcCS4Nixgt8fnikhqX_v_ZyUsBy0YAhr3ehunZOGLZbA5E-GqZw4o9gSwHwr8NKZQ74HveRzxo2vJ_zFEoAMBQEgQYWjLO05rufDPgU/CANXWLZOZRVRHMVK4QgLjFZRYF1tqnhQjtw_MQ5L4wQ",
+      "type": "Commercial",
+      "year": "2022"
+    },
+    {
+      "id": "rec2xl62i0mgEo1go",
+      "slug": "i-look-at-the-times-2023",
+      "title": "I Look At The Times",
+      "description": "",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/OZ0n_CTCS1ubaYkVevhWlA/_H4JoHIfy-gKRClzaF88y4v8c-PjLLUTD4Xix_maB8jw1mLm-5kKSn9S0wISKpMOb3SMvRzhA_lf_awt_5AKNiTl_thQASVY6zp8BFfAp6aIlxCnWVe22TojIE2mAPW-nYm4fSmifBOfSZPdpWn7BebGQWUXhoWUyM97JW63fYeT5ivF9snOp4yjHNSMx2WI/ygvrL3hJwXBJsWTWc-z1yWX-yMZrM4pj1ZmHxQFTVio",
+      "type": "Music Video",
+      "year": "2023"
+    },
+    {
+      "id": "rec3gxVcxcaIaaamx",
+      "slug": "the-secret-of-life-2016",
+      "title": "The Secret Of Life",
+      "description": "Aris finds out the secret of life, written in a small pink notebook.",
+      "image": "https://i.vimeocdn.com/video/821851987-f61806e730d37fe469fc3475bc3d8e0c84fd8e7a67d50ce9640606491986a3ba-d_295x166?region=us",
+      "type": "Narrative",
+      "year": "2016"
+    },
+    {
+      "id": "rec3po7P6S00cGYXX",
+      "slug": "aru-3-words-video-2023",
+      "title": "Aru 3 Words Video",
+      "description": "This is a 3 word video and stuff.",
+      "image": "https://img.youtube.com/vi/TejbwNWk5JI/maxresdefault.jpg",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "rec4GWEg9Fzqz1vPk",
+      "slug": "gettin-lost-2018",
+      "title": "Gettin’ Lost",
+      "description": "",
+      "image": "https://img.youtube.com/vi/xLPnSsTXZYs/maxresdefault.jpg",
+      "type": "Music Video",
+      "year": "2018"
+    },
+    {
+      "id": "rec5Tles2ludfUSpq",
+      "slug": "wakecup-a-serene-autumn-escape-2022",
+      "title": "Wakecup – A Serene Autumn Escape",
+      "description": "A project I created for WakeUp, WakeCup is a simple yet peaceful concept featuring their water bottle/thermos. The idea was to capture the feeling of a crisp autumn hike in the UK – someone enjoying a quiet moment in nat",
+      "image": "https://i.vimeocdn.com/video/1557087653-cf66c2f732cd0cbbcd74d8e15426854f6e401d73e67519ba6cce179681180c4f-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2022"
+    },
+    {
+      "id": "rec6xJwCFvFpCPMgZ",
+      "slug": "shire-homecare-2023",
+      "title": "Shire Homecare",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1940196926-9b66f184e8d7c90bbac8b54a37d867a02c37e70ec34ec30c63fe57e282ead619-d_295x166?region=us",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "rec8AuJkcqKruETnG",
+      "slug": "erin-music-video-2019",
+      "title": "Erin Music Video",
+      "description": "",
+      "image": "",
+      "type": "Music Video",
+      "year": "2019"
+    },
+    {
+      "id": "rec8E1EdrkPNVbB6B",
+      "slug": "kit-medical-training-courses-2024",
+      "title": "Kit Medical: Training Courses",
+      "description": "",
+      "image": "",
+      "type": "Uncategorized",
+      "year": "2024"
+    },
+    {
+      "id": "rec9d8M9kuWPnzbmt",
+      "slug": "material-life-2018",
+      "title": "Material Life",
+      "description": "",
+      "image": "https://img.youtube.com/vi/z0ypUWmTByk/maxresdefault.jpg",
+      "type": "Music Video",
+      "year": "2018"
+    },
+    {
+      "id": "recAhJUVXiAJyvOAK",
+      "slug": "sports-analytics-school-launch-video-2023",
+      "title": "Sports Analytics School Launch Video",
+      "description": "We created the launch video for Sports Analytics School, a unique platform where football fans learn programming by analyzing real-time match data—almost like a game itself. The challenge was to showcase both the excitem",
+      "image": "https://i.vimeocdn.com/video/1795559945-4e9ae41551855f9cab24534937a6904432b10b295397079ca69d8a66af259982-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recC9iL5Z1deoxc30",
+      "slug": "virgin-media-it-s-a-steal-2019",
+      "title": "Virgin Media It's A Steal",
+      "description": "A fast-paced, comedic ad where a burglar’s night takes an unexpected turn – instead of making a getaway, they end up securing an incredible Virgin Media deal for their friends. A playful take on how irresistible the offe",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/TjnH97DytItpbwODPCkMEg/SBeNCjVhS9sGEESkNbNtBAUW53kljRmppJ1SNHh2Hjnug3hJisaqv3J1VhmL1AElJScZEvOM-J97paybOxSfja0YXjjTNCH81BJYn1zSpPUH-jpu5SpxobHq9Uqdm8VS_1ULcbDzHwAGn0FXxwJr8RthEoWxVZmiXh4FBC96WGkbsfP21IOxzrpa-z1veAvs/YD6ElVK5bcPeNSJbu-Qp2cgxDE4HFAh8LtnJvfsjt2c",
+      "type": "Commercial",
+      "year": "2019"
+    },
+    {
+      "id": "recEt255eoOGfQFij",
+      "slug": "the-big-mini-adventure-challenge-2024",
+      "title": "The Big Mini Adventure Challenge",
+      "description": "Commissioned by Time Out London in collaboration with MINI, this project brought to life two UGC-style videos highlighting MINI’s latest model in real-life adventures. The first video followed a family on a fun-filled tr",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/0n0q42tZLViBD6HCXDNvfQ/vjMR7J3M8rFnhFwonpzrTQjm-N-ZxZ0pKCXXfL7cIZZwmdC_HO7YXpcqyrlAuLWgTqgJDZj8I3VaDE5zZxoMDKnMYAQntlxRmujcEv-mRqdVfoIhA5NjqTD719ehMVVA9jh_5JOCvQ4Q_t7EnKTnqBl3DZr3gAXT6clQSIVGm_d_SPBxJlxN4oIXKdSXDHoE/2GZxxiAqYXt71428mYJ_Xjkf_NfPqgCDJN3akgrIP18",
+      "type": "Commercial",
+      "year": "2024"
+    },
+    {
+      "id": "recGP4lK31t7NWk1i",
+      "slug": "the-textile-building-investors-pitch-video-2022",
+      "title": "The Textile Building Investors’ Pitch Video",
+      "description": "I directed the investor pitch video for The Textile Building, a landmark Victorian warehouse in Newark-on-Trent undergoing transformation into 39 modern apartments. The project presented the unique challenge of showcasin",
+      "image": "https://i.vimeocdn.com/video/1940196225-31562253c0a9716a98a3a4450a3cd2c314dcb24893fda52104daac07f9df6897-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2022"
+    },
+    {
+      "id": "recGacwW665mArUly",
+      "slug": "squid-campaign-2024-2023",
+      "title": "Squid Campaign 2024",
+      "description": "For this project, I was commissioned to create a campaign for SQUID, a company that replaces traditional loyalty cards with a seamless digital system, benefiting both consumers and businesses. The goal was to present the",
+      "image": "https://i.vimeocdn.com/video/1819045538-5075b8b99cb2f4f86afeab155e03bf4776bb4626ccec0b7c91f0df60b95ee7e0-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recIJ0DCdjbQDSFsR",
+      "slug": "curiouser-2022",
+      "title": "Curiouser",
+      "description": "When a young girl struggles with self-identity and reaches out for help, she is thrown into a surreal world with bizarre encounters with herself to find out who she really is.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/j3EbxNmZL3uoKlyjca189A/qU8Rq12gwk_cBpXGHkDp4gVRmuJxZJtUQ_bixZO2l9AQJuG3E-lXMnaZbaSmzyXupEZQnyiHXZU5k-tVjF0zYA4fKZvLO_LammyVSzUZ0cLSLB-ybDOwVRA2h71m5ueHgNQD9pb61VQe2Kn19NmlobvLD3G4bJXt8p3PL9eKR1y-E35bdLGakOG8Sh1rTC1V/F0JShdP9aUOmoCpuEQ_MhoSv0gXrtioRfJDe9RfjCyk",
+      "type": "Narrative",
+      "year": "2022"
+    },
+    {
+      "id": "recNNKSzQAsbchpCi",
+      "slug": "the-newspaper-2025",
+      "title": "The Newspaper",
+      "description": "In a pristine 1950s suburb, a newlywed discovers cryptic puzzles in the daily newspaper that hint at a buried town secret and her husband’s past. As the clues unravel, so does her reality. The Newspaper is a suspenseful ",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/WRyaykGvpYNkgc5l6oBkvQ/EPISUSWpNHd8T58gtuMnc9vO18tspc27ysAOkydLmx1x_IhLPckZ7JIyULA__ia-5qo1ptezmGrDB6QStWwsITk_FkE41NSlDgaW23P1ppg0wqzS1V_Q7OePZPyKagDjT-g9L992HL760l1rZM1X2MYA81BPp1pwT3ZiKoIQPQg/MBVygN7kh4ptzsY0bU24IvwQeXeNYvAIJ8AjscgJalw",
+      "type": "Narrative",
+      "year": "2025"
+    },
+    {
+      "id": "recP0DyB35ZBY85Kb",
+      "slug": "astoria-2020",
+      "title": "Astoria",
+      "description": "Three years after a traumatic event that changed her life Kelly, a young girl, returns to her hometown Kastoria and to her friends whom she has left behind. At the same time, a curious case of a hit-and-run accident, tha",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/5ig0qX2Rd8-S9752GkYn7g/fM1gUBSzR3oag69NKEeF_BAoPLJ6PZEQZoE8UWNvFK_McXRo6vwIoPfQ0MMwsLodRhUbWIShURwapvpDSSQEnIjHro1zzpAZDL4icr8rXa-kr9v7Anb206Oyx5hVQV0cfJAvpn1FYGSJ7mOLwyD0HL2N5EsmzTQw9gtRZPbd-eY/C8H-NGRzOauRzy_I9JGch4pkPuvnv1owxU2JiExqR8k",
+      "type": "Narrative",
+      "year": "2020"
+    },
+    {
+      "id": "recPht2mguhMzxI9j",
+      "slug": "project-michalis-2014",
+      "title": "Project Michalis",
+      "description": "'Project Michalis' is the story of a young adult named Michalis. He is living a difficult life, with no job nor family. His greatest struggle is keeping up with all the robberies he is facing. However, soon his life will",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/6VKrTCC4NfdtECEX7KI19g/AYJXiuioLf3xzYjlhpFAfzauFzoJuTN7arPjGVg1VzNL_NsS7ZkIBHnY-AmMts50DxiqL3HVFXVgkmxcj6uEEBRZHTMrNqxHJ5CKSY_Kcqfz5iW47Ybq0MLyOmvGj8upAzXRX_fS2sKZeIpSxWOe__mtxmvWXdAp3KGq7uSi9QEn_zt9OUsdFyPI2H_dMrnT/mEMQfUUuosBCOsuuDexdto-fUcxnsHi_Kb0fODY5nhg",
+      "type": "Narrative",
+      "year": "2014"
+    },
+    {
+      "id": "recQ1KNF9qX94IbJm",
+      "slug": "abbey-quay-2024",
+      "title": "Abbey Quay",
+      "description": "",
+      "image": "",
+      "type": "Uncategorized",
+      "year": "2024"
+    },
+    {
+      "id": "recURzloIju3xMoDR",
+      "slug": "health-lottery-whish-2023",
+      "title": "Health Lottery Whish",
+      "description": "WHISH (Whitby Hidden Impairment Supported Help) is a wonderful space where parents and children with hidden impairments can engage in various activities together. For this project, we took a documentary-style approach, f",
+      "image": "https://i.vimeocdn.com/video/1751772036-5dd9e8c215aabba917685de2164bf3a5af6585d7f4f99e5b5fcae47888b8bada-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recUyEFIYQJpikSMf",
+      "slug": "lanique-raise-your-spirits-2023",
+      "title": "Lanique Raise Your Spirits",
+      "description": "This ad for Lanique was all about comedy and good times. The tagline, Raise Your Spirits, set the tone for a fun and lighthearted approach. The concept? A guy who’s completely unprepared for his party, messing up everyth",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/EbXV8ada5W63StBTSxA7VA/PgLGBGDAHOP-VkrdOQap5pHNBConC8wh0zeYNo2a-C_ArdECMXTD6jFwy-8ii1mPsnqCMLI0JXrwaBJxxSRMofOtruIFW5i20IyXijYnwd0fWwLpHzD4ARHTVWXYoHGiVCIlFsviHGKRE5HvgAhCyrco7vOVINMbEEbxMAT3M0Z_yAAb6ZEDVKmn3nSnP-pP/AHXAECZxqT3qjE-oDbvKypCN-eH0eehP0PCKjNbBQOM",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recVlqGrss78joP5t",
+      "slug": "restspace-2023",
+      "title": "Restspace",
+      "description": "For RestSpace, I was commissioned to create a video campaign showcasing their innovative sleeping booths designed to help employees recharge during the workday. After exploring several concepts, we landed on a dynamic PO",
+      "image": "https://i.vimeocdn.com/video/1976826673-3b8ac81bbe72da2757adf9d80eec5de2cc2cbb5ba3ab5c13dfc9112f7e111675-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recWobs12nEl6SX1A",
+      "slug": "uobm-aw23-2023",
+      "title": "Uobm Aw23",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1940198896-0a6946529be03b0095d57a419f6665178e62871f6caa4f089c35204a56a7fc74-d_295x166?region=us",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "recXjyQW0bFtMSlM0",
+      "slug": "aiz-eitz-2017",
+      "title": "Aiz Eitz",
+      "description": "Two students struggle to survive the new ICE AGE.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/JDM89DAr69WghGuzpnk5Nw/OSlmxvX9DEwmP-H9Da_dN7Xcn22ABnHFtsVudEMbF_YTAWGUwh1YGQ-SElXIO72IY4lWgONLnrNkVEk2megd2FwTRq_tTogaHdJO77227dcsmxzwTuMWvSH_TR0u8KDgKo_Uj1SJXq9lFA3OXWRBna4wfgg66Y3TWgdQ3UCUxx_mNIUdWXMhecw3UwjzjdBw/-5RJ1VQXD2zwAWASr-AbI1X77wpXGhtKj-zsdLGA2mA",
+      "type": "Narrative",
+      "year": "2017"
+    },
+    {
+      "id": "recYUzFwdDdiIHdd6",
+      "slug": "gilley-uk-2023",
+      "title": "Gilley Uk",
+      "description": "We were commissioned by Gilley UK, to create a compelling campaign video for their Kickstarter launch, introducing their innovative umbrella. Our approach blended dynamic cinematography - locking the camera to the produc",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/7aSmZ1IJgX1McCdwDXJVMw/RwSPSepI2S8EjdoauAbbPQQe3CRLiNVcgD8YKVV_hH27chpDD3ZKIOimySIgoUJUWwbZtdVK9rO0gpi7hud0pkQ21XZt6gJ0yrRiVkFek9QE8hlpFl0T3kuyc47hJ93AqAzmk36DAj-JvbyIC6XOtVKPQe7s5OTe_ieIMXUe1YSC2vMNZx-NDJtHJX4K37nQ/qgl4Au7PHoCDSrEO30YIEi9H0BmauxfM0YcmRvRg2oE",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recYknDnapMT18OhZ",
+      "slug": "pink-taxi-2019",
+      "title": "Pink Taxi",
+      "description": "One day Apostolis decides that he wants to be a superhero. He creates a suit that allows him to teleport but only once per day. His flatmate Vezos needs transportation in order to go to a very important job interview, Ap",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/Wea7yMFLQ1u5g-RPlNMA-w/v8ppiLsLeRp-zke-o2vwLUS2KczDY81FTUKpMsEtlUt7v_oEQpIF-EapxozflPfiv2VjqjWMOOAES2BsB-1FMdKfUAjhEFNmFLuhQvXES2csF2SqkGMSrxIhBqGdjqhtcUHvLm58L0dqVFzBvOpj-yv0jhXNS2V8SF64Kv9yFvNpJPYFF7AhvCmDNKV_nmxU/_79rDIccAvYbv_Oyig_C-x2ZNY7t6YdeVd_WnVKkVx8",
+      "type": "Narrative",
+      "year": "2019"
+    },
+    {
+      "id": "recaNFE1fKkSZnYTy",
+      "slug": "greenwich-peninsula-investor-s-pitch-video-2023",
+      "title": "Greenwich Peninsula Investor's Pitch Video",
+      "description": "I was commissioned to direct an investor’s pitch video for Greenwich Peninsula, one of Europe’s largest regeneration projects, transforming 150 acres of former industrial land in North Greenwich, London, into a vibrant r",
+      "image": "https://i.vimeocdn.com/video/1940200095-29cf64496c3217b90ca9a6150c9f7fcd55d72a99436fbfa6f5d8929ecca90e67-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recbu0Ed9jwyB5Y5G",
+      "slug": "pure-souls-2016",
+      "title": "Pure Souls",
+      "description": "",
+      "image": "https://img.youtube.com/vi/sXNI5YDbehk/maxresdefault.jpg",
+      "type": "Music Video",
+      "year": "2016"
+    },
+    {
+      "id": "recd04nWeAvqRXQwL",
+      "slug": "aru-open-day-videos-2024",
+      "title": "Aru: Open Day Videos",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1888786362-69c40eb75a14e0b0ecd40c794ad9d7d6080887559b569dca5fa4ab74c6b21764-d_295x166?region=us",
+      "type": "Uncategorized",
+      "year": "2024"
+    },
+    {
+      "id": "recdMqD8kOcLfYIK5",
+      "slug": "earth-my-love-2017",
+      "title": "Earth, My Love",
+      "description": "Earth and the forces of nature are fighting to survive from human demolition.",
+      "image": "https://i.vimeocdn.com/video/821850973-cdee0c61c9400e9d9ce15e13035ec13a16ca76053c690eed2c95b75359ffb021-d_295x166?region=us",
+      "type": "Music Video",
+      "year": "2017"
+    },
+    {
+      "id": "recdnE3dAcg4aefgi",
+      "slug": "pascalle-video-courses-2023",
+      "title": "Pascalle Video Courses",
+      "description": "",
+      "image": "",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "recfCKTEcmpkSWxsg",
+      "slug": "fraqua-vive-2023",
+      "title": "Fraqua Vive",
+      "description": "I was commissioned to direct a dynamic 15-second TV spot for Fraqua, a water bottle designed by professional boxer Frank Ripley. Despite his young age, Frank developed an innovative solution for boxers -allowing them to ",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/UIXxtueBcnYOWngu69bNPQ/9UKbPdEnh15Ok8QnEHhgPwJlCJmrj5xAoYTx43c1UYybLLj_qQLVXPIsgZBf63Fm5SIXuNPQ3YZ4wDYa1ayv9mPfP6C9rNTK1pqkSfpOYh0YWHNoO31nFbkvA2gapP3uCY7sWzy8nwCNREe0I8vXmkj3cfwidWsOr5rMwvfRv1J5n6VWwf_RGXGC-AcLyicj/o5VFV5fVqjnT_3cimsH7iQoJ9QrWqIQ1N_1XNypG8fE",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recfez0UpZ2DYKOd3",
+      "slug": "losbros-impossible-to-resist-2023",
+      "title": "Losbros Impossible To Resist",
+      "description": "For this ad, I directed a fun, fast-paced film for LosBros, centered around the tagline Impossible to Resist. The concept? Two stranded bikers in the middle of nowhere, trying everything to hitch a ride - only to fail sp",
+      "image": "https://i.vimeocdn.com/video/1633006280-5e2fa6c8cd1e6b72d9610a94edd1a527b04f13c771ded68f36711697391271af-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recg8GIk3yfhudveK",
+      "slug": "cordex-x-polymateria-agritechnica-2023",
+      "title": "Cordex X Polymateria Agritechnica",
+      "description": "",
+      "image": "https://img.youtube.com/vi/nJfyS4zEa3o/maxresdefault.jpg",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "recg9WSEULv8TImuh",
+      "slug": "it-s-a-matter-of-time-2014",
+      "title": "It’s A Matter Of Time",
+      "description": "",
+      "image": "",
+      "type": "Narrative",
+      "year": "2014"
+    },
+    {
+      "id": "recgkaJdMxZRAQ7b4",
+      "slug": "aru-courses-23-edit-2023",
+      "title": "Aru Courses 23 Edit",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1940227306-ef153951e6abc35f41a8c465a5085abffd185bd501c0964936d4cb61518a95c9-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "reclNk7d4VrkyeuIQ",
+      "slug": "rose-2014",
+      "title": "Rose",
+      "description": "A lonely rose gets separated from its tree.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/wn207Tjk9uutr5VX4GiQww/IcQpsRfbQcmoUOBy7x8dG47kyaoh0W5PP4LFwwJcecBexaMIAAW8DUg1Ouz-jUEv5UX8R_2VeCVf3_AsWc2bZUYaLpRb8SWBFoM1EXM59grkljTei-ZPZqXaUhyUwPhsKHMDJBerM7Tdp_MWPa5UfWY4YTIs1esK7rlvLyDXORvI4Gx1QcA43iHFsNpZbUOM/yFuTnz2zQdyX2MZa0lQ1aAp1r_lx3RYkvqXelNCuYwA",
+      "type": "Narrative",
+      "year": "2014"
+    },
+    {
+      "id": "recloUQzk1n5hFU57",
+      "slug": "anglia-ruskin-university-london-2023",
+      "title": "Anglia Ruskin University London",
+      "description": "For Anglia Ruskin University London, we led a large-scale campaign to capture the essence of student life and academic excellence. The project included producing many testimonial videos for individual courses, three hero",
+      "image": "https://i.vimeocdn.com/video/1910066229-12b8a21095b4c180f7f76ccb405df7cdeaef835ab10387d93e655d6ae7572b8c-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recn0dqWz39TpCHNV",
+      "slug": "kim-2017",
+      "title": "Kim",
+      "description": "",
+      "image": "",
+      "type": "Narrative",
+      "year": "2017"
+    },
+    {
+      "id": "recnbep6l8n9nsbXq",
+      "slug": "astathes-2015",
+      "title": "Astathes",
+      "description": "",
+      "image": "",
+      "type": "Narrative",
+      "year": "2015"
+    },
+    {
+      "id": "reco9orD0pc1Afn1g",
+      "slug": "liveloula-2017",
+      "title": "Liveloula",
+      "description": "A brother and a sister struggle in order to find money for their mothers chemotherapy.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/VIYzTqX0GRBi5h-HUcwQVA/QEtt5ZplADH8iFrHmZRpgyoLHvhIxIRnrXKZyvweqQHotj9TNM-hSl23l8T6gviOHAbpfX4HSqByc5dCAvAqJNzF4scIWFWybYmdecXuHIOdlcnyZx-F3Lp6udQmhxcd62OmfIb0hPapPSpZD6KIbFROnnxrZ5BPF3Zz7xym4jlgGLjiX---UH_T8OGG62Ur/NrshFcBY5q3PwVQaUFCYZIr4SHXiSh378uWnIBj9r4g",
+      "type": "Narrative",
+      "year": "2017"
+    },
+    {
+      "id": "recoaqKTgrqmy2gsW",
+      "slug": "daughters-united-2022",
+      "title": "Daughters United",
+      "description": "I was commissioned to direct a docu-style testimonial video for Daughters United, a UK-based charity dedicated to empowering women who have faced marginalization or mistreatment. The film captures the raw and powerful st",
+      "image": "https://i.vimeocdn.com/video/1721384507-cc12e7986e61e0c64d0286ebb22dd65bf0c2403796e490523eab6cc0f4df4aa8-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2022"
+    },
+    {
+      "id": "recpC3ajparAtzTWT",
+      "slug": "let-s-get-ready-to-rumble-energy-2023",
+      "title": "“Let’s Get Ready To Rumble” Energy",
+      "description": "I had the pleasure of creating a commercial for “Let’s Get Ready To Rumble” Energy, a dynamic beverage developed in collaboration with Hall of Fame boxing announcer Michael Buffer. This project was particularly exciting ",
+      "image": "https://i.vimeocdn.com/video/1633007135-fc595deb8fdc6becd9c86082caa195acccf6459adcda612ce1e65649476366e2-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2023"
+    },
+    {
+      "id": "recqKmuvw2HTSqEcA",
+      "slug": "justify-my-night-2017",
+      "title": "Justify My Night",
+      "description": "",
+      "image": "https://img.youtube.com/vi/5oyvbsD7Uk8/maxresdefault.jpg",
+      "type": "Music Video",
+      "year": "2017"
+    },
+    {
+      "id": "recrN5Q2SUgDfQDSG",
+      "slug": "neigbourly-2024",
+      "title": "Neigbourly",
+      "description": "",
+      "image": "",
+      "type": "Commercial",
+      "year": "2024"
+    },
+    {
+      "id": "recryV8jTtQDWLB9B",
+      "slug": "squid-campaign-2025-2025",
+      "title": "Squid Campaign 2025",
+      "description": "After a successful collaboration with SQUID the year before, I was commissioned to lead their 2025 crowdfunding campaign. We traveled to Dublin to capture the story behind SQUID, meeting with the founders and crafting a ",
+      "image": "https://i.vimeocdn.com/video/1984887183-fa809f85880f91a7c01567d52d49894ee0d817965ff414f48212c6c21baec124-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2025"
+    },
+    {
+      "id": "rectMqCkoDwqS9qks",
+      "slug": "easol-podcast-01-2023",
+      "title": "Easol: Podcast 01",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1940057707-2eaef655d99a8c0a93a1802d785df738ff31ffe00e99ab4c4eee35fd2e87df21-d_200x150?region=us",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "recuJ26waUmWS1gX5",
+      "slug": "the-dyas-juna-2022",
+      "title": "The Dyas Juna",
+      "description": "I was commissioned to create a promotional video for Dyas, a London-based fashion brand that collaborates with artists for each of their clothing lines. This project focused on Juna, a talented collage artist, exploring ",
+      "image": "https://i.vimeocdn.com/video/1494978512-97c01ccacc6ce5e10a7d1603408f90d59d1a4f87cd3df97feba2bdfaa2e9f2b3-d_295x166?region=us",
+      "type": "Commercial",
+      "year": "2022"
+    },
+    {
+      "id": "recvC2kbUF9Dh5h6f",
+      "slug": "talon-pipesnug-fluesnug-2025",
+      "title": "Talon: Pipesnug & Fluesnug",
+      "description": "For this animated project, Talon challenged me to create a unique and engaging way to showcase their Pipe Snug and Flue Snug sealing products. Instead of a conventional demonstration, I developed a game-inspired adventur",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/iDnLI0togmFZAKoudiYBBw/jZn3Q6Oucz5E23o2X5FHRJ0iV5uOdPwKUcChJ37RNgpBLXNBalsCU32bjQDdti8qUyXSLuWwgh-C9rJ4yKzTuJhFw5cbvSOhJ9jvVvpRGjSyRAQsG7msERTYjc-oHnOSHIuOLpo9UgZE6iyre1nUMXVcbciBpLjZgaMXTuEH2r2MDJ1AUAU-tmxuNMJvQ1Qb/RDuauIL1Gt2Ph0lVw3opRK_1-csWW-f6i-Bj-Xv290s",
+      "type": "Commercial",
+      "year": "2025"
+    },
+    {
+      "id": "recwmX7kG05YjKDPm",
+      "slug": "before-the-rooster-crows-2020",
+      "title": "Before The Rooster Crows",
+      "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/F2Bo3WotKwOOalLNAEZ2qg/HAK5nNwUZDK8og6l8l0y0LtEv5WLiChkLznVgGwwJg-doXLyZZs5ElqmNFT9mrLPyJR5894B1Z0MwTYA7rSJHTrg7B_0oOkJjVqbjHM-mZatPX2QmzUSNO-M3-BM65n4QHG0bNOpWRs6yv9S-jHsqtoCyW8wZzq8plUtePBvWfeb4ujhWmwlZH5uVkvqnsL1/fHapqHJI5Junn9w2DI5wBBE5DoyAwKBornB0FrrbGTw",
+      "type": "Narrative",
+      "year": "2020"
+    },
+    {
+      "id": "recxSNlQVhqiz1ftt",
+      "slug": "brand-storytelling-event-2023",
+      "title": "Brand Storytelling Event",
+      "description": "",
+      "image": "https://i.vimeocdn.com/video/1761190324-a7fca645b3e56ea2603566fce521361e0d54073f6c797cc127e6b3dced8db8f4-d_295x166?region=us",
+      "type": "Uncategorized",
+      "year": "2023"
+    },
+    {
+      "id": "recyk2RUZUY2LRoYy",
+      "slug": "the-big-thirst-2016",
+      "title": "The Big Thirst",
+      "description": "Young Odysseus discovers that something is going terribly wrong when he decides to visit his father's village for the first time.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/xiByy6C4OIk9daeBxJuieQ/G0mMm1GVBB2u_AkvLhm6xxpljl3DY7beyFI6AKW9LL7dOFtuwy-3k71ralj1VIcK34D4myXMQTdoTrPLpQCAArVH-5G3egBtCckuHyQ7xi1jdjJ_tjSG7zYwqhmL2eELaU_djozg_yjLGCjwPeGzKxPLuBMBUJdRrr54ChJe29F-3DFzfsH1hM7WaAdTSlCb/BZbxp-uJQ2mUQ2dDfBR7rn9gx3fx0xeUI7Nt9QVPKy4",
+      "type": "Narrative",
+      "year": "2016"
+    }
+  ],
+  "posts": [
+    {
+      "id": "recDXQQWqEqLnstIx",
+      "slug": "world-premiere-at-raindance-film-festival-2025-11-24",
+      "title": "World Premiere at Raindance Film Festival",
+      "description": "I’m proud to announce that my latest short film, **The Newspaper**, had it’s **world premiere** at the **Raindance Film Festival** in London, screening at **Piccadilly Vue**. **[The Newspaper](https://gabriel-athanasiou.",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/BO6JxmRb_LKz1m5j8PSJCw/xbi7LqD3VBmy2992EJPIuzwd6oyIGXNT4jOKXM0Kxp8AXYS0svMRLWg8pQFbSX9kU0OaYiKXBmHTXrgC6NqJXtEh_OqsRq_p21jPAzKYjufleWX6BS5tOAwA9WP42Cmd2INexYWeFegnwOObTq65DA/CzuoeyjUi9UTaZk6HYNy53kFcUxz8e2rt_aTtBfX5Go",
+      "type": "article",
+      "date": "2025-11-24"
+    }
+  ],
+  "config": {
+    "defaultOgImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764208800000/Jjp8ofe1JmGXSx6BuuKAcA/Pv0OenQfxxnrqFvpknlpLmy7a58HMDh74tHdI-h_o1TUchlj8sErjerU4rmEJdp93zArUz3R0jkF5iP6ecisL7AT9_fc2D5vm-bAmAoRujLABwyzLMQvt_dkuFMfH_qzZ1sBYmZXSW9iU3qvM8Qu2KoE1A6h4mI8HUVTNlgWzSFI6fZGb4E_u5QorcmC6yOF/iWXdPV4gRmuE0mRfalXdCT6L3JJFjDlpyc78_2F0soc"
+  }
+}

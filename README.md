@@ -1,6 +1,6 @@
 # Gabriel Athanasiou Portfolio
 
-High-performance React portfolio website with Airtable CMS, optimized images, and Google Analytics 4.
+Production-ready React portfolio website with Airtable CMS, optimized images, and Google Analytics 4.
 
 ## 🚀 Quick Start
 
@@ -12,28 +12,13 @@ npm install
 npm run dev
 ```
 
-## 📚 Documentation
-
-**→ [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation for developers and AI agents
-
-This guide includes:
-- Architecture overview
-- Tech stack details  
-- **Shared utilities system** (video, text, slug helpers)
-- **Image system**: build-time optimization + `OptimizedImage` component for rendering
-- Data flow and CMS integration
-- Development workflow
-- Deployment process
-- Troubleshooting
-- Common tasks
-
 ## 🔧 Development
 
 ```bash
-npm run dev              # Start dev server (localhost:3000)
-npm run build            # Production build
+npm run dev              # Start dev server
+npm run build            # Production build with image optimization
 npm run preview          # Preview production build
-npm run optimize:images  # Optimize images from Airtable
+npm run optimize:images  # Manually optimize images from Airtable
 npm run test:images      # Test Airtable image URLs
 ```
 
@@ -43,15 +28,15 @@ Create `.env.local`:
 ```bash
 VITE_AIRTABLE_TOKEN=keyXXXXXXXXXXXXXX
 VITE_AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
 ```
 
-## 📖 Additional Documentation
+## 📖 Documentation
 
-- [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) - **Complete technical documentation**
-- [REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md) - Recent code refactoring (Nov 2025)
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
-- [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization + `OptimizedImage` usage
+- [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
 - [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup
+- [docs/SEO_GUIDE.md](./docs/SEO_GUIDE.md) - SEO configuration
 - [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) - Environment configuration
 
 ## 🏗️ Tech Stack
