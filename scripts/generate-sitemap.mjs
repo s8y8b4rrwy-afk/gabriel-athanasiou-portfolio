@@ -59,7 +59,7 @@ async function generateSitemap() {
     const projectRecords = await fetchAirtableTable('Projects', 'Release Date');
     const journalRecords = await fetchAirtableTable('Journal', 'Date');
     
-    const baseUrl = 'https://gabrielathanasiou.com';
+    const baseUrl = 'https://directedbygabriel.com';
     const currentDate = new Date().toISOString().split('T')[0];
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -124,7 +124,7 @@ async function generateSitemap() {
 }
 
 function generateMinimalSitemap() {
-  const baseUrl = 'https://gabrielathanasiou.com';
+  const baseUrl = 'https://directedbygabriel.com';
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gabrielathanasiou.com/</loc>
+    <loc>https://directedbygabriel.com/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://gabrielathanasiou.com/work</loc>
+    <loc>https://directedbygabriel.com/work</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gabrielathanasiou.com/journal</loc>
+    <loc>https://directedbygabriel.com/journal</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gabrielathanasiou.com/about</loc>
+    <loc>https://directedbygabriel.com/about</loc>
     <priority>0.7</priority>
   </url>
 </urlset>
