@@ -8,6 +8,7 @@ import { parseMarkdown } from '../../utils/markdown';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface BlogPostViewProps { 
     allPosts: BlogPost[]; 
@@ -54,7 +55,14 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-black/40 z-10"></div>
-                {post.imageUrl && <img src={post.imageUrl} className="w-full h-full object-cover animate-reveal will-change-transform" alt={post.title} />}
+                {post.imageUrl && (
+                    <img 
+                        src={getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0)}
+                        onError={(e) => { e.currentTarget.src = post.imageUrl; }}
+                        className="w-full h-full object-cover animate-reveal will-change-transform" 
+                        alt={post.title} 
+                    />
+                )}
                 <div className={`absolute bottom-12 left-6 md:left-12 z-20 max-w-4xl mix-blend-difference text-white`}>
                      <div className={`flex gap-4 ${THEME.typography.meta} mb-6 opacity-80`}>
                          <span>{post.date}</span>
@@ -115,7 +123,12 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                             className="group cursor-pointer flex gap-6 items-center"
                         >
                             <div className="w-24 h-16 bg-gray-900 overflow-hidden shrink-0">
-                                <img src={relatedProject.heroImage} loading="lazy" className={`w-full h-full object-cover group-hover:scale-[1.05] transition ${THEME.animation.medium} ${THEME.animation.ease}`} />
+                                <img 
+                                    src={getOptimizedImageUrl(relatedProject.id, relatedProject.heroImage, 'project', 0)}
+                                    onError={(e) => { e.currentTarget.src = relatedProject.heroImage; }}
+                                    loading="lazy" 
+                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition ${THEME.animation.medium} ${THEME.animation.ease}`} 
+                                />
                             </div>
                             <div>
                                 <h3 className={`${THEME.typography.h3} text-white group-hover:text-white/70 transition mix-blend-difference`}>{relatedProject.title}</h3>

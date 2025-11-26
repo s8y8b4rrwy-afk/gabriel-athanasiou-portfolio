@@ -609,27 +609,42 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
 const fetchJournal = async (): Promise<BlogPost[]> => {
     try {
         const records = await fetchAirtableTable('Journal', 'Date');
-        return records.map((record: any) => {
-            const f = record.fields;
-            const linkedProjectId = f['Related Project']?.[0] || f['Projects']?.[0] || null;
-            
-            // Parse Links
-            const rawLinks = f['Links'] || f['External Links']; // tolerant check for new column
-            const relatedLinks = rawLinks ? rawLinks.split(',').map((s:string) => s.trim()).filter((s:string) => s.length > 0) : [];
+        const now = new Date();
+        
+        return records
+            .filter((record: any) => {
+                const f = record.fields;
+                const status = f['Status'] || 'Draft'; // Default to Draft if no status
+                
+                // Only show Public posts, or Scheduled posts that have reached their date
+                if (status === 'Public') return true;
+                if (status === 'Scheduled' && f['Date']) {
+                    const postDate = new Date(f['Date']);
+                    return postDate <= now;
+                }
+                return false; // Hide Draft and future Scheduled posts
+            })
+            .map((record: any) => {
+                const f = record.fields;
+                const linkedProjectId = f['Related Project']?.[0] || f['Projects']?.[0] || null;
+                
+                // Parse Links
+                const rawLinks = f['Links'] || f['External Links']; // tolerant check for new column
+                const relatedLinks = rawLinks ? rawLinks.split(',').map((s:string) => s.trim()).filter((s:string) => s.length > 0) : [];
 
-            return {
-                id: record.id,
-                title: f['Title'] || 'Untitled',
-                date: f['Date'] || '',
-                tags: f['Tags'] || [],
-                content: f['Content'] || '',
-                readingTime: calculateReadingTime(f['Content'] || ''),
-                imageUrl: f['Cover Image']?.[0]?.url || '',
-                relatedProjectId: linkedProjectId,
-                source: 'local',
-                relatedLinks: relatedLinks
-            } as BlogPost;
-        });
+                return {
+                    id: record.id,
+                    title: f['Title'] || 'Untitled',
+                    date: f['Date'] || '',
+                    tags: f['Tags'] || [],
+                    content: f['Content'] || '',
+                    readingTime: calculateReadingTime(f['Content'] || ''),
+                    imageUrl: f['Cover Image']?.[0]?.url || '',
+                    relatedProjectId: linkedProjectId,
+                    source: 'local',
+                    relatedLinks: relatedLinks
+                } as BlogPost;
+            });
     } catch (e) { return []; }
 };
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface IndexViewProps { 
     projects: Project[]; 
@@ -109,7 +110,13 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     <div className={`${cols.image} text-text-muted text-[11px] font-mono flex items-center text-white`}>
                                         {showCols.showThumbnailMobile && (
                                             <div className="md:hidden w-12 h-8 bg-gray-800 overflow-hidden shrink-0 mr-3">
-                                                <img src={p.heroImage} className="w-full h-full object-cover" alt="Thumbnail" loading="lazy" />
+                                                <img 
+                                                    src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                                    onError={(e) => { e.currentTarget.src = p.heroImage; }}
+                                                    className="w-full h-full object-cover" 
+                                                    alt="Thumbnail" 
+                                                    loading="lazy" 
+                                                />
                                             </div>
                                         )}
                                         {showCols.showYear && (
@@ -167,7 +174,8 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                             >
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
                                     <img 
-                                        src={p.heroImage} 
+                                        src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                        onError={(e) => { e.currentTarget.src = p.heroImage; }}
                                         alt={p.title} 
                                         loading="lazy"
                                         className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 

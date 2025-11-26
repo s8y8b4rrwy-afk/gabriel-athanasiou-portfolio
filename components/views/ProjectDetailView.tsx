@@ -9,6 +9,7 @@ import { SocialShare } from '../SocialShare';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface ProjectDetailViewProps { 
     allProjects: Project[];
@@ -60,7 +61,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     };
     
     const isLowRes = !project.gallery || project.gallery.length === 0;
-    const slides = project.gallery && project.gallery.length > 0 ? project.gallery : [project.heroImage];
+    
+    // Get optimized image URLs for slideshow
+    const rawSlides = project.gallery && project.gallery.length > 0 ? project.gallery : [project.heroImage];
+    const totalImages = rawSlides.length;
+    const slides = rawSlides.map((url, index) => ({
+        original: url,
+        optimized: getOptimizedImageUrl(project.id, url, 'project', index, totalImages)
+    }));
 
     useEffect(() => { 
         setIsPlaying(false);
@@ -153,13 +161,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
                 
                 {/* Slideshow */}
-                {slides.map((src, index) => (
+                {slides.map((slide, index) => (
                     <div 
                         key={index}
                         className={`absolute inset-0 transition-opacity ${THEME.animation.superSlow} ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
                     >
                          <img 
-                            src={src} 
+                            src={slide.optimized}
+                            onError={(e) => { e.currentTarget.src = slide.original; }}
                             className={`w-full h-full object-cover ease-linear will-change-transform
                                 ${isLowRes 
                                     ? 'animate-slow-spin blur-[60px] md:blur-[60px] opacity-100 saturate-[2.0] brightness-325 contrast-125' 
@@ -330,16 +339,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         </div>
                     ))}
 
-                    {project.gallery && project.gallery.map((img, i) => (
-                        <div key={i} className="w-full overflow-hidden">
-                            <img 
-                                src={img} 
-                                loading="lazy"
-                                className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
-                                alt="Gallery" 
-                            />
-                        </div>
-                    ))}
+                    {project.gallery && project.gallery.map((img, i) => {
+                        const optimizedUrl = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length);
+                        return (
+                            <div key={i} className="w-full overflow-hidden">
+                                <img 
+                                    src={optimizedUrl}
+                                    onError={(e) => { e.currentTarget.src = img; }}
+                                    loading="lazy"
+                                    className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
+                                    alt="Gallery" 
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -363,7 +376,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     ></div>
                     
                     <img 
-                        src={nextProject.heroImage} 
+                        src={getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)}
+                        onError={(e) => { e.currentTarget.src = nextProject.heroImage; }}
                         className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`} 
                     />
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 mix-blend-difference text-white">

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { THEME } from '../../theme';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface HomeViewProps { 
     projects: Project[]; 
@@ -46,7 +47,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         <div className={`absolute inset-0 bg-black z-10 group-hover:opacity-0 transition ${THEME.animation.medium}`} style={{ opacity: THEME.hero.overlayOpacity }}></div>
                         
                         <img 
-                            src={heroProject.heroImage} 
+                            src={getOptimizedImageUrl(heroProject.id, heroProject.heroImage, 'project', 0)}
+                            onError={(e) => { e.currentTarget.src = heroProject.heroImage; }}
                             alt={heroProject.title}
                             className={`w-full h-full object-cover transform scale-[1.01] group-hover:scale-[1.03] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`}
                         />
@@ -77,7 +79,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         >
                             <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-6 relative`}>
                                 <img 
-                                    src={p.heroImage} 
+                                    src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                    onError={(e) => { e.currentTarget.src = p.heroImage; }}
                                     alt={p.title}
                                     loading="lazy"
                                     className={`w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
@@ -103,7 +106,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             className={`group cursor-pointer grid grid-cols-1 ${THEME.blog.grid.columns} ${THEME.blog.grid.gap} items-center`}
                         >
                             <div className="aspect-[3/2] overflow-hidden bg-gray-900">
-                                {featuredPost.imageUrl && <img src={featuredPost.imageUrl} loading="lazy" className={`w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease}`} />}
+                                {featuredPost.imageUrl && (
+                                    <img 
+                                        src={getOptimizedImageUrl(featuredPost.id, featuredPost.imageUrl, 'journal', 0)}
+                                        onError={(e) => { e.currentTarget.src = featuredPost.imageUrl; }}
+                                        loading="lazy" 
+                                        className={`w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease}`} 
+                                    />
+                                )}
                             </div>
                             <div>
                                 <div className={`flex gap-4 ${THEME.typography.meta} text-text-muted mb-6 mix-blend-difference text-white`}>

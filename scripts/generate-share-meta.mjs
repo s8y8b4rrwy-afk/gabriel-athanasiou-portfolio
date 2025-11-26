@@ -130,23 +130,30 @@ async function buildProjects() {
 
 async function buildPosts() {
   const records = await fetchAirtableTable('Journal', 'Date');
+  const now = new Date();
   const items = [];
+  
   for (const r of records) {
     const f = r.fields || {};
-    const title = f['Title'] || 'Untitled';
-    const date = f['Date'] || '';
-    const description = (f['Content'] || '').toString().replace(/\s+/g, ' ').trim();
-    const image = (f['Cover Image'] && f['Cover Image'][0] && f['Cover Image'][0].url) || '';
-    const baseSlug = makeSlug(title + (date ? '-' + date.substring(0, 10) : ''));
-    items.push({
-      id: r.id,
-      slug: baseSlug,
-      title: title,
-      description: description.slice(0, 220),
-      image,
-      type: 'article',
-      date
-    });
+    const status = f['Status'] || 'Draft'; // Default to Draft if no status
+    
+    // Only include Public posts, or Scheduled posts that have reached their date
+    if (status === 'Public' || (status === 'Scheduled' && f['Date'] && new Date(f['Date']) <= now)) {
+      const title = f['Title'] || 'Untitled';
+      const date = f['Date'] || '';
+      const description = (f['Content'] || '').toString().replace(/\s+/g, ' ').trim();
+      const image = (f['Cover Image'] && f['Cover Image'][0] && f['Cover Image'][0].url) || '';
+      const baseSlug = makeSlug(title + (date ? '-' + date.substring(0, 10) : ''));
+      items.push({
+        id: r.id,
+        slug: baseSlug,
+        title: title,
+        description: description.slice(0, 220),
+        image,
+        type: 'article',
+        date
+      });
+    }
   }
   return items;
 }
@@ -172,10 +179,11 @@ async function main() {
     const json = JSON.stringify(manifest, null, 2);
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.writeFileSync(OUTPUT_JSON, json, 'utf8');
+    // Hash featured projects + public/scheduled posts for deployment trigger
     const hash = createHash('sha256').update(JSON.stringify(manifest.projects) + JSON.stringify(manifest.posts)).digest('hex');
     fs.writeFileSync(OUTPUT_HASH, hash, 'utf8');
-    console.log(`[share-meta] Wrote manifest with ${projects.length} projects and ${posts.length} posts.`);
-    console.log(`[share-meta] Hash: ${hash}`);
+    console.log(`[share-meta] Wrote manifest with ${projects.length} featured projects and ${posts.length} public posts.`);
+    console.log(`[share-meta] Hash: ${hash} (featured projects + public journal entries)`);
   } catch (e) {
     console.error('[share-meta] Generation failed:', e);
     process.exit(1);
