@@ -123,29 +123,30 @@ To change filters, edit the Airtable `select()` calls in `optimize-images.mjs`.
 
 ## Components Updated
 
-All image-displaying components now use optimized images:
+All image-displaying components now use the unified **OptimizedImage** component:
 
-- ✅ `HomeView.tsx` - Hero, grid, featured journal
-- ✅ `IndexView.tsx` - List and grid thumbnails
-- ✅ `ProjectDetailView.tsx` - Hero slideshow, gallery, next project
-- ✅ `BlogView.tsx` - Journal entry covers
-- ✅ `BlogPostView.tsx` - Post hero, related project thumbnail
+- ✅ `HomeView.tsx` — Hero, grid, featured journal
+- ✅ `IndexView.tsx` — List and grid thumbnails
+- ✅ `BlogView.tsx` — Journal entry covers
+- ✅ `BlogPostView.tsx` — Post hero, related project thumbnail
+- ⚠️ `ProjectDetailView.tsx` — Slideshow retains absolute-positioned `<img>` for now; consider an absolute-friendly `OptimizedImage` variant
 
 ## Fallback Behavior
 
-If an optimized image doesn't exist:
+Use `OptimizedImage` for built-in fallback and loading animation:
 
 ```tsx
-<img 
-  src={getOptimizedImageUrl(recordId, fallbackUrl, 'project', 0)}
-  onError={(e) => { e.currentTarget.src = fallbackUrl; }}
-/>
+<OptimizedImage
+  recordId={recordId}
+  fallbackUrl={fallbackUrl}
+  type="project"
+  alt={title}
+  className="w-full h-full object-cover"
+  loading="lazy"
+/> 
 ```
 
-The `onError` handler ensures images always display, even if:
-- Image hasn't been optimized yet
-- Optimization script failed
-- New content added after last deploy
+Fallback automatically switches to the Airtable URL if the local WebP is missing or fails. Users never see broken image icons; a shimmer placeholder displays until the image loads.
 
 ## Git Ignore
 
@@ -156,7 +157,7 @@ Optimized images are **NOT committed to Git**:
 public/images/portfolio/
 ```
 
-This keeps your repository clean and ensures images are always fresh.
+This keeps your repository clean and ensures images are always fresh. Images are generated at build time and shipped within `dist/images/portfolio/`.
 
 ## Netlify Deployment
 

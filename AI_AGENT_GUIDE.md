@@ -425,25 +425,35 @@ analyticsService.trackVideoPlay(project.id, project.title);
   - Removes WebP files for deleted projects/posts
   - Prevents storage waste from old content
 
-#### B. Runtime Helper (`utils/imageOptimization.ts`)
-```typescript
-getOptimizedImageUrl(recordId, fallbackUrl, type, index, totalImages)
+#### B. Runtime Components (`components/common/OptimizedImage.tsx`)
+```tsx
+<OptimizedImage
+  recordId={record.id}
+  fallbackUrl={record.heroImage}
+  type="project" // or "journal"
+  index={0}
+  totalImages={1}
+  alt={record.title}
+  className="w-full h-full object-cover"
+  loading="lazy"
+/> 
 ```
-- Returns optimized local WebP path if available (`/images/portfolio/{type}-{recordId}.webp`)
-- Falls back to Airtable CDN URL if optimized version doesn't exist
-- Used in **all view components** for image rendering (display + social meta tags)
-- **Usage locations:**
-  - `HomeView.tsx` - Hero project, featured grid, journal posts
-  - `IndexView.tsx` - Filmography thumbnails, hover preview cursor
-  - `ProjectDetailView.tsx` - Gallery slideshow, SEO meta tags, next project preview
-  - `BlogView.tsx` - Journal post covers
-  - `BlogPostView.tsx` - Cover images, SEO meta tags, related projects
-  - `Cursor.tsx` - Hover preview thumbnails with fallback support
+- Standardized image component for all views
+- Serves optimized local WebP (`/images/portfolio/{type}-{recordId}.webp`)
+- Automatic shimmer loading + fade-in (no broken icon during lazy load)
+- Automatic fallback to Airtable URL on error
+- Minimizes boilerplate and keeps UX consistent
 
-**Fallback Mechanism:**
-- Every `<img>` tag includes an `onError` handler that switches to the Airtable URL if the optimized WebP fails
-- Browser only downloads Airtable image if local WebP is missing or fails to load
-- Ensures zero downtime even if optimization hasn't run yet
+**Usage locations (required):**
+- `HomeView.tsx` — Hero, featured grid, featured journal
+- `IndexView.tsx` — Filmography thumbnails (list + grid)
+- `BlogView.tsx` — Journal listing covers
+- `BlogPostView.tsx` — Post hero + related project thumbnail
+
+**Special cases (keep helper functions):**
+- `SEO.tsx` — Keep using `getOptimizedImageUrl()` for meta image URLs
+- `ProjectDetailView.tsx` — Slideshow uses absolute positioning; retain current approach or wrap with an absolute-friendly variant of `OptimizedImage`
+- `Cursor.tsx` — Hover preview uses dynamic state; keep existing logic or adapt later
 
 #### C. Manual Verification (`scripts/test-image-fetch.mjs`)
 ```bash
