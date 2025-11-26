@@ -49,7 +49,7 @@ export const SocialShare: React.FC<SocialShareProps> = ({
     href?: string;
     onClick?: () => void;
   }) => {
-    const baseClasses = "flex items-center gap-2 text-white hover:opacity-60 transition duration-300 cursor-pointer whitespace-nowrap";
+    const baseClasses = "flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-300 cursor-pointer whitespace-nowrap";
 
     const handleClick = () => {
       if (label === 'Twitter') {

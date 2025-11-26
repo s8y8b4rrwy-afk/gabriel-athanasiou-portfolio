@@ -127,12 +127,12 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                                     src={getOptimizedImageUrl(relatedProject.id, relatedProject.heroImage, 'project', 0)}
                                     onError={(e) => { e.currentTarget.src = relatedProject.heroImage; }}
                                     loading="lazy" 
-                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition ${THEME.animation.medium} ${THEME.animation.ease}`} 
+                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`} 
                                 />
                             </div>
                             <div>
-                                <h3 className={`${THEME.typography.h3} text-white group-hover:text-white/70 transition mix-blend-difference`}>{relatedProject.title}</h3>
-                                <span className={`${THEME.typography.meta} text-gray-500 group-hover:text-white transition`}>View Project &rarr;</span>
+                                <h3 className={`${THEME.typography.h3} text-white transition-colors ${THEME.animation.fast}`}>{relatedProject.title}</h3>
+                                <span className={`${THEME.typography.meta} text-gray-500 group-hover:text-white transition-colors ${THEME.animation.fast}`}>View Project &rarr;</span>
                             </div>
                         </div>
                     </div>
