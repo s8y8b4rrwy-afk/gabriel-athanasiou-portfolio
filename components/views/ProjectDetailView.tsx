@@ -432,7 +432,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                     onError={(e) => { e.currentTarget.src = img; }}
                                     loading="lazy"
                                     className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
-                                    alt="Gallery" 
+                                    alt={`${project.title} - Behind the scenes image ${i + 1}`} 
                                 />
                             </div>
                         );
