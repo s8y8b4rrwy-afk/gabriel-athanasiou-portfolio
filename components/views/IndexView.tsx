@@ -51,7 +51,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     const showCols = THEME.filmography.list;
 
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} animate-view-enter min-h-screen`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen`}>
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-center mb-20 gap-8">
                     {/* Category Filter */}
@@ -114,7 +114,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     onClick={() => navigate(`/work/${p.slug || p.id}`)}
                                     onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
                                     onMouseLeave={() => onHover({ url: null, fallback: null })}
-                                    className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0 animate-fade-in-up opacity-0`}
+                                    className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0`}
                                     style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'forwards' }}
                                 >
                                     {/* Mobile Thumbnail / Desktop Year */}
@@ -195,7 +195,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                             <div 
                                 key={p.id} 
                                 onClick={() => navigate(`/work/${p.slug || p.id}`)}
-                                className="group cursor-pointer flex flex-col animate-fade-in-up opacity-0"
+                                className="group cursor-pointer flex flex-col"
                                 style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
                             >
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>

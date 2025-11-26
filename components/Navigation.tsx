@@ -2,6 +2,7 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { THEME } from '../theme';
+import { clearScrollPosition } from '../utils/scrollRestoration';
 
 interface NavigationProps {
   showLinks?: boolean;
@@ -11,6 +12,13 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
   
   const getBtnClass = (isActive: boolean) => {
     return `${THEME.typography.nav} cursor-pointer ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity ${THEME.animation.fast}`;
+  };
+
+  const handleNavClick = (path: string) => {
+    // Clear saved scroll position for this page when navigating via menu
+    clearScrollPosition(path);
+    // Scroll to top immediately
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -24,16 +32,16 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
         
         {showLinks && (
             <div className="flex gap-8">
-                <NavLink to="/" className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/" onClick={() => handleNavClick('/')} className={({ isActive }) => getBtnClass(isActive)}>
                     Featured
                 </NavLink>
-                <NavLink to="/work" className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/work" onClick={() => handleNavClick('/work')} className={({ isActive }) => getBtnClass(isActive)}>
                     Filmography
                 </NavLink>
-                <NavLink to="/journal" className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/journal" onClick={() => handleNavClick('/journal')} className={({ isActive }) => getBtnClass(isActive)}>
                     Journal
                 </NavLink>
-                <NavLink to="/about" className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/about" onClick={() => handleNavClick('/about')} className={({ isActive }) => getBtnClass(isActive)}>
                     About
                 </NavLink>
             </div>

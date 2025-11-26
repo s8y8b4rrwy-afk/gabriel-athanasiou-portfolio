@@ -110,7 +110,7 @@ export const GlobalStyles: React.FC = () => {
       
       /* Page Transition Animations */
       .page-transition-wrapper {
-        transition: opacity 0.6s ease-out;
+        transition: opacity 2.4s ease-out;
       }
       
       .page-hidden {
@@ -123,7 +123,7 @@ export const GlobalStyles: React.FC = () => {
       
       /* Staggered fade-in for child elements */
       .page-visible > * {
-        animation: staggerFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: staggerFadeIn 3.2s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
       
       .page-visible > *:nth-child(1) { animation-delay: 0.1s; }
@@ -146,11 +146,11 @@ export const GlobalStyles: React.FC = () => {
       
       /* Enhanced hero section animations */
       .page-visible .hero-section {
-        animation: heroFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        animation: heroFadeIn 4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
       }
       
       .page-visible .hero-content > * {
-        animation: heroTextFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: heroTextFadeIn 3.2s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
       
       .page-visible .hero-content > *:nth-child(1) { animation-delay: 0.3s; }
@@ -177,7 +177,7 @@ export const GlobalStyles: React.FC = () => {
       
       /* Grid item stagger animations */
       .page-visible .grid-item {
-        animation: gridItemFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: gridItemFadeIn 2.8s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
       
       @keyframes gridItemFadeIn {

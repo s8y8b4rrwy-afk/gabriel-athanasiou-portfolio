@@ -189,7 +189,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const visibleCredits = creditsExpanded ? project.credits : project.credits.slice(0, THEME.projectDetail.credits.initialVisibleCount);
 
     return (
-        <div className="bg-bg-main animate-view-enter pb-0">
+        <div className="bg-bg-main pb-0">
             <SEO 
                 title={project.title} 
                 description={project.description} 

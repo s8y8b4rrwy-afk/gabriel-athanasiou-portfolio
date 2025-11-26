@@ -36,7 +36,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     const displayPosts = filter === "All" ? posts : posts.filter(p => p.tags.includes(filter));
 
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} animate-view-enter min-h-screen`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen`}>
             <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-24">
                      <h1 className={`${THEME.typography.h1} mb-8 mix-blend-difference text-white`}>Journal</h1>
@@ -58,7 +58,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                         <article 
                             key={post.id} 
                             onClick={() => navigate(`/journal/${post.slug || post.id}`)}
-                            className="group cursor-pointer border-b border-white/10 pb-16 animate-fade-in-up"
+                            className="group cursor-pointer border-b border-white/10 pb-16"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
                              <div className="flex flex-col md:flex-row gap-12 items-start">

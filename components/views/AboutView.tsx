@@ -9,7 +9,7 @@ interface AboutViewProps {
 
 export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} animate-view-enter min-h-screen flex flex-col justify-between`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between`}>
             {/* Scroll Top on Mount */}
             <span className="hidden" ref={() => window.scrollTo(0,0)}></span>
             

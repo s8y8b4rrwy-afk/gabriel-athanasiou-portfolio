@@ -33,7 +33,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     const featuredPost = posts[0];
 
     return (
-        <section className="animate-view-enter w-full">
+        <section className="w-full">
             {/* HERO SECTION */}
             <div className={`relative w-full h-[70vh] md:h-[80vh] lg:${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
                 {showShowreel ? (
@@ -85,7 +85,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         <div 
                             key={p.id} 
                             onClick={() => navigate(`/work/${p.slug || p.id}`)}
-                            className="group block cursor-pointer animate-fade-in-up"
+                            className="group block cursor-pointer"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
                             <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-6 relative`}>

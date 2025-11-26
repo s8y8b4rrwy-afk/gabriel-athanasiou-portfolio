@@ -9,6 +9,7 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
+import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
 // Lazy load view components for code splitting
 const HomeView = lazy(() => import('./components/views/HomeView').then(m => ({ default: m.HomeView })));
@@ -57,10 +58,20 @@ export default function App() {
     init();
   }, []);
 
-  // Scroll to top on route change and track page view
+  // Smart scroll restoration on route change
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Save scroll position before navigating away
+    return () => {
+      saveScrollPosition(location.pathname);
+    };
+  }, [location.pathname]);
+
+  // Restore scroll position and track page view
+  useEffect(() => {
     setHoveredImage({ url: null, fallback: null });
+    
+    // Restore scroll position intelligently
+    restoreScrollPosition(location.pathname);
     
     // Track page view for analytics
     const pageTitle = getPageTitle(location.pathname);

@@ -24,12 +24,10 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     // Reset animation state on any route change (including back/forward navigation)
     setIsVisible(false);
     
-    // Trigger animation after a brief delay to ensure smooth transitions
-    const timer = setTimeout(() => {
+    // Trigger animation immediately - no delay needed
+    requestAnimationFrame(() => {
       setIsVisible(true);
-    }, 50);
-
-    return () => clearTimeout(timer);
+    });
   }, [location.pathname, location.key]); // location.key changes on every navigation including back/forward
 
   return (
