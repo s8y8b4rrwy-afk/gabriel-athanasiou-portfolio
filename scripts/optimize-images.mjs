@@ -183,9 +183,45 @@ const main = async () => {
     }
     
     // ==========================================
-    // 3. Process New Images
+    // 3. Build Set of Valid Image IDs from Airtable
     // ==========================================
-    console.log(`\n🔄 Processing images...\n`);
+    const validImageIds = new Set();
+    for (const [recordId, { type, urls }] of imagesToProcess) {
+      for (let i = 0; i < urls.length; i++) {
+        const imageId = `${type}-${recordId}${urls.length > 1 ? `-${i}` : ''}`;
+        validImageIds.add(imageId);
+      }
+    }
+    
+    // ==========================================
+    // 4. Clean Up Orphaned Images
+    // ==========================================
+    console.log(`🧹 Checking for orphaned images...\n`);
+    
+    let deletedCount = 0;
+    for (const existingImageId of existingImages) {
+      if (!validImageIds.has(existingImageId)) {
+        const filePath = path.join(OUTPUT_DIR, `${existingImageId}.webp`);
+        try {
+          fs.unlinkSync(filePath);
+          deletedCount++;
+          console.log(`  🗑️  Deleted orphaned: ${existingImageId}.webp`);
+        } catch (error) {
+          console.warn(`  ⚠️  Failed to delete: ${existingImageId}.webp`);
+        }
+      }
+    }
+    
+    if (deletedCount > 0) {
+      console.log(`\n✓ Cleaned up ${deletedCount} orphaned image${deletedCount > 1 ? 's' : ''}\n`);
+    } else {
+      console.log(`✓ No orphaned images found\n`);
+    }
+    
+    // ==========================================
+    // 5. Process New Images
+    // ==========================================
+    console.log(`🔄 Processing images...\n`);
     
     let processedCount = 0;
     let skippedCount = 0;
@@ -224,15 +260,18 @@ const main = async () => {
     }
     
     // ==========================================
-    // 4. Summary
+    // 6. Summary
     // ==========================================
     console.log('\n📊 Summary:');
     console.log(`  ✓ Processed: ${processedCount} new images`);
     console.log(`  ⊘ Skipped: ${skippedCount} existing images`);
+    if (deletedCount > 0) {
+      console.log(`  🗑️  Deleted: ${deletedCount} orphaned images`);
+    }
     if (errorCount > 0) {
       console.log(`  ✗ Errors: ${errorCount}`);
     }
-    console.log(`  📁 Total optimized images: ${existingImages.size + processedCount}\n`);
+    console.log(`  📁 Total optimized images: ${existingImages.size + processedCount - deletedCount}\n`);
     
     console.log('✅ Image optimization complete!\n');
     
