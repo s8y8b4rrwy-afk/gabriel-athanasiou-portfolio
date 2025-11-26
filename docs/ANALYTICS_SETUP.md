@@ -17,12 +17,12 @@ Google Analytics (GA4) tracks:
 2. Click **"Start measuring"** (or sign in if you have a Google account)
 3. Create new account:
    - **Account name**: "Gabriel Athanasiou" or "Portfolio"
-   - **Property name**: "gabrielathanasiou.com"
+   - **Property name**: "directedbygabriel.com"
    - **Reporting timezone**: Select your timezone (London or Athens)
    - **Currency**: EUR or GBP
 4. Accept data sharing settings
 5. Create a **Web** data stream
-   - **Website URL**: `https://gabrielathanasiou.com` (or your staging URL)
+   - **Website URL**: `https://directedbygabriel.com` (or your staging URL)
    - **Stream name**: "Website"
 6. ✅ **Copy the Measurement ID** - looks like: `G-XXXXXXXXXX`
 
