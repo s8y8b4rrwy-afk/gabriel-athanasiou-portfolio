@@ -12,6 +12,15 @@ interface HomeViewProps {
     config: HomeConfig;
 }
 
+/**
+ * ⚠️ HOVER ANIMATIONS: All thumbnail hover effects use:
+ *   - transform-gpu (hardware acceleration)
+ *   - transition-all duration-700 ease-out (smooth, consistent timing)
+ *   - scale-100 group-hover:scale-[1.02] (subtle zoom)
+ *   - opacity-80 group-hover:opacity-100 (brightness lift)
+ * 
+ * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
+ */
 export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) => {
     const navigate = useNavigate();
 
@@ -52,7 +61,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             type="project"
                             alt={heroProject.title}
                             loading="eager"
-                            className={`w-full h-full object-cover transform scale-[1.01] group-hover:scale-[1.03] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`}
+                            className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
                             <span className={`block ${THEME.typography.meta} mb-4 opacity-0 animate-fade-in-up`} style={{ animationDelay: '200ms' }}>Featured Work</span>
@@ -86,7 +95,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     type="project"
                                     alt={p.title}
                                     loading="lazy"
-                                    className={`w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
+                                    className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                 />
                             </div>
                             <div className="flex justify-between items-baseline pt-2 mix-blend-difference text-white">
@@ -116,7 +125,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                         type="journal"
                                         alt={featuredPost.title}
                                         loading="lazy"
-                                        className={`w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease}`}
+                                        className="w-full h-full object-cover transform-gpu grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                     />
                                 )}
                             </div>
