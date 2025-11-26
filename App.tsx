@@ -8,6 +8,7 @@ import { Navigation } from './components/Navigation';
 import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
+import { PageTransition } from './components/PageTransition';
 
 // Lazy load view components for code splitting
 const HomeView = lazy(() => import('./components/views/HomeView').then(m => ({ default: m.HomeView })));
@@ -81,75 +82,77 @@ export default function App() {
             Loading...
           </div>
         }>
-          <Routes>
-            <Route path="/" element={
-                <>
-                    <SEO />
-                    <HomeView 
-                        projects={data.projects} 
-                        posts={data.posts}
-                        config={data.config}
-                    />
-                </>
-            } />
-            
-            <Route path="/work" element={
-                <>
-                    <SEO title="Filmography" />
-                    <IndexView 
-                        projects={data.projects} 
-                        onHover={setHoveredImage}
-                    />
-                </>
-            } />
-            
-            <Route path="/work/:slug" element={
-                <ProjectDetailView 
-                    allProjects={data.projects}
-                    allPosts={data.posts}
-                />
-            } />
-            
-            <Route path="/journal" element={
-                <>
-                    <SEO title="Journal" />
-                    <BlogView posts={data.posts} />
-                </>
-            } />
-            
-            <Route path="/journal/:slug" element={
-                <BlogPostView 
-                    allPosts={data.posts}
-                    allProjects={data.projects}
-                />
-            } />
-            
-            <Route path="/about" element={
-                 <>
-                    <SEO title="About" />
-                    <AboutView config={data.config} />
-                </>
-            } />
-            
-            <Route path="/thumbnails" element={
-                 <>
-                    <SEO title="Thumbnail Preview" />
-                    <ThumbnailPreviewView />
-                </>
-            } />
+          <PageTransition>
+            <Routes>
+              <Route path="/" element={
+                  <>
+                      <SEO />
+                      <HomeView 
+                          projects={data.projects} 
+                          posts={data.posts}
+                          config={data.config}
+                      />
+                  </>
+              } />
+              
+              <Route path="/work" element={
+                  <>
+                      <SEO title="Filmography" />
+                      <IndexView 
+                          projects={data.projects} 
+                          onHover={setHoveredImage}
+                      />
+                  </>
+              } />
+              
+              <Route path="/work/:slug" element={
+                  <ProjectDetailView 
+                      allProjects={data.projects}
+                      allPosts={data.posts}
+                  />
+              } />
+              
+              <Route path="/journal" element={
+                  <>
+                      <SEO title="Journal" />
+                      <BlogView posts={data.posts} />
+                  </>
+              } />
+              
+              <Route path="/journal/:slug" element={
+                  <BlogPostView 
+                      allPosts={data.posts}
+                      allProjects={data.projects}
+                  />
+              } />
+              
+              <Route path="/about" element={
+                   <>
+                      <SEO title="About" />
+                      <AboutView config={data.config} />
+                  </>
+              } />
+              
+              <Route path="/thumbnails" element={
+                   <>
+                      <SEO title="Thumbnail Preview" />
+                      <ThumbnailPreviewView />
+                  </>
+              } />
 
-            {/* Fallback to Home */}
-            <Route path="*" element={
-                <>
-                    <SEO />
-                    <HomeView 
-                        projects={data.projects} 
-                        posts={data.posts}
-                        config={data.config}
-                    />
-                </>
-            } />
-          </Routes>
+              {/* Fallback to Home */}
+              <Route path="*" element={
+                  <>
+                      <SEO />
+                      <HomeView 
+                          projects={data.projects} 
+                          posts={data.posts}
+                          config={data.config}
+                      />
+                  </>
+              } />
+            </Routes>
+          </PageTransition>
         </Suspense>
       </main>
     </div>

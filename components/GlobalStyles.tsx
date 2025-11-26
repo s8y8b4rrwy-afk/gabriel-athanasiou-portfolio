@@ -107,6 +107,87 @@ export const GlobalStyles: React.FC = () => {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      
+      /* Page Transition Animations */
+      .page-transition-wrapper {
+        transition: opacity 0.6s ease-out;
+      }
+      
+      .page-hidden {
+        opacity: 0;
+      }
+      
+      .page-visible {
+        opacity: 1;
+      }
+      
+      /* Staggered fade-in for child elements */
+      .page-visible > * {
+        animation: staggerFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      
+      .page-visible > *:nth-child(1) { animation-delay: 0.1s; }
+      .page-visible > *:nth-child(2) { animation-delay: 0.2s; }
+      .page-visible > *:nth-child(3) { animation-delay: 0.3s; }
+      .page-visible > *:nth-child(4) { animation-delay: 0.4s; }
+      .page-visible > *:nth-child(5) { animation-delay: 0.5s; }
+      .page-visible > *:nth-child(6) { animation-delay: 0.6s; }
+      .page-visible > *:nth-child(7) { animation-delay: 0.7s; }
+      .page-visible > *:nth-child(8) { animation-delay: 0.8s; }
+      
+      @keyframes staggerFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      
+      /* Enhanced hero section animations */
+      .page-visible .hero-section {
+        animation: heroFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+      }
+      
+      .page-visible .hero-content > * {
+        animation: heroTextFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      
+      .page-visible .hero-content > *:nth-child(1) { animation-delay: 0.3s; }
+      .page-visible .hero-content > *:nth-child(2) { animation-delay: 0.5s; }
+      .page-visible .hero-content > *:nth-child(3) { animation-delay: 0.7s; }
+      
+      @keyframes heroFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      
+      @keyframes heroTextFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      
+      /* Grid item stagger animations */
+      .page-visible .grid-item {
+        animation: gridItemFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      
+      @keyframes gridItemFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
     `;
     document.head.appendChild(style);
 
