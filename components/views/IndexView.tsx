@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { ProceduralThumbnail } from '../ProceduralThumbnail';
 
 interface IndexViewProps { 
     projects: Project[]; 
@@ -111,13 +112,25 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                         <div className={`${cols.image} text-text-muted text-[11px] font-mono flex items-center text-white`}>
                                             {showCols.showThumbnailMobile && (
                                                 <div className="md:hidden w-12 h-8 bg-gray-800 overflow-hidden shrink-0 mr-3">
-                                                    <img 
-                                                        src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
-                                                        onError={(e) => { e.currentTarget.src = p.heroImage; }}
-                                                        className="w-full h-full object-cover" 
-                                                        alt="Thumbnail" 
-                                                        loading="lazy" 
-                                                    />
+                                                    {!p.videoUrl ? (
+                                                        <ProceduralThumbnail
+                                                            title={p.title}
+                                                            year={p.year}
+                                                            type={p.type}
+                                                            width={480}
+                                                            height={270}
+                                                            className="w-full h-full object-cover"
+                                                            loading="lazy"
+                                                        />
+                                                    ) : (
+                                                        <img 
+                                                            src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                                            onError={(e) => { e.currentTarget.src = p.heroImage; }}
+                                                            className="w-full h-full object-cover" 
+                                                            alt="Thumbnail" 
+                                                            loading="lazy" 
+                                                        />
+                                                    )}
                                                 </div>
                                             )}
                                             {showCols.showYear && (
@@ -175,13 +188,23 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                 style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
                             >
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
-                                    <img 
-                                        src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
-                                        onError={(e) => { e.currentTarget.src = p.heroImage; }}
-                                        alt={p.title} 
-                                        loading="lazy"
-                                        className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
-                                    />
+                                    {!p.videoUrl ? (
+                                        <ProceduralThumbnail
+                                            title={p.title}
+                                            year={p.year}
+                                            type={p.type}
+                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                            onError={(e) => { e.currentTarget.src = p.heroImage; }}
+                                            alt={p.title} 
+                                            loading="lazy"
+                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
+                                        />
+                                    )}
                                 </div>
                                 
                                 <div className="flex justify-between items-start text-white">

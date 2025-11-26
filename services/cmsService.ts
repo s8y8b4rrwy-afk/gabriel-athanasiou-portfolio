@@ -11,7 +11,9 @@ import { getVideoId, resolveVideoUrl, getEmbedUrl, fetchVideoThumbnail } from '.
 import { normalizeTitle, parseCreditsText, calculateReadingTime } from '../utils/textHelpers';
 
 // Re-export commonly used utilities for backwards compatibility
-export { getEmbedUrl, calculateReadingTime };// ==========================================
+export { getEmbedUrl, calculateReadingTime };
+
+// ==========================================
 // CONFIGURATION
 // ==========================================
 // Toggle this to TRUE to enable Instagram Posts in the Journal feed
@@ -21,9 +23,9 @@ const ENABLE_INSTAGRAM_INTEGRATION = false;
 // 1. AIRTABLE KEYS (FROM ENV)
 // ==========================================
 const AIRTABLE_TOKEN = import.meta.env.VITE_AIRTABLE_TOKEN || ""; 
-const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID || ""; 
+const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID || "";
 
-const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop";
+// Note: No hardcoded placeholder image needed - components handle fallback with ProceduralThumbnail
 
 // ==========================================
 // UTILITIES
@@ -361,7 +363,8 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
             
             // ASYNC THUMBNAIL FETCH
             const autoThumbnail = await fetchVideoThumbnail(videoUrl);
-            const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
+            // Use first gallery image, or video thumbnail, or empty string (components will handle procedural fallback)
+            const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || '');
 
             // Filter roles to only show Allowed Roles from Settings
             const allRoles = f['Role'] || [];

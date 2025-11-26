@@ -16,6 +16,7 @@ const ProjectDetailView = lazy(() => import('./components/views/ProjectDetailVie
 const BlogView = lazy(() => import('./components/views/BlogView').then(m => ({ default: m.BlogView })));
 const BlogPostView = lazy(() => import('./components/views/BlogPostView').then(m => ({ default: m.BlogPostView })));
 const AboutView = lazy(() => import('./components/views/AboutView').then(m => ({ default: m.AboutView })));
+const ThumbnailPreviewView = lazy(() => import('./components/views/ThumbnailPreviewView').then(m => ({ default: m.ThumbnailPreviewView })));
 
 // Helper function to get page title from pathname
 const getPageTitle = (pathname: string): string => {
@@ -25,6 +26,7 @@ const getPageTitle = (pathname: string): string => {
   if (pathname === '/journal') return 'Journal';
   if (pathname.startsWith('/journal/')) return 'Journal Post';
   if (pathname === '/about') return 'About';
+  if (pathname === '/thumbnails') return 'Thumbnail Preview';
   return 'Page';
 };
 
@@ -119,6 +121,13 @@ export default function App() {
                  <>
                     <SEO title="About" />
                     <AboutView config={data.config} />
+                </>
+            } />
+            
+            <Route path="/thumbnails" element={
+                 <>
+                    <SEO title="Thumbnail Preview" />
+                    <ThumbnailPreviewView />
                 </>
             } />
 

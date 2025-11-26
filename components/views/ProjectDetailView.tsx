@@ -10,6 +10,7 @@ import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
 
 interface ProjectDetailViewProps { 
     allProjects: Project[];
@@ -119,12 +120,26 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     
     const isLowRes = !project.gallery || project.gallery.length === 0;
     
+    // Generate procedural thumbnail if no video and no gallery images
+    const shouldUseProcedural = !project.videoUrl && (!project.gallery || project.gallery.length === 0);
+    const proceduralUrl = useProceduralThumbnail(
+        project.title,
+        project.year,
+        project.type
+    );
+    
     // Get optimized image URLs for slideshow
-    const rawSlides = project.gallery && project.gallery.length > 0 ? project.gallery : [project.heroImage];
+    const rawSlides = project.gallery && project.gallery.length > 0 
+        ? project.gallery 
+        : shouldUseProcedural 
+            ? [proceduralUrl]
+            : [project.heroImage];
+    
     const totalImages = rawSlides.length;
     const slides = rawSlides.map((url, index) => ({
         original: url,
-        optimized: getOptimizedImageUrl(project.id, url, 'project', index, totalImages)
+        optimized: shouldUseProcedural ? url : getOptimizedImageUrl(project.id, url, 'project', index, totalImages),
+        isProcedural: shouldUseProcedural
     }));
 
     useEffect(() => { 
@@ -231,9 +246,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     >
                          <img 
                             src={slide.optimized}
-                            onError={(e) => { e.currentTarget.src = slide.original; }}
+                            onError={(e) => { 
+                                // Don't fallback if it's procedural (data URL won't fail)
+                                if (!slide.isProcedural) {
+                                    e.currentTarget.src = slide.original;
+                                }
+                            }}
                             className={`w-full h-full object-cover ease-linear will-change-transform
-                                ${isLowRes 
+                                ${isLowRes && !slide.isProcedural
                                     ? 'animate-slow-spin blur-[60px] md:blur-[60px] opacity-100 saturate-[2.0] brightness-325 contrast-125' 
                                     : `transition-transform duration-[6000ms] ${index === currentSlide ? 'scale-105' : 'scale-100'} opacity-80`
                                 }
