@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BlogPost } from '../../types';
 import { THEME } from '../../theme';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { OptimizedImage } from '../common/OptimizedImage';
 import { parseMarkdown } from '../../utils/markdown';
 
 interface BlogViewProps { 
@@ -55,12 +55,13 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                              <div className="flex flex-col md:flex-row gap-12 items-start">
                                  {post.imageUrl && (
                                      <div className={`w-full md:w-5/12 ${post.source === 'instagram' ? 'aspect-[4/5]' : 'aspect-[3/2]'} overflow-hidden bg-gray-900 relative`}>
-                                         <img 
-                                            src={getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0)}
-                                            onError={(e) => { e.currentTarget.src = post.imageUrl; }}
-                                            loading="lazy" 
-                                            className={`w-full h-full object-cover group-hover:scale-[1.02] transition ${THEME.animation.slow} ${THEME.animation.ease} opacity-80 group-hover:opacity-100 will-change-transform`} 
-                                            alt={post.title} 
+                                         <OptimizedImage
+                                             recordId={post.id}
+                                             fallbackUrl={post.imageUrl}
+                                             type="journal"
+                                             alt={post.title}
+                                             loading="lazy"
+                                             className={`w-full h-full object-cover group-hover:scale-[1.02] transition ${THEME.animation.slow} ${THEME.animation.ease} opacity-80 group-hover:opacity-100 will-change-transform`}
                                         />
                                          {post.source === 'instagram' && (
                                              <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1.5 rounded-full">

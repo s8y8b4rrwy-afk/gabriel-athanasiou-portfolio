@@ -5,6 +5,7 @@ import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
+import { OptimizedImage } from '../common/OptimizedImage';
 
 interface IndexViewProps { 
     projects: Project[]; 
@@ -123,12 +124,13 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                                             loading="lazy"
                                                         />
                                                     ) : (
-                                                        <img 
-                                                            src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
-                                                            onError={(e) => { e.currentTarget.src = p.heroImage; }}
-                                                            className="w-full h-full object-cover" 
-                                                            alt="Thumbnail" 
-                                                            loading="lazy" 
+                                                        <OptimizedImage
+                                                            recordId={p.id}
+                                                            fallbackUrl={p.heroImage}
+                                                            type="project"
+                                                            alt="Thumbnail"
+                                                            loading="lazy"
+                                                            className="w-full h-full object-cover"
                                                         />
                                                     )}
                                                 </div>
@@ -197,12 +199,13 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             loading="lazy"
                                         />
                                     ) : (
-                                        <img 
-                                            src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
-                                            onError={(e) => { e.currentTarget.src = p.heroImage; }}
-                                            alt={p.title} 
+                                        <OptimizedImage
+                                            recordId={p.id}
+                                            fallbackUrl={p.heroImage}
+                                            type="project"
+                                            alt={p.title}
                                             loading="lazy"
-                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
+                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
                                         />
                                     )}
                                 </div>

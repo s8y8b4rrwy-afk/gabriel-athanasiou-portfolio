@@ -81,6 +81,32 @@ export const GlobalStyles: React.FC = () => {
       .blog-content a:hover::after {
         color: rgba(255, 255, 255, 1);
       }
+      
+      /* Image loading animation */
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      
+      .img-loading {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.03) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+      }
+      
+      .img-loaded {
+        animation: fadeIn 0.4s ease-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
     `;
     document.head.appendChild(style);
 

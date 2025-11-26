@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { THEME } from '../../theme';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { OptimizedImage } from '../common/OptimizedImage';
 
 interface HomeViewProps { 
     projects: Project[]; 
@@ -46,10 +46,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         {/* Hover Clear Overlay */}
                         <div className={`absolute inset-0 bg-black z-10 group-hover:opacity-0 transition ${THEME.animation.medium}`} style={{ opacity: THEME.hero.overlayOpacity }}></div>
                         
-                        <img 
-                            src={getOptimizedImageUrl(heroProject.id, heroProject.heroImage, 'project', 0)}
-                            onError={(e) => { e.currentTarget.src = heroProject.heroImage; }}
+                        <OptimizedImage
+                            recordId={heroProject.id}
+                            fallbackUrl={heroProject.heroImage}
+                            type="project"
                             alt={heroProject.title}
+                            loading="eager"
                             className={`w-full h-full object-cover transform scale-[1.01] group-hover:scale-[1.03] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`}
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
@@ -78,12 +80,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
                             <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-6 relative`}>
-                                <img 
-                                    src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
-                                    onError={(e) => { e.currentTarget.src = p.heroImage; }}
+                                <OptimizedImage
+                                    recordId={p.id}
+                                    fallbackUrl={p.heroImage}
+                                    type="project"
                                     alt={p.title}
                                     loading="lazy"
-                                    className={`w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
+                                    className={`w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
                                 />
                             </div>
                             <div className="flex justify-between items-baseline pt-2 mix-blend-difference text-white">
@@ -107,11 +110,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         >
                             <div className="aspect-[3/2] overflow-hidden bg-gray-900">
                                 {featuredPost.imageUrl && (
-                                    <img 
-                                        src={getOptimizedImageUrl(featuredPost.id, featuredPost.imageUrl, 'journal', 0)}
-                                        onError={(e) => { e.currentTarget.src = featuredPost.imageUrl; }}
-                                        loading="lazy" 
-                                        className={`w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease}`} 
+                                    <OptimizedImage
+                                        recordId={featuredPost.id}
+                                        fallbackUrl={featuredPost.imageUrl}
+                                        type="journal"
+                                        alt={featuredPost.title}
+                                        loading="lazy"
+                                        className={`w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease}`}
                                     />
                                 )}
                             </div>

@@ -9,6 +9,7 @@ import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { OptimizedImage } from '../common/OptimizedImage';
 
 interface BlogPostViewProps { 
     allPosts: BlogPost[]; 
@@ -62,11 +63,13 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-black/40 z-10"></div>
                 {post.imageUrl && (
-                    <img 
-                        src={getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0)}
-                        onError={(e) => { e.currentTarget.src = post.imageUrl; }}
-                        className="w-full h-full object-cover animate-reveal will-change-transform" 
-                        alt={post.title} 
+                    <OptimizedImage
+                        recordId={post.id}
+                        fallbackUrl={post.imageUrl}
+                        type="journal"
+                        alt={post.title}
+                        loading="eager"
+                        className="w-full h-full object-cover animate-reveal will-change-transform"
                     />
                 )}
                 <div className={`absolute bottom-12 left-6 md:left-12 z-20 max-w-4xl mix-blend-difference text-white`}>
@@ -129,11 +132,13 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                             className="group cursor-pointer flex gap-6 items-center"
                         >
                             <div className="w-24 h-16 bg-gray-900 overflow-hidden shrink-0">
-                                <img 
-                                    src={getOptimizedImageUrl(relatedProject.id, relatedProject.heroImage, 'project', 0)}
-                                    onError={(e) => { e.currentTarget.src = relatedProject.heroImage; }}
-                                    loading="lazy" 
-                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`} 
+                                <OptimizedImage
+                                    recordId={relatedProject.id}
+                                    fallbackUrl={relatedProject.heroImage}
+                                    type="project"
+                                    alt={relatedProject.title}
+                                    loading="lazy"
+                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`}
                                 />
                             </div>
                             <div>
