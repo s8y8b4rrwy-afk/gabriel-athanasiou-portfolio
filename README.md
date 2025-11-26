@@ -1,20 +1,68 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Gabriel Athanasiou Portfolio
 
-# Run and deploy your AI Studio app
+High-performance React portfolio website with Airtable CMS, optimized images, and Google Analytics 4.
 
-This contains everything you need to run your app locally.
+## 🚀 Quick Start
 
-View your app in AI Studio: https://ai.studio/apps/drive/1hp0USfo6Ej6uFkF6VolTVK_S4dWKiWT4
+```bash
+# Install dependencies
+npm install
 
-## Run Locally
+# Start development server
+npm run dev
+```
 
-**Prerequisites:**  Node.js
+## 📚 Documentation
 
+**→ [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation for developers and AI agents
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+This guide includes:
+- Architecture overview
+- Tech stack details  
+- **Shared utilities system** (video, text, slug helpers)
+- Data flow and CMS integration
+- Development workflow
+- Deployment process
+- Troubleshooting
+- Common tasks
+
+## 🔧 Development
+
+```bash
+npm run dev              # Start dev server (localhost:3000)
+npm run build            # Production build
+npm run preview          # Preview production build
+npm run optimize:images  # Optimize images from Airtable
+npm run test:images      # Test Airtable image URLs
+```
+
+## 🌍 Environment Variables
+
+Create `.env.local`:
+```bash
+VITE_AIRTABLE_TOKEN=keyXXXXXXXXXXXXXX
+VITE_AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX
+```
+
+## 📖 Additional Documentation
+
+- [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) - **Complete technical documentation**
+- [REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md) - Recent code refactoring (Nov 2025)
+- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
+- [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization details
+- [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup
+- [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) - Environment configuration
+
+## 🏗️ Tech Stack
+
+- React 19.2.0 + TypeScript
+- Vite 6.2.0
+- React Router 6
+- Airtable (Headless CMS)
+- Netlify (Hosting + Functions)
+- Sharp (Image Optimization)
+- Google Analytics 4
+
+## 📝 License
+
+Private project

@@ -9,11 +9,69 @@ import { SocialShare } from '../SocialShare';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface ProjectDetailViewProps { 
     allProjects: Project[];
     allPosts: BlogPost[];
 }
+
+// Helper function to group awards by festival
+const groupAwardsByFestival = (awards: string[]): { festival: string; awards: string[] }[] => {
+    const groups = new Map<string, string[]>();
+    
+    // Common award keywords that indicate "Award: Festival" format
+    const awardKeywords = ['best', 'winner', 'award', 'prize', 'official selection', 'nominee', 'finalist', 'honorable mention', 'grand jury', 'audience', 'special mention'];
+    
+    awards.forEach(award => {
+        let matched = false;
+        
+        // Try to parse "Award Name - Festival Name Year" format (with dash)
+        const dashMatch = award.match(/^(.+?)\s*[-–—]\s*(.+?)(\s+\d{4})?$/);
+        if (dashMatch) {
+            const awardName = dashMatch[1].trim();
+            const festivalWithYear = dashMatch[2].trim() + (dashMatch[3] || '');
+            const festivalKey = festivalWithYear.trim();
+            
+            if (!groups.has(festivalKey)) {
+                groups.set(festivalKey, []);
+            }
+            groups.get(festivalKey)!.push(awardName);
+            matched = true;
+        }
+        
+        // Try to parse "Award Name: Festival Name Year" format (with colon)
+        // Only if the text before colon contains award keywords
+        if (!matched && award.includes(':')) {
+            const colonIndex = award.indexOf(':');
+            const beforeColon = award.substring(0, colonIndex).trim().toLowerCase();
+            
+            // Check if it contains any award keywords
+            const hasAwardKeyword = awardKeywords.some(keyword => beforeColon.includes(keyword));
+            
+            if (hasAwardKeyword) {
+                const awardName = award.substring(0, colonIndex).trim();
+                const festivalPart = award.substring(colonIndex + 1).trim();
+                
+                if (!groups.has(festivalPart)) {
+                    groups.set(festivalPart, []);
+                }
+                groups.get(festivalPart)!.push(awardName);
+                matched = true;
+            }
+        }
+        
+        // If format doesn't match, treat as standalone festival with "Official Selection"
+        if (!matched) {
+            groups.set(award, ['Official Selection']);
+        }
+    });
+    
+    return Array.from(groups.entries()).map(([festival, awards]) => ({
+        festival,
+        awards
+    }));
+};
 
 export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts }) => {
     const { slug } = useParams<{ slug: string }>();
@@ -60,7 +118,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     };
     
     const isLowRes = !project.gallery || project.gallery.length === 0;
-    const slides = project.gallery && project.gallery.length > 0 ? project.gallery : [project.heroImage];
+    
+    // Get optimized image URLs for slideshow
+    const rawSlides = project.gallery && project.gallery.length > 0 ? project.gallery : [project.heroImage];
+    const totalImages = rawSlides.length;
+    const slides = rawSlides.map((url, index) => ({
+        original: url,
+        optimized: getOptimizedImageUrl(project.id, url, 'project', index, totalImages)
+    }));
 
     useEffect(() => { 
         setIsPlaying(false);
@@ -153,13 +218,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
                 
                 {/* Slideshow */}
-                {slides.map((src, index) => (
+                {slides.map((slide, index) => (
                     <div 
                         key={index}
                         className={`absolute inset-0 transition-opacity ${THEME.animation.superSlow} ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
                     >
                          <img 
-                            src={src} 
+                            src={slide.optimized}
+                            onError={(e) => { e.currentTarget.src = slide.original; }}
                             className={`w-full h-full object-cover ease-linear will-change-transform
                                 ${isLowRes 
                                     ? 'animate-slow-spin blur-[60px] md:blur-[60px] opacity-100 saturate-[2.0] brightness-325 contrast-125' 
@@ -191,11 +257,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 
                 <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textMaxWidth}`}>
                     <h1 className={`${THEME.typography.h1} mb-2 leading-tight break-words`}>{project.title}</h1>
-                    <div className={`flex flex-wrap gap-4 md:gap-6 ${THEME.typography.meta}`}>
-                        <span>{project.type !== 'Uncategorized' ? project.type : 'Project'}</span>
-                        <span>—</span>
-                        <span>{project.year}</span>
-                    </div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-gray-300 mt-2 ml-1">
+                        {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')} — {project.year}
+                    </p>
                 </div>
             </div>
 
@@ -225,7 +289,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         )}
                     </div>
 
-                    <div className={`${THEME.typography.body} text-gray-200 mb-12 space-y-6`}>
+                    <div className="text-lg text-gray-300 font-light mb-8 space-y-6">
                         {formatDescription(project.description).map((paragraph, i) => (
                              <p key={i}>{paragraph}</p>
                         ))}
@@ -245,11 +309,34 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {THEME.projectDetail.showAwards && project.awards && project.awards.length > 0 && (
                         <div className="mb-12">
                             <p className={`${THEME.typography.meta} text-text-muted mb-4 border-b border-white/10 pb-2`}>Recognition</p>
-                            <ul className="space-y-2">
-                                {project.awards.map((award, i) => (
-                                    <li key={i} className="text-sm font-medium text-gray-300">{award}</li>
+                            <div className="space-y-4">
+                                {groupAwardsByFestival(project.awards).map((group, groupIdx) => (
+                                    <div key={groupIdx}>
+                                        {group.awards.length > 0 ? (
+                                            // Festival with multiple awards - show grouped
+                                            <div className="space-y-1.5">
+                                                <p className="text-sm font-medium text-white flex items-start">
+                                                    <span className="mr-2 text-white/20 select-none">✦</span>
+                                                    <span>{group.festival}</span>
+                                                </p>
+                                                <ul className="space-y-1 pl-6">
+                                                    {group.awards.map((award, awardIdx) => (
+                                                        <li key={awardIdx} className="text-sm text-white/60 relative before:content-['•'] before:absolute before:-left-3 before:text-white/20">
+                                                            {award}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : (
+                                            // Standalone festival/award - show as single line
+                                            <p className="text-sm font-medium text-white flex items-start">
+                                                <span className="mr-2 text-white/20 select-none">✦</span>
+                                                <span>{group.festival}</span>
+                                            </p>
+                                        )}
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     )}
 
@@ -330,16 +417,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         </div>
                     ))}
 
-                    {project.gallery && project.gallery.map((img, i) => (
-                        <div key={i} className="w-full overflow-hidden">
-                            <img 
-                                src={img} 
-                                loading="lazy"
-                                className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
-                                alt="Gallery" 
-                            />
-                        </div>
-                    ))}
+                    {project.gallery && project.gallery.map((img, i) => {
+                        const optimizedUrl = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length);
+                        return (
+                            <div key={i} className="w-full overflow-hidden">
+                                <img 
+                                    src={optimizedUrl}
+                                    onError={(e) => { e.currentTarget.src = img; }}
+                                    loading="lazy"
+                                    className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
+                                    alt="Gallery" 
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -363,11 +454,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     ></div>
                     
                     <img 
-                        src={nextProject.heroImage} 
+                        src={getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)}
+                        onError={(e) => { e.currentTarget.src = nextProject.heroImage; }}
                         className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`} 
                     />
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 mix-blend-difference text-white">
-                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project'}</span>
+                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
                         <h2 className={`${THEME.typography.h1} group-hover:scale-105 transition duration-1000 ${THEME.animation.ease}`}>{nextProject.title}</h2>
                     </div>
                 </div>

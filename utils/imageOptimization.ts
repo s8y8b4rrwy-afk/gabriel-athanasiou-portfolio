@@ -1,6 +1,7 @@
 /**
  * Image optimization utilities
  * Handles responsive images, lazy loading, and format selection
+ * Now includes Netlify CDN optimized images with Airtable fallback
  */
 
 export interface ResponsiveImageProps {
@@ -13,10 +14,63 @@ export interface ResponsiveImageProps {
 }
 
 /**
+ * Get optimized image URL for a record
+ * Returns local optimized image if available, otherwise falls back to Airtable URL
+ * 
+ * @param recordId - Airtable record ID
+ * @param fallbackUrl - Original Airtable image URL
+ * @param type - 'project' or 'journal'
+ * @param index - Image index for multiple images (default: 0)
+ * @param totalImages - Total number of images (if >1, adds index suffix even for first image)
+ */
+export const getOptimizedImageUrl = (
+  recordId: string,
+  fallbackUrl: string,
+  type: 'project' | 'journal' = 'project',
+  index: number = 0,
+  totalImages: number = 1
+): string => {
+  if (!recordId || !fallbackUrl) return fallbackUrl || '';
+  
+  // Build optimized image path - matches optimization script naming:
+  // Single image: project-{id}.webp
+  // Multiple images: project-{id}-0.webp, project-{id}-1.webp, etc.
+  const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;
+  const optimizedPath = `/images/portfolio/${imageId}.webp`;
+  
+  // In production, check if optimized image exists by attempting to use it
+  // If it 404s, browser will handle the fallback
+  // For now, we return the optimized path and rely on runtime fallback in components
+  
+  // Check if we're in browser environment
+  if (typeof window !== 'undefined') {
+    // Return optimized path - if it doesn't exist, component should handle fallback
+    return optimizedPath;
+  }
+  
+  // Server-side: return optimized path
+  return optimizedPath;
+};
+
+/**
+ * Get fallback URL for images that aren't optimized yet
+ */
+export const getImageWithFallback = (
+  recordId: string,
+  fallbackUrl: string,
+  type: 'project' | 'journal' = 'project',
+  index: number = 0
+): string => {
+  const optimizedUrl = getOptimizedImageUrl(recordId, fallbackUrl, type, index);
+  return optimizedUrl;
+};
+
+/**
+ * Legacy function for CDN-based optimization
  * Generate optimized image URL with size parameters
  * Works with any image CDN that supports width parameters
  */
-export const getOptimizedImageUrl = (
+export const getOptimizedImageUrlLegacy = (
   src: string,
   width: number,
   quality: number = 85

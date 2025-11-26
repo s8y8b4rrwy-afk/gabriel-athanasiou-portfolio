@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "test:images": "node scripts/test-image-fetch.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
-    "build": "npm run build:content && vite build",
+    "build": "npm run optimize:images && npm run build:content && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -20,6 +22,8 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "dotenv": "^17.2.3",
+    "sharp": "^0.34.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

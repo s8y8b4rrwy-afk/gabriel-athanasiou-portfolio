@@ -6,6 +6,8 @@
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { getVideoId, getVideoThumbnail } from '../utils/videoHelpers.mjs';
+import { normalizeTitle } from '../utils/textHelpers.mjs';
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
@@ -39,48 +41,12 @@ async function fetchAirtableTable(tableName, sortField) {
   return allRecords;
 }
 
-function normalizeTitle(title) {
-  if (!title) return 'Untitled';
-  let clean = title.replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
-  return clean.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
-}
-
 function makeSlug(base) {
   return base
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80) || 'item';
-}
-
-// Extract video ID and generate thumbnail
-function getVideoId(url) {
-  if (!url) return { type: null, id: null };
-  const cleanUrl = url.trim();
-  // YouTube
-  const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  if (ytMatch && ytMatch[1]) return { type: 'youtube', id: ytMatch[1] };
-  // Vimeo
-  const vimeoMatch = cleanUrl.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(?:(?:channels\/[a-zA-Z0-9]+\/)|(?:groups\/[a-zA-Z0-9]+\/videos\/)|(?:manage\/videos\/))?([0-9]+)/);
-  if (vimeoMatch && vimeoMatch[1]) return { type: 'vimeo', id: vimeoMatch[1] };
-  return { type: null, id: null };
-}
-
-async function getVideoThumbnail(url) {
-  const { type, id } = getVideoId(url);
-  if (!id) return '';
-  if (type === 'youtube') return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  if (type === 'vimeo') {
-    try {
-      const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
-      if (res.ok) {
-        const data = await res.json();
-        return data.thumbnail_url || `https://vumbnail.com/${id}.jpg`;
-      }
-    } catch (e) {}
-    return `https://vumbnail.com/${id}.jpg`;
-  }
-  return '';
 }
 
 async function buildProjects() {
@@ -130,23 +96,30 @@ async function buildProjects() {
 
 async function buildPosts() {
   const records = await fetchAirtableTable('Journal', 'Date');
+  const now = new Date();
   const items = [];
+  
   for (const r of records) {
     const f = r.fields || {};
-    const title = f['Title'] || 'Untitled';
-    const date = f['Date'] || '';
-    const description = (f['Content'] || '').toString().replace(/\s+/g, ' ').trim();
-    const image = (f['Cover Image'] && f['Cover Image'][0] && f['Cover Image'][0].url) || '';
-    const baseSlug = makeSlug(title + (date ? '-' + date.substring(0, 10) : ''));
-    items.push({
-      id: r.id,
-      slug: baseSlug,
-      title: title,
-      description: description.slice(0, 220),
-      image,
-      type: 'article',
-      date
-    });
+    const status = f['Status'] || 'Draft'; // Default to Draft if no status
+    
+    // Only include Public posts, or Scheduled posts that have reached their date
+    if (status === 'Public' || (status === 'Scheduled' && f['Date'] && new Date(f['Date']) <= now)) {
+      const title = f['Title'] || 'Untitled';
+      const date = f['Date'] || '';
+      const description = (f['Content'] || '').toString().replace(/\s+/g, ' ').trim();
+      const image = (f['Cover Image'] && f['Cover Image'][0] && f['Cover Image'][0].url) || '';
+      const baseSlug = makeSlug(title + (date ? '-' + date.substring(0, 10) : ''));
+      items.push({
+        id: r.id,
+        slug: baseSlug,
+        title: title,
+        description: description.slice(0, 220),
+        image,
+        type: 'article',
+        date
+      });
+    }
   }
   return items;
 }
@@ -172,10 +145,11 @@ async function main() {
     const json = JSON.stringify(manifest, null, 2);
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.writeFileSync(OUTPUT_JSON, json, 'utf8');
+    // Hash featured projects + public/scheduled posts for deployment trigger
     const hash = createHash('sha256').update(JSON.stringify(manifest.projects) + JSON.stringify(manifest.posts)).digest('hex');
     fs.writeFileSync(OUTPUT_HASH, hash, 'utf8');
-    console.log(`[share-meta] Wrote manifest with ${projects.length} projects and ${posts.length} posts.`);
-    console.log(`[share-meta] Hash: ${hash}`);
+    console.log(`[share-meta] Wrote manifest with ${projects.length} featured projects and ${posts.length} public posts.`);
+    console.log(`[share-meta] Hash: ${hash} (featured projects + public journal entries)`);
   } catch (e) {
     console.error('[share-meta] Generation failed:', e);
     process.exit(1);

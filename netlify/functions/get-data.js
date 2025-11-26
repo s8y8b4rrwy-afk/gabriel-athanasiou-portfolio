@@ -1,159 +1,10 @@
 import { builder } from '@netlify/functions';
 import Airtable from 'airtable';
-import * as https from 'node:https';
+import { getVideoId, resolveVideoUrl, getVideoThumbnail } from '../../utils/videoHelpers.mjs';
+import { normalizeTitle, parseCreditsText } from '../../utils/textHelpers.mjs';
+import { slugify, makeUniqueSlug } from '../../utils/slugify.mjs';
 
 const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop";
-
-const normalizeTitle = (title) => {
-    if (!title) return 'Untitled';
-    let clean = title.replace(/[_-]/g, ' ');
-    clean = clean.replace(/\s+/g, ' ').trim();
-    return clean.replace(
-        /\w\S*/g,
-        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
-};
-
-// Slug helpers for server function (no external deps)
-const slugify = (input) => {
-    if (!input) return 'untitled';
-    let s = input.toString().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    s = s.replace(/[^a-z0-9]+/g, '-');
-    s = s.replace(/^-+|-+$/g, '');
-    s = s.replace(/-{2,}/g, '-');
-    return s || 'untitled';
-};
-
-const makeUniqueSlug = (base, used, fallbackId) => {
-    let candidate = slugify(base);
-    if (!used.has(candidate)) { used.add(candidate); return candidate; }
-    if (fallbackId) {
-        const suffix = (fallbackId + '').replace(/[^a-z0-9]/gi, '').slice(0,6).toLowerCase();
-        const alt = `${candidate}-${suffix}`;
-        if (!used.has(alt)) { used.add(alt); return alt; }
-    }
-    let i = 2;
-    while (true) {
-        const alt = `${candidate}-${i}`;
-        if (!used.has(alt)) { used.add(alt); return alt; }
-        i += 1;
-    }
-};
-
-// Helper to extract ID from URL (Enhanced Regex with Vimeo Hash Support)
-const getVideoId = (url) => {
-    if (!url) return { type: null, id: null };
-    const cleanUrl = url.trim();
-
-    // YouTube Regex
-    const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-    if (ytMatch && ytMatch[1]) {
-        return { type: 'youtube', id: ytMatch[1] };
-    }
-
-    // Vimeo Regex
-    // Covers: vimeo.com/123456, vimeo.com/123456/hash, player.vimeo.com/video/123456
-    // Ignores prefixes: manage/videos, channels/xxx, groups/xxx/videos
-    const vimeoMatch = cleanUrl.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(?:(?:channels\/[a-zA-Z0-9]+\/)|(?:groups\/[a-zA-Z0-9]+\/videos\/)|(?:manage\/videos\/))?([0-9]+)(?:\/([a-zA-Z0-9]+))?/);
-    
-    if (vimeoMatch && vimeoMatch[1]) {
-        let id = vimeoMatch[1];
-        let hash = vimeoMatch[2] || null;
-
-        // Check for query param hash if not found in path (?h=abcdef)
-        if (!hash && cleanUrl.includes('?')) {
-            try {
-                // Node.js URL require full path for constructor if parsing incomplete urls, but usually cleanUrl is full
-                // Fallback to simple regex if URL constructor fails
-                const queryHash = cleanUrl.match(/[?&]h=([a-zA-Z0-9]+)/);
-                if (queryHash) hash = queryHash[1];
-            } catch (e) {}
-        }
-
-        return { type: 'vimeo', id, hash };
-    }
-
-    return { type: null, id: null };
-};
-
-// Async Resolver for Vanity URLs
-const resolveVideoUrl = async (url) => {
-    if (!url) return '';
-    const { type, id, hash } = getVideoId(url);
-
-    // If we already have a valid ID, just reconstruct the canonical URL
-    if (id) {
-        if (type === 'youtube') return `https://www.youtube.com/watch?v=${id}`;
-        if (type === 'vimeo') {
-            return hash ? `https://vimeo.com/${id}/${hash}` : `https://vimeo.com/${id}`;
-        }
-    }
-    
-    // Try OEmbed for Vimeo vanity URLs (Fallback only)
-    if (url.includes('vimeo.com')) {
-        return new Promise((resolve) => {
-            https.get(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, (res) => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                    try {
-                        const json = JSON.parse(data);
-                        if (json.video_id) resolve(`https://vimeo.com/${json.video_id}`);
-                        else resolve(url);
-                    } catch(e) { resolve(url); }
-                });
-            }).on('error', () => resolve(url));
-        });
-    }
-    return url;
-};
-
-// Robust Async Thumbnail Fetcher
-const fetchVideoThumbnail = async (url) => {
-    if (!url) return '';
-    const { type, id } = getVideoId(url);
-    if (!id) return '';
-
-    if (type === 'youtube') {
-        return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-    }
-    if (type === 'vimeo') {
-        // Try OEmbed first for highest quality and private video support
-        return new Promise((resolve) => {
-            https.get(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, (res) => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                    try {
-                        const json = JSON.parse(data);
-                        const thumb = json.thumbnail_url || json.thumbnail_url_with_play_button || '';
-                        resolve(thumb);
-                    } catch(e) { 
-                        // Fallback to vumbnail if OEmbed fails
-                        resolve(`https://vumbnail.com/${id}.jpg`);
-                    }
-                });
-            }).on('error', () => resolve(`https://vumbnail.com/${id}.jpg`));
-        });
-    }
-    return ''; 
-};
-
-
-const parseCreditsText = (text) => {
-    if (!text) return [];
-    const items = text.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
-    return items.map(item => {
-        const parts = item.split(':');
-        if (parts.length >= 2) {
-            return {
-                role: parts[0].trim(),
-                name: parts.slice(1).join(':').trim()
-            };
-        }
-        return { role: 'Credit', name: item };
-    });
-};
 
 const getDataHandler = async (event, context) => {
     const token = process.env.AIRTABLE_API_KEY || process.env.VITE_AIRTABLE_TOKEN;
@@ -261,8 +112,11 @@ const getDataHandler = async (event, context) => {
 
       const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
 
-      // CREDITS
-      const myRoles = (record.get('Role') || []).map(r => ({ role: r, name: 'Gabriel Athanasiou' }));
+      // CREDITS - Filter roles to only show Allowed Roles from Settings
+      const allRoles = record.get('Role') || [];
+      const myRoles = allRoles
+          .filter(r => allowedRoles.length === 0 || allowedRoles.includes(r))
+          .map(r => ({ role: r, name: 'Gabriel Athanasiou' }));
       let extraCredits = [];
       const rawCreditsText = record.get('Credits Text') || record.get('Credits');
       if (rawCreditsText) {

@@ -8,6 +8,7 @@ import { parseMarkdown } from '../../utils/markdown';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface BlogPostViewProps { 
     allPosts: BlogPost[]; 
@@ -54,7 +55,14 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-black/40 z-10"></div>
-                {post.imageUrl && <img src={post.imageUrl} className="w-full h-full object-cover animate-reveal will-change-transform" alt={post.title} />}
+                {post.imageUrl && (
+                    <img 
+                        src={getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0)}
+                        onError={(e) => { e.currentTarget.src = post.imageUrl; }}
+                        className="w-full h-full object-cover animate-reveal will-change-transform" 
+                        alt={post.title} 
+                    />
+                )}
                 <div className={`absolute bottom-12 left-6 md:left-12 z-20 max-w-4xl mix-blend-difference text-white`}>
                      <div className={`flex gap-4 ${THEME.typography.meta} mb-6 opacity-80`}>
                          <span>{post.date}</span>
@@ -66,7 +74,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
             </div>
 
             <div className={`${THEME.blog.post.contentWidth} mx-auto px-6 py-20`}>
-                <div className="prose prose-invert prose-lg md:prose-xl font-sans leading-relaxed text-gray-200">
+                <div className="blog-content text-lg leading-relaxed text-gray-300 font-light space-y-6 [&>p]:mb-6 [&>h1]:text-3xl [&>h1]:font-serif [&>h1]:italic [&>h1]:mt-12 [&>h1]:mb-6 [&>h2]:text-2xl [&>h2]:font-serif [&>h2]:italic [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-medium [&>h3]:mt-8 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:space-y-2 [&>blockquote]:border-l-2 [&>blockquote]:border-white/30 [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-gray-400">
                     <div dangerouslySetInnerHTML={{ __html: parseMarkdown(post.content) }} />
                 </div>
                 
@@ -115,11 +123,16 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                             className="group cursor-pointer flex gap-6 items-center"
                         >
                             <div className="w-24 h-16 bg-gray-900 overflow-hidden shrink-0">
-                                <img src={relatedProject.heroImage} loading="lazy" className={`w-full h-full object-cover group-hover:scale-[1.05] transition ${THEME.animation.medium} ${THEME.animation.ease}`} />
+                                <img 
+                                    src={getOptimizedImageUrl(relatedProject.id, relatedProject.heroImage, 'project', 0)}
+                                    onError={(e) => { e.currentTarget.src = relatedProject.heroImage; }}
+                                    loading="lazy" 
+                                    className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`} 
+                                />
                             </div>
                             <div>
-                                <h3 className={`${THEME.typography.h3} text-white group-hover:text-white/70 transition mix-blend-difference`}>{relatedProject.title}</h3>
-                                <span className={`${THEME.typography.meta} text-gray-500 group-hover:text-white transition`}>View Project &rarr;</span>
+                                <h3 className={`${THEME.typography.h3} text-white transition-colors ${THEME.animation.fast}`}>{relatedProject.title}</h3>
+                                <span className={`${THEME.typography.meta} text-gray-500 group-hover:text-white transition-colors ${THEME.animation.fast}`}>View Project &rarr;</span>
                             </div>
                         </div>
                     </div>

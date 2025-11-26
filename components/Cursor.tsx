@@ -9,6 +9,11 @@ interface CursorProps {
 export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [displayImage, setDisplayImage] = useState<string | null>(null);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Only enable custom cursor if device supports hover (desktop)
@@ -18,33 +23,66 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (cursorRef.current && mediaQuery.matches) {
-        cursorRef.current.style.left = `${e.clientX + 20}px`;
-        cursorRef.current.style.top = `${e.clientY + 20}px`;
+      if (mediaQuery.matches) {
+        mousePos.current = { x: e.clientX, y: e.clientY };
+        if (cursorRef.current) {
+          cursorRef.current.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
+        }
       }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    };
   }, []);
 
-  if (!activeImageUrl || !isEnabled) return null;
+  // Handle fade in/out with proper unmounting delay
+  useEffect(() => {
+    if (activeImageUrl) {
+      // Clear any pending fade-out timeout
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
+        fadeTimeoutRef.current = null;
+      }
+      // Update display image immediately
+      setDisplayImage(activeImageUrl);
+      // Render and then show
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    } else {
+      // Start fade out (keep the last image visible during fade)
+      setIsVisible(false);
+      // Wait for fade animation to complete before unmounting
+      fadeTimeoutRef.current = setTimeout(() => {
+        setShouldRender(false);
+        setDisplayImage(null);
+      }, 300); // Match the duration-300 CSS transition
+    }
+  }, [activeImageUrl]);
+
+  if (!isEnabled || !shouldRender) return null;
 
   return (
     <div 
       ref={cursorRef}
-      className={`hidden md:block fixed pointer-events-none z-[150] ${THEME.ui.cursor.size} aspect-video ${THEME.ui.cursor.radius} overflow-hidden`}
+      className={`hidden md:block fixed top-0 left-0 pointer-events-none z-[150] ${THEME.ui.cursor.size} aspect-video ${THEME.ui.cursor.radius} overflow-hidden shadow-2xl transition-opacity ${THEME.ui.cursor.fadeOutDuration} ease-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       style={{
-        transition: `transform 0.3s ${THEME.animation.ease}, opacity 0.3s ease`,
-        transform: activeImageUrl ? 'scale(1)' : 'scale(0.8)',
-        opacity: activeImageUrl ? 1 : 0
+        willChange: 'transform, opacity'
       }}
     >
-      <img 
-        src={activeImageUrl} 
-        alt="Preview" 
-        className="w-full h-full object-cover"
-      />
+      <div className={`w-full h-full transition-transform ${THEME.ui.cursor.fadeOutDuration} ease-out ${isVisible ? 'scale-100' : 'scale-95'}`}>
+        {displayImage && (
+          <img 
+            src={displayImage} 
+            alt="Preview" 
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
     </div>
   );
 };

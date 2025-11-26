@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
+import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface IndexViewProps { 
     projects: Project[]; 
@@ -41,10 +42,10 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     return (
         <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} animate-view-enter min-h-screen`}>
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-20 gap-8">
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-center mb-20 gap-8">
                     {/* Category Filter */}
                     <div className="relative flex-1 w-full md:w-auto">
-                        <div className={`flex gap-8 ${THEME.typography.meta} text-white overflow-x-auto pb-4 no-scrollbar relative z-10 pr-12`}>
+                        <div className={`flex gap-8 ${THEME.typography.meta} text-white overflow-x-auto pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
                             {availableTypes.map((type) => (
                                 <button 
                                     key={type}
@@ -59,7 +60,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                     </div>
 
                     {/* View Toggle */}
-                    <div className="flex gap-4 items-center shrink-0 border border-white/10 rounded-full px-4 py-2 bg-white/5 backdrop-blur-sm">
+                    <div className="flex gap-4 items-center shrink-0 border border-white/10 rounded-full px-4 py-2 bg-white/5 backdrop-blur-sm mx-auto md:mx-0">
                          <button 
                             onClick={() => setViewMode('list')}
                             className={`text-[9px] uppercase tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'list' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
@@ -80,7 +81,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                     // TABLE VIEW
                     <>
                         {/* Desktop Headers */}
-                        <div className={`hidden md:grid grid-cols-12 border-b border-white/20 pb-4 ${THEME.typography.meta} text-text-muted mb-2 animate-fade-in-up text-white`}>
+                        <div className={`hidden md:grid grid-cols-12 border-b border-white/20 pb-4 ${THEME.typography.meta} text-text-muted mb-2 animate-fade-in-up`}>
                             {showCols.showYear && <div className={cols.year}>Year</div>}
                             <div className={cols.title}>Project</div>
                             {showCols.showClient && <div className={cols.client}>Client</div>}
@@ -90,7 +91,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
 
                         {/* Mobile Headers */}
                          <div className={`md:hidden grid grid-cols-12 border-b border-white/20 pb-4 ${THEME.typography.meta} text-text-muted mb-2 animate-fade-in-up`}>
-                            {showCols.showThumbnailMobile && <div className={cols.image}>Image</div>}
+                            {(showCols.showThumbnailMobile || showCols.showYear) && <div className={cols.image}></div>}
                             <div className={cols.title}>Project</div>
                             <div className={`${cols.type} text-right`}>Type</div>
                         </div>
@@ -106,20 +107,28 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'forwards' }}
                                 >
                                     {/* Mobile Thumbnail / Desktop Year */}
-                                    <div className={`${cols.image} text-text-muted text-[11px] font-mono flex items-center text-white`}>
-                                        {showCols.showThumbnailMobile && (
-                                            <div className="md:hidden w-12 h-8 bg-gray-800 overflow-hidden shrink-0 mr-3">
-                                                <img src={p.heroImage} className="w-full h-full object-cover" alt="Thumbnail" loading="lazy" />
-                                            </div>
-                                        )}
-                                        {showCols.showYear && (
-                                            <span className="hidden md:block opacity-60 group-hover:opacity-100 transition">{p.year}</span>
-                                        )}
-                                    </div>
+                                    {(showCols.showThumbnailMobile || showCols.showYear) && (
+                                        <div className={`${cols.image} text-text-muted text-[11px] font-mono flex items-center text-white`}>
+                                            {showCols.showThumbnailMobile && (
+                                                <div className="md:hidden w-12 h-8 bg-gray-800 overflow-hidden shrink-0 mr-3">
+                                                    <img 
+                                                        src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                                        onError={(e) => { e.currentTarget.src = p.heroImage; }}
+                                                        className="w-full h-full object-cover" 
+                                                        alt="Thumbnail" 
+                                                        loading="lazy" 
+                                                    />
+                                                </div>
+                                            )}
+                                            {showCols.showYear && (
+                                                <span className="hidden md:block opacity-60 group-hover:opacity-100 transition">{p.year}</span>
+                                            )}
+                                        </div>
+                                    )}
                                     
                                     {/* Title + Mobile Year */}
                                     <div className={`${cols.title} flex flex-col justify-center text-white`}>
-                                        <span className={`${THEME.filmography.list.projectTitleSize} font-sans font-medium group-hover:translate-x-4 transition-transform ${THEME.animation.medium} ${THEME.animation.ease} opacity-90 group-hover:opacity-100 block`}>
+                                        <span className={`${THEME.filmography.list.projectTitleSize} font-serif italic font-normal md:group-hover:translate-x-4 transition-transform ${THEME.animation.medium} ${THEME.animation.ease} opacity-60 group-hover:opacity-100 block`}>
                                             {p.title}
                                         </span>
                                         <span className="md:hidden text-[9px] text-text-muted font-mono mt-1 opacity-60">{p.year}</span>
@@ -127,7 +136,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
 
                                      {/* Client / Brand (Desktop Only) */}
                                     {showCols.showClient && (
-                                        <div className={`hidden md:block ${cols.client} text-[11px] font-medium tracking-widest uppercase text-white opacity-90`}>
+                                        <div className={`hidden md:block ${cols.client} text-[11px] font-normal text-white opacity-40 group-hover:opacity-80 transition uppercase tracking-wider`}>
                                             {p.type === 'Narrative' ? '–' : (p.brand ? p.brand : p.client)}
                                         </div>
                                     )}
@@ -167,7 +176,8 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                             >
                                 <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
                                     <img 
-                                        src={p.heroImage} 
+                                        src={getOptimizedImageUrl(p.id, p.heroImage, 'project', 0)}
+                                        onError={(e) => { e.currentTarget.src = p.heroImage; }}
                                         alt={p.title} 
                                         loading="lazy"
                                         className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`} 
