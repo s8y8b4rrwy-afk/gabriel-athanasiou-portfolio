@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        hmr: {
+          overlay: true,
+        },
       },
       plugins: [react()],
       define: {
@@ -19,6 +22,9 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         },
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json']
-      }
+      },
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'react-router-dom'],
+      },
     };
 });

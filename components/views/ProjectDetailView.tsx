@@ -172,7 +172,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
             <SEO 
                 title={project.title} 
                 description={project.description} 
-                image={project.heroImage}
+                image={getOptimizedImageUrl(project.id, project.heroImage, 'project', 0)}
                 type={isNarrative ? 'video.movie' : 'video.other'}
                 project={project}
             />
@@ -238,7 +238,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                     : `transition-transform duration-[6000ms] ${index === currentSlide ? 'scale-105' : 'scale-100'} opacity-80`
                                 }
                             `} 
-                            alt="" 
+                            alt={`${project.title} - Image ${index + 1}`} 
                         />
                     </div>
                 ))}

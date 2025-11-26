@@ -53,7 +53,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
             <SEO 
                 title={post.title} 
                 description={post.content.substring(0, 150)} 
-                image={post.imageUrl}
+                image={post.imageUrl ? getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0) : post.imageUrl}
                 type="article"
                 post={post}
             />
