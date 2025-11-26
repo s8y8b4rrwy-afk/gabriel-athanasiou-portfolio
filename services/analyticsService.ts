@@ -32,29 +32,41 @@ class AnalyticsService {
     
     this.measurementId = measurementId;
 
-    // Load the gtag script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-    document.head.appendChild(script);
+    // PERFORMANCE: Defer GTM loading until after page is interactive
+    const loadGTM = () => {
+      // Load the gtag script with async
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+      document.head.appendChild(script);
 
-    // Initialize dataLayer
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    
-    function gtag(this: any, ...args: any[]) {
-      (window as any).dataLayer.push(arguments);
+      // Initialize dataLayer
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      
+      function gtag(this: any, ...args: any[]) {
+        (window as any).dataLayer.push(arguments);
+      }
+      
+      (window as any).gtag = gtag;
+      (window as any).gtag('js', new Date());
+      (window as any).gtag('config', measurementId, {
+        'anonymize_ip': true,  // Privacy-friendly: don't store full IPs
+        'allow_google_signals': false,  // Don't use Google Signals for remarketing
+        'allow_ad_personalization_signals': false
+      });
+
+      this.isInitialized = true;
+      console.log('✅ Analytics initialized with ID:', measurementId);
+    };
+
+    // Load after page is interactive (non-blocking)
+    if (document.readyState === 'complete') {
+      setTimeout(loadGTM, 1000); // Delay 1s after page load
+    } else {
+      window.addEventListener('load', () => {
+        setTimeout(loadGTM, 1000);
+      });
     }
-    
-    (window as any).gtag = gtag;
-    (window as any).gtag('js', new Date());
-    (window as any).gtag('config', measurementId, {
-      'anonymize_ip': true,  // Privacy-friendly: don't store full IPs
-      'allow_google_signals': false,  // Don't use Google Signals for remarketing
-      'allow_ad_personalization_signals': false
-    });
-
-    this.isInitialized = true;
-    console.log('✅ Analytics initialized with ID:', measurementId);
   }
 
   /**
