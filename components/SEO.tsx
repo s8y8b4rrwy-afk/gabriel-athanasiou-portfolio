@@ -1,12 +1,15 @@
 
 import React, { useEffect } from 'react';
+import { Project, BlogPost } from '../types';
 
 interface SEOProps {
   title?: string;
   description?: string;
   image?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'video.movie' | 'video.other';
   url?: string;
+  project?: Project; // Enhanced: Pass full project data for rich schema
+  post?: BlogPost; // Enhanced: Pass full post data for article schema
 }
 
 // Default fallback image (can be overridden by Airtable Settings > Default OG Image)
@@ -17,7 +20,9 @@ export const SEO: React.FC<SEOProps> = ({
   description = "Director based in London & Athens. Narrative, Commercial, Music Video.",
   image = FALLBACK_OG_IMAGE,
   type = 'website',
-  url
+  url,
+  project,
+  post
 }) => {
   
   const fullTitle = title ? `${title} | GABRIEL ATHANASIOU` : "GABRIEL ATHANASIOU | Director";
@@ -45,10 +50,17 @@ export const SEO: React.FC<SEOProps> = ({
     updateMeta('og:image', image, 'property');
     updateMeta('og:type', type, 'property');
     updateMeta('og:url', siteUrl, 'property');
+    updateMeta('twitter:card', 'summary_large_image');
     updateMeta('twitter:title', fullTitle);
     updateMeta('twitter:description', description);
     updateMeta('twitter:image', image);
     updateMeta('twitter:creator', '@gabrielcine');
+    
+    // Enhanced: Add video-specific Open Graph tags if project has video
+    if (project?.videoUrl) {
+      updateMeta('og:video', project.videoUrl, 'property');
+      updateMeta('og:video:type', 'text/html', 'property');
+    }
     
     // Canonical URL
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
@@ -59,31 +71,146 @@ export const SEO: React.FC<SEOProps> = ({
     }
     (canonical as HTMLLinkElement).href = siteUrl;
 
-    // Schema.org structured data
-    const schemaData = {
-      "@context": "https://schema.org",
-      "@type": type === 'article' ? "NewsArticle" : "Person",
-      ...(type === 'website' && {
-        name: "Gabriel Athanasiou",
-        url: siteUrl,
-        description: description,
-        image: image,
-        jobTitle: "Director",
-        areaServed: ["London", "Athens"],
-        sameAs: [
+    // Enhanced Schema.org structured data
+    let schemaData: any;
+
+    if (project) {
+      // ENHANCED: Rich Movie/CreativeWork schema for projects
+      const isNarrative = project.type === 'Narrative';
+      const isCommercial = project.type === 'Commercial';
+      
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": isNarrative ? "Movie" : "VideoObject",
+        "name": project.title,
+        "description": project.description,
+        "image": project.heroImage,
+        "url": siteUrl,
+        ...(project.year && { "dateCreated": `${project.year}-01-01` }),
+        
+        // Director information
+        "director": {
+          "@type": "Person",
+          "name": "Gabriel Athanasiou",
+          "jobTitle": "Director",
+          "url": typeof window !== 'undefined' ? window.location.origin : '',
+          "sameAs": [
+            "https://twitter.com/gab_ath",
+            "https://www.instagram.com/gab.ath",
+            "https://www.linkedin.com/in/gabathanasiou/",
+            "https://www.imdb.com/name/nm7048843/"
+          ]
+        },
+        
+        // Credits as cast/crew
+        ...(project.credits && project.credits.length > 0 && {
+          "credits": project.credits.map(credit => ({
+            "@type": "Role",
+            "roleName": credit.role,
+            "name": credit.name
+          }))
+        }),
+        
+        // Production company
+        ...(project.client && {
+          "productionCompany": {
+            "@type": "Organization",
+            "name": project.client
+          }
+        }),
+        
+        // Brand for commercials
+        ...(isCommercial && project.brand && {
+          "sponsor": {
+            "@type": "Organization",
+            "name": project.brand
+          }
+        }),
+        
+        // Genre
+        ...(project.genre && project.genre.length > 0 && {
+          "genre": project.genre
+        }),
+        
+        // Awards
+        ...(project.awards && project.awards.length > 0 && {
+          "award": project.awards
+        }),
+        
+        // Video content
+        ...(project.videoUrl && {
+          "contentUrl": project.videoUrl,
+          "embedUrl": project.videoUrl,
+          "uploadDate": project.year ? `${project.year}-01-01` : undefined
+        }),
+        
+        // Gallery images
+        ...(project.gallery && project.gallery.length > 0 && {
+          "thumbnail": project.gallery.map(img => ({
+            "@type": "ImageObject",
+            "url": img
+          }))
+        })
+      };
+    } else if (post) {
+      // ENHANCED: Rich Article schema for blog posts
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": post.content.substring(0, 200),
+        "image": post.imageUrl || image,
+        "datePublished": post.date,
+        "author": {
+          "@type": "Person",
+          "name": "Gabriel Athanasiou",
+          "jobTitle": "Director",
+          "url": typeof window !== 'undefined' ? window.location.origin : '',
+          "sameAs": [
+            "https://twitter.com/gab_ath",
+            "https://www.instagram.com/gab.ath",
+            "https://www.linkedin.com/in/gabathanasiou/",
+            "https://www.imdb.com/name/nm7048843/"
+          ]
+        },
+        "publisher": {
+          "@type": "Person",
+          "name": "Gabriel Athanasiou"
+        },
+        "url": siteUrl,
+        ...(post.tags && post.tags.length > 0 && {
+          "keywords": post.tags.join(', ')
+        })
+      };
+    } else if (type === 'article') {
+      // Basic article schema
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": fullTitle,
+        "description": description,
+        "image": image,
+        "url": siteUrl,
+      };
+    } else {
+      // Default Person schema for homepage
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Gabriel Athanasiou",
+        "url": siteUrl,
+        "description": description,
+        "image": image,
+        "jobTitle": "Director",
+        "areaServed": ["London", "Athens"],
+        "sameAs": [
           "https://twitter.com/gab_ath",
           "https://www.instagram.com/gab.ath",
           "https://www.linkedin.com/in/gabathanasiou/",
           "https://www.imdb.com/name/nm7048843/"
         ]
-      }),
-      ...(type === 'article' && {
-        headline: fullTitle,
-        description: description,
-        image: image,
-        url: siteUrl,
-      })
-    };
+      };
+    }
 
     let schema = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement | null;
     if (!schema) {
@@ -93,7 +220,7 @@ export const SEO: React.FC<SEOProps> = ({
     }
     (schema as HTMLScriptElement).textContent = JSON.stringify(schemaData);
     
-  }, [fullTitle, description, image, type, siteUrl]);
+  }, [fullTitle, description, image, type, siteUrl, project, post]);
 
   return null;
 };

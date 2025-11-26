@@ -8,6 +8,21 @@
 
 ## 🎉 Recent Major Changes
 
+### November 26, 2025 - GitHub Actions Workflow Fixes
+**What Changed:** Fixed permission issues and double deployment in GitHub Actions workflows.
+
+**Fixes:**
+- Added `permissions: contents: write` to manual deploy workflow
+- Removed duplicate Netlify build hook call (was causing two deploys)
+- Workflow now only creates `[deploy]` marker commit (Netlify auto-detects)
+- Added user's reason to commit message for better tracking
+
+**Impact:** Manual deploys now trigger only ONE Netlify build instead of two, saving build minutes.
+
+**Files Updated:** `.github/workflows/manual-deploy.yml`
+
+---
+
 ### November 26, 2025 - Code Refactoring: Shared Utilities
 **What Changed:** Eliminated ~590 lines of duplicate code by consolidating utilities into centralized modules.
 
@@ -679,15 +694,58 @@ ignore = "bash scripts/ignore-netlify-build.sh"  # Only build on [deploy] commit
 
 ### Deployment Triggers
 
-**Automatic:**
-- Push to `main` branch with `[deploy]` or `[force-deploy]` in commit message
+**Automatic Deployments:**
+1. **Push to `main`** with `[deploy]` or `[force-deploy]` in commit message
+2. **Scheduled Content Updates** (daily at 2 AM UTC) - checks for Airtable content changes
+3. **Scheduled Code + Content** (weekly Sunday 3 AM UTC) - checks for code and content changes
 
-**Manual:**
-- Netlify Dashboard → "Trigger deploy"
+**Manual Deployments:**
+- **GitHub Actions:** Go to Actions → "Manual Deploy to Netlify" → Run workflow
+- **Netlify Dashboard:** Trigger deploy button (not recommended, bypasses smart build logic)
+
+**GitHub Actions Workflows:**
+
+#### 1. Manual Deploy (`.github/workflows/manual-deploy.yml`)
+**Purpose:** Manually trigger a deployment when needed.
+
+**How It Works:**
+1. Creates a `[deploy]` marker commit (with optional reason)
+2. Pushes to `main` branch
+3. Netlify detects the marker via `ignore-netlify-build.sh` and builds automatically
+
+**Usage:**
+```
+Actions → Manual Deploy to Netlify → Run workflow
+Optional: Add reason (e.g., "Fixed broken video link")
+```
+
+**Permissions:** Requires `permissions: contents: write` to push commits
+
+**Note:** Only creates ONE deploy (fixed Nov 2025 - previously created duplicate deploys)
+
+#### 2. Smart Scheduled Deploy (`.github/workflows/scheduled-deploy.yml`)
+**Purpose:** Automatically check for content/code changes and deploy if needed.
+
+**Schedule:**
+- **Daily (2 AM UTC):** Content-only check (Airtable updates)
+- **Weekly (Sunday 3 AM UTC):** Full check (code + content)
+
+**How It Works:**
+1. Generates `share-meta.json` from Airtable
+2. Compares with previous version (hash-based)
+3. If changed: Commits manifest with `[deploy]` marker → Netlify builds
+4. If unchanged: Skips deploy (saves build minutes)
+
+**Smart Features:**
+- Detects content changes via manifest diff
+- Detects code changes (excludes `[ci skip]` commits)
+- Only deploys when necessary
+- Commits user-friendly messages
 
 **Selective Deployment Logic:**
-- `scripts/ignore-netlify-build.sh` compares `share-meta.hash` (featured projects + public posts)
-- Only rebuilds if content changes (saves build minutes)
+- `scripts/ignore-netlify-build.sh` checks last commit message for deploy markers
+- Only builds if `[deploy]` or `[force-deploy]` present
+- Prevents unnecessary builds (e.g., README updates)
 
 ### Build Process
 
