@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { BlogPost, Project } from '../../types';
 import { CloseButton } from '../common/CloseButton';
 import { SocialShare } from '../SocialShare';
@@ -10,6 +10,7 @@ import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { saveScrollPosition } from '../../utils/scrollRestoration';
 
 interface BlogPostViewProps { 
     allPosts: BlogPost[]; 
@@ -19,6 +20,7 @@ interface BlogPostViewProps {
 export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProjects }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const post = allPosts.find(p => (p.slug ? p.slug === slug : p.id === slug));
 
@@ -63,7 +65,17 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 type="article"
                 post={post}
             />
-            <CloseButton onClick={() => navigate('/journal')} />
+            <CloseButton onClick={() => {
+                // Save current page scroll position before navigating back
+                saveScrollPosition(location.pathname);
+                
+                const from = (location.state as any)?.from as string | undefined;
+                if (from) {
+                    navigate(-1);
+                } else {
+                    navigate('/journal');
+                }
+            }} />
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-black/40 z-10"></div>
@@ -133,7 +145,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                     <div className="my-16 border-t border-b border-white/10 py-8">
                         <span className={`${THEME.typography.meta} text-text-muted mb-4 block`}>Associated Project</span>
                         <div 
-                            onClick={() => navigate(`/work/${relatedProject.slug || relatedProject.id}`)}
+                            onClick={() => navigate(`/work/${relatedProject.slug || relatedProject.id}`, { state: { from: location.pathname + location.search } })}
                             className="group cursor-pointer flex gap-6 items-center"
                         >
                             <div className="w-24 h-16 bg-gray-900 overflow-hidden shrink-0">

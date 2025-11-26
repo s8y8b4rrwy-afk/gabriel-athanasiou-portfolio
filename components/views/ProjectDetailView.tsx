@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Project, BlogPost } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { CloseButton } from '../common/CloseButton';
@@ -12,6 +12,7 @@ import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
 import { generateProceduralThumbnail } from '../../utils/thumbnailGenerator';
+import { saveScrollPosition } from '../../utils/scrollRestoration';
 
 interface ProjectDetailViewProps { 
     allProjects: Project[];
@@ -78,6 +79,7 @@ const groupAwardsByFestival = (awards: string[]): { festival: string; awards: st
 export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     
     // Find project based on URL param
     const project = allProjects.find(p => (p.slug ? p.slug === slug : p.id === slug));
@@ -237,7 +239,17 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 document.body
             )}
 
-            {!isPlaying && <CloseButton onClick={() => navigate('/work')} />}
+            {!isPlaying && <CloseButton onClick={() => {
+                // Save current page scroll position before navigating back
+                saveScrollPosition(location.pathname);
+                
+                const from = (location.state as any)?.from as string | undefined;
+                if (from) {
+                    navigate(-1);
+                } else {
+                    navigate('/');
+                }
+            }} />}
 
             {/* --- HERO SECTION --- */}
             <div className={`w-full ${THEME.projectDetail.heroHeight} relative bg-black overflow-hidden`}>
@@ -388,7 +400,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         <div className="mb-12">
                             <p className={`${THEME.typography.meta} text-text-muted mb-4 border-b border-white/10 pb-2`}>Behind the Scenes</p>
                             <button 
-                                onClick={() => navigate(`/journal/${relatedPost.slug || relatedPost.id}`)}
+                                onClick={() => navigate(`/journal/${relatedPost.slug || relatedPost.id}`, { state: { from: location.pathname + location.search } })}
                                 className="text-left group w-full"
                             >
                                 <span className={`block ${THEME.typography.h3} text-white group-hover:opacity-70 transition`}>{relatedPost.title} &rarr;</span>

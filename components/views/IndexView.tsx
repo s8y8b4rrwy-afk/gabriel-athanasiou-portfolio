@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
@@ -23,6 +24,7 @@ interface IndexViewProps {
  */
 export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Session Storage Persistence
     const [filter, setFilter] = useState<string>(() => sessionStorage.getItem('filmographyFilter') || THEME.filmography.defaultTab);
@@ -111,7 +113,9 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                             {displayProjects.map((p, i) => (
                                 <div 
                                     key={p.id}
-                                    onClick={() => navigate(`/work/${p.slug || p.id}`)}
+                                    onClick={() => {
+                                        navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
+                                    }}
                                     onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
                                     onMouseLeave={() => onHover({ url: null, fallback: null })}
                                     className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0`}
@@ -194,7 +198,9 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                         {displayProjects.map((p, i) => (
                             <div 
                                 key={p.id} 
-                                onClick={() => navigate(`/work/${p.slug || p.id}`)}
+                                onClick={() => {
+                                    navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
+                                }}
                                 className="group cursor-pointer flex flex-col"
                                 style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
                             >

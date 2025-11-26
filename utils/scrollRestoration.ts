@@ -42,10 +42,26 @@ export const restoreScrollPosition = (pathname: string): void => {
     const savedPosition = positions[pathname];
     
     if (savedPosition !== undefined) {
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        window.scrollTo(0, savedPosition);
-      });
+      // Try restoring after layout settles; retry a few frames for images/content
+      let attempts = 0;
+      const maxAttempts = 10; // ~10 frames
+      const tryRestore = () => {
+        attempts++;
+        const maxScrollable = document.documentElement.scrollHeight - window.innerHeight;
+        const target = Math.min(savedPosition, Math.max(0, maxScrollable));
+        
+        if (maxScrollable <= 0 && attempts < maxAttempts) {
+          requestAnimationFrame(tryRestore);
+          return;
+        }
+        
+        window.scrollTo(0, target);
+        // If content is still growing and we haven't reached target, retry briefly
+        if (attempts < maxAttempts && Math.abs(window.scrollY - target) > 2) {
+          requestAnimationFrame(tryRestore);
+        }
+      };
+      requestAnimationFrame(tryRestore);
     } else {
       // New visit to this list page, scroll to top
       window.scrollTo(0, 0);

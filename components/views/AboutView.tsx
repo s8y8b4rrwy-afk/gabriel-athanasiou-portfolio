@@ -2,12 +2,16 @@
 import React from 'react';
 import { HomeConfig } from '../../types';
 import { THEME } from '../../theme';
+import { useLocation, useNavigate } from 'react-router-dom';
+// import { saveScrollPosition } from '../../utils/scrollRestoration';
 
 interface AboutViewProps {
     config: HomeConfig;
 }
 
 export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
+    const location = useLocation();
+    const navigate = useNavigate();
     return (
         <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between`}>
             {/* Scroll Top on Mount */}
@@ -40,6 +44,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
                                     <a 
                                         href={`mailto:${config.contact.email}`} 
                                         className={`${THEME.typography.h3} text-white hover:opacity-70 transition mb-6 decoration-transparent block`}
+                                        // onClick={() => saveScrollPosition(location.pathname)}
                                     >
                                         {config.contact.email}
                                     </a>

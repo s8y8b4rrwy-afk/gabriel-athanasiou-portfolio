@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { BlogPost } from '../../types';
 import { THEME } from '../../theme';
 import { OptimizedImage } from '../common/OptimizedImage';
@@ -21,6 +22,7 @@ interface BlogViewProps {
  */
 export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [filter, setFilter] = useState<string>("All");
     
@@ -57,7 +59,9 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                     {displayPosts.map((post, i) => (
                         <article 
                             key={post.id} 
-                            onClick={() => navigate(`/journal/${post.slug || post.id}`)}
+                            onClick={() => {
+                                navigate(`/journal/${post.slug || post.id}`);
+                            }}
                             className="group cursor-pointer border-b border-white/10 pb-16"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >

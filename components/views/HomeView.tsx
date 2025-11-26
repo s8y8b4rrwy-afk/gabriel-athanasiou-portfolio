@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { THEME } from '../../theme';
@@ -23,6 +24,7 @@ interface HomeViewProps {
  */
 export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const showShowreel = config.showreel?.enabled && config.showreel.videoUrl;
     const featuredProjects = projects.filter(p => p.isFeatured);
@@ -47,7 +49,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         </div>
                      </div>
                 ) : heroProject ? (
-                    <div onClick={() => navigate(`/work/${heroProject.slug || heroProject.id}`)} className="w-full h-full relative">
+                    <div onClick={() => {
+                        navigate(`/work/${heroProject.slug || heroProject.id}`, { state: { from: location.pathname + location.search } });
+                    }} className="w-full h-full relative">
                         <div 
                             className={`absolute inset-0 bg-black z-10 transition ${THEME.animation.medium}`}
                             style={{ opacity: THEME.hero.overlayOpacity }}
@@ -84,7 +88,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     {gridProjects.map((p, i) => (
                         <div 
                             key={p.id} 
-                            onClick={() => navigate(`/work/${p.slug || p.id}`)}
+                            onClick={() => {
+                                navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
+                            }}
                             className="group block cursor-pointer"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
@@ -111,10 +117,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     <div className="border-t border-white/10 pt-16 mb-40">
                         <div className="flex justify-between items-end mb-12">
                             <span className={`${THEME.typography.meta} text-text-muted`}>Featured Journal</span>
-                            <button onClick={() => navigate('/journal')} className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>All Entries</button>
+                            <button onClick={() => {
+                                navigate('/journal', { state: { from: location.pathname + location.search } });
+                            }} className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>All Entries</button>
                         </div>
                         <div 
-                            onClick={() => navigate(`/journal/${featuredPost.slug || featuredPost.id}`)}
+                            onClick={() => {
+                                navigate(`/journal/${featuredPost.slug || featuredPost.id}`, { state: { from: location.pathname + location.search } });
+                            }}
                             className={`group cursor-pointer grid grid-cols-1 ${THEME.blog.grid.columns} ${THEME.blog.grid.gap} items-center`}
                         >
                             <div className="aspect-[3/2] overflow-hidden bg-gray-900">
@@ -149,7 +159,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                 
                 <div className="pt-12 border-t border-white/10 flex flex-col items-center">
                     <button 
-                        onClick={() => navigate('/about')} 
+                        onClick={() => {
+                            navigate('/about');
+                        }} 
                         className={`${THEME.typography.h2} hover:text-text-muted transition duration-500 ${THEME.animation.ease} mix-blend-difference text-white`}
                     >
                         About & Contact

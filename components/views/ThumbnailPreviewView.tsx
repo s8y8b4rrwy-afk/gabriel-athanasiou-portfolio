@@ -8,6 +8,8 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
 import { ThumbnailVariant, getVariantsForType } from '../../utils/thumbnailGenerator';
 import { THEME } from '../../theme';
@@ -31,6 +33,8 @@ const SAMPLE_PROJECTS: PreviewProject[] = [
 ];
 
 export const ThumbnailPreviewView: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedVariant, setSelectedVariant] = useState<ThumbnailVariant>('geometric');
   const [customTitle, setCustomTitle] = useState('Your Project Title');
   const [customYear, setCustomYear] = useState('2024');
@@ -42,7 +46,14 @@ export const ThumbnailPreviewView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-bg-main text-white animate-view-enter pb-20">
-      <CloseButton to="/" />
+      <CloseButton onClick={() => {
+        const from = (location.state as any)?.from as string | undefined;
+        if (from) {
+          navigate(-1);
+        } else {
+          navigate('/');
+        }
+      }} />
       
       <div className={`${THEME.header.paddingX} pt-32 md:pt-40 max-w-7xl mx-auto`}>
         

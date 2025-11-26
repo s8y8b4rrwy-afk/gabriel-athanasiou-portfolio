@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Project, BlogPost, HomeConfig } from './types';
 import { cmsService } from './services/cmsService';
@@ -9,7 +9,7 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
-import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
+// import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
 // Lazy load view components for code splitting
 const HomeView = lazy(() => import('./components/views/HomeView').then(m => ({ default: m.HomeView })));
@@ -38,6 +38,7 @@ export default function App() {
   const [hoveredImage, setHoveredImage] = useState<{ url: string | null; fallback: string | null }>({ url: null, fallback: null });
   
   const location = useLocation();
+  const previousPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const init = async () => {
@@ -58,22 +59,10 @@ export default function App() {
     init();
   }, []);
 
-  // Smart scroll restoration on route change
-  useEffect(() => {
-    // Save scroll position before navigating away
-    return () => {
-      saveScrollPosition(location.pathname);
-    };
-  }, [location.pathname]);
-
-  // Restore scroll position and track page view
+  // Always scroll to top on route change and track page view
   useEffect(() => {
     setHoveredImage({ url: null, fallback: null });
-    
-    // Restore scroll position intelligently
-    restoreScrollPosition(location.pathname);
-    
-    // Track page view for analytics
+    window.scrollTo(0, 0);
     const pageTitle = getPageTitle(location.pathname);
     analyticsService.trackPageView(location.pathname, pageTitle);
   }, [location.pathname]);

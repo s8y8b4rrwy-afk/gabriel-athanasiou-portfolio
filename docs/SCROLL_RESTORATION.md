@@ -35,6 +35,18 @@ Project and journal detail pages always open scrolled to the top:
 ### Other Pages
 All other pages follow default behavior (scroll to top).
 
+## Interaction with “Close” (Return-to-Opener)
+
+Detail pages (projects and journal posts) prefer returning to the page that opened them. We pass `state.from` when navigating into a detail page from a list or featured card. The Close button then uses browser back (`navigate(-1)`) when that state exists, falling back to a sensible default otherwise.
+
+- From Home (`/`) → Project or Journal: Close returns to Home and restores its scroll.
+- From Work (`/work` with filters) → Project: Close returns to the same filtered list and restores its scroll.
+- From Project → Related Journal: Close returns back to that Project.
+- From Journal → Associated Project: Close returns back to that Journal post.
+- Direct opens (no prior page): Close falls back to `/` or `/journal`.
+
+Because scroll positions are keyed by pathname and saved when leaving list pages, using back navigation lands on the exact prior history entry and restores its saved scroll automatically.
+
 ## Implementation
 
 ### Files
@@ -94,6 +106,11 @@ All other pages follow default behavior (scroll to top).
 7. Press back again
 8. Verify `/work` is at position A
 
+### Test Close + Restoration
+1. From Home, open the Featured Journal → press Close → verify you return to Home with the same scroll.
+2. From Work with a filter applied, open a Project → press Close → verify you return to the filtered list and the same scroll.
+3. From a Project, open its related Journal → press Close → verify you return to the Project.
+
 ## API Reference
 
 ### `saveScrollPosition(pathname: string)`
@@ -136,3 +153,4 @@ const LIST_PAGES = ['/', '/work', '/journal', '/about', '/thumbnails'];
 **Conflicts with page transitions?**
 - Scroll restoration uses `requestAnimationFrame` to wait for DOM
 - Works seamlessly with PageTransition component animations
+ - Ensure navigations into details pass `state.from` when you want Close to return to opener.
