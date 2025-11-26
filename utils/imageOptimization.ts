@@ -30,7 +30,17 @@ export const getOptimizedImageUrl = (
   index: number = 0,
   totalImages: number = 1
 ): string => {
-  if (!recordId || !fallbackUrl) return fallbackUrl || '';
+  // If no fallback URL provided, return empty string
+  if (!fallbackUrl) {
+    console.warn(`getOptimizedImageUrl: No fallback URL provided for record ${recordId}`);
+    return '';
+  }
+  
+  // If no record ID, return fallback URL directly
+  if (!recordId) {
+    console.warn(`getOptimizedImageUrl: No record ID provided, using fallback URL`);
+    return fallbackUrl;
+  }
   
   // Build optimized image path - matches optimization script naming:
   // Single image: project-{id}.webp

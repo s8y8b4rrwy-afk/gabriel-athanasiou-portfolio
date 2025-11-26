@@ -58,6 +58,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async'
 }) => {
+  // If no fallback URL provided, don't render anything
+  if (!fallbackUrl) {
+    console.error('OptimizedImage: No fallback URL provided');
+    return null;
+  }
+
   const optimizedUrl = useMemo(() => (
     getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages)
   ), [recordId, fallbackUrl, type, index, totalImages]);
@@ -71,10 +77,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   const handleError = () => {
-    if (!triedFallback && currentSrc !== fallbackUrl) {
+    // Only try fallback once and only if fallback URL exists and is different
+    if (!triedFallback && fallbackUrl && currentSrc !== fallbackUrl) {
+      console.log(`Failed to load optimized image, trying fallback: ${fallbackUrl}`);
       setTriedFallback(true);
       setIsLoaded(false);
       setCurrentSrc(fallbackUrl);
+    } else {
+      // If fallback also fails or doesn't exist, mark as loaded to prevent infinite loop
+      console.error(`Failed to load image: ${currentSrc}`);
+      setIsLoaded(true);
     }
   };
 
@@ -86,7 +98,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       decoding={decoding}
       onLoad={handleLoad}
       onError={handleError}
-      className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={`${className} transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
     />
   );
 };
