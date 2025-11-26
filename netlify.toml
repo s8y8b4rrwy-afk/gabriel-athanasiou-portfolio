@@ -9,9 +9,7 @@ publish = "dist"
 [[plugins]]
   package = "netlify-plugin-cache"
   [plugins.inputs]
-    paths = [
-      "public/images/portfolio"
-    ]
+    paths = ["dist/images/portfolio", "public/images/portfolio"]
 
 [dev]
 targetPort = 3003
