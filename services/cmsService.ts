@@ -9,6 +9,7 @@ import { instagramService } from './instagramService';
 import { makeUniqueSlug } from '../utils/slugify';
 import { getVideoId, resolveVideoUrl, getEmbedUrl, fetchVideoThumbnail } from '../utils/videoHelpers';
 import { normalizeTitle, parseCreditsText, calculateReadingTime } from '../utils/textHelpers';
+import { generatePlaceholder } from '../utils/placeholderGenerator';
 
 // Re-export commonly used utilities for backwards compatibility
 export { getEmbedUrl, calculateReadingTime };// ==========================================
@@ -361,7 +362,16 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
             
             // ASYNC THUMBNAIL FETCH
             const autoThumbnail = await fetchVideoThumbnail(videoUrl);
-            const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
+            
+            // Generate sophisticated placeholder if no image available
+            const generatedPlaceholder = generatePlaceholder({
+                title: normalizeTitle(f['Name']),
+                year: rawDate ? rawDate.substring(0, 4) : undefined,
+                type: type,
+                style: 'gradient'
+            });
+            
+            const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || generatedPlaceholder);
 
             // Filter roles to only show Allowed Roles from Settings
             const allRoles = f['Role'] || [];
