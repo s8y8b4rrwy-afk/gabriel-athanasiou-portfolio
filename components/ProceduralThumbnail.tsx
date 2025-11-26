@@ -40,6 +40,12 @@ export interface ProceduralThumbnailProps {
   
   /** Decode hint */
   decoding?: 'async' | 'sync' | 'auto';
+
+  /** Show large title overlay */
+  showTitle?: boolean;
+
+  /** Show small metadata overlay */
+  showMetadata?: boolean;
 }
 
 /**
@@ -68,7 +74,9 @@ export const ProceduralThumbnail: React.FC<ProceduralThumbnailProps> = React.mem
   className = '',
   alt,
   loading = 'lazy',
-  decoding = 'async'
+  decoding = 'async',
+  showTitle = true,
+  showMetadata = true
 }) => {
   // Generate SVG data URL (memoized)
   const dataUrl = useMemo(() => {
@@ -78,9 +86,11 @@ export const ProceduralThumbnail: React.FC<ProceduralThumbnailProps> = React.mem
       type,
       variant,
       width,
-      height
+      height,
+      showTitle,
+      showMetadata
     });
-  }, [title, year, type, variant, width, height]);
+  }, [title, year, type, variant, width, height, showTitle, showMetadata]);
   
   return (
     <img
@@ -110,7 +120,8 @@ export function useProceduralThumbnail(
   type?: string,
   variant?: ThumbnailVariant,
   width?: number,
-  height?: number
+  height?: number,
+  options?: { showTitle?: boolean; showMetadata?: boolean }
 ): string {
   return useMemo(() => {
     return generateProceduralThumbnail({
@@ -119,7 +130,9 @@ export function useProceduralThumbnail(
       type,
       variant,
       width,
-      height
+      height,
+      showTitle: options?.showTitle ?? true,
+      showMetadata: options?.showMetadata ?? true
     });
-  }, [title, year, type, variant, width, height]);
+  }, [title, year, type, variant, width, height, options?.showTitle, options?.showMetadata]);
 }

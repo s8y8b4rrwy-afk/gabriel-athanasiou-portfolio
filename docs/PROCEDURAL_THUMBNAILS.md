@@ -13,6 +13,8 @@ The portfolio now features a sophisticated **procedural thumbnail generation sys
 - **Zero External Requests**: Instant rendering, no network calls
 - **Themeable**: Uses site color palette and typography from `theme.ts`
 - **5 Visual Variants**: Geometric, Minimal, Film-strip, Grid, and Radial patterns
+- **Animated Hero Support**: Subtle hue/gradient drift when used as hero art
+- **Textless Mode**: Hide title/year/type for clean hero backgrounds
 - **Type-Specific Palettes**: Different color schemes for Narrative, Commercial, Music Video, Documentary
 - **Scalable**: Vector graphics, perfect at any resolution
 - **Memoized**: React components use memoization for optimal performance
@@ -85,7 +87,10 @@ import { useProceduralThumbnail } from './components/ProceduralThumbnail';
 const thumbnailUrl = useProceduralThumbnail(
   'Project Title',
   '2024',
-  'Narrative'
+  'Narrative',
+  undefined,
+  undefined,
+  { showTitle: false, showMetadata: false } // ← textless hero background
 );
 
 // Use as background-image or src
@@ -230,7 +235,10 @@ font-family="${THEME.fonts.sans}, sans-serif"
 ### 2. **ProjectDetailView**
 
 - **Hero Background**: Uses procedural thumbnail when no `videoUrl` and no `gallery` images exist
+- **Animated Hero**: When procedural is used, a subtle color drift + gradient animation is applied
+- **Textless**: Hero uses `showTitle=false` and `showMetadata=false` for clean artwork
 - **Slideshow**: Integrated into slideshow slides array as first slide
+- **CTA Button**: When no hero video is available, a styled CTA appears; clicking navigates to `/about` (tracked as `contact_cta_click`)
 
 ### 3. **CMS Service**
 
@@ -354,6 +362,9 @@ Variants are **deterministic**. If you want a different variant for the same pro
 
 ### Colors Don't Match Theme
 
+### Hero CTA Placement (Mobile)
+On mobile, the CTA is centered in the hero for clarity (`absolute inset-0 flex items-center justify-center`). On larger screens, it moves to the bottom-right (`md:bottom-24 md:right-12`). You can tweak these classes in `ProjectDetailView.tsx` to match any header/hero changes.
+
 The color palettes in `thumbnailGenerator.ts` are separate from `theme.ts`. Update `TYPE_PALETTES` to match your site colors.
 
 ---
@@ -371,6 +382,8 @@ The color palettes in `thumbnailGenerator.ts` are separate from `theme.ts`. Upda
 - `variant` (ThumbnailVariant, optional): Visual variant
 - `width` (number, optional): Width in pixels (default: 1200)
 - `height` (number, optional): Height in pixels (default: 675)
+- `showTitle` (boolean, optional): Show large title text (default: true)
+- `showMetadata` (boolean, optional): Show year/type labels (default: true)
 
 ### `<ProceduralThumbnail />` Component
 
@@ -382,7 +395,7 @@ React component with same props as `generateProceduralThumbnail` plus:
 
 ### `useProceduralThumbnail()` Hook
 
-Returns SVG data URL. Same parameters as `generateProceduralThumbnail`.
+Returns SVG data URL. Parameters are the same as `generateProceduralThumbnail`, with an optional options object `{ showTitle?: boolean; showMetadata?: boolean }`.
 
 ---
 

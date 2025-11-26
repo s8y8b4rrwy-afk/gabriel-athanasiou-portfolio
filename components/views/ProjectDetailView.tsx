@@ -11,6 +11,7 @@ import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
+import { generateProceduralThumbnail } from '../../utils/thumbnailGenerator';
 
 interface ProjectDetailViewProps { 
     allProjects: Project[];
@@ -125,7 +126,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const proceduralUrl = useProceduralThumbnail(
         project.title,
         project.year,
-        project.type
+        project.type,
+        undefined,
+        undefined,
+        undefined,
+        { showTitle: false, showMetadata: false }
     );
     
     // Get optimized image URLs for slideshow
@@ -237,12 +242,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
             <div className={`w-full ${THEME.projectDetail.heroHeight} relative bg-black overflow-hidden`}>
                 {/* Updated Gradient: Fades only at the very bottom (25%) */}
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
+                {/* Animated overlay for procedural hero */}
+                {shouldUseProcedural && <div className="hero-anim-gradient z-[5]"></div>}
                 
                 {/* Slideshow */}
                 {slides.map((slide, index) => (
                     <div 
                         key={index}
-                        className={`absolute inset-0 transition-opacity ${THEME.animation.superSlow} ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute inset-0 transition-opacity ${THEME.animation.superSlow} ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'} ${slide.isProcedural ? 'hero-anim' : ''}`}
                     >
                          <img 
                             src={slide.optimized}
@@ -255,7 +262,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             className={`w-full h-full object-cover ease-linear will-change-transform
                                 ${isLowRes && !slide.isProcedural
                                     ? 'animate-slow-spin blur-[60px] md:blur-[60px] opacity-100 saturate-[2.0] brightness-325 contrast-125' 
-                                    : `transition-transform duration-[6000ms] ${index === currentSlide ? 'scale-105' : 'scale-100'} opacity-80`
+                                    : `transition-transform duration-[6000ms] ${index === currentSlide ? 'scale-105' : 'scale-100'} ${slide.isProcedural ? 'opacity-100 saturate-[1.25] brightness-110 contrast-110' : 'opacity-80'}`
                                 }
                             `} 
                             alt={`${project.title} - Image ${index + 1}`} 
@@ -263,7 +270,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     </div>
                 ))}
                 
-                <div className="absolute bottom-12 md:bottom-24 right-6 md:right-12 z-30">
+                <div className="absolute inset-0 flex items-center justify-center md:inset-auto md:flex-none md:block md:bottom-24 md:right-12 md:top-auto md:left-auto z-30">
                     {hasHeroVideo ? (
                         <button 
                             onClick={handleWatchClick}
@@ -275,9 +282,19 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             </div>
                         </button>
                     ) : (
-                        <div className="bg-black/40 backdrop-blur-md px-4 py-3 border border-white/10 rounded-md">
-                                <span className={`${THEME.typography.meta} text-white/80`}>Contact to request viewing link</span>
-                        </div>
+                        <button 
+                            onClick={() => {
+                                analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
+                                navigate('/about');
+                            }}
+                            className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                            aria-label="Contact to request viewing link"
+                        >
+                            <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
+                            >
+                                <span className={`${THEME.typography.meta} tracking-[0.25em]`}>CONTACT TO REQUEST VIEWING LINK</span>
+                            </div>
+                        </button>
                     )}
                 </div>
                 
@@ -478,12 +495,28 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                 : THEME.projectDetail.nextProject.overlayOpacity 
                         }}
                     ></div>
-                    
-                    <img 
-                        src={getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)}
-                        onError={(e) => { e.currentTarget.src = nextProject.heroImage; }}
-                        className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform`} 
-                    />
+                    {(() => {
+                        const hasHero = !!nextProject.heroImage;
+                        const shouldProcedural = !hasHero && (!nextProject.gallery || nextProject.gallery.length === 0) && !nextProject.videoUrl;
+                        const src = hasHero
+                          ? getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)
+                          : generateProceduralThumbnail({
+                              title: nextProject.title,
+                              year: nextProject.year,
+                              type: nextProject.type,
+                              width: 1600,
+                              height: 900,
+                              showTitle: false,
+                              showMetadata: false
+                            });
+                        return (
+                          <img 
+                            src={src}
+                            onError={(e) => { if (hasHero) e.currentTarget.src = nextProject.heroImage; }}
+                            className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform ${!hasHero ? 'saturate-[1.2] brightness-110 contrast-110' : ''}`} 
+                          />
+                        );
+                    })()}
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 mix-blend-difference text-white">
                         <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
                         <h2 className={`${THEME.typography.h1} group-hover:scale-105 transition duration-1000 ${THEME.animation.ease}`}>{nextProject.title}</h2>

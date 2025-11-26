@@ -13,6 +13,9 @@ A complete **procedural thumbnail generation system** that creates elegant, dete
 ✅ **Zero External Requests**: Instant rendering, no network latency  
 ✅ **Themeable**: Uses site color palette from `theme.ts`  
 ✅ **5 Visual Variants**: Geometric, Minimal, Film-strip, Grid, Radial  
+✅ **Animated Hero (Textless)**: Subtle color drift + gradient when used as hero  
+✅ **Flags**: `showTitle` and `showMetadata` for clean hero artwork  
+✅ **Next Project Fallback**: Procedural background when next item lacks hero image  
 ✅ **Type-Specific Colors**: Different palettes for Narrative, Commercial, Music Video, Documentary  
 ✅ **Memoized React Components**: Optimized for performance  
 ✅ **Auto-Fallback**: Automatically shows when `videoUrl` is missing  

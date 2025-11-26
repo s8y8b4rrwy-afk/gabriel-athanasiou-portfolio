@@ -30,6 +30,31 @@ export const GlobalStyles: React.FC = () => {
         color: ${THEME.colors.textMain};
       }
       
+      /* Procedural hero animation: subtle evolving color + gradient drift */
+      @keyframes heroHue {
+        0% { filter: hue-rotate(0deg) saturate(1.05) contrast(1.03); }
+        50% { filter: hue-rotate(180deg) saturate(1.20) contrast(1.06); }
+        100% { filter: hue-rotate(360deg) saturate(1.05) contrast(1.03); }
+      }
+      @keyframes gradientShift {
+        0% { transform: translate3d(0,0,0) scale(1); opacity: 0.35; }
+        100% { transform: translate3d(2%, -2%, 0) scale(1.02); opacity: 0.55; }
+      }
+      .hero-anim {
+        animation: heroHue 24s linear infinite;
+        will-change: filter, transform;
+      }
+      .hero-anim-gradient {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        background:
+          radial-gradient(120% 80% at 20% 20%, rgba(255,255,255,0.06), transparent 60%),
+          radial-gradient(120% 80% at 80% 80%, rgba(255,255,255,0.05), transparent 60%);
+        animation: gradientShift 18s ease-in-out infinite alternate;
+      }
+      
       /* Blog post link styling */
       .blog-content a {
         color: rgba(255, 255, 255, 0.9);

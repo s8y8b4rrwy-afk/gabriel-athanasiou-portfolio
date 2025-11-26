@@ -28,6 +28,10 @@ export interface ThumbnailConfig {
   variant?: ThumbnailVariant;
   width?: number;
   height?: number;
+  /** Show large title text overlay */
+  showTitle?: boolean;
+  /** Show small metadata (year/type) */
+  showMetadata?: boolean;
 }
 
 // Color palettes per project type (muted, sophisticated gradients)
@@ -322,7 +326,9 @@ export function generateProceduralThumbnail(config: ThumbnailConfig): string {
     type = 'Uncategorized',
     variant = 'geometric',
     width = 1200,
-    height = 675
+    height = 675,
+    showTitle = true,
+    showMetadata = true
   } = config;
   
   // Generate deterministic seed from project metadata
@@ -332,12 +338,8 @@ export function generateProceduralThumbnail(config: ThumbnailConfig): string {
   // Select color palette
   const colors = getColorPalette(type, seed);
   
-  // Auto-select variant based on type if not specified
-  let selectedVariant = variant;
-  if (!variant || variant === 'geometric') {
-    const variants: ThumbnailVariant[] = ['geometric', 'minimal', 'film-strip', 'grid', 'radial'];
-    selectedVariant = pickFromArray(variants, seed);
-  }
+  // Default to film-strip variant (perfect for cinematography portfolio)
+  let selectedVariant = variant || 'film-strip';
   
   // Generate pattern based on variant
   let pattern = '';
@@ -359,65 +361,34 @@ export function generateProceduralThumbnail(config: ThumbnailConfig): string {
       break;
   }
   
-  // Escape title for SVG
-  const safeTitle = title
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-  
-  // Split title into lines if too long
-  const titleWords = safeTitle.split(' ');
-  let titleLines: string[] = [];
-  let currentLine = '';
-  
-  for (const word of titleWords) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
-    if (testLine.length > 20 && currentLine) {
-      titleLines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
+  // Prepare title rendering if enabled
+  let titleBlock = '';
+  let metaBlock = '';
+  if (showTitle) {
+    const safeTitle = title
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const titleWords = safeTitle.split(' ');
+    let titleLines: string[] = [];
+    let currentLine = '';
+    for (const word of titleWords) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (testLine.length > 20 && currentLine) {
+        titleLines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
     }
-  }
-  if (currentLine) titleLines.push(currentLine);
-  
-  // Limit to 3 lines
-  titleLines = titleLines.slice(0, 3);
-  
-  // Calculate font size based on title length
-  const fontSize = titleLines.length > 2 ? 56 : titleLines.length > 1 ? 72 : 96;
-  const lineHeight = fontSize * 1.15;
-  const startY = height / 2 - ((titleLines.length - 1) * lineHeight) / 2;
-  
-  // Generate SVG
-  const svg = `
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg-gradient-${seed}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${colors.primary};stop-opacity:1" />
-      <stop offset="100%" style="stop-color:${colors.secondary};stop-opacity:1" />
-    </linearGradient>
-    
-    <filter id="grain-${seed}">
-      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" />
-      <feColorMatrix type="saturate" values="0"/>
-      <feBlend in="SourceGraphic" mode="multiply" />
-    </filter>
-  </defs>
-  
-  <!-- Background -->
-  <rect width="${width}" height="${height}" fill="url(#bg-gradient-${seed})" />
-  
-  <!-- Film grain overlay -->
-  <rect width="${width}" height="${height}" filter="url(#grain-${seed})" opacity="0.05" />
-  
-  <!-- Pattern layer -->
-  <g opacity="0.8">
-    ${pattern}
-  </g>
-  
+    if (currentLine) titleLines.push(currentLine);
+    titleLines = titleLines.slice(0, 3);
+    const fontSize = titleLines.length > 2 ? 56 : titleLines.length > 1 ? 72 : 96;
+    const lineHeight = fontSize * 1.15;
+    const startY = height / 2 - ((titleLines.length - 1) * lineHeight) / 2;
+    titleBlock = `
   <!-- Title -->
   <text 
     x="50%" 
@@ -433,8 +404,11 @@ export function generateProceduralThumbnail(config: ThumbnailConfig): string {
     ${titleLines.map((line, i) => 
       `<tspan x="50%" dy="${i === 0 ? 0 : lineHeight}">${line}</tspan>`
     ).join('\n    ')}
-  </text>
+  </text>`;
+  }
   
+  if (showMetadata) {
+    metaBlock = `
   <!-- Metadata (Year + Type) -->
   <g opacity="0.6">
     ${year ? `
@@ -462,7 +436,37 @@ export function generateProceduralThumbnail(config: ThumbnailConfig): string {
       fill="white"
       opacity="0.5"
     >${type}</text>
+  </g>`;
+  }
+  
+  // Generate SVG
+  const svg = `
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient-${seed}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:${colors.primary};stop-opacity:1" />
+      <stop offset="100%" style="stop-color:${colors.secondary};stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="grain-${seed}">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" />
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" mode="multiply" />
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="${width}" height="${height}" fill="url(#bg-gradient-${seed})" />
+  
+  <!-- Film grain overlay -->
+  <rect width="${width}" height="${height}" filter="url(#grain-${seed})" opacity="0.05" />
+  
+  <!-- Pattern layer -->
+  <g opacity="0.8">
+    ${pattern}
   </g>
+  ${titleBlock}
+  ${metaBlock}
 </svg>`.trim();
   
   // Convert to data URL

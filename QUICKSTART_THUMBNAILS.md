@@ -54,7 +54,8 @@ Concentric circles from center—works well for music videos.
 
 ✅ **Filmography Grid** — Shows when project has no `videoUrl`  
 ✅ **Filmography List** — Mobile thumbnail view  
-✅ **Project Detail Hero** — Background when no video + no gallery  
+✅ **Project Detail Hero** — Background when no video + no gallery (animated, textless)  
+✅ **Next Project Fallback** — Procedural background if next item lacks image  
 ✅ **Preview Page** — Interactive testing at `/thumbnails`  
 
 ---
@@ -96,6 +97,23 @@ const TYPE_PALETTES = {
   variant="film-strip"  // ← Force this variant
 />
 ```
+
+### Textless Hero Background
+
+```tsx
+import { useProceduralThumbnail } from './components/ProceduralThumbnail';
+
+const url = useProceduralThumbnail(
+  project.title,
+  project.year,
+  project.type,
+  undefined,
+  undefined,
+  { showTitle: false, showMetadata: false }
+);
+```
+
+This produces a clean, animated hero visual without embedded title/year.
 
 ---
 

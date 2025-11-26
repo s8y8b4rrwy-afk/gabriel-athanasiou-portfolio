@@ -8,6 +8,22 @@
 
 ## 🎉 Recent Major Changes
 
+### November 26, 2025 - Procedural Hero Animation, CTA, and Fallbacks
+**What Changed:** Procedural SVG artwork is now used as an animated, textless hero when no video/gallery is present. The contact CTA is interactive (routes to About), and the Next Project panel falls back to a procedural visual if it lacks an image.
+
+**Details:**
+- Textless hero art via `useProceduralThumbnail(title, year, type, undefined, undefined, { showTitle: false, showMetadata: false })`
+- Animated look: `hero-anim` (hue rotation) and `hero-anim-gradient` (gradient drift) injected in `GlobalStyles.tsx`
+- Visual punch: procedural slide adds mild `saturate`, `brightness`, and `contrast` boosts
+- Hero CTA: when no video, a button appears that navigates to `/about` and tracks `contact_cta_click`
+  - Mobile: CTA centered in hero (no overlap with title)
+  - md+: CTA bottom-right (`md:bottom-24 md:right-12`)
+- Next Project fallback: if no image/video, render textless procedural background via `generateProceduralThumbnail()`
+
+**Files Updated:** `components/views/ProjectDetailView.tsx`, `components/GlobalStyles.tsx`, `components/ProceduralThumbnail.tsx`, `utils/thumbnailGenerator.ts`, `docs/PROCEDURAL_THUMBNAILS.md`, `PROCEDURAL_THUMBNAILS_SUMMARY.md`, `QUICKSTART_THUMBNAILS.md`
+
+---
+
 ### November 26, 2025 - Performance Optimization (PageSpeed Improvements)
 **What Changed:** Major performance improvements based on PageSpeed Insights analysis.
 
@@ -1272,6 +1288,11 @@ cachedData = null;  // Clear cached data
 4. **Keep comments in code accurate and up-to-date**
 5. **Document breaking changes prominently**
 6. **Never commit without updating documentation**
+
+**Guide Aliases for AI Agents/Bots**
+- Canonical guide: `AI_AGENT_GUIDE.md`
+- Aliases (kept in sync): `copilot-instructions.md`, `COPILOT.md`
+- Why: Some assistants scan for conventional filenames; these aliases ensure discovery.
 
 **Documentation Checklist Before Committing:**
 - [ ] AI_AGENT_GUIDE.md updated with changes
