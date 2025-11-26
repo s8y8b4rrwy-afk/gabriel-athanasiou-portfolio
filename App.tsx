@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Project, BlogPost, HomeConfig } from './types';
 import { cmsService } from './services/cmsService';
@@ -9,13 +9,14 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 
-// View Components
-import { HomeView } from './components/views/HomeView';
-import { IndexView } from './components/views/IndexView';
-import { ProjectDetailView } from './components/views/ProjectDetailView';
-import { BlogView } from './components/views/BlogView';
-import { BlogPostView } from './components/views/BlogPostView';
-import { AboutView } from './components/views/AboutView';
+// Lazy load view components for code splitting
+const HomeView = lazy(() => import('./components/views/HomeView').then(m => ({ default: m.HomeView })));
+const IndexView = lazy(() => import('./components/views/IndexView').then(m => ({ default: m.IndexView })));
+const ProjectDetailView = lazy(() => import('./components/views/ProjectDetailView').then(m => ({ default: m.ProjectDetailView })));
+const BlogView = lazy(() => import('./components/views/BlogView').then(m => ({ default: m.BlogView })));
+const BlogPostView = lazy(() => import('./components/views/BlogPostView').then(m => ({ default: m.BlogPostView })));
+const AboutView = lazy(() => import('./components/views/AboutView').then(m => ({ default: m.AboutView })));
+const ThumbnailPreviewView = lazy(() => import('./components/views/ThumbnailPreviewView').then(m => ({ default: m.ThumbnailPreviewView })));
 
 // Helper function to get page title from pathname
 const getPageTitle = (pathname: string): string => {
@@ -25,6 +26,7 @@ const getPageTitle = (pathname: string): string => {
   if (pathname === '/journal') return 'Journal';
   if (pathname.startsWith('/journal/')) return 'Journal Post';
   if (pathname === '/about') return 'About';
+  if (pathname === '/thumbnails') return 'Thumbnail Preview';
   return 'Page';
 };
 
@@ -67,7 +69,12 @@ export default function App() {
       <Navigation showLinks={true} />
 
       <main>
-        <Routes>
+        <Suspense fallback={
+          <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">
+            Loading...
+          </div>
+        }>
+          <Routes>
             <Route path="/" element={
                 <>
                     <SEO />
@@ -116,6 +123,13 @@ export default function App() {
                     <AboutView config={data.config} />
                 </>
             } />
+            
+            <Route path="/thumbnails" element={
+                 <>
+                    <SEO title="Thumbnail Preview" />
+                    <ThumbnailPreviewView />
+                </>
+            } />
 
             {/* Fallback to Home */}
             <Route path="*" element={
@@ -128,7 +142,8 @@ export default function App() {
                     />
                 </>
             } />
-        </Routes>
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );
