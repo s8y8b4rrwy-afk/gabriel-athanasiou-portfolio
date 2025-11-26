@@ -39,12 +39,19 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
-      const result = await cmsService.fetchAll();
-      setData(result);
-      setLoading(false);
-      
-      // Initialize analytics with your Measurement ID
-      analyticsService.init('G-EJ62G0X6Q5');
+      try {
+        const result = await cmsService.fetchAll();
+        setData(result);
+        setLoading(false);
+        
+        // Initialize analytics with your Measurement ID
+        analyticsService.init('G-EJ62G0X6Q5');
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        setLoading(false);
+        // Set empty data to prevent crashes
+        setData({ projects: [], posts: [], config: {} });
+      }
     };
     init();
   }, []);
