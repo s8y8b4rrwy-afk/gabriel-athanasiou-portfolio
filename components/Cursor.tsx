@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { THEME } from '../theme';
 
 interface CursorProps {
@@ -9,6 +10,7 @@ interface CursorProps {
 
 export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) => {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const portalContainerRef = useRef<HTMLDivElement | null>(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -18,6 +20,13 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) =
   const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Create a detached portal container appended directly to body to avoid
+    // any transformed ancestors affecting fixed positioning.
+    const container = document.createElement('div');
+    container.setAttribute('data-cursor-portal', '');
+    portalContainerRef.current = container;
+    document.body.appendChild(container);
+
     // Only enable custom cursor if device supports hover (desktop)
     const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     if (mediaQuery.matches) {
@@ -60,6 +69,10 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) =
       window.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
       if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      if (portalContainerRef.current) {
+        document.body.removeChild(portalContainerRef.current);
+        portalContainerRef.current = null;
+      }
     };
   }, []);
 
@@ -93,7 +106,7 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) =
 
   if (!isEnabled || !shouldRender) return null;
 
-  return (
+  const cursorContent = (
     <div 
       ref={cursorRef}
       className={`hidden md:block fixed top-0 left-0 pointer-events-none z-[150] ${THEME.ui.cursor.size} aspect-video ${THEME.ui.cursor.radius} overflow-hidden shadow-2xl transition-opacity ${THEME.ui.cursor.fadeOutDuration} ease-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
@@ -117,4 +130,8 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) =
       </div>
     </div>
   );
+
+  // Render via portal to `document.body` so that position: fixed is relative
+  // to the viewport and not influenced by any transformed ancestors.
+  return portalContainerRef.current ? createPortal(cursorContent, portalContainerRef.current) : null;
 };
