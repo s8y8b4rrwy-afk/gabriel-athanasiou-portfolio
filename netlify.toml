@@ -5,6 +5,14 @@ publish = "dist"
  # Only build when commit message contains [deploy] or [force-deploy]
  ignore = "bash scripts/ignore-netlify-build.sh"
 
+# Cache optimized images between builds
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = [
+      "public/images/portfolio"
+    ]
+
 [dev]
 targetPort = 3003
 port = 8888
