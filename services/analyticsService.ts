@@ -21,6 +21,7 @@ interface AnalyticsEvent {
 class AnalyticsService {
   private measurementId: string = '';
   private isInitialized: boolean = false;
+  private isBlocked: boolean = false;
 
   /**
    * Initialize Google Analytics
@@ -28,13 +29,16 @@ class AnalyticsService {
    * @param measurementId - Your GA4 measurement ID (G-XXXXXXXXXX)
    */
   public init(measurementId: string): void {
-    if (this.isInitialized) return;
+    if (this.isInitialized || this.isBlocked) return;
     
     this.measurementId = measurementId;
 
     // PERFORMANCE: Defer GTM loading until after page is interactive
     const loadGTM = () => {
       try {
+        // Check if analytics is already blocked
+        if (this.isBlocked) return;
+
         // Load the gtag script with async
         const script = document.createElement('script');
         script.async = true;
@@ -42,32 +46,44 @@ class AnalyticsService {
         
         // Handle script load errors (blocked by ad blockers)
         script.onerror = () => {
-          console.warn('⚠️ Analytics blocked by ad blocker or privacy extension');
+          console.info('ℹ️ Analytics disabled (ad blocker detected)');
+          this.isBlocked = true;
           this.isInitialized = false;
         };
         
+        script.onload = () => {
+          try {
+            // Double-check that gtag actually loaded
+            if (typeof (window as any).gtag === 'undefined') {
+              // Initialize dataLayer
+              (window as any).dataLayer = (window as any).dataLayer || [];
+              
+              function gtag(this: any, ...args: any[]) {
+                (window as any).dataLayer.push(arguments);
+              }
+              
+              (window as any).gtag = gtag;
+            }
+            
+            (window as any).gtag('js', new Date());
+            (window as any).gtag('config', measurementId, {
+              'anonymize_ip': true,
+              'allow_google_signals': false,
+              'allow_ad_personalization_signals': false
+            });
+
+            this.isInitialized = true;
+            console.info('✅ Analytics enabled');
+          } catch (err) {
+            this.isBlocked = true;
+            console.info('ℹ️ Analytics disabled');
+          }
+        };
+        
         document.head.appendChild(script);
-
-        // Initialize dataLayer
-        (window as any).dataLayer = (window as any).dataLayer || [];
-        
-        function gtag(this: any, ...args: any[]) {
-          (window as any).dataLayer.push(arguments);
-        }
-        
-        (window as any).gtag = gtag;
-        (window as any).gtag('js', new Date());
-        (window as any).gtag('config', measurementId, {
-          'anonymize_ip': true,  // Privacy-friendly: don't store full IPs
-          'allow_google_signals': false,  // Don't use Google Signals for remarketing
-          'allow_ad_personalization_signals': false
-        });
-
-        this.isInitialized = true;
-        console.log('✅ Analytics initialized with ID:', measurementId);
       } catch (error) {
-        console.warn('⚠️ Analytics initialization failed (likely blocked):', error);
-        this.isInitialized = false;
+        this.isBlocked = true;
+        console.info('ℹ️ Analytics disabled');
       }
     };
 
@@ -87,16 +103,17 @@ class AnalyticsService {
    * @param title - Page title (e.g., 'My Project')
    */
   public trackPageView(path: string, title: string): void {
-    if (!this.isInitialized) return;
+    if (!this.isInitialized || this.isBlocked) return;
 
     try {
-      (window as any).gtag('config', this.measurementId, {
-        page_path: path,
-        page_title: title,
-      });
+      if (typeof (window as any).gtag === 'function') {
+        (window as any).gtag('config', this.measurementId, {
+          page_path: path,
+          page_title: title,
+        });
+      }
     } catch (error) {
-      // Silently fail if gtag is blocked
-      console.debug('Analytics blocked:', error);
+      // Silently fail
     }
   }
 
@@ -109,15 +126,14 @@ class AnalyticsService {
    * @param eventData - Additional data about the event
    */
   public trackEvent(eventName: string, eventData: AnalyticsEvent = {}): void {
-    if (!this.isInitialized) {
-      return; // Silently fail
-    }
+    if (!this.isInitialized || this.isBlocked) return;
 
     try {
-      (window as any).gtag('event', eventName, eventData);
+      if (typeof (window as any).gtag === 'function') {
+        (window as any).gtag('event', eventName, eventData);
+      }
     } catch (error) {
-      // Silently fail if gtag is blocked
-      console.debug('Analytics blocked:', error);
+      // Silently fail
     }
   }
 
