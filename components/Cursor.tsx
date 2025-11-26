@@ -21,21 +21,44 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) =
     // Only enable custom cursor if device supports hover (desktop)
     const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     if (mediaQuery.matches) {
-        setIsEnabled(true);
+      setIsEnabled(true);
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (mediaQuery.matches) {
-        mousePos.current = { x: e.clientX, y: e.clientY };
-        if (cursorRef.current) {
-          cursorRef.current.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
-        }
+    let rafId: number | null = null;
+
+    const updateCursorPosition = () => {
+      if (mediaQuery.matches && cursorRef.current) {
+        const { x, y } = mousePos.current;
+        cursorRef.current.style.transform = `translate(${x + 20}px, ${y + 20}px)`;
       }
     };
 
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+      updateCursorPosition();
+    };
+
+    // On scroll, animate cursor position for a few frames for smoothness
+    const handleScroll = () => {
+      let frames = 0;
+      const animate = () => {
+        updateCursorPosition();
+        frames++;
+        if (frames < 10) {
+          rafId = requestAnimationFrame(animate);
+        } else {
+          rafId = null;
+        }
+      };
+      if (!rafId) animate();
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
       if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
     };
   }, []);
