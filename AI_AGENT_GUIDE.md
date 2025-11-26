@@ -8,6 +8,23 @@
 
 ## 🎉 Recent Major Changes
 
+### November 26, 2025 - Image Loading Optimization
+**What Changed:** Fixed image lazy loading with clean fade-in effect.
+
+**Details:**
+- Removed shimmer loading animation that caused flickering when switching categories
+- Implemented simple opacity transition for smooth fade-in
+- Images start at `opacity-0` to avoid broken icon flash during lazy load
+- Fixed fallback URL handling to properly reset loading state
+- Preserved hover breathing animations on thumbnails (no interference with parent transitions)
+- Component uses `useMemo` for optimized URL generation
+
+**Impact:** Smooth, flicker-free experience when navigating between categories, clean fade-in on initial load, and proper hover scale animations.
+
+**Files Updated:** `components/common/OptimizedImage.tsx`
+
+---
+
 ### November 26, 2025 - Procedural Hero Animation, CTA, and Fallbacks
 **What Changed:** Procedural SVG artwork is now used as an animated, textless hero when no video/gallery is present. The contact CTA is interactive (routes to About), and the Next Project panel falls back to a procedural visual if it lacks an image.
 
@@ -440,8 +457,9 @@ analyticsService.trackVideoPlay(project.id, project.title);
 ```
 - Standardized image component for all views
 - Serves optimized local WebP (`/images/portfolio/{type}-{recordId}.webp`)
-- Automatic shimmer loading + fade-in (no broken icon during lazy load)
+- Clean fade-in effect (starts invisible to avoid broken icon during lazy load)
 - Automatic fallback to Airtable URL on error
+- Preserves parent component's hover animations (breathing scale effects)
 - Minimizes boilerplate and keeps UX consistent
 
 **Usage locations (required):**

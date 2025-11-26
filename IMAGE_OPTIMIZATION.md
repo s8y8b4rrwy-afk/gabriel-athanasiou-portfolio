@@ -133,7 +133,7 @@ All image-displaying components now use the unified **OptimizedImage** component
 
 ## Fallback Behavior
 
-Use `OptimizedImage` for built-in fallback and loading animation:
+Use `OptimizedImage` for built-in fallback and smooth fade-in:
 
 ```tsx
 <OptimizedImage
@@ -146,7 +146,7 @@ Use `OptimizedImage` for built-in fallback and loading animation:
 /> 
 ```
 
-Fallback automatically switches to the Airtable URL if the local WebP is missing or fails. Users never see broken image icons; a shimmer placeholder displays until the image loads.
+Fallback automatically switches to the Airtable URL if the local WebP is missing or fails. Images start invisible (`opacity-0`) to avoid broken icon flash during lazy load, then smoothly fade in when loaded using the parent's transition classes.
 
 ## Git Ignore
 
