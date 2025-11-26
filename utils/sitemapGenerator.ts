@@ -8,7 +8,7 @@ export const generateSitemap = async (): Promise<string> => {
   try {
     const { projects, posts } = await cmsService.fetchAll();
     
-    const baseUrl = 'https://gabrielathanasiou.com';
+    const baseUrl = 'https://directedbygabriel.com';
     const currentDate = new Date().toISOString().split('T')[0];
 
     // Start XML
@@ -86,7 +86,7 @@ export const generateSitemap = async (): Promise<string> => {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gabrielathanasiou.com/</loc>
+    <loc>https://directedbygabriel.com/</loc>
     <priority>1.0</priority>
   </url>
 </urlset>`;

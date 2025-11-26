@@ -118,7 +118,7 @@ All projects are included in `sitemap.xml` with:
 - **Other projects**: Priority 0.7
 
 Sitemap is automatically generated during build and located at:
-`https://gabrielathanasiou.com/sitemap.xml`
+`https://directedbygabriel.com/sitemap.xml`
 
 ## Robots.txt
 
@@ -128,7 +128,7 @@ Configured to allow all search engines with special permissions for:
 - Twitter/X
 - LinkedIn
 
-Location: `https://gabrielathanasiou.com/robots.txt`
+Location: `https://directedbygabriel.com/robots.txt`
 
 ## How to Verify SEO
 
@@ -141,7 +141,7 @@ Location: `https://gabrielathanasiou.com/robots.txt`
 Test any project page:
 https://search.google.com/test/rich-results
 
-Paste URL like: `https://gabrielathanasiou.com/work/your-project-2024`
+Paste URL like: `https://directedbygabriel.com/work/your-project-2024`
 
 ### 3. Schema Validator
 https://validator.schema.org/
