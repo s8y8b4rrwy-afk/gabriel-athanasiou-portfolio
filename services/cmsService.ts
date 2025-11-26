@@ -521,7 +521,11 @@ const processProjects = async (records: any[], awardsMap: Record<string, string>
             const autoThumbnail = await fetchVideoThumbnail(videoUrl);
             const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
 
-            const myRoles = (f['Role'] || []).map((r: string) => ({ role: r, name: 'Gabriel Athanasiou' }));
+            // Filter roles to only show Allowed Roles from Settings
+            const allRoles = f['Role'] || [];
+            const myRoles = allRoles
+                .filter((r: string) => allowedRoles.length === 0 || allowedRoles.includes(r))
+                .map((r: string) => ({ role: r, name: 'Gabriel Athanasiou' }));
             
             let extraCredits: {role: string, name: string}[] = [];
             const rawCreditsText = f['Credits Text'] || f['Credits'];

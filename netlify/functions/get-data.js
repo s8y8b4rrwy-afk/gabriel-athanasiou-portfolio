@@ -261,8 +261,11 @@ const getDataHandler = async (event, context) => {
 
       const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
 
-      // CREDITS
-      const myRoles = (record.get('Role') || []).map(r => ({ role: r, name: 'Gabriel Athanasiou' }));
+      // CREDITS - Filter roles to only show Allowed Roles from Settings
+      const allRoles = record.get('Role') || [];
+      const myRoles = allRoles
+          .filter(r => allowedRoles.length === 0 || allowedRoles.includes(r))
+          .map(r => ({ role: r, name: 'Gabriel Athanasiou' }));
       let extraCredits = [];
       const rawCreditsText = record.get('Credits Text') || record.get('Credits');
       if (rawCreditsText) {
