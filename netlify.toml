@@ -6,10 +6,10 @@ publish = "dist"
  ignore = "bash scripts/ignore-netlify-build.sh"
 
 # Cache optimized images between builds
-# [[plugins]]
-#   package = "netlify-plugin-cache"
-#   [plugins.inputs]
-#     paths = ["dist/images/portfolio", "public/images/portfolio"]
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = ["dist/images/portfolio", "public/images/portfolio"]
 
 # Browser caching for static assets
 [[headers]]
