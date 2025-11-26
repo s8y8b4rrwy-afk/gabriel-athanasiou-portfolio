@@ -33,7 +33,7 @@ const getPageTitle = (pathname: string): string => {
 export default function App() {
   const [data, setData] = useState<{ projects: Project[], posts: BlogPost[], config: HomeConfig }>({ projects: [], posts: [], config: {} });
   const [loading, setLoading] = useState(true);
-  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  const [hoveredImage, setHoveredImage] = useState<{ url: string | null; fallback: string | null }>({ url: null, fallback: null });
   
   const location = useLocation();
 
@@ -52,7 +52,7 @@ export default function App() {
   // Scroll to top on route change and track page view
   useEffect(() => {
     window.scrollTo(0, 0);
-    setHoveredImage(null);
+    setHoveredImage({ url: null, fallback: null });
     
     // Track page view for analytics
     const pageTitle = getPageTitle(location.pathname);
@@ -64,7 +64,7 @@ export default function App() {
   return (
     <div className="bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased">
       <GlobalStyles />
-      <Cursor activeImageUrl={hoveredImage} />
+      <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
       
       <Navigation showLinks={true} />
 

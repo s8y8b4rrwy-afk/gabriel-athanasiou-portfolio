@@ -4,14 +4,16 @@ import { THEME } from '../theme';
 
 interface CursorProps {
   activeImageUrl: string | null;
+  fallbackUrl?: string | null;
 }
 
-export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
+export const Cursor: React.FC<CursorProps> = ({ activeImageUrl, fallbackUrl }) => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [displayImage, setDisplayImage] = useState<string | null>(null);
+  const [imageFallback, setImageFallback] = useState<string | null>(null);
   const mousePos = useRef({ x: 0, y: 0 });
   const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,6 +50,7 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
       }
       // Update display image immediately
       setDisplayImage(activeImageUrl);
+      setImageFallback(fallbackUrl || null);
       // Render and then show
       setShouldRender(true);
       requestAnimationFrame(() => {
@@ -60,9 +63,10 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
       fadeTimeoutRef.current = setTimeout(() => {
         setShouldRender(false);
         setDisplayImage(null);
+        setImageFallback(null);
       }, 300); // Match the duration-300 CSS transition
     }
-  }, [activeImageUrl]);
+  }, [activeImageUrl, fallbackUrl]);
 
   if (!isEnabled || !shouldRender) return null;
 
@@ -78,6 +82,11 @@ export const Cursor: React.FC<CursorProps> = ({ activeImageUrl }) => {
         {displayImage && (
           <img 
             src={displayImage} 
+            onError={(e) => { 
+              if (imageFallback && e.currentTarget.src !== imageFallback) {
+                e.currentTarget.src = imageFallback;
+              }
+            }}
             alt="Preview" 
             className="w-full h-full object-cover"
           />

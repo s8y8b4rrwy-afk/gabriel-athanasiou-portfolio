@@ -8,7 +8,7 @@ import { ProceduralThumbnail } from '../ProceduralThumbnail';
 
 interface IndexViewProps { 
     projects: Project[]; 
-    onHover: (url: string | null) => void;
+    onHover: (image: { url: string | null; fallback: string | null }) => void;
 }
 
 export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
@@ -102,8 +102,8 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                 <div 
                                     key={p.id}
                                     onClick={() => navigate(`/work/${p.slug || p.id}`)}
-                                    onMouseEnter={() => onHover(p.heroImage)}
-                                    onMouseLeave={() => onHover(null)}
+                                    onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
+                                    onMouseLeave={() => onHover({ url: null, fallback: null })}
                                     className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0 animate-fade-in-up opacity-0`}
                                     style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'forwards' }}
                                 >

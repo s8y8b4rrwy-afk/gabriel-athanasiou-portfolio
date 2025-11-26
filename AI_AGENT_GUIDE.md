@@ -434,10 +434,16 @@ getOptimizedImageUrl(recordId, fallbackUrl, type, index, totalImages)
 - Used in **all view components** for image rendering (display + social meta tags)
 - **Usage locations:**
   - `HomeView.tsx` - Hero project, featured grid, journal posts
-  - `IndexView.tsx` - Filmography thumbnails
+  - `IndexView.tsx` - Filmography thumbnails, hover preview cursor
   - `ProjectDetailView.tsx` - Gallery slideshow, SEO meta tags, next project preview
   - `BlogView.tsx` - Journal post covers
   - `BlogPostView.tsx` - Cover images, SEO meta tags, related projects
+  - `Cursor.tsx` - Hover preview thumbnails with fallback support
+
+**Fallback Mechanism:**
+- Every `<img>` tag includes an `onError` handler that switches to the Airtable URL if the optimized WebP fails
+- Browser only downloads Airtable image if local WebP is missing or fails to load
+- Ensures zero downtime even if optimization hasn't run yet
 
 #### C. Manual Verification (`scripts/test-image-fetch.mjs`)
 ```bash
