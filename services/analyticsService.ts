@@ -34,29 +34,41 @@ class AnalyticsService {
 
     // PERFORMANCE: Defer GTM loading until after page is interactive
     const loadGTM = () => {
-      // Load the gtag script with async
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-      document.head.appendChild(script);
+      try {
+        // Load the gtag script with async
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+        
+        // Handle script load errors (blocked by ad blockers)
+        script.onerror = () => {
+          console.warn('⚠️ Analytics blocked by ad blocker or privacy extension');
+          this.isInitialized = false;
+        };
+        
+        document.head.appendChild(script);
 
-      // Initialize dataLayer
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      
-      function gtag(this: any, ...args: any[]) {
-        (window as any).dataLayer.push(arguments);
+        // Initialize dataLayer
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        
+        function gtag(this: any, ...args: any[]) {
+          (window as any).dataLayer.push(arguments);
+        }
+        
+        (window as any).gtag = gtag;
+        (window as any).gtag('js', new Date());
+        (window as any).gtag('config', measurementId, {
+          'anonymize_ip': true,  // Privacy-friendly: don't store full IPs
+          'allow_google_signals': false,  // Don't use Google Signals for remarketing
+          'allow_ad_personalization_signals': false
+        });
+
+        this.isInitialized = true;
+        console.log('✅ Analytics initialized with ID:', measurementId);
+      } catch (error) {
+        console.warn('⚠️ Analytics initialization failed (likely blocked):', error);
+        this.isInitialized = false;
       }
-      
-      (window as any).gtag = gtag;
-      (window as any).gtag('js', new Date());
-      (window as any).gtag('config', measurementId, {
-        'anonymize_ip': true,  // Privacy-friendly: don't store full IPs
-        'allow_google_signals': false,  // Don't use Google Signals for remarketing
-        'allow_ad_personalization_signals': false
-      });
-
-      this.isInitialized = true;
-      console.log('✅ Analytics initialized with ID:', measurementId);
     };
 
     // Load after page is interactive (non-blocking)
@@ -77,10 +89,15 @@ class AnalyticsService {
   public trackPageView(path: string, title: string): void {
     if (!this.isInitialized) return;
 
-    (window as any).gtag('config', this.measurementId, {
-      page_path: path,
-      page_title: title,
-    });
+    try {
+      (window as any).gtag('config', this.measurementId, {
+        page_path: path,
+        page_title: title,
+      });
+    } catch (error) {
+      // Silently fail if gtag is blocked
+      console.debug('Analytics blocked:', error);
+    }
   }
 
   /**
@@ -93,14 +110,15 @@ class AnalyticsService {
    */
   public trackEvent(eventName: string, eventData: AnalyticsEvent = {}): void {
     if (!this.isInitialized) {
-      console.warn('Analytics not initialized. Call init() first.');
-      return;
+      return; // Silently fail
     }
 
-    (window as any).gtag('event', eventName, eventData);
-    
-    // Log to console for debugging (remove in production if verbose)
-    console.log(`📊 Event tracked: ${eventName}`, eventData);
+    try {
+      (window as any).gtag('event', eventName, eventData);
+    } catch (error) {
+      // Silently fail if gtag is blocked
+      console.debug('Analytics blocked:', error);
+    }
   }
 
   /**
