@@ -38,12 +38,52 @@ The optimization script is **smart**:
 
 ```
 /public/images/portfolio/
-  ├── project-{recordId}.webp        # Single project image
-  ├── project-{recordId}-0.webp      # First gallery image
+  ├── project-{recordId}.webp        # Single project image (rare)
+  ├── project-{recordId}-0.webp      # First gallery image (most common)
   ├── project-{recordId}-1.webp      # Second gallery image
-  ├── journal-{recordId}.webp        # Journal cover image
+  ├── project-{recordId}-2.webp      # Third gallery image
+  ├── journal-{recordId}.webp        # Journal cover image (single, no suffix)
   └── ...
 ```
+
+### ⚠️ CRITICAL: File Naming Convention
+
+The optimization script generates files with **index suffixes** when a project has multiple gallery images:
+
+- **Single image**: `project-{id}.webp` (no suffix) — Rare case
+- **Multiple images** (most projects): `project-{id}-0.webp`, `project-{id}-1.webp`, etc.
+
+**This means thumbnails MUST pass the correct `totalImages` prop to match the actual file names.**
+
+### Correct Component Usage
+
+✅ **CORRECT** — Will load optimized WebP:
+```tsx
+<OptimizedImage
+  recordId={project.id}
+  fallbackUrl={project.heroImage}
+  type="project"
+  index={0}
+  totalImages={project.gallery?.length || 2}  // ← Matches file naming
+  alt={project.title}
+/>
+```
+
+❌ **INCORRECT** — Will fail and fallback to JPEG:
+```tsx
+<OptimizedImage
+  recordId={project.id}
+  fallbackUrl={project.heroImage}
+  type="project"
+  // Missing index/totalImages - looks for project-{id}.webp which doesn't exist
+/>
+```
+
+**Why this matters:**
+- Without `totalImages`, the component defaults to looking for `project-{id}.webp`
+- But the actual file is `project-{id}-0.webp` (because most projects have galleries)
+- This causes the component to fail and fallback to the original Airtable JPEG
+- Result: Slower load times and larger file sizes
 
 ## Build Process
 
@@ -123,13 +163,49 @@ To change filters, edit the Airtable `select()` calls in `optimize-images.mjs`.
 
 ## Components Updated
 
-All image-displaying components now use the unified **OptimizedImage** component:
+All image-displaying components now use the unified **OptimizedImage** component with proper `index` and `totalImages` props:
 
-- ✅ `HomeView.tsx` — Hero, grid, featured journal
-- ✅ `IndexView.tsx` — List and grid thumbnails
+- ✅ `HomeView.tsx` — Hero, grid, featured journal (includes `index={0}` and `totalImages`)
+- ✅ `IndexView.tsx` — List and grid thumbnails (includes `index={0}` and `totalImages`)
 - ✅ `BlogView.tsx` — Journal entry covers
 - ✅ `BlogPostView.tsx` — Post hero, related project thumbnail
-- ⚠️ `ProjectDetailView.tsx` — Slideshow retains absolute-positioned `<img>` for now; consider an absolute-friendly `OptimizedImage` variant
+- ⚠️ `ProjectDetailView.tsx` — Slideshow uses `getOptimizedImageUrl()` directly with correct params
+
+### Implementation Details
+
+Each view now passes the required props to ensure correct file path generation:
+
+```tsx
+// HomeView.tsx - Hero & Featured Grid
+<OptimizedImage
+  recordId={project.id}
+  fallbackUrl={project.heroImage}
+  type="project"
+  index={0}
+  totalImages={project.gallery?.length || 2}  // ← Critical for matching file names
+  alt={project.title}
+/>
+
+// IndexView.tsx - Thumbnails
+<OptimizedImage
+  recordId={p.id}
+  fallbackUrl={p.heroImage}
+  type="project"
+  index={0}
+  totalImages={p.gallery?.length || 2}  // ← Critical for matching file names
+  alt={p.title}
+/>
+
+// Journal entries (single images, no gallery)
+<OptimizedImage
+  recordId={post.id}
+  fallbackUrl={post.imageUrl}
+  type="journal"
+  index={0}
+  totalImages={1}  // ← Journals typically have single images
+  alt={post.title}
+/>
+```
 
 ## Fallback Behavior
 
@@ -140,6 +216,8 @@ Use `OptimizedImage` for built-in fallback and smooth fade-in:
   recordId={recordId}
   fallbackUrl={fallbackUrl}
   type="project"
+  index={0}
+  totalImages={gallery?.length || 2}  // ← REQUIRED to match file naming
   alt={title}
   className="w-full h-full object-cover"
   loading="lazy"
@@ -147,6 +225,14 @@ Use `OptimizedImage` for built-in fallback and smooth fade-in:
 ```
 
 Fallback automatically switches to the Airtable URL if the local WebP is missing or fails. Images start invisible (`opacity-0`) to avoid broken icon flash during lazy load, then smoothly fade in when loaded using the parent's transition classes.
+
+### Why totalImages is Required
+
+The optimization script generates files based on the number of gallery images:
+- If `totalImages > 1` in the script → generates `project-{id}-0.webp`
+- If `totalImages = 1` in the script → generates `project-{id}.webp`
+
+Since most projects have multiple gallery images, the files are typically named with the `-0` suffix. Components MUST pass `totalImages={gallery?.length || 2}` to match this naming convention. Without it, the component looks for the wrong filename and falls back to the slower JPEG.
 
 ## Git Ignore
 

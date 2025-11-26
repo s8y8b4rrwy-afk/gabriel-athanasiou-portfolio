@@ -63,6 +63,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             recordId={heroProject.id}
                             fallbackUrl={heroProject.heroImage}
                             type="project"
+                            index={0}
+                            totalImages={heroProject.gallery?.length || 2}
                             alt={heroProject.title}
                             loading="eager"
                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
@@ -99,6 +101,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     recordId={p.id}
                                     fallbackUrl={p.heroImage}
                                     type="project"
+                                    index={0}
+                                    totalImages={p.gallery?.length || 2}
                                     alt={p.title}
                                     loading="lazy"
                                     className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
@@ -133,6 +137,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                         recordId={featuredPost.id}
                                         fallbackUrl={featuredPost.imageUrl}
                                         type="journal"
+                                        index={0}
+                                        totalImages={1}
                                         alt={featuredPost.title}
                                         loading="lazy"
                                         className="w-full h-full object-cover transform-gpu grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700 ease-out"

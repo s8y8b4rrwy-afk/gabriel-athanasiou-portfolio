@@ -23,6 +23,35 @@
  * 
  *  The parent's transition classes will control hover behavior, while this component
  *  only handles the initial fade-in on load.
+ * 
+ *  ⚠️ CRITICAL: totalImages PARAMETER
+ *  -----------------------------------
+ *  ALWAYS pass totalImages prop to match the optimization script's file naming:
+ *  - Most projects have gallery images, so files are named: project-{id}-0.webp
+ *  - Without totalImages, it looks for: project-{id}.webp (which doesn't exist)
+ *  - This causes unnecessary fallback to JPEGs from Airtable
+ * 
+ *  ✅ CORRECT USAGE:
+ *  ```tsx
+ *  <OptimizedImage
+ *    recordId={project.id}
+ *    fallbackUrl={project.heroImage}
+ *    type="project"
+ *    index={0}
+ *    totalImages={project.gallery?.length || 2}  // ← REQUIRED for thumbnails
+ *    alt={project.title}
+ *  />
+ *  ```
+ * 
+ *  ❌ INCORRECT USAGE (will fail to load optimized images):
+ *  ```tsx
+ *  <OptimizedImage
+ *    recordId={project.id}
+ *    fallbackUrl={project.heroImage}
+ *    type="project"
+ *    // Missing index and totalImages - defaults to looking for non-existent file
+ *  />
+ *  ```
  */
 
 import React, { useState, useMemo } from 'react';
@@ -37,7 +66,11 @@ interface OptimizedImageProps {
   type?: 'project' | 'journal';
   /** Image index for galleries (default: 0) */
   index?: number;
-  /** Total images in gallery (for naming) */
+  /** 
+   * Total images in gallery (for naming consistency with optimization script).
+   * CRITICAL: Use project.gallery?.length || 2 for projects to match file naming.
+   * The optimization script generates files with -0 suffix when totalImages > 1.
+   */
   totalImages?: number;
   /** Alt text */
   alt: string;
@@ -55,12 +88,17 @@ interface OptimizedImageProps {
  * Displays optimized WebP images with smooth fade-in animation.
  * Automatically falls back to Airtable URL if optimized version fails.
  * 
+ * ⚠️ IMPORTANT: Always pass index and totalImages props for thumbnails.
+ * See component header documentation for correct usage examples.
+ * 
  * @example
  * ```tsx
  * <OptimizedImage
  *   recordId={project.id}
  *   fallbackUrl={project.heroImage}
  *   type="project"
+ *   index={0}
+ *   totalImages={project.gallery?.length || 2}
  *   alt={project.title}
  *   className="w-full h-full object-cover"
  * />

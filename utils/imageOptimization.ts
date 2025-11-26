@@ -17,11 +17,27 @@ export interface ResponsiveImageProps {
  * Get optimized image URL for a record
  * Returns local optimized image if available, otherwise falls back to Airtable URL
  * 
+ * ⚠️ CRITICAL: Always pass totalImages parameter for consistency
+ * 
+ * The optimization script generates images with index suffixes when totalImages > 1:
+ * - totalImages = 1: project-{id}.webp (no suffix)
+ * - totalImages > 1: project-{id}-0.webp, project-{id}-1.webp, etc.
+ * 
+ * In practice, most projects have multiple gallery images, so the script generates
+ * files with the -0, -1, -2 suffix pattern. To ensure thumbnails load correctly:
+ * 
+ * ✅ CORRECT (for projects with galleries):
+ * getOptimizedImageUrl(project.id, project.heroImage, 'project', 0, project.gallery.length || 2)
+ * 
+ * ❌ INCORRECT (will try to load project-{id}.webp which doesn't exist):
+ * getOptimizedImageUrl(project.id, project.heroImage, 'project', 0, 1)
+ * 
  * @param recordId - Airtable record ID
  * @param fallbackUrl - Original Airtable image URL
  * @param type - 'project' or 'journal'
  * @param index - Image index for multiple images (default: 0)
- * @param totalImages - Total number of images (if >1, adds index suffix even for first image)
+ * @param totalImages - Total number of images. MUST match optimization script output.
+ *                      Use project.gallery.length || 2 for safety.
  */
 export const getOptimizedImageUrl = (
   recordId: string,
