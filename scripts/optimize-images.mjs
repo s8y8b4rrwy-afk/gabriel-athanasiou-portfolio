@@ -29,8 +29,8 @@ const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_A
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
 
 const OUTPUT_DIR = path.resolve(__dirname, '../public/images/portfolio');
-const IMAGE_WIDTH = 1200; // Max width for optimized images (balanced for quality/performance)
-const IMAGE_QUALITY = 82; // WebP quality (80-85 is optimal for web)
+const IMAGE_WIDTH = 1600; // Max width for optimal quality on retina displays
+const IMAGE_QUALITY = 90; // WebP quality (90 = excellent quality, minimal artifacts)
 
 // ==========================================
 // UTILITIES

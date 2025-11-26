@@ -19,6 +19,7 @@ const BlogView = lazy(() => import('./components/views/BlogView').then(m => ({ d
 const BlogPostView = lazy(() => import('./components/views/BlogPostView').then(m => ({ default: m.BlogPostView })));
 const AboutView = lazy(() => import('./components/views/AboutView').then(m => ({ default: m.AboutView })));
 const ThumbnailPreviewView = lazy(() => import('./components/views/ThumbnailPreviewView').then(m => ({ default: m.ThumbnailPreviewView })));
+const ImageCompressionView = lazy(() => import('./components/views/ImageCompressionView').then(m => ({ default: m.ImageCompressionView })));
 
 // Helper function to get page title from pathname
 const getPageTitle = (pathname: string): string => {
@@ -29,6 +30,7 @@ const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith('/journal/')) return 'Journal Post';
   if (pathname === '/about') return 'About';
   if (pathname === '/thumbnails') return 'Thumbnail Preview';
+  if (pathname === '/compression') return 'Image Compression Comparison';
   return 'Page';
 };
 
@@ -147,6 +149,15 @@ export default function App() {
                       <ThumbnailPreviewView />
                   </>
               } />
+              {/* Internal tools - only in development */}
+              {import.meta.env.DEV && (
+                <Route path="/compression" element={
+                     <>
+                        <SEO title="Image Compression Comparison" />
+                        <ImageCompressionView />
+                    </>
+                } />
+              )}
 
               {/* Fallback to Home */}
               <Route path="*" element={

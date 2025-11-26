@@ -80,6 +80,8 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager';
   /** Decode hint */
   decoding?: 'async' | 'sync' | 'auto';
+  /** Use original JPEG on desktop/large devices (1024px+) for maximum quality */
+  useOriginalOnDesktop?: boolean;
 }
 
 /**
@@ -113,7 +115,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   alt,
   className = '',
   loading = 'lazy',
-  decoding = 'async'
+  decoding = 'async',
+  useOriginalOnDesktop = false
 }) => {
   // If no fallback URL provided, don't render anything
   if (!fallbackUrl) {
@@ -146,6 +149,28 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       setIsLoaded(true);
     }
   };
+
+  // For desktop-only original quality: use picture element with media queries
+  if (useOriginalOnDesktop) {
+    return (
+      <picture>
+        {/* Desktop (1024px+): Original JPEG for maximum quality */}
+        <source media="(min-width: 1024px)" srcSet={fallbackUrl} />
+        {/* Mobile/Tablet: Optimized WebP for performance */}
+        <source media="(max-width: 1023px)" srcSet={optimizedUrl} />
+        <img
+          src={optimizedUrl}
+          alt={alt}
+          loading={loading}
+          decoding={decoding}
+          onLoad={handleLoad}
+          onError={handleError}
+          className={`${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+          style={{ transition: isLoaded ? undefined : 'opacity 0.5s ease-out' }}
+        />
+      </picture>
+    );
+  }
 
   return (
     <img

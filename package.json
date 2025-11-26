@@ -7,6 +7,7 @@
     "dev": "vite",
     "optimize:images": "node scripts/optimize-images.mjs",
     "test:images": "node scripts/test-image-fetch.mjs",
+    "generate:compression": "node scripts/generate-compression-samples.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
     "build": "npm run optimize:images && npm run build:content && npm run build:sitemap && vite build",

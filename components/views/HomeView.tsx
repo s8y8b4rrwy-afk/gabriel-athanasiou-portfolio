@@ -67,6 +67,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             totalImages={heroProject.gallery?.length || 2}
                             alt={heroProject.title}
                             loading="eager"
+                            useOriginalOnDesktop={true}
                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>

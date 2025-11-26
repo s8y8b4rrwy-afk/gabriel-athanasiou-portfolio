@@ -14,7 +14,7 @@ During deployment, the system:
 - Fetches **featured projects** (Feature checkbox = TRUE)
 - Fetches **public/scheduled journal entries** (Status = "Public" OR "Scheduled")
 - Downloads only **new images** (not already optimized)
-- Optimizes images to **WebP format** (1600px width, 92% quality)
+- Optimizes images to **WebP format** (1200px width, 90% quality)
 - Saves optimized images to `/public/images/portfolio/`
 - **🆕 Automatically cleans up orphaned images** (deleted from Airtable)
 
@@ -149,8 +149,8 @@ The optimization script generates files with **index suffixes** when a project h
 Edit `/scripts/optimize-images.mjs`:
 
 ```javascript
-const IMAGE_WIDTH = 1600;     // Max width (good for retina displays)
-const IMAGE_QUALITY = 92;     // WebP quality (90-95 = visually lossless)
+const IMAGE_WIDTH = 1200;     // Max width (good for retina displays)
+const IMAGE_QUALITY = 90;     // WebP quality (90 = excellent quality, minimal compression artifacts)
 ```
 
 ### Filtering Logic

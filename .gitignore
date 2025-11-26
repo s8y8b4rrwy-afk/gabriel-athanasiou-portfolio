@@ -28,3 +28,8 @@ dist-ssr
 
 # Optimized images (regenerated on each build)
 public/images/portfolio/
+
+# Internal development tools
+public/images/compression-samples/
+config/compressionPresets.json
+docs/COMPRESSION_COMPARISON.md
