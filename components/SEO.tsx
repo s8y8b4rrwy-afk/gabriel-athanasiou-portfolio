@@ -84,7 +84,7 @@ export const SEO: React.FC<SEOProps> = ({
         "@type": isNarrative ? "Movie" : "VideoObject",
         "name": project.title,
         "description": project.description,
-        "image": project.heroImage,
+        "image": image, // Use optimized image URL passed as prop
         "url": siteUrl,
         ...(project.year && { "dateCreated": `${project.year}-01-01` }),
         
