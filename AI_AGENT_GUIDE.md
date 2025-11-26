@@ -6,6 +6,24 @@
 
 ---
 
+## 🎉 Recent Major Changes
+
+### November 26, 2025 - Code Refactoring: Shared Utilities
+**What Changed:** Eliminated ~590 lines of duplicate code by consolidating utilities into centralized modules.
+
+**New Shared Utilities:**
+- `utils/videoHelpers.ts` + `.mjs` - Video URL parsing, thumbnails, embed generation
+- `utils/textHelpers.ts` + `.mjs` - Text processing, normalization, reading time
+- `utils/slugify.mjs` - Slug generation for backend
+
+**Impact:** All video/text processing now uses single source of truth. Changes to video parsing (e.g., adding TikTok support) only need updating in one place.
+
+**Files Updated:** `cmsService.ts`, `get-data.js`, `sitemap.js`, `generate-share-meta.mjs`, `vite.config.ts`
+
+**See:** `REFACTORING_SUMMARY.md` for complete details.
+
+---
+
 ## ⚠️ CRITICAL: Read This First
 
 **FOR ALL AI AGENTS WORKING ON THIS CODEBASE:**
@@ -157,10 +175,134 @@ A production-ready portfolio website for Gabriel Athanasiou, a London/Athens-bas
 - Caches result in memory (`cachedData`) to avoid redundant calls
 - Instagram integration is DISABLED by default (toggle via `ENABLE_INSTAGRAM_INTEGRATION`)
 - Uses OEmbed for private/unlisted Vimeo videos
+- **Imports shared utilities** from `utils/videoHelpers` and `utils/textHelpers` (refactored Nov 2025)
 
 ---
 
-### 2. Analytics Service (`services/analyticsService.ts`)
+### 2. Shared Utilities System (`utils/`)
+
+**Purpose:** Centralized, reusable utilities used across frontend, backend, and build scripts.
+
+#### Architecture Overview
+- **TypeScript versions** (`.ts`) - Used by frontend React code
+- **ES Module versions** (`.mjs`) - Used by Netlify functions and Node.js scripts
+- **Single source of truth** - Changes apply everywhere automatically
+
+#### A. Video Helpers (`utils/videoHelpers.ts` / `.mjs`)
+
+**Functions:**
+```typescript
+getVideoId(url: string): { type: 'youtube' | 'vimeo' | null, id: string | null, hash?: string | null }
+// Extracts video ID from various URL formats
+// Supports: YouTube (watch, embed, youtu.be, shorts, live)
+//          Vimeo (with private hash support)
+
+resolveVideoUrl(url: string): Promise<string>
+// Resolves vanity URLs to canonical format
+// Uses OEmbed API for Vimeo vanity URLs
+
+getEmbedUrl(url: string, autoplay?: boolean, muted?: boolean): string | null
+// Generates iframe embed URL with optimal parameters
+// Returns null if URL is invalid
+
+fetchVideoThumbnail(url: string): Promise<string>
+// Gets best quality thumbnail URL
+// YouTube: maxresdefault.jpg
+// Vimeo: OEmbed API → vumbnail.com fallback
+```
+
+**Used By:**
+- `services/cmsService.ts` - Data fetching and processing
+- `components/VideoEmbed.tsx` - Video player component
+- `netlify/functions/get-data.js` - Server-side data API
+- `scripts/generate-share-meta.mjs` - Build-time manifest
+
+**Why Both Versions?**
+- `.ts` version uses browser `fetch()` API
+- `.mjs` version uses Node.js `https` module for server compatibility
+
+#### B. Text Helpers (`utils/textHelpers.ts` / `.mjs`)
+
+**Functions:**
+```typescript
+normalizeTitle(title: string): string
+// Converts "some_title-here" → "Some Title Here"
+// Title case with space normalization
+
+parseCreditsText(text: string): Array<{ role: string, name: string }>
+// Parses "Director: John Doe, Producer: Jane Smith"
+// Supports comma, pipe, and newline delimiters
+
+escapeHtml(text: string): string
+// Sanitizes HTML for safe meta tag injection
+// Used by edge functions for dynamic meta tags
+
+calculateReadingTime(content: string): string
+// Returns "X min read" based on 225 WPM
+// Strips HTML tags for accurate word count
+```
+
+**Used By:**
+- `services/cmsService.ts` - Title normalization, credits parsing
+- `netlify/functions/get-data.js` - Server-side processing
+- `netlify/functions/sitemap.js` - Sitemap generation
+- `netlify/edge-functions/meta-rewrite.ts` - Dynamic meta tags
+- `scripts/generate-share-meta.mjs` - Build-time manifest
+
+#### C. Slug Helpers (`utils/slugify.ts` / `.mjs`)
+
+**Functions:**
+```typescript
+slugify(input: string): string
+// Converts "My Project 2024" → "my-project-2024"
+// Handles diacritics, special chars, multiple hyphens
+
+makeUniqueSlug(base: string, used: Set<string>, fallbackId?: string): string
+// Ensures unique slugs with collision handling
+// Adds numeric suffix or record ID if needed
+```
+
+**Collision Handling:**
+1. Try base slug: `my-project`
+2. Try with fallback ID: `my-project-abc123`
+3. Try numeric suffix: `my-project-2`, `my-project-3`, etc.
+
+**Used By:**
+- `services/cmsService.ts` - Frontend slug generation
+- `netlify/functions/get-data.js` - Backend slug generation
+- `netlify/functions/sitemap.js` - Sitemap slug generation
+
+#### D. Import Strategy
+
+**Frontend (TypeScript):**
+```typescript
+import { getVideoId, fetchVideoThumbnail } from '../utils/videoHelpers';
+import { normalizeTitle } from '../utils/textHelpers';
+```
+
+**Backend (Node.js):**
+```javascript
+import { getVideoId, getVideoThumbnail } from '../../utils/videoHelpers.mjs';
+import { normalizeTitle } from '../../utils/textHelpers.mjs';
+```
+
+**Vite Configuration:**
+- Extension resolution order: `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.json`
+- Ensures TypeScript files are preferred in frontend imports
+- Prevents .mjs from being used in browser builds
+
+#### Benefits of This Architecture
+✅ **Single Source of Truth** - Fix bugs once, apply everywhere  
+✅ **Type Safety** - TypeScript catches errors at compile time  
+✅ **Easy Testing** - Utilities can be unit tested independently  
+✅ **Consistent Behavior** - Same logic across frontend/backend  
+✅ **Easy Feature Addition** - Add TikTok support? Update one file  
+
+**See:** `REFACTORING_SUMMARY.md` for complete refactoring details.
+
+---
+
+### 3. Analytics Service (`services/analyticsService.ts`)
 
 **Purpose:** Google Analytics 4 integration with privacy-friendly defaults.
 
@@ -190,7 +332,7 @@ analyticsService.trackVideoPlay(project.id, project.title);
 
 ---
 
-### 3. Image Optimization System
+### 4. Image Optimization System
 
 **Components:**
 
@@ -224,7 +366,7 @@ npm run test:images
 
 ---
 
-### 4. SEO System (`components/SEO.tsx`)
+### 5. SEO System (`components/SEO.tsx`)
 
 **Purpose:** Dynamic meta tags for social sharing and search engines.
 
@@ -250,7 +392,7 @@ npm run test:images
 
 ---
 
-### 5. Theme System (`theme.ts`)
+### 6. Theme System (`theme.ts`)
 
 **Purpose:** Centralized design system. All visual styling controlled here.
 
@@ -410,13 +552,19 @@ gabriel-athanasiou-portfolio--TEST/
 │
 ├── services/
 │   ├── cmsService.ts          # Airtable data fetching (CRITICAL)
+│   │                          # 🔄 Now imports from utils/videoHelpers & textHelpers
 │   ├── analyticsService.ts    # Google Analytics 4
 │   └── instagramService.ts    # Instagram integration (disabled)
 │
 ├── utils/
+│   ├── videoHelpers.ts        # 🆕 Video URL parsing & thumbnails (frontend)
+│   ├── videoHelpers.mjs       # 🆕 Video utilities (Node.js/backend)
+│   ├── textHelpers.ts         # 🆕 Text processing utilities (frontend)
+│   ├── textHelpers.mjs        # 🆕 Text utilities (Node.js/backend)
+│   ├── slugify.ts             # Slug generation (frontend)
+│   ├── slugify.mjs            # 🆕 Slug generation (Node.js/backend)
 │   ├── imageOptimization.ts   # Image URL helpers
 │   ├── markdown.ts            # Markdown parser
-│   ├── slugify.ts             # Slug generation
 │   └── sitemapGenerator.ts    # Sitemap generation
 │
 ├── data/
@@ -426,12 +574,15 @@ gabriel-athanasiou-portfolio--TEST/
 │   ├── optimize-images.mjs    # Image optimization (build-time)
 │   ├── test-image-fetch.mjs   # Test Airtable images
 │   ├── generate-share-meta.mjs # Generate manifest
+│   │                          # 🔄 Now imports from utils/*.mjs
 │   └── ignore-netlify-build.sh # Selective deployment
 │
 ├── netlify/
 │   ├── functions/
 │   │   ├── get-data.js        # Airtable API proxy (with caching)
+│   │   │                      # 🔄 Now imports from utils/*.mjs
 │   │   └── sitemap.js         # Dynamic sitemap
+│   │                          # 🔄 Now imports from utils/*.mjs
 │   └── edge-functions/
 │       └── meta-rewrite.ts    # Dynamic meta tag injection
 │

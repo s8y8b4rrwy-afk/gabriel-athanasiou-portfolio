@@ -6,6 +6,8 @@
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { getVideoId, getVideoThumbnail } from '../utils/videoHelpers.mjs';
+import { normalizeTitle } from '../utils/textHelpers.mjs';
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
@@ -39,48 +41,12 @@ async function fetchAirtableTable(tableName, sortField) {
   return allRecords;
 }
 
-function normalizeTitle(title) {
-  if (!title) return 'Untitled';
-  let clean = title.replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
-  return clean.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
-}
-
 function makeSlug(base) {
   return base
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80) || 'item';
-}
-
-// Extract video ID and generate thumbnail
-function getVideoId(url) {
-  if (!url) return { type: null, id: null };
-  const cleanUrl = url.trim();
-  // YouTube
-  const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  if (ytMatch && ytMatch[1]) return { type: 'youtube', id: ytMatch[1] };
-  // Vimeo
-  const vimeoMatch = cleanUrl.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(?:(?:channels\/[a-zA-Z0-9]+\/)|(?:groups\/[a-zA-Z0-9]+\/videos\/)|(?:manage\/videos\/))?([0-9]+)/);
-  if (vimeoMatch && vimeoMatch[1]) return { type: 'vimeo', id: vimeoMatch[1] };
-  return { type: null, id: null };
-}
-
-async function getVideoThumbnail(url) {
-  const { type, id } = getVideoId(url);
-  if (!id) return '';
-  if (type === 'youtube') return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  if (type === 'vimeo') {
-    try {
-      const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
-      if (res.ok) {
-        const data = await res.json();
-        return data.thumbnail_url || `https://vumbnail.com/${id}.jpg`;
-      }
-    } catch (e) {}
-    return `https://vumbnail.com/${id}.jpg`;
-  }
-  return '';
 }
 
 async function buildProjects() {

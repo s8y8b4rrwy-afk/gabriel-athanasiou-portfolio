@@ -18,7 +18,8 @@ npm run dev
 
 This guide includes:
 - Architecture overview
-- Tech stack details
+- Tech stack details  
+- **Shared utilities system** (video, text, slug helpers)
 - Data flow and CMS integration
 - Development workflow
 - Deployment process
@@ -45,6 +46,8 @@ VITE_AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX
 
 ## 📖 Additional Documentation
 
+- [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) - **Complete technical documentation**
+- [REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md) - Recent code refactoring (Nov 2025)
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
 - [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization details
 - [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup

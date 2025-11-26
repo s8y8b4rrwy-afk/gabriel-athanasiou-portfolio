@@ -5,42 +5,8 @@
 
 import { builder } from '@netlify/functions';
 import Airtable from 'airtable';
-
-const normalizeTitle = (title) => {
-    if (!title) return 'Untitled';
-    let clean = title.replace(/[_-]/g, ' ');
-    clean = clean.replace(/\s+/g, ' ').trim();
-    return clean.replace(
-        /\w\S*/g,
-        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
-};
-
-// Slug helpers
-const slugify = (input) => {
-    if (!input) return 'untitled';
-    let s = input.toString().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    s = s.replace(/[^a-z0-9]+/g, '-');
-    s = s.replace(/^-+|-+$/g, '');
-    s = s.replace(/-{2,}/g, '-');
-    return s || 'untitled';
-};
-
-const makeUniqueSlug = (base, used, fallbackId) => {
-    let candidate = slugify(base);
-    if (!used.has(candidate)) { used.add(candidate); return candidate; }
-    if (fallbackId) {
-        const suffix = (fallbackId + '').replace(/[^a-z0-9]/gi, '').slice(0,6).toLowerCase();
-        const alt = `${candidate}-${suffix}`;
-        if (!used.has(alt)) { used.add(alt); return alt; }
-    }
-    let i = 2;
-    while (true) {
-        const alt = `${candidate}-${i}`;
-        if (!used.has(alt)) { used.add(alt); return alt; }
-        i += 1;
-    }
-};
+import { normalizeTitle } from '../../utils/textHelpers.mjs';
+import { slugify, makeUniqueSlug } from '../../utils/slugify.mjs';
 
 const sitemapHandler = async (event, context) => {
   const token = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_API_KEY;

@@ -6,7 +6,12 @@ import { Project, BlogPost, HomeConfig } from '../types';
 import { ProjectType } from '../types';
 import { STATIC_PROJECTS, STATIC_POSTS, STATIC_CONFIG } from '../data/staticData';
 import { instagramService } from './instagramService';
-import { makeUniqueSlug } from '../utils/slugify';// ==========================================
+import { makeUniqueSlug } from '../utils/slugify';
+import { getVideoId, resolveVideoUrl, getEmbedUrl, fetchVideoThumbnail } from '../utils/videoHelpers';
+import { normalizeTitle, parseCreditsText, calculateReadingTime } from '../utils/textHelpers';
+
+// Re-export commonly used utilities for backwards compatibility
+export { getEmbedUrl, calculateReadingTime };// ==========================================
 // CONFIGURATION
 // ==========================================
 // Toggle this to TRUE to enable Instagram Posts in the Journal feed
@@ -23,175 +28,7 @@ const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1626814026160-2237a
 // ==========================================
 // UTILITIES
 // ==========================================
-
-export const calculateReadingTime = (content: string): string => {
-    if (!content) return "1 min read";
-    const text = content.replace(/<[^>]*>/g, '');
-    const wordCount = text.split(/\s+/).length;
-    const readingSpeed = 225; 
-    const minutes = Math.ceil(wordCount / readingSpeed);
-    return `${minutes} min read`;
-};
-
-// Helper to extract ID from URL (Enhanced Regex with Vimeo Hash Support)
-const getVideoId = (url: string): { type: 'youtube' | 'vimeo' | null, id: string | null, hash?: string | null } => {
-    if (!url) return { type: null, id: null };
-    const cleanUrl = url.trim();
-
-    // YouTube Regex
-    // Covers: youtube.com/watch?v=, youtube.com/embed/, youtu.be/, youtube.com/v/, youtube.com/shorts/, youtube.com/live/
-    const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-    if (ytMatch && ytMatch[1]) {
-        return { type: 'youtube', id: ytMatch[1] };
-    }
-
-    // Vimeo Regex
-    // Covers: vimeo.com/123456, vimeo.com/123456/hash, player.vimeo.com/video/123456
-    // Ignores prefixes: manage/videos, channels/xxx, groups/xxx/videos
-    const vimeoMatch = cleanUrl.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(?:(?:channels\/[a-zA-Z0-9]+\/)|(?:groups\/[a-zA-Z0-9]+\/videos\/)|(?:manage\/videos\/))?([0-9]+)(?:\/([a-zA-Z0-9]+))?/);
-    
-    if (vimeoMatch && vimeoMatch[1]) {
-        let id = vimeoMatch[1];
-        let hash = vimeoMatch[2] || null;
-
-        // Check for query param hash if not found in path (?h=abcdef)
-        if (!hash && cleanUrl.includes('?')) {
-            try {
-                // Handle partial URLs by ensuring protocol
-                const fullUrl = cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
-                const urlObj = new URL(fullUrl);
-                const h = urlObj.searchParams.get('h');
-                if (h) hash = h;
-            } catch (e) {
-                // Fallback regex if URL parsing fails
-                const queryHash = cleanUrl.match(/[?&]h=([a-zA-Z0-9]+)/);
-                if (queryHash) hash = queryHash[1];
-            }
-        }
-
-        return { type: 'vimeo', id, hash };
-    }
-
-    return { type: null, id: null };
-};
-
-// Async helper to resolve vanity URLs via OEmbed
-const resolveVideoUrl = async (url: string): Promise<string> => {
-    if (!url) return '';
-    const { type, id, hash } = getVideoId(url);
-    
-    // If we already have a valid ID, just reconstruct the canonical URL
-    if (id) {
-        if (type === 'youtube') return `https://www.youtube.com/watch?v=${id}`;
-        if (type === 'vimeo') {
-            return hash ? `https://vimeo.com/${id}/${hash}` : `https://vimeo.com/${id}`;
-        }
-    }
-
-    // Fallback: Use OEmbed only if regex failed (e.g. vanity URLs like vimeo.com/staffpicks)
-    if (url.includes('vimeo.com')) {
-        try {
-            const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.video_id) {
-                    return `https://vimeo.com/${data.video_id}`;
-                }
-            }
-        } catch (e) {
-            console.warn(`Failed to resolve Vimeo OEmbed for: ${url}`);
-        }
-    }
-
-    return url;
-};
-
-export const getEmbedUrl = (url: string, autoplay: boolean = false, muted: boolean = false): string | null => {
-    const { type, id, hash } = getVideoId(url);
-    if (!type || !id) return null; 
-
-    const params = new URLSearchParams();
-    if (autoplay) {
-        params.set('autoplay', '1');
-        // Only mute if explicitly requested or typically required for background autoplay.
-        // If autoplay is true but muted is false, we rely on browser interaction or settings.
-        if (muted) {
-            params.set('muted', '1');
-        }
-    }
-
-    if (type === 'youtube') {
-        params.set('rel', '0');
-        params.set('modestbranding', '1');
-        params.set('playsinline', '1');
-        params.set('controls', '1');
-        return `https://www.youtube.com/embed/${id}?${params.toString()}`;
-    }
-
-    if (type === 'vimeo') {
-        if (hash) params.set('h', hash);
-        params.set('title', '0');
-        params.set('byline', '0');
-        params.set('portrait', '0');
-        params.set('dnt', '1'); // Do Not Track
-        params.set('playsinline', '1');
-        return `https://player.vimeo.com/video/${id}?${params.toString()}`;
-    }
-
-    return null;
-};
-
-// Robust Async Thumbnail Fetcher
-const fetchVideoThumbnail = async (url: string): Promise<string> => {
-    const { type, id } = getVideoId(url);
-    if (!id) return '';
-
-    if (type === 'youtube') {
-        return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-    }
-    if (type === 'vimeo') {
-        // Try OEmbed first for highest quality and private video support
-        try {
-            const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
-            if (response.ok) {
-                const data = await response.json();
-                return data.thumbnail_url || data.thumbnail_url_with_play_button || '';
-            }
-        } catch (e) {
-            console.warn(`Vimeo OEmbed thumbnail failed for ${url}, falling back.`);
-        }
-        // Fallback to vumbnail if OEmbed fails
-        return `https://vumbnail.com/${id}.jpg`;
-    }
-    return '';
-};
-
-const normalizeTitle = (title: string): string => {
-    if (!title) return 'Untitled';
-    let clean = title.replace(/[_-]/g, ' ');
-    clean = clean.replace(/\s+/g, ' ').trim();
-    return clean.replace(
-        /\w\S*/g,
-        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
-};
-
-const parseCreditsText = (text: string) => {
-    if (!text) return [];
-    // Split by comma, pipe, or newline
-    const items = text.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
-    return items.map(item => {
-        // Split "Role: Name"
-        const parts = item.split(':');
-        if (parts.length >= 2) {
-            return {
-                role: parts[0].trim(),
-                name: parts.slice(1).join(':').trim() // Join back in case name has colons
-            };
-        }
-        return { role: 'Credit', name: item };
-    });
-};
+// Video and text utilities are now imported from shared modules
 
 const parseExternalLinksData = async (rawText: string): Promise<{ links: {label: string, url: string}[], videos: string[] }> => {
     const links: {label: string, url: string}[] = [];
