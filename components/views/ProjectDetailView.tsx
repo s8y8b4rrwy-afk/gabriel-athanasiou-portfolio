@@ -16,6 +16,63 @@ interface ProjectDetailViewProps {
     allPosts: BlogPost[];
 }
 
+// Helper function to group awards by festival
+const groupAwardsByFestival = (awards: string[]): { festival: string; awards: string[] }[] => {
+    const groups = new Map<string, string[]>();
+    
+    // Common award keywords that indicate "Award: Festival" format
+    const awardKeywords = ['best', 'winner', 'award', 'prize', 'official selection', 'nominee', 'finalist', 'honorable mention', 'grand jury', 'audience', 'special mention'];
+    
+    awards.forEach(award => {
+        let matched = false;
+        
+        // Try to parse "Award Name - Festival Name Year" format (with dash)
+        const dashMatch = award.match(/^(.+?)\s*[-–—]\s*(.+?)(\s+\d{4})?$/);
+        if (dashMatch) {
+            const awardName = dashMatch[1].trim();
+            const festivalWithYear = dashMatch[2].trim() + (dashMatch[3] || '');
+            const festivalKey = festivalWithYear.trim();
+            
+            if (!groups.has(festivalKey)) {
+                groups.set(festivalKey, []);
+            }
+            groups.get(festivalKey)!.push(awardName);
+            matched = true;
+        }
+        
+        // Try to parse "Award Name: Festival Name Year" format (with colon)
+        // Only if the text before colon contains award keywords
+        if (!matched && award.includes(':')) {
+            const colonIndex = award.indexOf(':');
+            const beforeColon = award.substring(0, colonIndex).trim().toLowerCase();
+            
+            // Check if it contains any award keywords
+            const hasAwardKeyword = awardKeywords.some(keyword => beforeColon.includes(keyword));
+            
+            if (hasAwardKeyword) {
+                const awardName = award.substring(0, colonIndex).trim();
+                const festivalPart = award.substring(colonIndex + 1).trim();
+                
+                if (!groups.has(festivalPart)) {
+                    groups.set(festivalPart, []);
+                }
+                groups.get(festivalPart)!.push(awardName);
+                matched = true;
+            }
+        }
+        
+        // If format doesn't match, treat as standalone festival with "Official Selection"
+        if (!matched) {
+            groups.set(award, ['Official Selection']);
+        }
+    });
+    
+    return Array.from(groups.entries()).map(([festival, awards]) => ({
+        festival,
+        awards
+    }));
+};
+
 export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
@@ -254,11 +311,34 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {THEME.projectDetail.showAwards && project.awards && project.awards.length > 0 && (
                         <div className="mb-12">
                             <p className={`${THEME.typography.meta} text-text-muted mb-4 border-b border-white/10 pb-2`}>Recognition</p>
-                            <ul className="space-y-2">
-                                {project.awards.map((award, i) => (
-                                    <li key={i} className="text-sm font-medium text-gray-300">{award}</li>
+                            <div className="space-y-4">
+                                {groupAwardsByFestival(project.awards).map((group, groupIdx) => (
+                                    <div key={groupIdx}>
+                                        {group.awards.length > 0 ? (
+                                            // Festival with multiple awards - show grouped
+                                            <div className="space-y-1.5">
+                                                <p className="text-sm font-medium text-white flex items-start">
+                                                    <span className="mr-2 text-white/20 select-none">✦</span>
+                                                    <span>{group.festival}</span>
+                                                </p>
+                                                <ul className="space-y-1 pl-6">
+                                                    {group.awards.map((award, awardIdx) => (
+                                                        <li key={awardIdx} className="text-sm text-white/60 relative before:content-['•'] before:absolute before:-left-3 before:text-white/20">
+                                                            {award}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : (
+                                            // Standalone festival/award - show as single line
+                                            <p className="text-sm font-medium text-white flex items-start">
+                                                <span className="mr-2 text-white/20 select-none">✦</span>
+                                                <span>{group.festival}</span>
+                                            </p>
+                                        )}
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     )}
 

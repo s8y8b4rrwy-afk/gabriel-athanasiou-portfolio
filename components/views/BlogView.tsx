@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BlogPost } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { parseMarkdown } from '../../utils/markdown';
 
 interface BlogViewProps { 
     posts: BlogPost[]; 
@@ -84,10 +85,9 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                          )}
                                      </div>
                                      <h2 className={`${THEME.typography.h2} mb-6 group-hover:text-white/80 transition mix-blend-difference text-white`}>{post.title}</h2>
-                                     <div 
-                                        className="text-gray-400 font-light leading-loose text-sm md:text-base line-clamp-3 mb-8"
-                                        dangerouslySetInnerHTML={{ __html: post.content.replace(/<br\/>/g, ' ') }}
-                                     />
+                                     <p className="text-gray-400 font-light leading-loose text-sm md:text-base line-clamp-3 mb-8">
+                                        {parseMarkdown(post.content).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}
+                                     </p>
                                      <div className={`${THEME.typography.meta} underline underline-offset-4 decoration-white/30 group-hover:decoration-white transition`}>Read</div>
                                  </div>
                              </div>

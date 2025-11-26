@@ -24,7 +24,7 @@
 
 **This guide is the source of truth for the entire codebase architecture.**
 
-**Last Major Update:** November 26, 2025 - Added credits filtering by Allowed Roles
+**Last Major Update:** November 26, 2025 - Added smart festival/awards grouping and display system
 
 ---
 
@@ -366,10 +366,13 @@ interface Project {
 | `Allowed Roles` | Multiple Select | Filter projects by role |
 | `Default OG Image` | Attachments | Fallback share image |
 
-#### Client Book Table (Optional, but recommended)
+#### Awards/Festivals Table (Optional)
 | Field | Type | Purpose |
 |-------|------|---------|
-| `Company Name` | Single Line Text | Production company name |
+| `Name` | Single Line Text | Festival full name |
+| `Display Name` | Single Line Text | Optional override for display (shorter version) |
+
+**Note:** Awards are linked from Projects → Festivals field. If a festival name is too long or needs custom formatting, add a "Display Name" field override in the Festivals table.
 
 ---
 
@@ -554,6 +557,59 @@ VITE_AIRTABLE_BASE_ID = appXXXXXXXXXXXXXX  # Same as AIRTABLE_BASE_ID
 ```
 
 **Note:** Both `AIRTABLE_*` and `VITE_AIRTABLE_*` are needed (functions vs. client-side).
+
+---
+
+### Festival/Awards Display System
+
+**Purpose:** Smart grouping of multiple awards from the same festival for cleaner presentation.
+
+**Supported Formats:**
+1. **"Award Name - Festival Name Year"** (with dash)
+   - Example: `Best Director - Sundance Film Festival 2024`
+2. **"Award Name: Festival Name Year"** (with colon)
+   - Example: `Best Comedy: Symi International Film Festival 2021`
+3. **Standalone festival names** (no award specified)
+   - Example: `Lift off Global Network: Austin 2022`
+
+**How It Works:**
+- Parses award strings to extract award name and festival name
+- Groups multiple awards from same festival together
+- Awards with keywords like "best", "winner", "official selection", "nominee", etc. trigger colon parsing
+- Festival names without recognizable award keywords display as standalone with "Official Selection" label
+- Festival names can be customized via "Display Name" field in Festivals table
+
+**Display Example:**
+```
+✦ Sundance Film Festival 2024
+  • Best Director
+  • Best Cinematography
+
+✦ Cannes Film Festival 2023
+  • Official Selection
+
+✦ Lift off Global Network: Austin 2022
+  • Official Selection
+```
+
+**Visual Styling:**
+- ✦ symbol precedes each festival name (subtle white/20 opacity)
+- Festival names in white, medium weight
+- Individual awards indented with bullet points in white/60 opacity
+- Consistent spacing between festival groups
+
+**Custom Display Names:**
+Add "Display Name" column to Festivals table in Airtable to override long festival names:
+- "International Film Festival of Rotterdam" → Display as "IFFR"
+- Priority: Display Name > Short Name > Name > Award
+
+**Award Keywords (for colon parsing):**
+`best`, `winner`, `award`, `prize`, `official selection`, `nominee`, `finalist`, `honorable mention`, `grand jury`, `audience`, `special mention`
+
+**Implementation:**
+- Logic in `ProjectDetailView.tsx` → `groupAwardsByFestival()` function
+- Fetches display names via `cmsService.ts` → `fetchAwardsMap()`
+- Uses consistent styling via `theme.ts` typography system
 
 ---
 

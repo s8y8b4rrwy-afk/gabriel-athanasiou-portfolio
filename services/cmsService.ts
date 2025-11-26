@@ -469,7 +469,11 @@ const fetchAwardsMap = async (): Promise<Record<string, string>> => {
         let records = await fetchAirtableTable('Awards');
         if (!records || records.length === 0) records = await fetchAirtableTable('Festivals');
         const map: Record<string, string> = {};
-        records.forEach((r: any) => { map[r.id] = r.fields['Name'] || r.fields['Award'] || 'Unknown Award'; });
+        records.forEach((r: any) => { 
+            // Prioritize Display Name if it exists, otherwise use Name or Award
+            const displayName = r.fields['Display Name'] || r.fields['Short Name'] || r.fields['Name'] || r.fields['Award'] || 'Unknown Award';
+            map[r.id] = displayName;
+        });
         return map;
     } catch (e) { return {}; }
 };

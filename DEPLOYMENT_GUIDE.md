@@ -247,31 +247,7 @@ This tells Netlify: "When user visits any page, load index.html and let React Ro
 
 ---
 
-## 📞 Questions?
 
-**"Will I lose my domain?"**
-- No, domain is yours forever (you paid for it)
-- Just changing where it points
-
-**"Will my content be saved?"**
-- Yes, all in Airtable (not lost when leaving Squarespace)
-
-**"Can I go back to Squarespace?"**
-- Yes, just change nameservers back
-- React site won't be affected
-
-**"How much does this cost?"**
-- Netlify free tier: $0/month
-- Domain: Whatever you're already paying
-- Analytics: $0/month
-- **Total: $0 new costs**
-
-**"What if I want a custom email?"**
-- Netlify doesn't provide email
-- Keep your current email setup at registrar
-- Works fine alongside new site
-
----
 
 ## ✨ You're Ready!
 
