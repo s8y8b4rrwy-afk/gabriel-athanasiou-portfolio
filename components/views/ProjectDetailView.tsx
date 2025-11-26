@@ -192,7 +192,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
             <SEO 
                 title={project.title} 
                 description={project.description} 
-                image={getOptimizedImageUrl(project.id, project.heroImage, 'project', 0)}
+                image={project.heroImage ? getOptimizedImageUrl(project.id, project.heroImage, 'project', 0) : undefined}
                 type={isNarrative ? 'video.movie' : 'video.other'}
                 project={project}
             />
@@ -498,7 +498,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {(() => {
                         const hasHero = !!nextProject.heroImage;
                         const shouldProcedural = !hasHero && (!nextProject.gallery || nextProject.gallery.length === 0) && !nextProject.videoUrl;
-                        const src = hasHero
+                        const src = hasHero && nextProject.heroImage
                           ? getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)
                           : generateProceduralThumbnail({
                               title: nextProject.title,
