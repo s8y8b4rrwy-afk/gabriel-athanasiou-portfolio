@@ -150,10 +150,10 @@ export const SocialShare: React.FC<SocialShareProps> = ({
   }
 
   return (
-    <div className={`flex flex-col md:flex-row md:flex-wrap md:gap-6 gap-3 items-start md:items-center ${className}`}>
-      <span className={`${THEME.typography.meta} text-white text-xs uppercase tracking-widest font-medium opacity-100 mb-2 md:mb-0`}>Share</span>
+    <div className={`flex flex-col gap-3 ${className}`}>
+      <span className={`${THEME.typography.meta} text-white text-xs uppercase tracking-widest font-medium opacity-100`}>Share</span>
       
-      <div className="flex flex-wrap gap-3 md:gap-6">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6">
         <ShareLink
           icon={
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white flex-shrink-0">
