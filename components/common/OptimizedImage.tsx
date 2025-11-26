@@ -3,11 +3,10 @@
  *  OPTIMIZED IMAGE COMPONENT
  * ==============================================================================
  * 
- *  Image component with loading states, shimmer animation, and automatic fallback.
- *  Provides a better UX than broken image icons during lazy loading.
+ *  Image component with fade-in animation and automatic fallback.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
 
 interface OptimizedImageProps {
@@ -34,7 +33,7 @@ interface OptimizedImageProps {
 /**
  * Optimized Image Component
  * 
- * Displays optimized WebP images with shimmer loading animation.
+ * Displays optimized WebP images with smooth fade-in animation.
  * Automatically falls back to Airtable URL if optimized version fails.
  * 
  * @example
@@ -59,39 +58,35 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async'
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const optimizedUrl = useMemo(() => (
+    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages)
+  ), [recordId, fallbackUrl, type, index, totalImages]);
 
-  const optimizedUrl = getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages);
+  const [currentSrc, setCurrentSrc] = useState<string>(optimizedUrl);
+  const [triedFallback, setTriedFallback] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleLoad = () => {
     setIsLoaded(true);
   };
 
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    if (!hasError && e.currentTarget.src !== fallbackUrl) {
-      setHasError(true);
-      e.currentTarget.src = fallbackUrl;
+  const handleError = () => {
+    if (!triedFallback && currentSrc !== fallbackUrl) {
+      setTriedFallback(true);
+      setIsLoaded(false);
+      setCurrentSrc(fallbackUrl);
     }
   };
 
   return (
-    <div className="relative w-full h-full">
-      {/* Loading shimmer */}
-      {!isLoaded && (
-        <div className="absolute inset-0 img-loading" />
-      )}
-      
-      {/* Actual image */}
-      <img
-        src={optimizedUrl}
-        alt={alt}
-        loading={loading}
-        decoding={decoding}
-        onLoad={handleLoad}
-        onError={handleError}
-        className={`${className} ${isLoaded ? 'img-loaded' : 'opacity-0'}`}
-      />
-    </div>
+    <img
+      src={currentSrc}
+      alt={alt}
+      loading={loading}
+      decoding={decoding}
+      onLoad={handleLoad}
+      onError={handleError}
+      className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+    />
   );
 };
