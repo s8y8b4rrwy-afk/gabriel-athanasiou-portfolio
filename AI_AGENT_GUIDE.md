@@ -13,13 +13,18 @@
 1. **📖 READ THIS ENTIRE DOCUMENT BEFORE MAKING ANY CHANGES**
 2. **✏️ UPDATE THIS DOCUMENTATION AFTER EVERY CHANGE YOU MAKE**
 3. **🔍 Verify documentation accuracy matches current code state**
+4. **🚫 NEVER commit code without updating relevant documentation**
 
 **Documentation-First Workflow:**
 - Before editing code → Read relevant sections here
 - After editing code → Update this guide immediately
+- After completing a feature → Document the change in detail
 - Before committing → Verify all documentation is current
+- If you change behavior → Update the relevant section explaining how it works
 
 **This guide is the source of truth for the entire codebase architecture.**
+
+**Last Major Update:** November 26, 2025 - Added credits filtering by Allowed Roles
 
 ---
 
@@ -136,8 +141,17 @@ A production-ready portfolio website for Gabriel Athanasiou, a London/Athens-bas
 - Auto-generates thumbnails from video URLs
 - Normalizes project types (Narrative/Commercial/Music Video/Documentary)
 - Parses credits from text format (`Role: Name`)
+- **Filters credits by Allowed Roles** - Only shows your roles that match Settings
 - Filters projects by allowed roles (from Settings table)
 - Attaches unique slugs for SEO-friendly URLs
+
+**Credits System:**
+- Reads "Role" field from Projects (your roles on the project)
+- Filters these roles against "Allowed Roles" from Settings table
+- Example: If Allowed Roles = `["Director"]` and Project has `["Director", "Cinematographer"]`
+  - Only "Director - Gabriel Athanasiou" appears in credits
+  - Other roles from "Credits Text" field are shown unchanged
+- This ensures your credits only show the roles you want to highlight
 
 **Important Notes:**
 - Caches result in memory (`cachedData`) to avoid redundant calls
@@ -909,11 +923,22 @@ cachedData = null;  // Clear cached data
 
 ### Documentation Requirements
 **MANDATORY for all code changes:**
-1. Update this guide (AI_AGENT_GUIDE.md) immediately after code changes
-2. Update relevant section documentation files (IMAGE_OPTIMIZATION.md, etc.)
-3. Update README.md if user-facing changes
-4. Keep comments in code accurate and up-to-date
-5. Document breaking changes prominently
+1. **Update AI_AGENT_GUIDE.md immediately after code changes**
+   - Document new features in the relevant section
+   - Update "Last Major Update" date at the top
+   - Explain how the feature works and why
+2. **Update relevant section documentation files** (IMAGE_OPTIMIZATION.md, etc.)
+3. **Update README.md if user-facing changes**
+4. **Keep comments in code accurate and up-to-date**
+5. **Document breaking changes prominently**
+6. **Never commit without updating documentation**
+
+**Documentation Checklist Before Committing:**
+- [ ] AI_AGENT_GUIDE.md updated with changes
+- [ ] Code comments added/updated where needed
+- [ ] Related documentation files updated
+- [ ] Examples added for complex features
+- [ ] "Last Major Update" timestamp updated
 
 ---
 
