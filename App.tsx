@@ -35,8 +35,9 @@ const getPageTitle = (pathname: string): string => {
 export default function App() {
   const [data, setData] = useState<{ projects: Project[], posts: BlogPost[], config: HomeConfig }>({ projects: [], posts: [], config: {} });
   const [loading, setLoading] = useState(true);
+  const [showContent, setShowContent] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<{ url: string | null; fallback: string | null }>({ url: null, fallback: null });
-  
+
   const location = useLocation();
   const previousPathnameRef = useRef(location.pathname);
 
@@ -46,20 +47,26 @@ export default function App() {
         const result = await cmsService.fetchAll();
         setData(result);
         setLoading(false);
-        
-        // Initialize analytics with your Measurement ID
-        analyticsService.init('G-EJ62G0X6Q5');
       } catch (error) {
         console.error('Failed to initialize app:', error);
         setLoading(false);
-        // Set empty data to prevent crashes
         setData({ projects: [], posts: [], config: {} });
       }
     };
     init();
   }, []);
 
-  // Always scroll to top on route change and track page view
+  // Ensure fade-in classes are present before rendering, and only removed after animation starts
+  useEffect(() => {
+    if (!loading) {
+      setShowContent(false);
+      const timer = setTimeout(() => setShowContent(true), 80); // 80ms delay
+      return () => clearTimeout(timer);
+    } else {
+      setShowContent(false);
+    }
+  }, [loading]);
+
   useEffect(() => {
     setHoveredImage({ url: null, fallback: null });
     window.scrollTo(0, 0);
@@ -67,13 +74,13 @@ export default function App() {
     analyticsService.trackPageView(location.pathname, pageTitle);
   }, [location.pathname]);
 
-  if (loading) return <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">Loading...</div>;
+  if (loading || !showContent) return <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">Loading...</div>;
 
   return (
-    <div className="bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased">
+    <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
       <GlobalStyles />
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
-      
+
       <Navigation showLinks={true} />
 
       <main>
@@ -84,6 +91,7 @@ export default function App() {
         }>
           <PageTransition>
             <Routes>
+              {/* ...existing code... */}
               <Route path="/" element={
                   <>
                       <SEO />
@@ -94,7 +102,7 @@ export default function App() {
                       />
                   </>
               } />
-              
+              {/* ...existing code... */}
               <Route path="/work" element={
                   <>
                       <SEO title="Filmography" />
@@ -104,35 +112,35 @@ export default function App() {
                       />
                   </>
               } />
-              
+              {/* ...existing code... */}
               <Route path="/work/:slug" element={
                   <ProjectDetailView 
                       allProjects={data.projects}
                       allPosts={data.posts}
                   />
               } />
-              
+              {/* ...existing code... */}
               <Route path="/journal" element={
                   <>
                       <SEO title="Journal" />
                       <BlogView posts={data.posts} />
                   </>
               } />
-              
+              {/* ...existing code... */}
               <Route path="/journal/:slug" element={
                   <BlogPostView 
                       allPosts={data.posts}
                       allProjects={data.projects}
                   />
               } />
-              
+              {/* ...existing code... */}
               <Route path="/about" element={
                    <>
                       <SEO title="About" />
                       <AboutView config={data.config} />
                   </>
               } />
-              
+              {/* ...existing code... */}
               <Route path="/thumbnails" element={
                    <>
                       <SEO title="Thumbnail Preview" />

@@ -10,10 +10,14 @@ interface AboutViewProps {
 }
 
 export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        setShowContent(false);
+        const timer = setTimeout(() => setShowContent(true), 80); // 80ms delay
+        return () => clearTimeout(timer);
+    }, []);
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
             {/* Scroll Top on Mount */}
             <span className="hidden" ref={() => window.scrollTo(0,0)}></span>
             
@@ -33,42 +37,34 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
                             ))}
                         </div>
                     </div>
-                    
                     {/* Contact Section */}
                     <div className="mt-auto border-t border-white/10 pt-12">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div>
                                 <p className={`${THEME.typography.meta} text-text-muted mb-6`}>Get in Touch</p>
-                                
                                 {config.contact?.email && (
                                     <a 
                                         href={`mailto:${config.contact.email}`} 
                                         className={`${THEME.typography.h3} text-white hover:opacity-70 transition mb-6 decoration-transparent block`}
-                                        // onClick={() => saveScrollPosition(location.pathname)}
                                     >
                                         {config.contact.email}
                                     </a>
                                 )}
-
                                 {config.contact?.phone && <p className="text-gray-400 mb-6">{config.contact.phone}</p>}
-                                
                                 <div className="flex gap-6 mt-8">
                                     {config.contact?.instagram && <a href={config.contact.instagram} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>Instagram</a>}
                                     {config.contact?.vimeo && <a href={config.contact.vimeo} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>Vimeo</a>}
                                     {config.contact?.linkedin && <a href={config.contact.linkedin} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>LinkedIn</a>}
                                 </div>
                             </div>
-                            
                             <div>
                                 <p className={`${THEME.typography.meta} text-text-muted mb-6`}>Representation</p>
-                                
                                 {config.contact?.repUK && (
                                     <div className="mb-6">
                                         <p className="text-xs font-bold text-white uppercase tracking-wider mb-2">UK / Europe</p>
                                         <p className="text-gray-400 leading-relaxed text-sm whitespace-pre-line">{config.contact.repUK}</p>
                                     </div>
                                 )}
-                                
                                 {config.contact?.repUSA && (
                                     <div>
                                         <p className="text-xs font-bold text-white uppercase tracking-wider mb-2">USA</p>
