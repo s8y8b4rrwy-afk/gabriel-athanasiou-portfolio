@@ -153,7 +153,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
         setCurrentSlide(0);
         setCreditsExpanded(false);
         setIsNextHovered(false);
-    }, [project?.id, project?.slug]);
+        window.scrollTo(0, 0);
+    }, [slug]);
 
     useEffect(() => {
         if (slides.length <= 1) return;

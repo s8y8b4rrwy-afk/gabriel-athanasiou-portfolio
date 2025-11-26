@@ -12,6 +12,15 @@ interface IndexViewProps {
     onHover: (image: { url: string | null; fallback: string | null }) => void;
 }
 
+/**
+ * ⚠️ HOVER ANIMATIONS: All thumbnail hover effects use:
+ *   - transform-gpu (hardware acceleration)
+ *   - transition-all duration-700 ease-out (smooth, consistent timing)
+ *   - scale-100 group-hover:scale-[1.02] (subtle zoom)
+ *   - opacity-80/90 group-hover:opacity-100 (brightness lift)
+ * 
+ * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
+ */
 export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     const navigate = useNavigate();
 
@@ -64,17 +73,17 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                     {/* View Toggle */}
                     <div className="flex gap-4 items-center shrink-0 border border-white/10 rounded-full px-4 py-2 bg-white/5 backdrop-blur-sm mx-auto md:mx-0">
                          <button 
-                            onClick={() => setViewMode('list')}
-                            className={`text-[9px] uppercase tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'list' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
-                         >
-                            List
-                         </button>
-                         <div className="w-[1px] h-3 bg-white/20"></div>
-                         <button 
                             onClick={() => setViewMode('grid')}
                             className={`text-[9px] uppercase tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'grid' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
                          >
                             Filmstrip
+                         </button>
+                         <div className="w-[1px] h-3 bg-white/20"></div>
+                         <button 
+                            onClick={() => setViewMode('list')}
+                            className={`text-[9px] uppercase tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'list' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
+                         >
+                            List
                          </button>
                     </div>
                 </div>
@@ -195,7 +204,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             title={p.title}
                                             year={p.year}
                                             type={p.type}
-                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
+                                            className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                             loading="lazy"
                                         />
                                     ) : (
@@ -205,7 +214,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             type="project"
                                             alt={p.title}
                                             loading="lazy"
-                                            className={`w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:${THEME.filmography.grid.hoverScale} transition ${THEME.animation.slow} ${THEME.animation.ease} will-change-transform`}
+                                            className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                         />
                                     )}
                                 </div>

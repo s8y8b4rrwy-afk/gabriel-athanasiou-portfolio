@@ -10,6 +10,15 @@ interface BlogViewProps {
     posts: BlogPost[]; 
 }
 
+/**
+ * ⚠️ HOVER ANIMATIONS: All thumbnail hover effects use:
+ *   - transform-gpu (hardware acceleration)
+ *   - transition-all duration-700 ease-out (smooth, consistent timing)
+ *   - scale-100 group-hover:scale-[1.02] (subtle zoom)
+ *   - opacity-80 group-hover:opacity-100 (brightness lift)
+ * 
+ * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
+ */
 export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     const navigate = useNavigate();
 
@@ -61,7 +70,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                              type="journal"
                                              alt={post.title}
                                              loading="lazy"
-                                             className={`w-full h-full object-cover group-hover:scale-[1.02] transition ${THEME.animation.slow} ${THEME.animation.ease} opacity-80 group-hover:opacity-100 will-change-transform`}
+                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                         />
                                          {post.source === 'instagram' && (
                                              <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1.5 rounded-full">

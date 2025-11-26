@@ -22,6 +22,11 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
     const post = allPosts.find(p => (p.slug ? p.slug === slug : p.id === slug));
 
+    // Scroll to top on slug change (browser back/forward)
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [slug]);
+
     // Track blog post view on load
     useEffect(() => {
         if (post) {
