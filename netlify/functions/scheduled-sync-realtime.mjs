@@ -223,6 +223,11 @@ const uploadToCloudinary = async (imageUrl, publicId) => {
 const syncAirtableData = async () => {
   console.log('=== Starting Airtable Sync ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
+  console.log('🔧 Configuration:');
+  console.log(`  USE_CLOUDINARY: ${USE_CLOUDINARY}`);
+  console.log(`  CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME ? '✓ Set' : '✗ Missing'}`);
+  console.log(`  CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY ? '✓ Set' : '✗ Missing'}`);
+  console.log(`  CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET ? '✓ Set' : '✗ Missing'}`);
   
   // Check configuration
   if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
@@ -384,16 +389,24 @@ const syncAirtableData = async () => {
       let cloudinaryGallery = [];
       let cloudinaryHero = '';
       if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME) {
+        console.log(`🔵 Cloudinary enabled for ${f['Name']}: ${galleryUrls.length} images`);
         // Upload each gallery image to Cloudinary (if credentials available)
         if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+          console.log('🔑 Cloudinary credentials found, uploading...');
           for (let idx = 0; idx < galleryUrls.length; idx++) {
             const publicId = `portfolio-projects-${record.id}-${idx}`;
+            console.log(`📤 Uploading ${publicId} from ${galleryUrls[idx]}`);
             const uploadResult = await uploadToCloudinary(galleryUrls[idx], publicId);
             if (uploadResult.success) {
-              console.log(`✓ Uploaded ${publicId}`);
+              console.log(`✅ Uploaded ${publicId} - ${uploadResult.bytes} bytes`);
+            } else {
+              console.error(`❌ Failed ${publicId}: ${uploadResult.error}`);
             }
           }
+        } else {
+          console.warn('⚠️ Cloudinary credentials missing - skipping upload');
         }
+      }
         
         // Generate optimized delivery URLs with highest quality
         cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-projects-${record.id}-${idx}`);
@@ -460,12 +473,16 @@ const syncAirtableData = async () => {
           // If Cloudinary is enabled, upload and use optimized URL
           let cloudinaryImageUrl = imageUrl;
           if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && imageUrl) {
+            console.log(`🔵 Uploading journal cover for ${f['Title']}`);
             // Upload journal cover image (if credentials available)
             if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
               const publicId = `portfolio-journal-${record.id}`;
+              console.log(`📤 Uploading ${publicId} from ${imageUrl}`);
               const uploadResult = await uploadToCloudinary(imageUrl, publicId);
               if (uploadResult.success) {
-                console.log(`✓ Uploaded ${publicId}`);
+                console.log(`✅ Uploaded ${publicId} - ${uploadResult.bytes} bytes`);
+              } else {
+                console.error(`❌ Failed ${publicId}: ${uploadResult.error}`);
               }
             }
             
