@@ -495,7 +495,7 @@ const syncAirtableData = async () => {
     // 1. Fetch all data from Airtable
     console.log('Fetching data from Airtable...');
     const [awardsRecords, clientsRecords, projectsRecords, journalRecords, settingsRecords] = await Promise.all([
-      fetchAirtableTable('Awards'),
+      fetchAirtableTable('Festivals'),
       fetchAirtableTable('Client Book'),
       fetchAirtableTable('Projects', 'Release Date'),
       fetchAirtableTable('Journal', 'Date'),
@@ -512,7 +512,7 @@ const syncAirtableData = async () => {
     
     const clientsMap = {};
     clientsRecords.forEach(r => {
-      clientsMap[r.id] = r.fields['Company Name'] || r.fields['Client'] || 'Unknown';
+      clientsMap[r.id] = r.fields['Company'] || r.fields['Company Name'] || r.fields['Client'] || 'Unknown';
     });
     
     // 5. Process Settings

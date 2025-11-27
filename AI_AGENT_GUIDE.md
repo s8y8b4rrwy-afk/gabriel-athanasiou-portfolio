@@ -8,6 +8,33 @@
 
 ## 🎉 Recent Major Changes
 
+### November 27, 2025 - Linked Records Resolution Fix: Festivals & Production Company
+**What Changed:** Fixed festivals and production companies displaying record IDs instead of names.
+
+**The Problem:**
+- Sync functions were fetching from "Awards" table but Airtable has "Festivals" table
+- Sync functions were looking for "Company Name" field but Airtable has "Company" field
+- When table/field lookups failed, raw Airtable record IDs were displayed instead of names
+- Example: Showing "recABC123" instead of "Sundance Film Festival 2024"
+
+**The Solution:**
+- Updated both sync functions to fetch from correct table: `'Awards'` → `'Festivals'`
+- Updated Client Book field mapping: Check `'Company'` first, then fallback to `'Company Name'` → `'Client'`
+- Lookup maps now populate correctly and resolve IDs to actual names
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync-alt.mjs` - Fixed table name (line 236) and field mapping (line 252)
+- `netlify/functions/scheduled-sync.mjs` - Fixed table name (line 500) and field mapping (line 512)
+
+**Verification:**
+- Check Netlify function logs: Should show "Fetched X records from Festivals" and "Fetched Y records from Client Book"
+- Check cached data: `awards` arrays should contain festival names, `productionCompany` should contain company names
+- Frontend display: Project detail pages now show proper festival and production company names
+
+**Impact:** All linked record references now resolve correctly. No more record IDs visible to users.
+
+---
+
 ### November 27, 2025 - Field Naming Fix: Production Company & Client
 **What Changed:** Fixed semantic mismatch between Airtable column names and their display meanings.
 
@@ -669,15 +696,16 @@ AIRTABLE COLUMN NAME          →  CODE PROPERTY NAME    →  FRONTEND DISPLAY L
   "Display Name" (text)        →  [override if exists]  →  [Shortened festival name]
 
 📊 Client Book Table:
-  "Company Name" (text)        →  [resolved via link]   →  [Production company name]
+  "Company" (text)             →  [resolved via link]   →  [Production company name]
 ```
 
 ### Key Processing Rules
 
 **Production Company Resolution:**
 - Airtable stores a **link** to the "Client Book" table
-- Backend resolves the link ID → "Company Name" field
+- Backend resolves the link ID → "Company" field (primary field name)
 - Stored as `productionCompany` string in cached data
+- Fallback chain: `'Company'` → `'Company Name'` → `'Client'` for field name flexibility
 
 **Client Field:**
 - Airtable stores **plain text** (not a link)
@@ -786,6 +814,13 @@ interface Project {
 | `Display Name` | Single Line Text | Optional override for display (shorter version) |
 
 **Note:** Awards are linked from Projects → Festivals field. If a festival name is too long or needs custom formatting, add a "Display Name" field override in the Festivals table.
+
+#### Client Book Table (Required for Production Companies)
+| Field | Type | Purpose |
+|-------|------|---------|
+| `Company` | Single Line Text | Production company name |
+
+**Note:** This table is linked from Projects → Production Company field. The sync functions check for `'Company'` field first, with fallbacks to `'Company Name'` or `'Client'` for schema flexibility.
 
 ---
 
