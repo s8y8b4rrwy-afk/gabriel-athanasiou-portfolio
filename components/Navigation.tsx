@@ -25,6 +25,7 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
     <nav className={`fixed top-0 left-0 w-full z-50 flex flex-col items-center md:flex-row ${THEME.header.gap} text-white transition-all ${THEME.animation.fast} pointer-events-auto select-none ${THEME.header.paddingY} ${THEME.header.paddingX} ${THEME.header.background}`}>
         <Link 
             to="/"
+            onClick={() => handleNavClick('/')}
             className={`${THEME.header.logoText} hover:opacity-70 transition mb-6 md:mb-0 text-center`}
         >
             Gabriel Athanasiou

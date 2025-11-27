@@ -75,10 +75,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             fallbackUrl={heroProject.heroImage}
                             type="project"
                             index={0}
-                            totalImages={heroProject.gallery?.length || 0}
+                            totalImages={0}
                             alt={heroProject.title}
                             loading="eager"
-                            useOriginalOnDesktop={true}
                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
@@ -117,6 +116,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     totalImages={p.gallery?.length || 0}
                                     alt={p.title}
                                     loading="lazy"
+                                    quality="auto:good"
+                                    width={800}
                                     className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                 />
                             </div>
@@ -153,6 +154,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                         totalImages={1}
                                         alt={featuredPost.title}
                                         loading="lazy"
+                                        quality="auto:good"
+                                        width={800}
                                         className="w-full h-full object-cover transform-gpu grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                     />
                                 )}
