@@ -33,24 +33,27 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
-### November 27, 2025 - Vimeo Vanity URL Support
-**What Changed:** Enhanced Vimeo URL handling to support vanity URLs like `https://vimeo.com/athanasiou/rooster`.
+### November 27, 2025 - Vimeo Vanity URL Support (Thumbnails + Embeds)
+**What Changed:** Enhanced Vimeo URL handling to support vanity URLs like `https://vimeo.com/athanasiou/rooster` for both thumbnails AND video embeds.
 
 **The Problem:**
 - Previous regex only matched numeric Vimeo IDs (e.g., `vimeo.com/123456`)
 - Vanity URLs like `vimeo.com/athanasiou/rooster` weren't being recognized
 - These URLs used to work but broke after recent updates
 - Thumbnails couldn't be fetched for vanity URLs
+- Video embeds failed silently for vanity URLs (returned null)
 
 **The Solution:**
 - Updated `getVideoId()` to detect vanity URLs and pass them through for OEmbed resolution
 - Modified `fetchVideoThumbnail()` to prioritize OEmbed API for all Vimeo URLs (handles vanity, private, and numeric IDs)
 - Added fallback logic: OEmbed first → v2 API for numeric IDs → vumbnail service
-- Updated `getEmbedUrl()` to warn when vanity URLs need resolution first
+- **Enhanced VideoEmbed component** to automatically resolve vanity URLs before embedding
+- Added loading state while resolving vanity URLs via OEmbed API
 
 **Updated Files:**
 - `utils/videoHelpers.ts` - Enhanced Vimeo URL detection and thumbnail fetching
 - `netlify/functions/scheduled-sync.mjs` - Backend sync now uses OEmbed for all Vimeo URLs
+- `components/VideoEmbed.tsx` - Now resolves vanity URLs automatically with loading state
 
 **Technical Details:**
 ```javascript
@@ -64,9 +67,16 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 // 1. OEmbed API (handles all types, including vanity)
 // 2. v2 API (fallback for numeric IDs)
 // 3. vumbnail service (last resort for numeric IDs)
+
+// VideoEmbed resolution flow:
+// 1. Detects if URL is a vanity URL (non-numeric ID)
+// 2. Calls resolveVideoUrl() to get numeric ID via OEmbed
+// 3. Generates embed URL with resolved numeric ID
+// 4. Shows loading state during resolution
+// 5. Embeds video successfully
 ```
 
-**Impact:** All Vimeo URL formats now work correctly for embedding and thumbnail generation. Vanity URLs are properly resolved via OEmbed API before attempting to generate embed URLs or fetch thumbnails.
+**Impact:** All Vimeo URL formats now work correctly for both thumbnails AND video embeds. Vanity URLs are automatically resolved via OEmbed API, with a loading state shown during resolution. Users can now use any Vimeo URL format without worrying about compatibility.
 
 ---
 
