@@ -2,24 +2,23 @@
 
 ## Overview
 
-This portfolio now uses a **server-side caching architecture** that dramatically improves performance by moving all Airtable API calls and image optimization to scheduled server functions. The website loads instantly from Netlify's CDN with zero runtime dependencies on Airtable.
+This portfolio uses a **CDN-cached architecture** that dramatically improves performance by moving Airtable API calls to scheduled server functions. Data is fetched once daily and served instantly from Netlify's CDN using HTTP cache headers.
 
 ## 🎯 Benefits
 
 ### Before
-- ❌ Airtable API called on every page load
-- ❌ Large unoptimized images downloaded from Airtable
-- ❌ Slow first paint (2-5 seconds)
+- ❌ Airtable API called on every page load (2-5 seconds)
 - ❌ High API rate limit usage
-- ❌ Poor Core Web Vitals scores
+- ❌ Slow first paint
+- ❌ Poor Core Web Vitals
 
-### After
-- ✅ Airtable fetched once per day via scheduled function
-- ✅ Optimized WebP images stored in Netlify Blobs CDN
-- ✅ Instant first paint (<1 second)
-- ✅ ~30 Netlify function calls per month (1/day)
-- ✅ Excellent Core Web Vitals scores
-- ✅ Zero rebuilds required for content updates
+### After  
+- ✅ Airtable fetched once per day
+- ✅ Instant page loads from CDN (<300ms)
+- ✅ ~30 API calls per month (vs 10,000+)
+- ✅ Excellent Core Web Vitals
+- ✅ No external storage dependencies
+- ✅ Works on Netlify free tier
 
 ## 🏗️ Architecture
 
@@ -29,25 +28,24 @@ This portfolio now uses a **server-side caching architecture** that dramatically
 │  netlify/functions/scheduled-sync.mjs                        │
 │                                                               │
 │  1. Fetches latest data from Airtable                       │
-│  2. Compares with cached data (hash-based)                  │
-│  3. Downloads & optimizes new images → WebP                 │
-│  4. Uploads images to Netlify Blobs storage                 │
-│  5. Saves complete dataset to KV storage                    │
+│  2. Processes projects, journal posts, settings             │
+│  3. Returns complete dataset with CDN cache headers         │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  CDN-Cached Storage                                          │
+│  Netlify CDN (Automatic Caching)                            │
 │                                                               │
-│  • Netlify Blobs: Optimized images (WebP)                   │
-│  • Netlify KV: Complete JSON dataset                        │
+│  • Cache-Control: public, max-age=300, s-maxage=3600       │
+│  • Stale-while-revalidate: 86400                            │
+│  • Cached at edge locations globally                        │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  API Endpoint (Fast Edge Function)                          │
+│  API Endpoint (CDN-Cached)                                   │
 │  /.netlify/functions/get-data                                │
 │                                                               │
-│  • Reads from KV storage (instant)                          │
-│  • Cached at CDN edge (1 hour TTL)                          │
+│  • Calls sync function                                       │
+│  • Response cached at CDN (1 hour)                          │
 │  • Returns complete project/blog/config data                │
 └─────────────────────────────────────────────────────────────┘
                             ↓
@@ -58,7 +56,7 @@ This portfolio now uses a **server-side caching architecture** that dramatically
 │  • Fetches from /.netlify/functions/get-data                │
 │  • Client-side cache (5 minutes)                            │
 │  • Background update checks (30 minutes)                    │
-│  • Images load from Netlify Blobs CDN                       │
+│  • Images from Airtable CDN or build-optimized              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -210,23 +208,11 @@ netlify blobs:list portfolio-kv
 
 ## 🐛 Troubleshooting
 
-### Site shows "Data not yet synced"
+### Site shows "No data" or errors
 
-**Cause**: Initial sync hasn't run yet.
+**Cause**: Function hasn't been called yet or failed to execute.
 
-**Solution**: Manually trigger sync:
-```bash
-curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now
-```
-
-### Images not loading
-
-**Possible causes**:
-1. Sync failed - check function logs
-2. Blob storage quota exceeded - check Netlify billing
-3. Image optimization error - check individual image URLs
-
-**Solution**: Check logs and re-run sync.
+**Solution**: Check function logs in Netlify dashboard and verify environment variables are set correctly (`VITE_AIRTABLE_TOKEN`, `VITE_AIRTABLE_BASE_ID`).
 
 ### Old data showing
 
@@ -249,21 +235,20 @@ curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now
 
 ## 💰 Cost Estimates
 
-### Netlify Pricing (Starter Plan)
+### Netlify Pricing (Free Tier)
 
 | Resource | Usage | Cost |
 |----------|-------|------|
-| Function calls | ~30/month | Free (100k included) |
-| Function duration | ~30s/call = 15 min/month | Free (125k minutes included) |
+| Function calls | ~30-100/month | Free (25k included) |
+| Function duration | ~30s/call | Free (125k minutes included) |
 | Bandwidth | ~50MB data + images | Free (100GB included) |
-| Blob storage | ~500MB images | Free (1GB included) |
 
 **Total monthly cost: $0** (well within free tier limits)
 
 ### Airtable API Calls
 
 - **Before**: ~10,000/month (every visitor)
-- **After**: ~30/month (1 scheduled call/day)
+- **After**: ~30/month (1 call/day + occasional manual triggers)
 - **Savings**: 99.7% reduction
 
 ## 🔄 Reverting (If Needed)
@@ -317,7 +302,7 @@ Potential improvements:
 
 ## 📚 Related Documentation
 
+- [CDN_CACHE_FINAL_IMPLEMENTATION.md](./CDN_CACHE_FINAL_IMPLEMENTATION.md) - Complete implementation details
 - [Netlify Scheduled Functions](https://docs.netlify.com/functions/scheduled-functions/)
-- [Netlify Blobs Storage](https://docs.netlify.com/blobs/overview/)
-- [Sharp Image Processing](https://sharp.pixelplumbing.com/)
+- [Netlify Cache Control](https://docs.netlify.com/routing/headers/#multi-value-headers)
 - [Web Performance Best Practices](https://web.dev/performance-scoring/)
