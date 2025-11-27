@@ -209,8 +209,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     };
     
     const isNarrative = project.type === 'Narrative';
-    const showBrand = THEME.projectDetail.showBrand && !isNarrative && project.brand;
-    const showClient = THEME.projectDetail.showClient && !!project.client;
+    const showClient = THEME.projectDetail.showBrand && !isNarrative && project.client;
+    const showProductionCompany = THEME.projectDetail.showClient && !!project.productionCompany;
 
     const visibleCredits = creditsExpanded ? project.credits : project.credits.slice(0, THEME.projectDetail.credits.initialVisibleCount);
 
@@ -362,19 +362,19 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     style={{ animationDelay: '100ms' }}
                 >
                     
-                    {/* Brand / Production Company Logic */}
+                    {/* Client / Production Company Logic */}
                     <div className="mb-8 border-b border-white/10">
-                        {showBrand && (
+                        {showClient && (
                             <div className="mb-8">
-                                <p className={`${THEME.typography.meta} text-text-muted mb-2`}>Brand</p>
-                                <p className={THEME.typography.h3}>{project.brand}</p>
+                                <p className={`${THEME.typography.meta} text-text-muted mb-2`}>Client</p>
+                                <p className={THEME.typography.h3}>{project.client}</p>
                             </div>
                         )}
                         
-                        {showClient && (
+                        {showProductionCompany && (
                             <div className="mb-8">
                                 <p className={`${THEME.typography.meta} text-text-muted mb-2`}>Production Company</p>
-                                <p className={THEME.typography.h3}>{project.client}</p>
+                                <p className={THEME.typography.h3}>{project.productionCompany}</p>
                             </div>
                         )}
                     </div>

@@ -1,12 +1,43 @@
 # AI Agent Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** November 26, 2025  
+> **Last Updated:** November 27, 2025  
 > **Purpose:** Complete technical documentation for AI agents working on this codebase
 
 ---
 
 ## 🎉 Recent Major Changes
+
+### November 27, 2025 - Field Naming Fix: Production Company & Client
+**What Changed:** Fixed semantic mismatch between Airtable column names and their display meanings.
+
+**The Problem:**
+- Airtable "Client" column was being displayed as "Production Company" (incorrect)
+- Airtable "Brand" column was being displayed as "Brand" but semantically meant "Client"
+- Cached data broke this display because field mappings were unclear
+
+**The Solution:**
+- Renamed Airtable columns: "Client" → "Production Company", "Brand" → "Client"
+- Updated code to use `productionCompany` and `client` fields correctly
+- Updated all display logic: Client shows first (brand/agency), Production Company shows second
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync-alt.mjs` - Field mapping from Airtable
+- `types.ts` - TypeScript interface updated
+- `components/views/ProjectDetailView.tsx` - Display logic fixed
+- `components/views/IndexView.tsx` - List/grid display priorities
+- `components/SEO.tsx` - Structured data metadata
+- `data/staticData.ts` - Fallback data structure
+- `theme.ts` - Updated comments for clarity
+
+**Display Logic:**
+- **ProjectDetailView:** Shows "Client" label for `project.client`, "Production Company" for `project.productionCompany`
+- **IndexView:** Prioritizes `project.client` (brand), falls back to `project.productionCompany`
+- **SEO:** Uses `productionCompany` for structured data, `client` for sponsor field (commercials)
+
+**Impact:** Field labels now match their semantic meaning. Airtable column names align with code property names.
+
+---
 
 ### November 27, 2025 - Video Thumbnail Fallback Fix
 **What Changed:** Fixed blank thumbnails for projects with videos but no still images, including Vimeo private videos.
@@ -584,6 +615,88 @@ import { THEME } from '../theme';
 
 ## 📊 Data Flow
 
+### 🗺️ Complete Data Structure Map
+
+This map shows exactly how data flows from Airtable → Backend Processing → Frontend Display:
+
+```
+AIRTABLE COLUMN NAME          →  CODE PROPERTY NAME    →  FRONTEND DISPLAY LABEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Projects Table:
+  "Production Company" (link)  →  productionCompany     →  "Production Company"
+  "Client" (text)              →  client                →  "Client"
+  "Name" (text)                →  title                 →  [Project Title]
+  "Project Type" (select)      →  type                  →  [Filmography Tab]
+  "Genre" (multi-select)       →  genre[]               →  "Genre" tags
+  "Release Date" (date)        →  year                  →  [Year display]
+  "About" (long text)          →  description           →  [Description paragraphs]
+  "Gallery" (attachments)      →  gallery[]             →  [Image slideshow]
+  "Video URL" (text)           →  videoUrl              →  [Video player]
+  "Role" (multi-select)        →  [filtered credits]    →  [Your credits only]
+  "Credits Text" (text)        →  credits[]             →  [All credits display]
+  "Festivals" (link)           →  awards[]              →  "Awards & Festivals"
+  "External Links" (text)      →  externalLinks[]       →  [Link buttons]
+  "Related Article" (link)     →  relatedArticleId      →  "Behind the Scenes" link
+  "Feature" (checkbox)         →  [filter only]         →  [Visibility control]
+  "Front Page" (checkbox)      →  isFeatured            →  [Home page display]
+
+📰 Journal Table:
+  "Title" (text)               →  title                 →  [Post Title]
+  "Date" (date)                →  date                  →  [Publication date]
+  "Content" (long text)        →  content               →  [Article body]
+  "Cover Image" (attachment)   →  imageUrl              →  [Hero image]
+  "Tags" (multi-select)        →  tags[]                →  [Tag pills]
+  "Related Project" (link)     →  relatedProjectId      →  [Project card]
+  "Links" (text)               →  relatedLinks[]        →  [External links]
+  "Status" (select)            →  [filter: Public only] →  [Visibility control]
+
+⚙️ Settings Table:
+  "Showreel URL" (text)        →  config.showreel.videoUrl        →  [Home hero video]
+  "Showreel Enabled" (checkbox) →  config.showreel.enabled        →  [Show/hide showreel]
+  "Contact Email" (email)      →  config.contact.email            →  [About page]
+  "Rep UK" (text)              →  config.contact.repUK            →  [About page]
+  "Rep USA" (text)             →  config.contact.repUSA           →  [About page]
+  "Instagram URL" (url)        →  config.contact.instagram        →  [Social links]
+  "Vimeo URL" (url)            →  config.contact.vimeo            →  [Social links]
+  "LinkedIn URL" (url)         →  config.contact.linkedin         →  [Social links]
+  "Bio" (long text)            →  config.about.bio                →  [About page bio]
+  "About Image" (attachment)   →  config.about.profileImage       →  [About page photo]
+  "Allowed Roles" (multi-sel)  →  config.allowedRoles[]           →  [Credit filtering]
+  "Default OG Image" (attach)  →  config.defaultOgImage           →  [Social share fallback]
+
+🏆 Festivals/Awards Table:
+  "Name" (text)                →  [resolved to string]  →  [Award display name]
+  "Display Name" (text)        →  [override if exists]  →  [Shortened festival name]
+
+📊 Client Book Table:
+  "Company Name" (text)        →  [resolved via link]   →  [Production company name]
+```
+
+### Key Processing Rules
+
+**Production Company Resolution:**
+- Airtable stores a **link** to the "Client Book" table
+- Backend resolves the link ID → "Company Name" field
+- Stored as `productionCompany` string in cached data
+
+**Client Field:**
+- Airtable stores **plain text** (not a link)
+- Passed directly through as `client` string
+- Used for brand/agency names in commercials
+
+**Display Priority:**
+- **IndexView (list/grid):** Shows `client` first, falls back to `productionCompany`
+- **ProjectDetailView:** Shows both fields with proper labels
+  - "Client" section: Shows `project.client` (brand/agency)
+  - "Production Company" section: Shows `project.productionCompany` (producer)
+
+**Credits Filtering:**
+- "Role" field (your roles) is filtered by "Allowed Roles" from Settings
+- "Credits Text" (all crew) is parsed and shown unfiltered
+- Only your matching roles appear in credits list
+
+---
+
 ### Projects Data Model (`types.ts`)
 
 ```typescript
@@ -593,8 +706,8 @@ interface Project {
   slug?: string;           // URL-friendly slug (auto-generated)
   type: ProjectType;       // Narrative | Commercial | Music Video | Documentary
   genre?: string[];        // ["Sci-Fi", "Drama"]
-  client: string;          // Production company (resolved from Client Book table)
-  brand?: string;          // Brand name (if commercial)
+  productionCompany: string; // Production company (resolved from Production Company field → Client Book table)
+  client?: string;         // Client/brand/agency name (optional)
   year: string;            // Release year (YYYY)
   description: string;     // Project description
   isFeatured: boolean;     // Show on home page?
@@ -625,8 +738,8 @@ interface Project {
 | `Front Page` | Checkbox | Show on home page? |
 | `Project Type` | Single Select | Narrative/Commercial/Music Video/Documentary |
 | `Genre` | Multiple Select | ["Sci-Fi", "Drama"] |
-| `Client` | Link to Client Book | Production company |
-| `Brand` | Single Line Text | Brand name |
+| `Production Company` | Link to Client Book | Production company that produced the work |
+| `Client` | Single Line Text | Client/brand/agency name |
 | `Release Date` | Date | YYYY-MM-DD |
 | `About` | Long Text | Description |
 | `Gallery` | Attachments | Images |

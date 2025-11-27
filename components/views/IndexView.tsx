@@ -203,7 +203,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     {/* ...existing code... */}
                                     {showCols.showClient && (
                                         <div className={`hidden md:block ${cols.client} text-[11px] font-normal text-white opacity-40 group-hover:opacity-80 transition uppercase tracking-wider`}>
-                                            {p.type === 'Narrative' ? '–' : (p.brand ? p.brand : p.client)}
+                                            {p.type === 'Narrative' ? '–' : (p.client ? p.client : p.productionCompany)}
                                         </div>
                                     )}
                                     {/* ...existing code... */}
@@ -279,7 +279,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     <div>
                                         <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1 tracking-tight`}>{p.title}</h2>
                                         <div className="text-[10px] font-medium tracking-widest uppercase opacity-70">
-                                            {p.brand ? p.brand : p.client}
+                                            {p.client ? p.client : p.productionCompany}
                                         </div>
                                     </div>
                                     <div className="text-right">

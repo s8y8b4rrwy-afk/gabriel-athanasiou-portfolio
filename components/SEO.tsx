@@ -112,18 +112,18 @@ export const SEO: React.FC<SEOProps> = ({
         }),
         
         // Production company
-        ...(project.client && {
+        ...(project.productionCompany && {
           "productionCompany": {
             "@type": "Organization",
-            "name": project.client
+            "name": project.productionCompany
           }
         }),
         
-        // Brand for commercials
-        ...(isCommercial && project.brand && {
+        // Client/brand for commercials
+        ...(isCommercial && project.client && {
           "sponsor": {
             "@type": "Organization",
-            "name": project.brand
+            "name": project.client
           }
         }),
         

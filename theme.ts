@@ -192,8 +192,8 @@ export const THEME = {
       sidebarStickyTop: "md:top-32",
       
       // Order of info blocks in sidebar
-      showBrand: true,
-      showClient: true,
+      showBrand: true,   // Controls display of "Client" field (for non-narrative projects)
+      showClient: true,  // Controls display of "Production Company" field
       showGenre: true,
       showAwards: true,
       

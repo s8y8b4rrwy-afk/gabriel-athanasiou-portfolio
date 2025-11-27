@@ -361,13 +361,13 @@ const syncAirtableData = async () => {
         }
       }
       
-      // Process client
-      let clientName = '';
-      const clientField = f['Client'];
-      if (Array.isArray(clientField)) {
-        clientName = clientField.map(id => clientsMap[id] || id).join(', ');
-      } else if (clientField) {
-        clientName = clientsMap[clientField] || clientField;
+      // Process production company
+      let productionCompany = '';
+      const productionCompanyField = f['Production Company'];
+      if (Array.isArray(productionCompanyField)) {
+        productionCompany = productionCompanyField.map(id => clientsMap[id] || id).join(', ');
+      } else if (productionCompanyField) {
+        productionCompany = clientsMap[productionCompanyField] || productionCompanyField;
       }
       
       // If Cloudinary is enabled, upload images and map to optimized URLs
@@ -399,8 +399,8 @@ const syncAirtableData = async () => {
         type: type,
         kinds: kinds,
         genre: f['Genre'] || [],
-        client: clientName,
-        brand: f['Brand'] || '',
+        productionCompany: productionCompany,
+        client: f['Client'] || '',
         year: year,
         description: f['About'] || '',
         isFeatured: !!f['Front Page'],

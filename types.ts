@@ -34,8 +34,8 @@ export interface Project {
   type: ProjectType | string;
   kinds?: string[]; // Raw project kinds from Airtable (e.g. ["Commercial", "TVC"])
   genre?: string[]; // e.g. ["Sci-Fi", "Drama"]
-  client: string; // This maps to Production Company usually
-  brand?: string; // Optional Brand field
+  productionCompany: string; // Production company that produced the work
+  client?: string; // Optional client/brand field
   year: string;
   description: string;
   isFeatured: boolean;
