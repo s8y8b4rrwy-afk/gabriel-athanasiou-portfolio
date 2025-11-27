@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "netlify dev",
+    "dev:vite": "vite",
     "optimize:images": "node scripts/optimize-images.mjs",
     "test:images": "node scripts/test-image-fetch.mjs",
     "test:cloudinary": "node scripts/test-cloudinary.mjs",

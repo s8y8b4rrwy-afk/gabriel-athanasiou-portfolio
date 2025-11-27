@@ -53,22 +53,22 @@ export const buildCloudinaryUrl = (
     ? `portfolio-journal-${recordId}`
     : `portfolio-projects-${recordId}-${index}`;
 
-  // Default options
+  // Default options - using user's preferred delivery settings
   const {
-    width = 1600,
-    quality = 'auto:good',
-    format = 'auto',
-    crop = 'limit',
-    dpr = 'auto'
+    width = 1600,        // Base width for full images, thumbnails use 800
+    quality = 'auto',    // Auto quality optimization
+    format = 'webp',     // Force WebP format
+    crop = 'limit',      // Prevent upscaling
+    dpr = 'auto'         // Auto device pixel ratio
   } = options;
 
-  // Build transformation string
+  // Build transformation string: f_webp,w_1600,c_limit,dpr_auto,q_auto
   const transformations = [
     `f_${format}`,
-    `q_${quality}`,
     `w_${width}`,
     `c_${crop}`,
-    `dpr_${dpr}`
+    `dpr_${dpr}`,
+    `q_${quality}`
   ].join(',');
 
   // Construct Cloudinary URL
@@ -94,7 +94,8 @@ export const buildCloudinaryUrl = (
  * @param type - 'project' or 'journal'
  * @param index - Image index for multiple images (default: 0)
  * @param totalImages - Total number of images. MUST match optimization script output.
- * @param cloudinaryOptions - Optional Cloudinary transformation options
+ * @param quality - Quality setting for Cloudinary delivery ('auto:best' or 'auto:good')
+ * @param width - Width for Cloudinary delivery (1600 for full images, 800 for thumbnails)
  * @returns Object with cloudinaryUrl, localUrl, and fallbackUrl
  */
 export const getOptimizedImageUrl = (
@@ -103,7 +104,8 @@ export const getOptimizedImageUrl = (
   type: 'project' | 'journal' = 'project',
   index: number = 0,
   totalImages: number = 1,
-  cloudinaryOptions?: CloudinaryOptions
+  quality?: 'auto:best' | 'auto:good',
+  width?: number
 ): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
   // If no fallback URL provided, return empty strings
   if (!fallbackUrl) {
@@ -122,8 +124,8 @@ export const getOptimizedImageUrl = (
     ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
     : false;
   
-  // Build Cloudinary URL
-  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
+  // Build Cloudinary URL with quality and width parameters
+  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, { quality, width });
   
   // Build local WebP path - matches optimization script naming
   const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;
@@ -193,7 +195,9 @@ export const getOptimizedImageUrlLegacy = (
 
 /**
  * Generate srcset string for responsive images
+ * @deprecated - Use Cloudinary width parameter instead
  */
+/*
 export const generateSrcSet = (src: string): string => {
   if (!src || !src.startsWith('http')) return src;
   
@@ -202,6 +206,7 @@ export const generateSrcSet = (src: string): string => {
     .map(width => `${getOptimizedImageUrl(src, width)} ${width}w`)
     .join(', ');
 };
+*/
 
 /**
  * Get responsive sizes attribute for images

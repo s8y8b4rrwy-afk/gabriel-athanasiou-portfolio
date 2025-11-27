@@ -106,13 +106,13 @@ export default function App() {
   }
 
   return (
-    <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+    <>
       <GlobalStyles />
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
-
       <Navigation showLinks={true} />
-
-      <main>
+      
+      <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-hidden transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+        <main>
         <Suspense fallback={
           <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
             {THEME.pageTransitions.loading.showText && (
@@ -204,7 +204,8 @@ export default function App() {
             </Routes>
           </PageTransition>
         </Suspense>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }

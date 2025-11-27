@@ -83,6 +83,10 @@ interface OptimizedImageProps {
   decoding?: 'async' | 'sync' | 'auto';
   /** Use original JPEG on desktop/large devices (1024px+) for maximum quality */
   useOriginalOnDesktop?: boolean;
+  /** Cloudinary quality setting: 'auto:best' (default, 90-100%) or 'auto:good' (80-90% for thumbnails) */
+  quality?: 'auto:best' | 'auto:good';
+  /** Cloudinary width: 1600 (default for full images) or 800 (for thumbnails) */
+  width?: number;
 }
 
 /**
@@ -118,7 +122,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = '',
   loading = 'lazy',
   decoding = 'async',
-  useOriginalOnDesktop = false
+  useOriginalOnDesktop = false,
+  quality = 'auto:best',
+  width = 1600
 }) => {
   // If no fallback URL provided, don't render anything
   if (!fallbackUrl) {
@@ -128,8 +134,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 
-    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages)
-  , [recordId, fallbackUrl, type, index, totalImages]);
+    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages, quality, width)
+  , [recordId, fallbackUrl, type, index, totalImages, quality, width]);
 
   // Determine initial source based on feature flag
   // If totalImages is 0, skip optimized versions and go straight to fallback (video thumbnail)
@@ -184,7 +190,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         {/* Mobile/Tablet: Optimized image for performance */}
         <source media="(max-width: 1023px)" srcSet={currentSrc} />
         <img
-          src={currentSrc}
+          src={imageUrls.fallbackUrl}
           alt={alt}
           loading={loading}
           decoding={decoding}

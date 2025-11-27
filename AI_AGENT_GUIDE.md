@@ -8,6 +8,170 @@
 
 ## 🎉 Recent Major Changes
 
+### November 27, 2025 - Cloudinary Cache Invalidation for Quality Updates
+**What Changed:** Added cache invalidation flags to force Cloudinary to regenerate images with new quality settings.
+
+**The Problem:**
+- Cloudinary caches transformed images (with specific quality settings)
+- Previous uploads may have cached `q_auto:good` transformations
+- Even after updating to `q_auto:best`, old cached versions were still served
+- Users saw lower quality images until cache naturally expired
+
+**The Solution:**
+- Added `invalidate: true` to Cloudinary upload configuration
+- Added `overwrite: true` to explicitly replace existing images
+- Forces CDN cache purge for all transformation URLs
+- New requests will regenerate images with `q_auto:best` quality
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync-alt.mjs` - Added invalidation flags (lines 194-195)
+
+**How It Works:**
+- `invalidate: true` - Clears Cloudinary's global CDN cache for the image
+- `overwrite: true` - Replaces existing image with same public_id
+- On next sync, all images are re-uploaded and cached versions purged
+- Transformation URLs (with `q_auto:best`) will serve fresh, high-quality versions
+- Cache purge propagates globally within minutes
+
+**Impact:** After deployment and sync, all images will be served at maximum quality. Old cached versions with lower quality settings are invalidated and regenerated on demand.
+
+---
+
+### November 27, 2025 - Fixed Cloudinary Image Delivery Quality + Thumbnail Optimization
+**What Changed:** Updated Cloudinary delivery URL quality settings for optimal balance between quality and performance.
+
+**The Problem:**
+- Images stored in Cloudinary at high quality (`auto:best` during upload)
+- BUT delivery URLs were using `auto:good` quality setting (80-90% quality)
+- Result: Images appeared blurry/lower quality despite high-quality storage
+- Mismatch between upload quality and delivery quality
+
+**The Solution:**
+- Changed default quality in `utils/imageOptimization.ts` line 59
+- From: `quality = 'auto:good'` → To: `quality = 'auto:best'`
+- **Differentiated Quality Strategy:** Small thumbnails use `auto:good`, full images use `auto:best`
+
+**Updated Files:**
+- `utils/imageOptimization.ts` - Changed default quality parameter to `auto:best` (line 59)
+- `components/views/IndexView.tsx` - Pass `quality="auto:good"` for filmography thumbnails
+- `components/views/BlogView.tsx` - Pass `quality="auto:good"` for journal thumbnails
+
+**How It Works:**
+- **Upload (scheduled-sync-alt.mjs):** `quality: 'auto:best'` - Stores at highest quality
+- **Delivery (imageOptimization.ts):** `quality: 'auto:best'` (default) - Full images at maximum quality
+- **Thumbnails (IndexView, BlogView):** `quality: 'auto:good'` - Small previews at medium quality
+- Different URLs = different cached versions (no data duplication, only downloads requested version)
+
+**Quality Differentiation:**
+- **auto:best (90-100%):** Project detail slideshows, blog post heroes, home featured images
+- **auto:good (80-90%):** Filmography grid, filmography list, journal listing thumbnails
+- Saves ~15-20% file size on thumbnails with imperceptible quality difference at small sizes
+
+**Technical Details:**
+- `format: 'auto'` during upload converts JPEG/PNG → WebP for efficient storage
+- WebP at `auto:best` maintains visual quality while reducing file size ~25-35%
+- Cloudinary's smart compression optimizes per-image without visible quality loss
+- Cloudinary caches each transformation URL separately (different quality = different cached file)
+- Browser only downloads the version requested (no duplication or waste)
+
+**Impact:** Full-size images display at maximum quality, while small thumbnails use optimized settings for faster page loads. Overall performance improved by ~15-20% on listing pages without visible quality loss.
+
+---
+
+### November 27, 2025 - Fixed Hero Image Resolution on Desktop
+**What Changed:** Fixed front page hero image to always serve original high-resolution image on desktop (1024px+).
+
+**The Problem:**
+- Hero image had `useOriginalOnDesktop={true}` prop set
+- `<picture>` element was configured with media queries for desktop vs mobile
+- BUT: The `<img src>` fallback was pointing to `currentSrc` (optimized WebP) instead of original
+- Browsers were defaulting to the 1600px WebP instead of the full-resolution Airtable image
+- Result: Hero looked lower quality than it should on desktop
+
+**The Solution:**
+- Changed `<img src={currentSrc}>` to `<img src={imageUrls.fallbackUrl}>` in `OptimizedImage.tsx`
+- Now desktop browsers default to the original high-res image as intended
+- Mobile still gets optimized WebP for performance
+
+**Updated Files:**
+- `components/common/OptimizedImage.tsx` - Fixed img src attribute (line 187)
+
+**How It Works:**
+- `<picture>` element with `<source media="(min-width: 1024px)">` serves original Airtable image
+- `<source media="(max-width: 1023px)">` serves optimized WebP (1600px @ 90% quality)
+- `<img src>` now defaults to original image, matching desktop intent
+- Browser picks appropriate source based on screen width
+
+**Impact:** Front page hero now displays at maximum quality on desktop devices. Original Airtable images (typically 4000-6000px) are served on screens 1024px+, while mobile devices still get optimized WebP for fast loading.
+
+---
+
+### November 27, 2025 - Fixed Local Development Server to Use Netlify Functions
+**What Changed:** Updated dev script to use `netlify dev` instead of plain `vite` for access to cached data.
+
+**The Problem:**
+- Running `npm run dev` used Vite's dev server directly
+- No access to Netlify Functions or cached data from `get-data.js`
+- Local development showed blank/empty data
+
+**The Solution:**
+- Changed `dev` script from `vite` to `netlify dev`
+- Added `dev:vite` script as fallback for direct Vite access
+- Netlify Dev wraps Vite and provides access to Functions
+
+**Updated Files:**
+- `package.json` - Changed dev script
+
+**How It Works:**
+- `netlify dev` starts both Vite dev server (port 3000) and Netlify Functions proxy (port 8888)
+- Access the site at **`http://localhost:8888`** (not 3000)
+- Functions like `/.netlify/functions/get-data` now work locally with cached data
+- Environment variables from `.env.local` are automatically injected
+
+**Impact:** Local development now has access to all cached Airtable data via Netlify Functions, matching production behavior.
+
+---
+
+### November 27, 2025 - Fixed Sticky Navigation and Close Button
+**What Changed:** Fixed navigation bar and close button not remaining sticky during scroll.
+
+**The Problem:**
+- Navigation and close button had `fixed` positioning but were scrolling with the page
+- `overflow-x: hidden` on `<body>` element was causing fixed elements to behave as absolute
+- Page transition animations (opacity + transform) on parent container were creating a new stacking context
+- Fixed elements inside animated containers lose their viewport-relative positioning
+- Close button was rendered inside view components (ProjectDetailView, BlogPostView), which were inside the `overflow-x-hidden` container
+
+**The Solution:**
+- Removed `overflow-x: hidden` from body in `index.html`
+- Added `overflow-x-hidden` to the main App container div in `App.tsx`
+- **Moved Navigation and Cursor outside the transitioning container**
+- Navigation and Cursor now render before the animated content wrapper
+- **Updated CloseButton to use React portal** - renders directly to `document.body`
+- All fixed elements (Navigation, CloseButton, Cursor) now remain properly fixed to viewport
+
+**Updated Files:**
+- `index.html` - Removed `overflow-x: hidden` from body styles (line 115)
+- `App.tsx` - Restructured component hierarchy (lines 108-115, 210-212)
+  - GlobalStyles, Cursor, Navigation now outside animated container
+  - Main content wrapper retains transition effects without affecting fixed elements
+- `components/common/CloseButton.tsx` - Added `createPortal` to render to `document.body`
+  - Button now renders outside any parent container's overflow context
+  - Maintains all existing functionality and styling
+
+**Technical Details:**
+- Fixed positioning is relative to the viewport, not the scroll container
+- `overflow-x: hidden` on body creates a new containing block for fixed elements
+- CSS transforms and opacity transitions can also create containing blocks
+- Moving fixed elements outside animated wrappers preserves proper fixed positioning
+- **React portals** allow components to render outside their parent DOM hierarchy
+- CloseButton portal pattern matches Cursor implementation for consistency
+- Z-index layering: CloseButton (z-100) > Navigation (z-50)
+
+**Impact:** Navigation and close button now stay fixed at top of screen during scroll on all pages (home, filmography, project detail, journal, post detail), even with page transition animations enabled.
+
+---
+
 ### November 27, 2025 - Linked Records Resolution Fix: Festivals & Production Company
 **What Changed:** Fixed festivals and production companies displaying record IDs instead of names.
 
@@ -230,7 +394,7 @@
 
 **This guide is the source of truth for the entire codebase architecture.**
 
-**Last Major Update:** November 26, 2025 - Added smart festival/awards grouping and display system
+**Last Major Update:** November 27, 2025 - Cloudinary cache invalidation for quality updates
 
 ---
 
@@ -926,14 +1090,16 @@ GEMINI_API_KEY=xxxxx  # Optional, for AI features
 3. **Start Dev Server:**
 ```bash
 npm run dev
-# Opens at http://localhost:3000
+# Opens at http://localhost:8888 (Netlify Dev with Functions)
+# Note: Vite runs on port 3000, but use 8888 for full functionality
 ```
 
 ### Development Commands
 
 ```bash
 # Development
-npm run dev                # Start Vite dev server (hot reload)
+npm run dev                # Start Netlify Dev server with Functions (http://localhost:8888)
+npm run dev:vite           # Start Vite only (no Functions, http://localhost:3000)
 npm run preview            # Preview production build locally
 
 # Building

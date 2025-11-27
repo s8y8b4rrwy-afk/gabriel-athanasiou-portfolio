@@ -185,19 +185,19 @@ const parseExternalLinksData = (rawText) => {
   return { links, videos };
 };
 
-// Upload image to Cloudinary with highest quality settings
-// Cloudinary fetches the original from Airtable and optimizes it
+// Upload image to Cloudinary at original resolution as WebP
+// Stores full-resolution originals, transformations applied only at delivery
 const uploadToCloudinary = async (imageUrl, publicId) => {
   try {
     const result = await cloudinary.uploader.upload(imageUrl, {
       public_id: publicId,
       folder: '',
       resource_type: 'image',
-      format: 'auto', // Best format per browser (WebP/AVIF)
+      format: 'webp', // Convert to WebP, keep original resolution
       quality: 'auto:best', // Highest quality with smart compression
-      transformation: [
-        { width: 2400, crop: 'limit' } // Max 2400px for retina displays
-      ]
+      invalidate: true, // Clear CDN cache to force new transformations
+      overwrite: true // Overwrite existing images with same public_id
+      // NO transformation array - stores at original resolution
     });
     
     return {
