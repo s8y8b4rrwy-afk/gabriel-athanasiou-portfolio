@@ -39,6 +39,7 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
 
 ### Architecture & Features
 - [docs/CDN_CACHE_FINAL_IMPLEMENTATION.md](./docs/CDN_CACHE_FINAL_IMPLEMENTATION.md) - CDN caching architecture
+- [docs/CLOUDINARY_INTEGRATION.md](./docs/CLOUDINARY_INTEGRATION.md) - Cloudinary image optimization (production)
 - [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
 - [docs/PROCEDURAL_THUMBNAILS.md](./docs/PROCEDURAL_THUMBNAILS.md) - Procedural artwork generation
 
@@ -53,8 +54,9 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
 - Vite 6.2.0
 - React Router 6
 - Airtable (Headless CMS)
+- Cloudinary (Image CDN & Optimization)
 - Netlify (Hosting + Functions)
-- Sharp (Image Optimization)
+- Sharp (Local Image Optimization)
 - Google Analytics 4
 
 ## 📝 License

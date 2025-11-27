@@ -1,12 +1,18 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
 import crypto from 'crypto';
+import { v2 as cloudinary } from 'cloudinary';
 
 // ==========================================
 // CONFIGURATION
 // ==========================================
 const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
+// Cloudinary (server-side) feature flag and config
+const USE_CLOUDINARY = process.env.USE_CLOUDINARY === 'true';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 // ==========================================
 // HELPER FUNCTIONS
@@ -169,6 +175,37 @@ const parseExternalLinksData = (rawText) => {
   return { links, videos };
 };
 
+// Upload image to Cloudinary with highest quality settings
+// Cloudinary fetches the original from Airtable and optimizes it
+const uploadToCloudinary = async (imageUrl, publicId) => {
+  try {
+    const result = await cloudinary.uploader.upload(imageUrl, {
+      public_id: publicId,
+      folder: '',
+      resource_type: 'image',
+      format: 'auto', // Best format per browser (WebP/AVIF)
+      quality: 'auto:best', // Highest quality with smart compression
+      transformation: [
+        { width: 2400, crop: 'limit' } // Max 2400px for retina displays
+      ]
+    });
+    
+    return {
+      success: true,
+      publicId: result.public_id,
+      cloudinaryUrl: result.secure_url,
+      format: result.format,
+      bytes: result.bytes
+    };
+  } catch (error) {
+    console.error(`Failed to upload ${publicId}:`, error.message);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 // ==========================================
 // MAIN SYNC LOGIC
 // ==========================================
@@ -252,7 +289,7 @@ const syncAirtableData = async () => {
     const projects = await Promise.all(visibleProjects.map(async (record) => {
       const f = record.fields;
       
-      // Use Airtable image URLs directly (no optimization)
+      // Base gallery URLs direct from Airtable (highest resolution)
       const galleryUrls = f['Gallery']?.map(img => img.url) || [];
       
       // Get video URL and thumbnail
@@ -321,6 +358,28 @@ const syncAirtableData = async () => {
         clientName = clientsMap[clientField] || clientField;
       }
       
+      // If Cloudinary is enabled, upload images and map to optimized URLs
+      let cloudinaryGallery = [];
+      let cloudinaryHero = '';
+      if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME) {
+        // Upload each gallery image to Cloudinary (if credentials available)
+        if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+          for (let idx = 0; idx < galleryUrls.length; idx++) {
+            const publicId = `portfolio-projects-${record.id}-${idx}`;
+            const uploadResult = await uploadToCloudinary(galleryUrls[idx], publicId);
+            if (uploadResult.success) {
+              console.log(`✓ Uploaded ${publicId}`);
+            }
+          }
+        }
+        
+        // Generate optimized delivery URLs with highest quality
+        cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-projects-${record.id}-${idx}`);
+        cloudinaryHero = cloudinaryGallery[0] || heroImage;
+      }
+
+      const useCloudinary = USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME;
+
       return {
         id: record.id,
         title: normalizeTitle(f['Name']),
@@ -332,8 +391,8 @@ const syncAirtableData = async () => {
         year: year,
         description: f['About'] || '',
         isFeatured: !!f['Front Page'],
-        heroImage: heroImage,
-        gallery: galleryUrls,
+        heroImage: useCloudinary ? cloudinaryHero : heroImage,
+        gallery: useCloudinary ? cloudinaryGallery : galleryUrls,
         videoUrl: videoUrl,
         additionalVideos: linkData.videos,
         awards: awards,
@@ -372,8 +431,24 @@ const syncAirtableData = async () => {
         .map(async (record) => {
           const f = record.fields;
           
-          // Use Airtable cover image URL directly (no optimization)
+          // Base cover image URL from Airtable (highest resolution)
           const imageUrl = f['Cover Image']?.[0]?.url || '';
+          
+          // If Cloudinary is enabled, upload and use optimized URL
+          let cloudinaryImageUrl = imageUrl;
+          if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && imageUrl) {
+            // Upload journal cover image (if credentials available)
+            if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+              const publicId = `portfolio-journal-${record.id}`;
+              const uploadResult = await uploadToCloudinary(imageUrl, publicId);
+              if (uploadResult.success) {
+                console.log(`✓ Uploaded ${publicId}`);
+              }
+            }
+            
+            // Use optimized delivery URL with highest quality
+            cloudinaryImageUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-journal-${record.id}`;
+          }
           
           // Parse links
           const rawLinks = f['Links'] || f['External Links'];
@@ -388,7 +463,7 @@ const syncAirtableData = async () => {
             tags: f['Tags'] || [],
             content: f['Content'] || '',
             readingTime: calculateReadingTime(f['Content'] || ''),
-            imageUrl: imageUrl,
+            imageUrl: cloudinaryImageUrl,
             relatedProjectId: f['Related Project']?.[0] || f['Projects']?.[0] || null,
             source: 'local',
             relatedLinks: relatedLinks

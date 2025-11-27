@@ -78,17 +78,18 @@ const saveCloudinaryMapping = async (mapping) => {
   }
 };
 
-// Upload image to Cloudinary
+// Upload image to Cloudinary with highest quality settings
+// Cloudinary fetches the original from Airtable and optimizes it
 const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
   try {
     const result = await cloudinary.uploader.upload(imageUrl, {
       public_id: publicId,
       folder: '', // Already in public_id
       resource_type: 'image',
-      format: 'webp',
-      quality: 'auto:good',
+      format: 'auto', // Let Cloudinary choose best format (WebP/AVIF)
+      quality: 'auto:best', // Highest quality with smart compression
       transformation: [
-        { width: 1600, crop: 'limit' }
+        { width: 2400, crop: 'limit' } // Higher resolution for retina displays
       ]
     });
     

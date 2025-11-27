@@ -1,29 +1,38 @@
 # Cloudinary Integration Guide
 
-> **Status:** Implementation Complete - Ready for Testing  
+> **Status:** ✅ Production Deployment Complete  
 > **Branch:** `cloudinary-integration`  
-> **Last Updated:** January 27, 2025
+> **Last Updated:** November 27, 2025
 
 ## Overview
 
-Cloudinary integration replaces the custom Sharp-based image optimization with cloud-based automatic image processing. Images are uploaded to Cloudinary during scheduled sync and served with automatic format optimization (WebP/AVIF), quality adjustment, and responsive transformations.
+Cloudinary integration provides cloud-based automatic image optimization with highest quality settings. Images are automatically uploaded to Cloudinary during each sync (scheduled or manual) and served with automatic format optimization (WebP/AVIF), smart quality compression (`auto:best`), and responsive transformations.
+
+**Key Features:**
+- Automatic uploads from Airtable (highest resolution originals)
+- Smart change detection (only uploads new/changed images)
+- Highest quality with intelligent compression
+- Auto-format selection (WebP/AVIF based on browser)
+- Retina display support (up to 2400px)
+- Global CDN delivery
 
 ## Architecture
 
 ### Image Flow
 
 ```
-Airtable → Scheduled Sync → Cloudinary Upload → Cloudinary CDN → Browser
-                          ↓
-                    Local WebP (backup fallback)
+Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Cloudinary CDN → Browser
+                                   ↓
+                            Smart Caching (Only new/changed images)
 ```
 
 ### Fallback Chain (Three-Tier)
 
-1. **Primary**: Cloudinary URL with automatic transformations
+1. **Primary**: Cloudinary URL with highest quality transformations
    - Auto format (WebP/AVIF based on browser support)
-   - Auto quality (`q_auto:good`)
-   - Max width 1600px with crop limit
+   - Auto quality (`q_auto:best` - highest quality with smart compression)
+   - Max width 1600px for delivery, 2400px for uploads (retina support)
+   - Device pixel ratio auto-detection
    
 2. **Secondary**: Local WebP files (existing optimization)
    - Pre-generated WebP files from build
@@ -35,13 +44,25 @@ Airtable → Scheduled Sync → Cloudinary Upload → Cloudinary CDN → Browser
 
 ### Scheduled Sync Integration
 
-The `scheduled-sync.mjs` function now includes intelligent Cloudinary upload:
+**Two sync functions available:**
 
-- **Change Detection**: Compares current images against `cloudinary-mapping.json`
-- **Smart Upload**: Only uploads new or changed images
-- **Skip Existing**: Reuses existing Cloudinary URLs for unchanged images
-- **Feature Flag Respect**: Only runs if `USE_CLOUDINARY=true`
-- **Progress Logging**: Reports uploaded/skipped/failed counts
+1. **`scheduled-sync-alt.mjs`** (Currently in production via `get-data.js`):
+   - Real-time uploads during each sync call
+   - Used by `get-data.js` for on-demand fresh data
+   - Uploads to Cloudinary with `q_auto:best` quality
+   - Returns Cloudinary URLs when `USE_CLOUDINARY=true`
+
+2. **`scheduled-sync.mjs`** (Scheduled daily):
+   - Change detection via `cloudinary-mapping.json`
+   - Only uploads new or changed images
+   - Maintains mapping file for tracking
+   - Runs daily at midnight UTC
+
+**Common Features:**
+- Feature Flag Respect: Only uploads if credentials are available
+- Progress Logging: Reports uploaded/skipped/failed counts
+- Automatic retry logic for failed uploads
+- Preserves Airtable fallback URLs
 
 ## Setup Instructions
 
@@ -102,7 +123,7 @@ Mapping saved: public/cloudinary-mapping.json
 
 ## Feature Flag System
 
-### Phase 1: Infrastructure Testing ✅ COMPLETE
+### ✅ Phase 1: Infrastructure Testing - COMPLETE
 ```bash
 USE_CLOUDINARY=false
 ```
@@ -113,32 +134,32 @@ USE_CLOUDINARY=false
 - ✅ Local testing passed (41 projects, 1 post loaded successfully)
 - **Result:** Infrastructure validated, no breaking changes
 
-### Phase 2: Preview Testing (Next Step)
+### ✅ Phase 2: Preview Testing - COMPLETE
 ```bash
-USE_CLOUDINARY=false  # in Netlify env vars
+USE_CLOUDINARY=true  # in Netlify env vars (draft)
 ```
-- Deploy to Netlify preview branch
-- Verify no breaking changes
-- Test fallback chain works correctly
-- Monitor logs for errors
-- **Goal:** Confirm production compatibility
+- ✅ Deployed to Netlify draft preview
+- ✅ Auto-uploads working during sync
+- ✅ Cloudinary URLs generated correctly
+- ✅ No breaking changes observed
+- **Result:** Preview validated successfully
 
-### Phase 3: Gradual Rollout (After validation)
+### ✅ Phase 3: Production Deployment - COMPLETE
 ```bash
-USE_CLOUDINARY=true
+USE_CLOUDINARY=true  # in Netlify env vars (production)
 ```
-- Enable Cloudinary URLs for all images
-- Monitor performance and errors
-- Check Cloudinary bandwidth usage
-- **Goal:** Validate production performance
+- ✅ Deployed to production: https://directedbygabriel.com
+- ✅ All 41 projects using Cloudinary URLs
+- ✅ Highest quality settings active (`q_auto:best`)
+- ✅ Manual sync triggered successfully
+- ✅ Production validated with live data
+- **Result:** Full production deployment successful
 
-### Phase 3: Full Production (Week 4+)
-```bash
-USE_CLOUDINARY=true
-```
-- Cloudinary is primary source
-- Local WebP remains as fallback
-- Monitor and optimize as needed
+### Current Status: Production Active 🎉
+- Cloudinary is primary image source
+- Auto-uploads happen during each sync
+- Highest resolution from Airtable → Cloudinary optimization
+- Monitoring bandwidth and performance
 
 ## Technical Details
 
@@ -163,19 +184,32 @@ portfolio-journal-recDXQQWqEqLnstIx
 
 ### Cloudinary Transformations
 
-**Default Settings:**
-- Format: `auto` (WebP/AVIF with JPEG fallback)
-- Quality: `auto:good` (80-90% depending on content)
-- Width: Responsive breakpoints (400, 800, 1200, 1600)
-- Fetch: `auto` (automatic format selection)
-- Delivery: `q_auto` (quality optimization)
+**Upload Settings (highest quality):**
+- Format: `auto` (best format per browser)
+- Quality: `auto:best` (highest quality with smart compression)
+- Max Width: `2400px` (retina display support)
+- Crop: `limit` (preserve aspect ratio)
 
-**Example URL:**
+**Delivery Settings:**
+- Format: `f_auto` (WebP/AVIF with JPEG fallback)
+- Quality: `q_auto:best` (highest quality optimization)
+- Width: `w_1600` (responsive delivery)
+- Crop: `c_limit` (no distortion)
+- DPR: `dpr_auto` (automatic retina detection)
+
+**Example Production URL:**
 ```
-https://res.cloudinary.com/your-cloud/image/upload/
-  f_auto,q_auto:good,w_1200,c_limit/
-  portfolio-projects-rec2xl62i0mgEo1go-0
+https://res.cloudinary.com/date24ay6/image/upload/
+  f_auto,q_auto:best,c_limit,dpr_auto,w_1600/
+  portfolio-projects-recNNKSzQAsbchpCi-0
 ```
+
+**Quality Levels Available:**
+- `auto:best` - Highest quality (current setting)
+- `auto:good` - Good quality (80-90%)
+- `auto:eco` - Economy quality (60-70%)
+- `auto:low` - Low quality (40-50%)
+- `1-100` - Manual percentage
 
 ### Change Detection
 
@@ -332,12 +366,13 @@ No data loss occurs - local WebP files remain intact as backup.
 ## Files Modified
 
 **Core Integration:**
-- `netlify/functions/scheduled-sync.mjs` - Cloudinary upload logic
-- `utils/imageOptimization.ts` - Cloudinary URL builders
-- `components/common/OptimizedImage.tsx` - Three-tier fallback
+- `netlify/functions/scheduled-sync.mjs` - Cloudinary upload with change detection
+- `netlify/functions/scheduled-sync-alt.mjs` - Real-time uploads during sync (production)
+- `netlify/functions/get-data.js` - Uses scheduled-sync-alt for fresh data
+- `utils/imageOptimization.ts` - Cloudinary URL builders with quality controls
 
 **Scripts:**
-- `scripts/migrate-to-cloudinary.mjs` - Initial migration
+- `scripts/migrate-to-cloudinary.mjs` - Initial migration tool
 - `package.json` - Added cloudinary dependency
 
 **Configuration:**
@@ -345,8 +380,8 @@ No data loss occurs - local WebP files remain intact as backup.
 - `netlify.toml` - Environment variable documentation
 
 **Documentation:**
-- `docs/CLOUDINARY_INTEGRATION.md` - This file
-- `AI_AGENT_GUIDE.md` - Updated with Cloudinary section
+- `docs/CLOUDINARY_INTEGRATION.md` - This file (updated)
+- `README.md` - Added Cloudinary reference
 
 ## Support
 
