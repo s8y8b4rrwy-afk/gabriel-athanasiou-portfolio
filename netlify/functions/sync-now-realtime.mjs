@@ -1,13 +1,13 @@
-import { syncAirtableData } from './scheduled-sync-alt.mjs';
+import { syncAirtableData } from './scheduled-sync-realtime.mjs';
 
 /**
- * Manual trigger endpoint for the sync function
+ * Manual trigger endpoint for the realtime sync function
  * 
- * Call this via: /.netlify/functions/sync-now-alt
+ * Call this via: /.netlify/functions/sync-now-realtime
  * 
  * Useful for:
- * - Testing the sync process
- * - Forcing an immediate sync after Airtable changes
+ * - Testing the realtime sync process
+ * - Forcing an immediate full sync with fresh uploads
  * - Initial data population
  */
 export const handler = async (event, context) => {
@@ -24,11 +24,11 @@ export const handler = async (event, context) => {
   }
 
   try {
-    console.log('Manual sync triggered');
+    console.log('Manual realtime sync triggered');
     const result = await syncAirtableData();
     return result;
   } catch (error) {
-    console.error('Manual sync failed:', error);
+    console.error('Manual realtime sync failed:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({

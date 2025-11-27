@@ -1,5 +1,5 @@
 import { builder } from '@netlify/functions';
-import { syncAirtableData } from './scheduled-sync-alt.mjs';
+import { syncAirtableData } from './scheduled-sync-realtime.mjs';
 
 const getDataHandler = async (event, context) => {
   try {

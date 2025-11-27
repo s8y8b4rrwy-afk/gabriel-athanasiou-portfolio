@@ -44,25 +44,34 @@ Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Clo
 
 ### Scheduled Sync Integration
 
-**Two sync functions available:**
+**Two sync strategies for different use cases:**
 
-1. **`scheduled-sync-alt.mjs`** (Currently in production via `get-data.js`):
-   - Real-time uploads during each sync call
-   - Used by `get-data.js` for on-demand fresh data
-   - Uploads to Cloudinary with `q_auto:best` quality
-   - Returns Cloudinary URLs when `USE_CLOUDINARY=true`
-
-2. **`scheduled-sync.mjs`** (Scheduled daily):
-   - Change detection via `cloudinary-mapping.json`
+1. **`scheduled-sync.mjs`** (Incremental - Daily scheduled runs):
+   - **Smart change detection** via `cloudinary-mapping.json`
    - Only uploads new or changed images
    - Maintains mapping file for tracking
    - Runs daily at midnight UTC
+   - Efficient for scheduled operations
+   - Generates sitemap.xml and share-meta.json
+
+2. **`scheduled-sync-realtime.mjs`** (Realtime - On-demand API):
+   - Real-time uploads during each sync call
+   - Used by `get-data.js` for fresh on-demand data
+   - Uploads to Cloudinary with `q_auto:best` quality
+   - Returns Cloudinary URLs when `USE_CLOUDINARY=true`
+   - No change detection (always fresh)
+   - Best for API endpoints that need guaranteed fresh data
+
+**Manual Triggers:**
+- `sync-now.mjs` - Trigger incremental sync manually
+- `sync-now-realtime.mjs` - Trigger realtime sync manually
 
 **Common Features:**
 - Feature Flag Respect: Only uploads if credentials are available
 - Progress Logging: Reports uploaded/skipped/failed counts
 - Automatic retry logic for failed uploads
 - Preserves Airtable fallback URLs
+- Cache invalidation support (`invalidate: true`, `overwrite: true`)
 
 ## Setup Instructions
 
@@ -366,9 +375,11 @@ No data loss occurs - local WebP files remain intact as backup.
 ## Files Modified
 
 **Core Integration:**
-- `netlify/functions/scheduled-sync.mjs` - Cloudinary upload with change detection
-- `netlify/functions/scheduled-sync-alt.mjs` - Real-time uploads during sync (production)
-- `netlify/functions/get-data.js` - Uses scheduled-sync-alt for fresh data
+- `netlify/functions/scheduled-sync.mjs` - Incremental sync with change detection (daily)
+- `netlify/functions/scheduled-sync-realtime.mjs` - Realtime sync (on-demand API)
+- `netlify/functions/sync-now.mjs` - Manual trigger for incremental sync
+- `netlify/functions/sync-now-realtime.mjs` - Manual trigger for realtime sync
+- `netlify/functions/get-data.js` - Uses realtime sync for fresh data
 - `utils/imageOptimization.ts` - Cloudinary URL builders with quality controls
 
 **Scripts:**

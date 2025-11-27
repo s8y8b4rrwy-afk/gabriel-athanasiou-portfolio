@@ -8,6 +8,55 @@
 
 ## 🎉 Recent Major Changes
 
+### November 27, 2025 - Netlify Functions Cleanup
+**What Changed:** Organized Netlify functions with clear separation between incremental and realtime sync strategies.
+
+**The Problem:**
+- Had duplicate sync functions with unclear purposes
+- The `-alt` versions had latest fixes but naming was confusing
+- Need BOTH incremental daily sync AND realtime on-demand sync
+- Incremental sync only uploads changed images (efficient for daily runs)
+- Realtime sync uploads all images fresh (needed for get-data.js on-demand calls)
+
+**The Solution:**
+- **Separated concerns** into two distinct sync functions:
+  1. `scheduled-sync.mjs` - Incremental sync with change detection (runs daily)
+  2. `scheduled-sync-realtime.mjs` - Realtime uploads (used by get-data.js)
+- Created manual triggers for both:
+  - `sync-now.mjs` - Triggers incremental sync
+  - `sync-now-realtime.mjs` - Triggers realtime sync
+- Updated `get-data.js` to use realtime version
+- Backed up old versions in `netlify/functions-backup/`
+
+**Active Functions:**
+- `netlify/functions/scheduled-sync.mjs` - **Incremental sync** (runs daily at midnight UTC)
+  - Only uploads new/changed images to Cloudinary
+  - Uses `cloudinary-mapping.json` for change detection
+  - Efficient for scheduled daily runs
+  - Generates sitemap.xml and share-meta.json
+  
+- `netlify/functions/scheduled-sync-realtime.mjs` - **Realtime sync**
+  - Uploads images fresh on every call
+  - Used by `get-data.js` for on-demand data
+  - No change detection (always fresh)
+  
+- `netlify/functions/sync-now.mjs` - Manual trigger for incremental sync
+- `netlify/functions/sync-now-realtime.mjs` - Manual trigger for realtime sync
+- `netlify/functions/get-data.js` - Production data API (uses realtime sync)
+- `netlify/functions/sitemap.js` - Dynamic sitemap generator
+- `netlify/edge-functions/meta-rewrite.ts` - Dynamic meta tags for SSR-like behavior
+
+**Why Both Versions?**
+- **Daily scheduled run**: Use incremental sync (efficient, only uploads changes)
+- **On-demand API calls**: Use realtime sync (ensures fresh data without stale cache)
+
+**Backed Up (Legacy):**
+- `netlify/functions-backup/` - Contains old versions for reference
+
+**Impact:** Clear separation of concerns. Daily syncs are efficient (only changed images), while on-demand calls guarantee fresh data.
+
+---
+
 ### November 27, 2025 - Cloudinary Cache Invalidation for Quality Updates
 **What Changed:** Added cache invalidation flags to force Cloudinary to regenerate images with new quality settings.
 
@@ -24,7 +73,7 @@
 - New requests will regenerate images with `q_auto:best` quality
 
 **Updated Files:**
-- `netlify/functions/scheduled-sync-alt.mjs` - Added invalidation flags (lines 194-195)
+- `netlify/functions/scheduled-sync.mjs` - Added invalidation flags (lines 194-195)
 
 **How It Works:**
 - `invalidate: true` - Clears Cloudinary's global CDN cache for the image
@@ -57,7 +106,7 @@
 - `components/views/BlogView.tsx` - Pass `quality="auto:good"` for journal thumbnails
 
 **How It Works:**
-- **Upload (scheduled-sync-alt.mjs):** `quality: 'auto:best'` - Stores at highest quality
+- **Upload (scheduled-sync.mjs):** `quality: 'auto:best'` - Stores at highest quality
 - **Delivery (imageOptimization.ts):** `quality: 'auto:best'` (default) - Full images at maximum quality
 - **Thumbnails (IndexView, BlogView):** `quality: 'auto:good'` - Small previews at medium quality
 - Different URLs = different cached versions (no data duplication, only downloads requested version)
@@ -187,8 +236,7 @@
 - Lookup maps now populate correctly and resolve IDs to actual names
 
 **Updated Files:**
-- `netlify/functions/scheduled-sync-alt.mjs` - Fixed table name (line 236) and field mapping (line 252)
-- `netlify/functions/scheduled-sync.mjs` - Fixed table name (line 500) and field mapping (line 512)
+- `netlify/functions/scheduled-sync.mjs` - Fixed table name and field mapping
 
 **Verification:**
 - Check Netlify function logs: Should show "Fetched X records from Festivals" and "Fetched Y records from Client Book"
@@ -213,7 +261,7 @@
 - Updated all display logic: Client shows first (brand/agency), Production Company shows second
 
 **Updated Files:**
-- `netlify/functions/scheduled-sync-alt.mjs` - Field mapping from Airtable
+- `netlify/functions/scheduled-sync.mjs` - Field mapping from Airtable
 - `types.ts` - TypeScript interface updated
 - `components/views/ProjectDetailView.tsx` - Display logic fixed
 - `components/views/IndexView.tsx` - List/grid display priorities
@@ -247,7 +295,7 @@
 - OEmbed API extracts thumbnail from full URL including hash parameter
 
 **Technical:**
-- Backend (`scheduled-sync-alt.mjs`) now properly handles both public and private Vimeo URLs
+- Backend (`scheduled-sync.mjs`) now properly handles both public and private Vimeo URLs
 - Frontend issue fixed: passing `totalImages=2` caused lookup for `project-{id}-0.webp` (doesn't exist)
 - Now passes `totalImages=0` → immediately uses `heroImage` (video thumbnail URL)
 - Added debug logging to track thumbnail fetching success/failure
@@ -263,7 +311,7 @@
 - `components/views/HomeView.tsx` - Fixed hero and grid thumbnails
 - `components/views/IndexView.tsx` - Fixed list and grid view thumbnails (needs update for totalImages=0)
 - `components/common/OptimizedImage.tsx` - Skip WebP lookup when totalImages=0
-- `netlify/functions/scheduled-sync-alt.mjs` - Vimeo private video support + debug logging
+- `netlify/functions/scheduled-sync.mjs` - Vimeo private video support + debug logging
 
 ---
 
