@@ -1,17 +1,11 @@
 import { schedule } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
 import fetch from 'node-fetch';
-import crypto from 'crypto';
 
 // ==========================================
 // CONFIGURATION
 // ==========================================
 const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
-
-// KV Store key for cached data
-const KV_DATA_KEY = 'airtable-data';
-const KV_HASH_KEY = 'airtable-data-hash';
 
 // NOTE: Image optimization temporarily disabled due to Sharp compatibility issues
 // Images will use Airtable URLs directly (already CDN-served)
@@ -194,9 +188,6 @@ const syncAirtableData = async () => {
     throw new Error('Airtable credentials not configured');
   }
   
-  // Initialize KV store (using Blobs with 'kv' prefix for now)
-  const kvStore = getStore('portfolio-kv');
-  
   try {
     // 1. Fetch all data from Airtable
     console.log('Fetching data from Airtable...');
@@ -208,34 +199,7 @@ const syncAirtableData = async () => {
       fetchAirtableTable('Settings')
     ]);
     
-    // 2. Calculate hash of raw data to detect changes
-    const rawDataHash = hashData({ 
-      projects: projectsRecords, 
-      journal: journalRecords, 
-      settings: settingsRecords 
-    });
-    
-    // 3. Compare with previous hash
-    let previousHash = null;
-    try {
-      const hashBlob = await kvStore.get(KV_HASH_KEY, { type: 'text' });
-      previousHash = hashBlob;
-    } catch (e) {
-      console.log('No previous hash found, this is first sync');
-    }
-    
-    if (previousHash === rawDataHash) {
-      console.log('No changes detected, skipping processing');
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ 
-          message: 'No changes detected', 
-          timestamp: new Date().toISOString() 
-        })
-      };
-    }
-    
-    console.log('Changes detected, processing data...');
+    console.log('Processing data...');
     
     // 4. Build lookup maps
     const awardsMap = {};
@@ -475,8 +439,12 @@ const syncAirtableData = async () => {
       post.slug = makeUniqueSlug(base + (post.date ? ` ${post.date}` : ''), post.id);
     });
     
-    // 11. Save to KV storage
-    console.log('Saving to KV storage...');
+    // 11. Return processed data for CDN caching
+    console.log('=== Sync Complete ===');
+    console.log(`Projects: ${projects.length}`);
+    console.log(`Posts: ${posts.length}`);
+    console.log('Note: Images using Airtable URLs (optimization disabled)');
+    
     const finalData = {
       projects,
       posts,
@@ -485,26 +453,13 @@ const syncAirtableData = async () => {
       version: '1.0'
     };
     
-    await kvStore.set(KV_DATA_KEY, JSON.stringify(finalData));
-    await kvStore.set(KV_HASH_KEY, rawDataHash);
-    
-    console.log('=== Sync Complete ===');
-    console.log(`Projects: ${projects.length}`);
-    console.log(`Posts: ${posts.length}`);
-    console.log('Note: Images using Airtable URLs (optimization disabled)');
-    
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        message: 'Sync completed successfully',
-        stats: {
-          projects: projects.length,
-          posts: posts.length,
-          note: 'Images using Airtable URLs directly',
-          timestamp: new Date().toISOString()
-        }
-      })
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+      },
+      body: JSON.stringify(finalData)
     };
     
   } catch (error) {

@@ -1,57 +1,24 @@
 import { builder } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
-
-const KV_DATA_KEY = 'airtable-data';
+import { syncAirtableData } from './scheduled-sync.mjs';
 
 const getDataHandler = async (event, context) => {
-    // Initialize KV store
-    const kvStore = getStore('portfolio-kv');
-
-    // Initialize KV store
-    const kvStore = getStore('portfolio-kv');
-
   try {
-    // Fetch cached data from KV storage
-    const cachedDataStr = await kvStore.get(KV_DATA_KEY, { type: 'text' });
+    // Call the sync function to get fresh (or cached) data
+    const result = await syncAirtableData();
     
-    if (!cachedDataStr) {
-      // No data available yet - scheduled sync hasn't run
-      return { 
-        statusCode: 503, 
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'no-cache',
-          'Retry-After': '300'
-        },
-        body: JSON.stringify({ 
-          error: 'Data not yet synced', 
-          message: 'Please wait for initial sync to complete'
-        })
-      };
-    }
-    
-    const cachedData = JSON.parse(cachedDataStr);
-    
-    // Return cached data from CDN-backed storage
-    return { 
-      statusCode: 200, 
+    // Return the data with CDN cache headers
+    return {
+      statusCode: result.statusCode,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=300',
-        'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
-        'X-Data-Version': cachedData.version || '1.0',
-        'X-Last-Updated': cachedData.lastUpdated || 'unknown'
+        'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
       },
-      body: JSON.stringify({ 
-        projects: cachedData.projects, 
-        posts: cachedData.posts, 
-        config: cachedData.config 
-      }),
-      ttl: 3600 // Cache for 1 hour at edge
+      body: result.body,
+      ttl: 3600 // Cache at edge for 1 hour
     };
 
   } catch (error) {
-    console.error('Failed to fetch cached data:', error);
+    console.error('Failed to fetch data:', error);
     return { 
       statusCode: 500, 
       headers: {
@@ -59,7 +26,7 @@ const getDataHandler = async (event, context) => {
         'Cache-Control': 'no-cache'
       },
       body: JSON.stringify({ 
-        error: 'Failed to fetch cached data',
+        error: 'Failed to fetch data',
         message: error.message
       })
     };
