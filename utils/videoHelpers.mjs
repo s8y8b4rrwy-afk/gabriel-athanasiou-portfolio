@@ -31,6 +31,12 @@ export function getVideoId(url) {
     return { type: 'vimeo', id, hash };
   }
 
+  // Check if it's a Vimeo vanity URL (e.g., vimeo.com/athanasiou/rooster)
+  // These need OEmbed API to resolve, so return the URL as ID for later processing
+  if (cleanUrl.includes('vimeo.com/') && !cleanUrl.includes('player.vimeo.com')) {
+    return { type: 'vimeo', id: cleanUrl, hash: null };
+  }
+
   return { type: null, id: null };
 }
 
@@ -41,13 +47,15 @@ export async function resolveVideoUrl(url) {
   if (!url) return '';
   const { type, id, hash } = getVideoId(url);
   
-  if (id) {
+  // If ID is numeric, reconstruct the canonical URL
+  if (id && /^\d+$/.test(id)) {
     if (type === 'youtube') return `https://www.youtube.com/watch?v=${id}`;
     if (type === 'vimeo') {
       return hash ? `https://vimeo.com/${id}/${hash}` : `https://vimeo.com/${id}`;
     }
   }
 
+  // For vanity URLs or if no ID, use OEmbed to resolve
   if (url.includes('vimeo.com')) {
     try {
       const https = await import('node:https');
@@ -70,11 +78,9 @@ export async function resolveVideoUrl(url) {
       console.warn(`Failed to resolve Vimeo OEmbed for: ${url}`);
     }
   }
-
+  
   return url;
-}
-
-/**
+}/**
  * Generate embed URL for iframe players
  */
 export function getEmbedUrl(url, autoplay = false, muted = false) {

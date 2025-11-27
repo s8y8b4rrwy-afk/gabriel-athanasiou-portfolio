@@ -68,15 +68,15 @@ export const resolveVideoUrl = async (url: string): Promise<string> => {
   if (!url) return '';
   const { type, id, hash } = getVideoId(url);
   
-  // If we already have a valid ID, reconstruct the canonical URL
-  if (id) {
+  // If ID is numeric, reconstruct the canonical URL
+  if (id && /^\d+$/.test(id)) {
     if (type === 'youtube') return `https://www.youtube.com/watch?v=${id}`;
     if (type === 'vimeo') {
       return hash ? `https://vimeo.com/${id}/${hash}` : `https://vimeo.com/${id}`;
     }
   }
 
-  // Fallback: Use OEmbed only if regex failed (e.g. vanity URLs like vimeo.com/staffpicks)
+  // For vanity URLs or if no ID, use OEmbed to resolve
   if (url.includes('vimeo.com')) {
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
