@@ -44,9 +44,9 @@ Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Clo
 
 ### Scheduled Sync Integration
 
-**Two sync strategies for different use cases:**
+**Two sync methods with smart change detection:**
 
-1. **`scheduled-sync.mjs`** (Incremental - Daily scheduled runs):
+1. **`scheduled-sync.mjs`** (Daily scheduled runs):
    - **Smart change detection** via `cloudinary-mapping.json`
    - Only uploads new or changed images
    - Maintains mapping file for tracking
@@ -54,24 +54,27 @@ Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Clo
    - Efficient for scheduled operations
    - Generates sitemap.xml and share-meta.json
 
-2. **`scheduled-sync-realtime.mjs`** (Realtime - On-demand API):
-   - Real-time uploads during each sync call
-   - Used by `get-data.js` for fresh on-demand data
+2. **`scheduled-sync-realtime.mjs`** (On-demand API):
+   - **Smart change detection** via `cloudinary-mapping.json` (added Nov 27, 2025)
+   - Only uploads new or changed images
+   - Used by `get-data.js` for on-demand data
+   - Saves mapping file after each sync
    - Uploads to Cloudinary with `q_auto:best` quality
    - Returns Cloudinary URLs when `USE_CLOUDINARY=true`
-   - No change detection (always fresh)
-   - Best for API endpoints that need guaranteed fresh data
+   - **Protected against wasteful re-uploads**
 
 **Manual Triggers:**
 - `sync-now.mjs` - Trigger incremental sync manually
 - `sync-now-realtime.mjs` - Trigger realtime sync manually
 
 **Common Features:**
+- **Smart change detection** - Both methods check mapping file before uploading
 - Feature Flag Respect: Only uploads if credentials are available
 - Progress Logging: Reports uploaded/skipped/failed counts
 - Automatic retry logic for failed uploads
 - Preserves Airtable fallback URLs
 - Cache invalidation support (`invalidate: true`, `overwrite: true`)
+- **Safe from automatic re-uploads** - Images only upload when truly changed
 
 ## Setup Instructions
 

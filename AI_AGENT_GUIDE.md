@@ -277,6 +277,32 @@ cloudinary.config({
 
 ---
 
+### November 27, 2025 - Added Change Detection to Realtime Sync
+**What Changed:** Added smart change detection to `scheduled-sync-realtime.mjs` to prevent wasteful re-uploads.
+
+**The Problem:**
+- `scheduled-sync-realtime.mjs` was uploading ALL images on every call
+- No change detection meant re-uploading existing images unnecessarily
+- Called by `get-data.js` which could run frequently
+- Risk of high Cloudinary bandwidth usage and costs
+
+**The Solution:**
+- Added `loadCloudinaryMapping()` and `saveCloudinaryMapping()` functions
+- Loads existing `cloudinary-mapping.json` at start of sync
+- Checks each image URL against mapping before uploading
+- Only uploads if URL is new or has changed
+- Saves updated mapping after sync completes
+- Now matches the efficiency of `scheduled-sync.mjs`
+
+**Files Updated:**
+- `netlify/functions/scheduled-sync-realtime.mjs` - Added change detection logic
+- `AI_AGENT_GUIDE.md` - Updated documentation
+- `docs/CLOUDINARY_INTEGRATION.md` - Updated architecture docs
+
+**Impact:** Both sync methods now protected against wasteful re-uploads. Images only upload when truly needed.
+
+---
+
 ### November 27, 2025 - Netlify Functions Cleanup
 **What Changed:** Organized Netlify functions with clear separation between incremental and realtime sync strategies.
 
@@ -304,10 +330,12 @@ cloudinary.config({
   - Efficient for scheduled daily runs
   - Generates sitemap.xml and share-meta.json
   
-- `netlify/functions/scheduled-sync-realtime.mjs` - **Realtime sync**
-  - Uploads images fresh on every call
+- `netlify/functions/scheduled-sync-realtime.mjs` - **Realtime sync with change detection**
+  - Smart change detection via `cloudinary-mapping.json`
+  - Only uploads new/changed images (same as scheduled-sync)
   - Used by `get-data.js` for on-demand data
-  - No change detection (always fresh)
+  - Saves mapping file after each sync
+  - **Protected against wasteful re-uploads**
   
 - `netlify/functions/sync-now.mjs` - Manual trigger for incremental sync
 - `netlify/functions/sync-now-realtime.mjs` - Manual trigger for realtime sync
@@ -315,9 +343,11 @@ cloudinary.config({
 - `netlify/functions/sitemap.js` - Dynamic sitemap generator
 - `netlify/edge-functions/meta-rewrite.ts` - Dynamic meta tags for SSR-like behavior
 
-**Why Both Versions?**
-- **Daily scheduled run**: Use incremental sync (efficient, only uploads changes)
-- **On-demand API calls**: Use realtime sync (ensures fresh data without stale cache)
+**Both sync methods now use change detection:**
+- **Both check `cloudinary-mapping.json`** before uploading
+- **Only upload when images are new or URLs have changed**
+- **Safe from automatic re-uploads** - no wasteful bandwidth usage
+- Mapping file persists across deployments in `/public/`
 
 **Backed Up (Legacy):**
 - `netlify/functions-backup/` - Contains old versions for reference
