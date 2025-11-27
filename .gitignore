@@ -28,3 +28,4 @@ dist-ssr
 
 # Optimized images (regenerated on each build)
 public/images/portfolio/
+public/cloudinary-mapping.json

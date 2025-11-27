@@ -8,7 +8,9 @@
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Load .env.local (development) or .env (production)
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // Fallback to .env if .env.local doesn't exist
 
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
@@ -51,6 +53,10 @@ try {
   console.log(`   Response: ${result.status}\n`);
 } catch (error) {
   console.error('   ❌ API connection failed:', error.message);
+  console.error('   Error details:', error.error || error);
+  if (error.http_code) {
+    console.error(`   HTTP Code: ${error.http_code}`);
+  }
   process.exit(1);
 }
 
