@@ -195,14 +195,39 @@ Once core system validated, choose one approach:
 
 ## Decision Point
 
-**We need to decide:** 
-1. Test without image optimization now (quick validation)
-2. Or solve Sharp issue first (more time, uncertain success)
+**DECISION MADE:** ✅ Option 1 - Test without image optimization first
 
-**Recommendation:** Go with Option 1 - remove image optimization temporarily, validate the caching architecture works, then add optimization back later with a different method.
+**Implementation:** Removing image processing from sync function to validate core caching system.
+Images will remain as Airtable URLs (which are already CDN-served).
 
-The core value is in caching data (99.7% API reduction), not just images. Images from Airtable are already CDN-served, so we still get significant speed improvement.
+### Future Image Optimization Options (Saved for Later)
+
+Once core system is validated and working, we can add image optimization back using:
+
+#### Option 2: Netlify Image CDN
+- **Cost:** Requires Pro plan ($19/month)
+- **Syntax:** `/.netlify/images?url={airtable-url}&w=800&fm=webp`
+- **Pros:** Native, automatic, no code needed
+- **Cons:** Paid feature only
+
+#### Option 3: Pre-optimize at Build Time
+- **Implementation:** Keep existing `scripts/optimize-images.mjs` running during build
+- **Pros:** Sharp works in build environment, already implemented
+- **Cons:** Requires rebuild for new images, not truly dynamic
+
+#### Option 4: External Service (Cloudinary, Imgix)
+- **Cloudinary Free Tier:** 25GB storage, 25GB bandwidth/month
+- **Implementation:** Upload during sync, store Cloudinary URLs
+- **Pros:** Professional optimization, works in serverless, free tier generous
+- **Cons:** External dependency, API management
+
+#### Option 5: Lambda Layer with Sharp (Complex)
+- **Implementation:** Create custom Lambda layer with pre-compiled sharp binaries
+- **Pros:** Full control, stays within Netlify ecosystem
+- **Cons:** Complex setup, maintenance burden, may still have issues
+
+**Recommendation for later:** Option 4 (Cloudinary) - best balance of features, cost, and reliability.
 
 ---
 
-**Ready for next steps once you decide which option to pursue.**
+**Current Status: Proceeding with Option 1 - removing image optimization code to test core system**

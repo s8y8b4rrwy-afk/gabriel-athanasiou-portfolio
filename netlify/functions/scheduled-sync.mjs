@@ -1,7 +1,6 @@
 import { schedule } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
 import fetch from 'node-fetch';
-import sharp from 'sharp';
 import crypto from 'crypto';
 
 // ==========================================
@@ -13,6 +12,10 @@ const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTAB
 // KV Store key for cached data
 const KV_DATA_KEY = 'airtable-data';
 const KV_HASH_KEY = 'airtable-data-hash';
+
+// NOTE: Image optimization temporarily disabled due to Sharp compatibility issues
+// Images will use Airtable URLs directly (already CDN-served)
+// See IMPLEMENTATION_LOG.md for future optimization options
 
 // ==========================================
 // HELPER FUNCTIONS
@@ -79,60 +82,8 @@ const fetchAirtableTable = async (tableName, sortField) => {
   }
 };
 
-// Download and optimize image to WebP
-const optimizeImage = async (imageUrl, quality = 80) => {
-  try {
-    const response = await fetchWithTimeout(imageUrl, {}, 30000);
-    if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
-    
-    const buffer = await response.buffer();
-    
-    // Convert to WebP with specified quality
-    const webpBuffer = await sharp(buffer)
-      .webp({ quality })
-      .toBuffer();
-    
-    return webpBuffer;
-  } catch (error) {
-    console.error(`Failed to optimize image ${imageUrl}:`, error.message);
-    return null;
-  }
-};
-
-// Generate stable blob key from URL
-const generateBlobKey = (url) => {
-  const hash = crypto.createHash('md5').update(url).digest('hex');
-  return `images/${hash}.webp`;
-};
-
-// Process and upload image to Blobs storage
-const processAndUploadImage = async (imageUrl, blobStore, existingBlobs = new Set()) => {
-  if (!imageUrl) return null;
-  
-  const blobKey = generateBlobKey(imageUrl);
-  
-  // Skip if already processed
-  if (existingBlobs.has(blobKey)) {
-    console.log(`Image already exists: ${blobKey}`);
-    return `/.netlify/blobs/${blobKey}`;
-  }
-  
-  console.log(`Processing new image: ${imageUrl}`);
-  const webpBuffer = await optimizeImage(imageUrl);
-  
-  if (!webpBuffer) return null;
-  
-  // Upload to Netlify Blobs
-  await blobStore.set(blobKey, webpBuffer, {
-    metadata: {
-      originalUrl: imageUrl,
-      processedAt: new Date().toISOString()
-    }
-  });
-  
-  console.log(`Uploaded to Blobs: ${blobKey}`);
-  return `/.netlify/blobs/${blobKey}`;
-};
+// Image optimization functions removed - keeping Airtable URLs directly
+// See IMPLEMENTATION_LOG.md for future optimization options
 
 // Text processing utilities (from textHelpers)
 const normalizeTitle = (title) => {
@@ -243,9 +194,6 @@ const syncAirtableData = async () => {
     throw new Error('Airtable credentials not configured');
   }
   
-  // Initialize Blobs store
-  const blobStore = getStore('portfolio-images');
-  
   // Initialize KV store (using Blobs with 'kv' prefix for now)
   const kvStore = getStore('portfolio-kv');
   
@@ -329,15 +277,7 @@ const syncAirtableData = async () => {
       defaultOgImage: settingsFields['Default OG Image']?.[0]?.url || ''
     };
     
-    // 6. Get list of existing blobs to avoid re-processing
-    const existingBlobs = new Set();
-    try {
-      const { blobs } = await blobStore.list();
-      blobs.forEach(blob => existingBlobs.add(blob.key));
-      console.log(`Found ${existingBlobs.size} existing images in Blobs storage`);
-    } catch (e) {
-      console.log('No existing blobs found or error listing:', e.message);
-    }
+    // Image optimization removed - using Airtable URLs directly
     
     // 7. Process Projects
     console.log('Processing projects...');
@@ -356,25 +296,16 @@ const syncAirtableData = async () => {
     const projects = await Promise.all(visibleProjects.map(async (record) => {
       const f = record.fields;
       
-      // Process gallery images
+      // Use Airtable image URLs directly (no optimization)
       const galleryUrls = f['Gallery']?.map(img => img.url) || [];
-      const optimizedGallery = [];
       
-      for (const url of galleryUrls) {
-        const optimizedUrl = await processAndUploadImage(url, blobStore, existingBlobs);
-        if (optimizedUrl) optimizedGallery.push(optimizedUrl);
-      }
-      
-      // Process video thumbnail
+      // Get video URL and thumbnail
       const videoUrl = f['Video URL'] || '';
-      let heroImage = optimizedGallery[0] || '';
+      let heroImage = galleryUrls[0] || '';
       
       if (!heroImage && videoUrl) {
         const thumbnailUrl = await fetchVideoThumbnail(videoUrl);
-        if (thumbnailUrl) {
-          const optimizedThumb = await processAndUploadImage(thumbnailUrl, blobStore, existingBlobs);
-          if (optimizedThumb) heroImage = optimizedThumb;
-        }
+        if (thumbnailUrl) heroImage = thumbnailUrl;
       }
       
       // Parse external links
@@ -446,7 +377,7 @@ const syncAirtableData = async () => {
         description: f['About'] || '',
         isFeatured: !!f['Front Page'],
         heroImage: heroImage,
-        gallery: optimizedGallery,
+        gallery: galleryUrls,
         videoUrl: videoUrl,
         additionalVideos: linkData.videos,
         awards: awards,
@@ -485,12 +416,8 @@ const syncAirtableData = async () => {
         .map(async (record) => {
           const f = record.fields;
           
-          // Process cover image
-          let imageUrl = '';
-          if (f['Cover Image']?.[0]?.url) {
-            const optimizedImage = await processAndUploadImage(f['Cover Image'][0].url, blobStore, existingBlobs);
-            imageUrl = optimizedImage || '';
-          }
+          // Use Airtable cover image URL directly (no optimization)
+          const imageUrl = f['Cover Image']?.[0]?.url || '';
           
           // Parse links
           const rawLinks = f['Links'] || f['External Links'];
@@ -515,16 +442,7 @@ const syncAirtableData = async () => {
     
     console.log(`Processed ${posts.length} journal posts`);
     
-    // 9. Process config images
-    if (config.about.profileImage) {
-      const optimizedProfile = await processAndUploadImage(config.about.profileImage, blobStore, existingBlobs);
-      if (optimizedProfile) config.about.profileImage = optimizedProfile;
-    }
-    
-    if (config.defaultOgImage) {
-      const optimizedOg = await processAndUploadImage(config.defaultOgImage, blobStore, existingBlobs);
-      if (optimizedOg) config.defaultOgImage = optimizedOg;
-    }
+    // Config images already using Airtable URLs (no optimization needed)
     
     // 10. Generate slugs
     const used = new Set();
@@ -573,7 +491,7 @@ const syncAirtableData = async () => {
     console.log('=== Sync Complete ===');
     console.log(`Projects: ${projects.length}`);
     console.log(`Posts: ${posts.length}`);
-    console.log(`Images processed: ${existingBlobs.size}`);
+    console.log('Note: Images using Airtable URLs (optimization disabled)');
     
     return {
       statusCode: 200,
@@ -583,7 +501,7 @@ const syncAirtableData = async () => {
         stats: {
           projects: projects.length,
           posts: posts.length,
-          images: existingBlobs.size,
+          note: 'Images using Airtable URLs directly',
           timestamp: new Date().toISOString()
         }
       })
