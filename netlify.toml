@@ -5,6 +5,12 @@ publish = "dist"
  # Only build when commit message contains [deploy] or [force-deploy]
  ignore = "bash scripts/ignore-netlify-build.sh"
 
+# Configure functions to include sharp for image processing
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["sharp"]
+  included_files = ["node_modules/sharp/**/*"]
+
 # Enable Netlify Blobs and KV storage
 [context.production]
   [context.production.environment]
@@ -67,11 +73,3 @@ force = true
 from = "/*"
 to = "/index.html"
 status = 200
-
-# Scheduled function to sync Airtable data daily
-[[plugins]]
-package = "@netlify/plugin-scheduled-functions"
-
-  [[plugins.inputs]]
-  [plugins.inputs.functions.scheduled-sync]
-  schedule = "0 0 * * *"  # Run daily at midnight UTC
