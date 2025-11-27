@@ -33,20 +33,32 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
 
 ## 📖 Documentation
 
-### Core Documentation
-- [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) - Complete technical documentation (for AI agents and developers)
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
+### 📘 Master Guide
+- **[AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation (START HERE)
+  - Project architecture and system design
+  - Complete changelog of all changes
+  - Data structures and Airtable schema
+  - Environment setup and workflows
+  - Deployment and CI/CD processes
+  - Performance optimization
+  - Troubleshooting guides
 
-### Architecture & Features
+### 📚 Quick Reference
+- **[DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)** - Guide to all documentation files
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Netlify deployment instructions
+
+### Core Systems
 - [docs/CDN_CACHE_FINAL_IMPLEMENTATION.md](./docs/CDN_CACHE_FINAL_IMPLEMENTATION.md) - CDN caching architecture
 - [docs/CLOUDINARY_INTEGRATION.md](./docs/CLOUDINARY_INTEGRATION.md) - Cloudinary image optimization (production)
 - [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
 - [docs/PROCEDURAL_THUMBNAILS.md](./docs/PROCEDURAL_THUMBNAILS.md) - Procedural artwork generation
 
-### Setup Guides
+### Setup & Configuration
 - [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) - Environment configuration
 - [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup
 - [docs/SEO_GUIDE.md](./docs/SEO_GUIDE.md) - SEO configuration
+
+**For AI Agents:** Read [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) entirely before making any changes.
 
 ## 🏗️ Tech Stack
 

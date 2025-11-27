@@ -341,10 +341,15 @@ const getVideoId = (url) => {
   const ytMatch = url.match(ytRegex);
   if (ytMatch) return { type: 'youtube', id: ytMatch[1] };
   
-  // Vimeo
-  const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)/;
+  // Vimeo - try numeric ID first
+  const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)(?:\/(\w+))?/;
   const vimeoMatch = url.match(vimeoRegex);
-  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1] };
+  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1], hash: vimeoMatch[2] || null };
+  
+  // Vimeo vanity URL (e.g., vimeo.com/athanasiou/rooster)
+  if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
+    return { type: 'vimeo', id: url, hash: null };
+  }
   
   return { type: null, id: null };
 };
@@ -352,16 +357,33 @@ const getVideoId = (url) => {
 const fetchVideoThumbnail = async (videoUrl) => {
   if (!videoUrl) return '';
   
-  const { type, id } = getVideoId(videoUrl);
+  const { type, id, hash } = getVideoId(videoUrl);
   
   try {
     if (type === 'youtube') {
       return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
     } else if (type === 'vimeo') {
-      const res = await fetchWithTimeout(`https://vimeo.com/api/v2/video/${id}.json`, {}, 5000);
-      if (!res.ok) return '';
-      const data = await res.json();
-      return data[0]?.thumbnail_large || '';
+      // Use OEmbed for all Vimeo videos - handles vanity URLs, private videos, and regular videos
+      try {
+        const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`;
+        const res = await fetchWithTimeout(oembedUrl, {}, 5000);
+        if (res.ok) {
+          const data = await res.json();
+          return data.thumbnail_url || data.thumbnail_url_with_play_button || '';
+        }
+      } catch (oembedError) {
+        console.warn(`Vimeo OEmbed failed for ${videoUrl}, trying v2 API`);
+      }
+      
+      // Fallback to v2 API if ID is numeric and OEmbed failed
+      const isNumericId = /^\d+$/.test(id);
+      if (isNumericId) {
+        const res = await fetchWithTimeout(`https://vimeo.com/api/v2/video/${id}.json`, {}, 5000);
+        if (res.ok) {
+          const data = await res.json();
+          return data[0]?.thumbnail_large || '';
+        }
+      }
     }
   } catch (error) {
     console.warn(`Failed to fetch video thumbnail for ${videoUrl}:`, error.message);

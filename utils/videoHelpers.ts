@@ -51,6 +51,12 @@ export const getVideoId = (url: string): VideoIdResult => {
     return { type: 'vimeo', id, hash };
   }
 
+  // Check if it's a Vimeo vanity URL (e.g., vimeo.com/athanasiou/rooster)
+  // These need OEmbed API to resolve, so return the URL as ID for later processing
+  if (cleanUrl.includes('vimeo.com/') && !cleanUrl.includes('player.vimeo.com')) {
+    return { type: 'vimeo', id: cleanUrl, hash: null };
+  }
+
   return { type: null, id: null };
 };
 
@@ -112,6 +118,15 @@ export const getEmbedUrl = (url: string, autoplay: boolean = false, muted: boole
   }
 
   if (type === 'vimeo') {
+    // Check if ID is numeric (resolved) or a URL (vanity URL)
+    const isNumericId = /^\d+$/.test(id);
+    
+    if (!isNumericId) {
+      // For vanity URLs, return null - they need to be resolved via OEmbed first
+      console.warn(`Vimeo vanity URL detected: ${id}. Use resolveVideoUrl first.`);
+      return null;
+    }
+    
     if (hash) params.set('h', hash);
     params.set('title', '0');
     params.set('byline', '0');
@@ -139,6 +154,7 @@ export const fetchVideoThumbnail = async (url: string): Promise<string> => {
   
   if (type === 'vimeo') {
     // Try OEmbed first for highest quality and private video support
+    // This also handles vanity URLs like vimeo.com/athanasiou/rooster
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
       if (response.ok) {
@@ -148,8 +164,12 @@ export const fetchVideoThumbnail = async (url: string): Promise<string> => {
     } catch (e) {
       console.warn(`Vimeo OEmbed thumbnail failed for ${url}, falling back.`);
     }
-    // Fallback to vumbnail
-    return `https://vumbnail.com/${id}.jpg`;
+    
+    // Fallback to vumbnail only if ID is numeric
+    const isNumericId = /^\d+$/.test(id);
+    if (isNumericId) {
+      return `https://vumbnail.com/${id}.jpg`;
+    }
   }
   
   return '';

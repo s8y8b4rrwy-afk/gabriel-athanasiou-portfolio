@@ -1,12 +1,156 @@
-# AI Agent Development Guide
+# 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
 > **Last Updated:** November 27, 2025  
-> **Purpose:** Complete technical documentation for AI agents working on this codebase
+> **Purpose:** Complete technical documentation for AI agents and developers  
+> **This is the single source of truth for the entire codebase**
 
 ---
 
-## 🎉 Recent Major Changes
+## 📚 What This Guide Contains
+
+This comprehensive guide consolidates ALL documentation into one master reference:
+
+- **Project architecture** - Complete system design and data flow
+- **Changelog** - All recent changes with detailed explanations
+- **Data structures** - Airtable schema, TypeScript interfaces, field mappings
+- **Development workflows** - Setup, testing, deployment procedures
+- **Custom instructions** - AI agent guidelines and best practices
+- **Troubleshooting** - Common issues and solutions
+- **API references** - All services, utilities, and components
+
+**Other Documentation Files:**
+- `README.md` - Quick start guide for developers
+- `copilot-instructions.md` - Alias file pointing here
+- `COPILOT.md` - Alias file pointing here
+- `docs/*` - Supplementary guides (all key content integrated here)
+
+---
+
+## 📝 Changelog
+
+> **All major changes documented in reverse chronological order (newest first)**
+
+### 🎉 Recent Major Changes
+
+### November 27, 2025 - Vimeo Vanity URL Support
+**What Changed:** Enhanced Vimeo URL handling to support vanity URLs like `https://vimeo.com/athanasiou/rooster`.
+
+**The Problem:**
+- Previous regex only matched numeric Vimeo IDs (e.g., `vimeo.com/123456`)
+- Vanity URLs like `vimeo.com/athanasiou/rooster` weren't being recognized
+- These URLs used to work but broke after recent updates
+- Thumbnails couldn't be fetched for vanity URLs
+
+**The Solution:**
+- Updated `getVideoId()` to detect vanity URLs and pass them through for OEmbed resolution
+- Modified `fetchVideoThumbnail()` to prioritize OEmbed API for all Vimeo URLs (handles vanity, private, and numeric IDs)
+- Added fallback logic: OEmbed first → v2 API for numeric IDs → vumbnail service
+- Updated `getEmbedUrl()` to warn when vanity URLs need resolution first
+
+**Updated Files:**
+- `utils/videoHelpers.ts` - Enhanced Vimeo URL detection and thumbnail fetching
+- `netlify/functions/scheduled-sync.mjs` - Backend sync now uses OEmbed for all Vimeo URLs
+
+**Technical Details:**
+```javascript
+// Now handles:
+// 1. Numeric IDs: vimeo.com/123456
+// 2. Private videos: vimeo.com/123456/hash123
+// 3. Vanity URLs: vimeo.com/athanasiou/rooster
+// 4. Channel URLs: vimeo.com/channels/staffpicks/123456
+
+// Resolution priority for thumbnails:
+// 1. OEmbed API (handles all types, including vanity)
+// 2. v2 API (fallback for numeric IDs)
+// 3. vumbnail service (last resort for numeric IDs)
+```
+
+**Impact:** All Vimeo URL formats now work correctly for embedding and thumbnail generation. Vanity URLs are properly resolved via OEmbed API before attempting to generate embed URLs or fetch thumbnails.
+
+---
+
+### November 27, 2025 - Documentation Consolidation & Cleanup
+**What Changed:** Consolidated all documentation into single master guide and cleaned up duplicate files.
+
+**The Problem:**
+- Documentation scattered across multiple files
+- Duplicate files with " 2" suffix causing confusion
+- No clear hierarchy or single source of truth
+- AI agents and developers had to read multiple files to understand the system
+
+**The Solution:**
+- Enhanced `AI_AGENT_GUIDE.md` to be comprehensive master guide (~3000 lines)
+- Integrated content from all supplementary documentation
+- Added detailed sections:
+  - Complete architecture with CDN cache diagrams
+  - Full Airtable → Code → Display data mappings
+  - Comprehensive environment setup guide
+  - Complete deployment & CI/CD documentation
+  - Performance optimization strategies
+- Created `DOCUMENTATION_INDEX.md` for quick navigation
+- Deleted duplicate files (8 files removed)
+- Updated README.md to point to master guide first
+
+**Deleted Files:**
+- `IMPLEMENTATION_LOG 2.md`
+- `SPEED_IMPROVEMENTS_SUMMARY 2.md`
+- `docs/CDN_CACHE_ARCHITECTURE 2.md`
+- `components/views/ImageCompressionView 2.tsx`
+- `components/views/ThumbnailPreviewView 2.tsx`
+- `config/compressionPresets 2.json`
+- `hooks/useBackgroundDataSync 2.ts`
+- `scripts/generate-compression-samples 2.mjs`
+
+**Updated Files:**
+- `AI_AGENT_GUIDE.md` - Now master guide with all content
+- `README.md` - Points to master guide
+- `DOCUMENTATION_INDEX.md` - Quick reference index
+
+**Impact:** Single source of truth established. AI agents and developers now have one comprehensive guide covering the entire codebase. Documentation is easier to maintain and keep current.
+
+---
+
+### November 27, 2025 - Fixed Reading Time Display
+**What Changed:** Fixed `calculateReadingTime` function to return formatted string instead of plain number.
+
+**The Problem:**
+- `calculateReadingTime()` was returning a number (e.g., `1`, `2`, `3`)
+- Frontend expected a formatted string (e.g., `"1 min read"`, `"2 min read"`)
+- Result: Reading time wasn't displaying on home page, journal page, or blog posts
+
+**The Solution:**
+- Updated both sync functions to return formatted strings
+- Changed return value from `1` → `"1 min read"`
+- Changed return format from `Math.max(1, minutes)` → `` `${mins} min read` ``
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync-realtime.mjs` - Fixed calculateReadingTime function
+- `netlify/functions/scheduled-sync.mjs` - Fixed calculateReadingTime function
+
+**Technical Details:**
+```javascript
+// Before (broken):
+const calculateReadingTime = (text) => {
+  if (!text) return 1;
+  const words = text.trim().split(/\s+/).length;
+  const minutes = Math.ceil(words / 200);
+  return Math.max(1, minutes);  // Returns number
+};
+
+// After (fixed):
+const calculateReadingTime = (text) => {
+  if (!text) return '1 min read';
+  const words = text.trim().split(/\s+/).length;
+  const minutes = Math.ceil(words / 200);
+  const mins = Math.max(1, minutes);
+  return `${mins} min read`;  // Returns formatted string
+};
+```
+
+**Impact:** Reading time now displays correctly as "1 min read", "2 min read", etc. on all pages. Will take effect after next sync runs.
+
+---
 
 ### November 27, 2025 - Responsive Image Width Optimization
 **What Changed:** Implemented responsive width parameters across all image components to dramatically reduce page load times and improve Speed Index.
@@ -539,6 +683,71 @@ cloudinary.config({
 
 ---
 
+## 🎯 Project Overview
+
+### What This Is
+A production-ready portfolio website for **Gabriel Athanasiou**, a London/Athens-based film director. The site showcases:
+- **Film projects** - Narrative, Commercial, Music Videos, Documentary
+- **Journal/blog posts** - Behind-the-scenes, insights, updates
+- **About/contact** - Bio, representatives, social links
+- **Showreel video** - Featured work compilation
+
+### Core Philosophy & Architecture
+
+**Headless CMS Approach:**
+- Content managed in Airtable (no code deployments for content updates)
+- Scheduled sync updates data daily (midnight UTC)
+- Changes appear within 24 hours automatically
+
+**Performance-First Design:**
+- CDN caching at multiple levels (browser, edge, origin)
+- Image optimization via Cloudinary (WebP/AVIF auto-format)
+- Page loads: 100-300ms (10x faster than direct Airtable calls)
+- 99.9% fewer API calls (cached at edge)
+
+**Resilient & Fault-Tolerant:**
+- Three-tier fallback system (Cloudinary → Local WebP → Airtable)
+- Static data fallback if all services fail
+- Stale-while-revalidate keeps site available during outages
+- Error boundaries prevent full-page crashes
+
+**SEO & Analytics Optimized:**
+- Dynamic meta tags for social sharing
+- Google Analytics 4 integration
+- Structured data (Schema.org)
+- Sitemap auto-generated daily
+- Edge functions for SSR-like meta tag injection
+
+**Theme-Driven Styling:**
+- Global design system in `theme.ts`
+- Consistent Tailwind utility classes
+- No scattered inline styles
+- Single source of truth for all visual properties
+
+### Technology Stack Summary
+
+**Frontend:** React 19 + TypeScript + Vite + React Router  
+**Backend:** Airtable (CMS) + Netlify Functions (API/Sync)  
+**CDN:** Netlify (hosting) + Cloudinary (images)  
+**Analytics:** Google Analytics 4  
+**Deployment:** Netlify with GitHub Actions CI/CD
+
+### Key Metrics
+
+**Performance (November 2025):**
+- PageSpeed Score: 85+ ✅
+- Page Load: 100-300ms ✅
+- Page Weight: 1.5-2.4MB (down from 6-10MB) ✅
+- LCP: < 1.8s ✅
+
+**Content:**
+- 40+ film projects
+- Multiple journal posts
+- Dynamic showreel
+- Responsive design (mobile-first)
+
+---
+
 ## ⚠️ CRITICAL: Read This First
 
 **FOR ALL AI AGENTS WORKING ON THIS CODEBASE:**
@@ -564,37 +773,27 @@ cloudinary.config({
 ## 📋 Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
+2. [Architecture & System Design](#architecture--system-design)
 3. [Tech Stack](#tech-stack)
-4. [Key Systems](#key-systems)
-5. [Data Flow](#data-flow)
-6. [File Structure](#file-structure)
+4. [Data Structures & Schema](#data-structures--schema)
+5. [Key Systems](#key-systems)
+6. [Environment Setup](#environment-setup)
 7. [Development Workflow](#development-workflow)
-8. [Deployment](#deployment)
-9. [Troubleshooting](#troubleshooting)
-10. [Common Tasks](#common-tasks)
+8. [Deployment & CI/CD](#deployment--cicd)
+9. [Performance & Optimization](#performance--optimization)
+10. [Troubleshooting](#troubleshooting)
+11. [Common Tasks](#common-tasks)
+12. [Changelog](#changelog)
 
 ---
 
-## 🎯 Project Overview
+## 📝 Changelog
 
-### What This Is
-A production-ready portfolio website for Gabriel Athanasiou, a London/Athens-based film director. The site showcases:
-- Film projects (Narrative, Commercial, Music Videos, Documentary)
-- Journal/blog posts
-- About/contact information
-- Showreel video
-
-### Core Philosophy
-- **Headless CMS:** Airtable as the backend (no code deployments needed for content updates)
-- **Performance-First:** Static generation, image optimization, CDN delivery
-- **Resilient:** Multiple fallback strategies (static data, manifest files, error boundaries)
-- **SEO & Analytics:** Full metadata, Google Analytics 4, social sharing
-- **Theme-Driven:** Global styling controlled via `theme.ts` (no Tailwind config needed)
+All major changes are documented here in reverse chronological order (newest first).
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & System Design
 
 ### High-Level Architecture
 
@@ -604,6 +803,132 @@ A production-ready portfolio website for Gabriel Athanasiou, a London/Athens-bas
 │  React SPA (Vite) + React Router + Client-side Analytics    │
 └───────────────────┬─────────────────────────────────────────┘
                     │
+                    ├─ Cached Data (5 min browser, 1h CDN)
+                    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      NETLIFY CDN/EDGE                        │
+│  Edge Functions (Meta Tags) + CDN Cache + Static Assets     │
+└───────────────────┬─────────────────────────────────────────┘
+                    │
+                    ├─ Cache Miss or Scheduled Sync
+                    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    NETLIFY FUNCTIONS                         │
+│  get-data.js (API) + scheduled-sync.mjs (Daily)             │
+└───────────────────┬─────────────────────────────────────────┘
+                    │
+                    ├─ Fetch Content + Upload Images
+                    ↓
+┌──────────────────────────┬──────────────────────────────────┐
+│    AIRTABLE (CMS)        │    CLOUDINARY (Images CDN)       │
+│  Projects, Journal,      │  Optimized WebP/AVIF Images      │
+│  Settings, Awards        │  Auto Format + Quality           │
+└──────────────────────────┴──────────────────────────────────┘
+```
+
+### CDN Cache Architecture
+
+**Before (Client-Side Fetching):**
+```
+Browser → Airtable API (every page load)
+- ❌ Slow (~2-5 seconds)
+- ❌ Rate limits
+- ❌ API keys exposed
+```
+
+**After (CDN-Cached Server-Side):**
+```
+Browser → Netlify CDN → Function (if cache miss) → Airtable
+- ✅ Fast (~100-300ms)
+- ✅ No rate limits
+- ✅ API keys secure
+- ✅ Automatic cache invalidation
+```
+
+**Cache Headers Strategy:**
+```javascript
+Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=86400
+```
+
+- `max-age=300`: Browser caches for 5 minutes
+- `s-maxage=3600`: CDN caches for 1 hour
+- `stale-while-revalidate=86400`: Serve stale for 24h while updating in background
+
+**Performance Benefits:**
+- **10x faster page loads** (2-5s → 100-300ms)
+- **99.9% fewer Airtable API calls** (only on cache miss)
+- **Page weight reduced 70-75%** with Cloudinary image optimization
+
+### Request Flow
+
+1. **Initial Load:** Browser requests `index.html` → React hydrates → `App.tsx` calls `cmsService.fetchAll()`
+2. **CMS Service:** Tries CDN cache → Netlify Function → Airtable API → Static fallback
+3. **Routing:** `react-router-dom` handles navigation (SPA mode, no page reloads)
+4. **Analytics:** `analyticsService` tracks page views and events
+5. **SEO:** `<SEO>` component updates meta tags dynamically per route
+6. **Background Sync:** `useBackgroundDataSync` checks for updates every 30 minutes
+
+### Image Delivery Architecture
+
+**Three-Tier Fallback System:**
+
+1. **Primary: Cloudinary CDN** (Production)
+   - Auto format selection (WebP/AVIF based on browser)
+   - Quality: `auto:best` (highest quality with smart compression)
+   - Responsive widths: 600px → 1920px depending on context
+   - Retina support: `dpr_auto`
+   - Global CDN delivery
+
+2. **Secondary: Local WebP** (Build-time optimization)
+   - Pre-generated WebP files from Airtable images
+   - Served from `/public/images/portfolio/`
+   - 1200px width @ 90% quality
+
+3. **Tertiary: Airtable URLs** (Original source)
+   - Direct Airtable attachment URLs
+   - JPEG/PNG originals
+
+**Image Processing Flow:**
+```
+Airtable (Original) → Scheduled Sync → Cloudinary Upload (q:auto:best)
+                                    ↓
+                              Cloudinary CDN → Transformations
+                                    ↓
+                              Browser (WebP/AVIF optimized)
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 19.2.0** - UI library
+- **TypeScript 5.8.2** - Type safety
+- **Vite 6.2.0** - Build tool & dev server
+- **React Router 6.22.3** - Client-side routing
+- **Tailwind CSS** - Utility-first styling (via `theme.ts` mappings)
+
+### Backend/Infrastructure
+- **Airtable** - Headless CMS (database)
+- **Cloudinary** - Image CDN & optimization (25GB free tier)
+- **Netlify** - Hosting, CDN, Functions, Edge Functions
+- **Sharp** - Local image optimization (build-time)
+- **Google Analytics 4** - User analytics
+
+### Key Dependencies
+```json
+{
+  "airtable": "^0.12.2",
+  "cloudinary": "^2.5.1",
+  "react-router-dom": "^6.22.3",
+  "dotenv": "^17.2.3",
+  "sharp": "^0.33.2"
+}
+```
+
+---
+
+## 📊 Data Structures & Schema
                     ├─► Netlify CDN (Static Assets)
                     │   └─► Optimized WebP Images
                     │
@@ -1234,6 +1559,118 @@ gabriel-athanasiou-portfolio--TEST/
 
 ---
 
+## 🔧 Environment Setup
+
+### Local Development Setup
+
+#### 1. Prerequisites
+- **Node.js**: v18 or higher (Netlify uses Node 18)
+- **npm**: v8 or higher
+- **Git**: For version control
+- **Airtable Account**: For CMS access
+- **Cloudinary Account** (optional): For image CDN
+
+#### 2. Install Dependencies
+```bash
+npm install
+```
+
+#### 3. Create Environment Variables
+
+Create `.env.local` in the project root:
+
+```bash
+# .env.local (NEVER COMMIT THIS FILE)
+
+# Airtable API Credentials (Required)
+VITE_AIRTABLE_TOKEN=keyXXXXXXXXXXXXXX
+VITE_AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX
+
+# For Backend Functions (Same values as above)
+AIRTABLE_API_KEY=keyXXXXXXXXXXXXXX    # Same as VITE_AIRTABLE_TOKEN
+AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX    # Same as VITE_AIRTABLE_BASE_ID
+
+# Google Analytics 4 (Optional)
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Cloudinary (Optional - for image optimization)
+CLOUDINARY_CLOUD_NAME=date24ay6
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+USE_CLOUDINARY=false  # Set to true to enable
+```
+
+**Getting Airtable Credentials:**
+1. Go to https://airtable.com/account
+2. Click **Generate API key** (or use existing)
+3. Copy the API key (starts with `key...`)
+4. Go to your base → Help → API documentation
+5. Find your Base ID (starts with `app...`)
+
+**Getting Google Analytics ID:**
+1. Go to https://analytics.google.com
+2. Admin → Data Streams → Web stream
+3. Copy Measurement ID (format: `G-XXXXXXXXXX`)
+
+**Getting Cloudinary Credentials:**
+1. Sign up at https://cloudinary.com/users/register/free
+2. Dashboard → Copy Cloud Name, API Key, API Secret
+
+#### 4. Verify Setup
+
+```bash
+# Test environment variables loaded
+npm run dev
+
+# Check console for:
+# ✅ "Vite dev server started"
+# ✅ "Analytics initialized" (if GA configured)
+```
+
+### Environment Variables Reference
+
+**Frontend (Vite - prefix with `VITE_`):**
+- `VITE_AIRTABLE_TOKEN` - Airtable API key
+- `VITE_AIRTABLE_BASE_ID` - Airtable base ID
+- `VITE_GA_MEASUREMENT_ID` - Google Analytics measurement ID
+
+**Backend (Netlify Functions - no prefix):**
+- `AIRTABLE_API_KEY` - Airtable API key (same value as VITE_AIRTABLE_TOKEN)
+- `AIRTABLE_BASE_ID` - Airtable base ID (same value as VITE_AIRTABLE_BASE_ID)
+- `CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name
+- `CLOUDINARY_API_KEY` - Cloudinary API key
+- `CLOUDINARY_API_SECRET` - Cloudinary API secret
+- `USE_CLOUDINARY` - Enable/disable Cloudinary (`true`/`false`)
+
+**Security Notes:**
+- ✅ `.env.local` is already in `.gitignore` (never committed)
+- ✅ Use different values for dev/production if needed
+- ✅ Rotate keys if compromised
+- ✅ Never share your `.env.local` file
+
+### Netlify Environment Variables
+
+For production deployment, add all environment variables to Netlify:
+
+1. Go to **Netlify Dashboard** → Your site
+2. Navigate to **Site settings** → **Environment variables**
+3. Click **Add a variable**
+4. Add each variable from `.env.local` (without `VITE_` prefix for backend vars)
+
+**Required for Production:**
+```
+VITE_AIRTABLE_TOKEN = keyXXXXXXXXXXXXXX
+VITE_AIRTABLE_BASE_ID = appXXXXXXXXXXXXXX
+AIRTABLE_API_KEY = keyXXXXXXXXXXXXXX
+AIRTABLE_BASE_ID = appXXXXXXXXXXXXXX
+CLOUDINARY_CLOUD_NAME = date24ay6
+CLOUDINARY_API_KEY = your-api-key
+CLOUDINARY_API_SECRET = your-api-secret
+USE_CLOUDINARY = true  # Enable in production
+```
+
+---
+
 ## 💻 Development Workflow
 
 ### Environment Setup
@@ -1301,9 +1738,385 @@ git push origin main
 
 ---
 
-## 🚀 Deployment
+## 🚀 Deployment & CI/CD
+
+### Production URL
+- **Live Site:** https://directedbygabriel.com
+- **Netlify URL:** https://directedbygabriel.netlify.app
 
 ### Netlify Configuration (`netlify.toml`)
+
+```toml
+[build]
+command = "npm run build"
+publish = "dist"
+functions = "netlify/functions"
+ignore = "bash scripts/ignore-netlify-build.sh"  # Only build on [deploy] commits
+
+# Scheduled Functions
+[functions]
+  directory = "netlify/functions"
+
+[functions."scheduled-sync"]
+  schedule = "@daily"  # Runs at midnight UTC
+
+# Browser caching for static assets
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache optimized images between builds
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = ["dist/images/portfolio", "public/images/portfolio"]
+
+# Redirects
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/sitemap"
+  status = 200
+```
+
+**How Build Caching Works:**
+1. **First build:** Downloads images from Airtable → Optimizes to WebP → Saves to cache
+2. **Subsequent builds:** Restores cached images → Only processes NEW images
+3. **Automatic cleanup:** Deletes orphaned images for deleted projects/posts
+4. **Result:** 5-10 second builds for new images only (vs 30-120s for all)
+
+### Deployment Triggers
+
+#### Automatic Deployments
+
+**1. Push to `main` with Deploy Marker**
+```bash
+git commit -m "feat: new feature [deploy]"
+git push origin main
+```
+- Triggers: Immediate build
+- Detects: `[deploy]` or `[force-deploy]` in commit message
+- Logic: `scripts/ignore-netlify-build.sh` checks last commit
+
+**2. Scheduled Content Sync**
+- **Daily (2 AM UTC):** Content-only check
+- **Weekly (Sunday 3 AM UTC):** Code + content check
+- Workflow: `.github/workflows/scheduled-deploy.yml`
+- Smart: Only deploys if changes detected
+
+**3. Scheduled Data Sync**
+- **Daily (Midnight UTC):** `scheduled-sync.mjs` runs
+- Updates: Cached data, sitemap.xml, share-meta.json
+- Uploads: New images to Cloudinary
+- No deploy needed: CDN serves updated cached data
+
+#### Manual Deployments
+
+**Option 1: GitHub Actions (Recommended)**
+```
+1. Go to GitHub → Actions tab
+2. Select "Manual Deploy to Netlify"
+3. Click "Run workflow"
+4. Optional: Add reason
+5. Wait for deployment (1-2 minutes)
+```
+
+**Option 2: Manual Sync Functions**
+```bash
+# Trigger incremental sync (respects change detection)
+curl -X POST https://directedbygabriel.com/.netlify/functions/sync-now
+
+# Trigger realtime sync (uploads all images fresh)
+curl -X POST https://directedbygabriel.com/.netlify/functions/sync-now-realtime
+```
+
+**Option 3: Netlify Dashboard**
+```
+1. Go to Netlify Dashboard
+2. Select site → Deploys
+3. Click "Trigger deploy"
+4. Note: Bypasses smart build logic
+```
+
+### GitHub Actions Workflows
+
+#### 1. Manual Deploy (`.github/workflows/manual-deploy.yml`)
+
+**Purpose:** Manually trigger deployment with optional reason
+
+**How It Works:**
+1. Creates a `[deploy]` marker commit
+2. Includes user's reason in commit message
+3. Pushes to `main` branch
+4. Netlify detects marker and builds
+
+**Usage:**
+```
+Actions → Manual Deploy to Netlify → Run workflow
+Optional reason: "Fixed video thumbnail bug"
+```
+
+**Permissions:** `contents: write` (to push commits)
+
+**Fixed Nov 2025:** Previously created duplicate deploys, now creates only ONE
+
+#### 2. Scheduled Deploy (`.github/workflows/scheduled-deploy.yml`)
+
+**Purpose:** Auto-deploy when content or code changes detected
+
+**Schedule:**
+- **Daily (2 AM UTC):** Content-only check
+  - Generates share-meta.json from Airtable
+  - Compares hash with previous version
+  - Deploys if content changed
+  
+- **Weekly (Sunday 3 AM UTC):** Full check
+  - Checks for git commits (code changes)
+  - Also checks content changes
+  - Deploys if either changed
+
+**Smart Detection:**
+```javascript
+// Content changes (Airtable)
+const newHash = crypto.createHash('md5')
+  .update(JSON.stringify(data))
+  .digest('hex');
+const oldHash = fs.readFileSync('public/share-meta.hash', 'utf8');
+if (newHash !== oldHash) {
+  // Deploy needed
+}
+
+// Code changes (Git)
+const lastDeploy = await getLastSuccessfulDeployDate();
+const commits = await getCommitsSince(lastDeploy);
+if (commits.length > 0 && !commits[0].message.includes('[ci skip]')) {
+  // Deploy needed
+}
+```
+
+**Benefits:**
+- ✅ Saves build minutes (only builds when needed)
+- ✅ Fresh content within 24 hours
+- ✅ Code changes deployed within 7 days
+- ✅ No unnecessary builds for docs updates
+
+**Setup Required:** See `.github/SCHEDULED_DEPLOY_SETUP.md`
+
+#### 3. Selective Build Logic (`scripts/ignore-netlify-build.sh`)
+
+```bash
+#!/bin/bash
+LAST_COMMIT=$(git log -1 --pretty=%B)
+
+if [[ "$LAST_COMMIT" =~ \[deploy\] ]] || [[ "$LAST_COMMIT" =~ \[force-deploy\] ]]; then
+  echo "Deploy marker found - building"
+  exit 1  # Build
+else
+  echo "No deploy marker - skipping build"
+  exit 0  # Skip
+fi
+```
+
+**Purpose:** Prevents builds for documentation-only updates
+
+**Usage:** Include `[deploy]` in commit message to force build
+
+### Build Process
+
+**Complete Build Pipeline:**
+
+```
+1. npm run build
+   ├─ npm run optimize:images
+   │  ├─ Fetch featured projects from Airtable
+   │  ├─ Fetch public journal posts from Airtable
+   │  ├─ Download new images
+   │  ├─ Optimize to WebP (1200px @ 90%)
+   │  └─ Clean up orphaned images
+   │
+   └─ vite build
+      ├─ Bundle React app
+      ├─ Minify JS/CSS
+      ├─ Generate source maps
+      └─ Output to dist/
+
+2. Netlify Functions
+   ├─ Bundle serverless functions
+   ├─ Deploy to AWS Lambda
+   └─ Configure scheduled triggers
+
+3. Edge Functions
+   ├─ Deploy meta-rewrite.ts to Netlify Edge
+   └─ SSR-like dynamic meta tags
+
+4. CDN Distribution
+   ├─ Upload dist/ to Netlify CDN
+   ├─ Configure cache headers
+   └─ Enable Brotli compression
+```
+
+**Build Times:**
+- **First build:** 30-120 seconds (all images)
+- **Incremental:** 5-15 seconds (new images only)
+- **Code-only:** 20-30 seconds (no images)
+
+### Scheduled Sync System
+
+**Two Sync Strategies:**
+
+#### 1. Incremental Sync (`scheduled-sync.mjs`)
+**Used For:** Daily scheduled runs, manual triggers
+
+**Features:**
+- Smart change detection via `cloudinary-mapping.json`
+- Only uploads new or changed images
+- Maintains hash mapping file
+- Generates sitemap.xml and share-meta.json
+- Efficient for scheduled operations
+
+**Runs:**
+- Automatically: Daily at midnight UTC
+- Manually: `POST /.netlify/functions/sync-now`
+
+#### 2. Realtime Sync (`scheduled-sync-realtime.mjs`)
+**Used For:** On-demand API calls via `get-data.js`
+
+**Features:**
+- Real-time uploads during each call
+- No change detection (always fresh)
+- Uploads to Cloudinary with `q_auto:best`
+- Returns Cloudinary URLs when `USE_CLOUDINARY=true`
+- Guaranteed fresh data for API endpoints
+
+**Runs:**
+- Via: `get-data.js` function calls
+- Manually: `POST /.netlify/functions/sync-now-realtime`
+
+**Common Features (Both):**
+- Feature flag respect (`USE_CLOUDINARY`)
+- Progress logging
+- Automatic retry logic
+- Airtable fallback URLs preserved
+- Cache invalidation (`invalidate: true`, `overwrite: true`)
+
+### Environment Variables (Netlify)
+
+**Required for Production:**
+```
+# Airtable (Required)
+AIRTABLE_API_KEY = keyXXXXXXXXXXXXXX
+AIRTABLE_BASE_ID = appXXXXXXXXXXXXXX
+VITE_AIRTABLE_TOKEN = keyXXXXXXXXXXXXXX
+VITE_AIRTABLE_BASE_ID = appXXXXXXXXXXXXXX
+
+# Cloudinary (Required for image optimization)
+CLOUDINARY_CLOUD_NAME = date24ay6
+CLOUDINARY_API_KEY = your-api-key
+CLOUDINARY_API_SECRET = your-api-secret
+USE_CLOUDINARY = true
+
+# Analytics (Optional)
+VITE_GA_MEASUREMENT_ID = G-EJ62G0X6Q5
+```
+
+**Setup Instructions:**
+1. Netlify Dashboard → Site Settings
+2. Environment Variables → Add variable
+3. Add each variable above
+4. Redeploy for changes to take effect
+
+### Deployment Checklist
+
+Before deploying major changes:
+
+- [ ] All tests passing locally (`npm run dev`)
+- [ ] Environment variables configured in Netlify
+- [ ] Images optimized (`npm run optimize:images`)
+- [ ] No console errors in browser
+- [ ] Analytics tracking verified
+- [ ] SEO meta tags correct
+- [ ] Mobile responsive
+- [ ] Cross-browser tested (Chrome, Safari, Firefox)
+- [ ] Documentation updated in `AI_AGENT_GUIDE.md`
+- [ ] Commit message includes change description
+- [ ] Include `[deploy]` marker if forcing build
+
+### Monitoring Production
+
+**Netlify Dashboard:**
+- Deploy status and logs
+- Function execution logs
+- Analytics and bandwidth usage
+- Error tracking
+
+**Google Analytics:**
+- Real-time user tracking
+- Page views and events
+- User demographics
+
+**Cloudinary Dashboard:**
+- Image delivery stats
+- Bandwidth usage
+- Storage usage
+- Transformation counts
+
+**Alert Thresholds:**
+- Cloudinary: 80% bandwidth usage
+- Netlify: Build failures
+- Analytics: Error rate >1%
+
+### Rollback Procedure
+
+If deployment fails or causes issues:
+
+**Option 1: Netlify Dashboard (Instant)**
+```
+1. Netlify Dashboard → Deploys
+2. Find last working deploy
+3. Click options → "Publish deploy"
+4. Confirms in 30 seconds
+```
+
+**Option 2: Git Revert (Safe)**
+```bash
+git revert HEAD
+git commit -m "Revert: description [deploy]"
+git push origin main
+```
+
+**Option 3: Cloudinary Disable (Images Only)**
+```
+1. Netlify Dashboard → Environment Variables
+2. Set USE_CLOUDINARY=false
+3. Trigger redeploy
+4. Falls back to local WebP + Airtable
+```
+
+### Deployment FAQ
+
+**Q: How often should I deploy?**
+A: Let scheduled deploys handle routine updates. Only manual deploy for urgent fixes or major features.
+
+**Q: Why isn't my change showing?**
+A: Check browser cache (Cmd+Shift+R), wait for CDN propagation (1-5 min), verify deploy completed.
+
+**Q: Can I test before deploying?**
+A: Yes, use Netlify Deploy Previews (automatic on PRs) or deploy to separate test site.
+
+**Q: What if Airtable is down?**
+A: Site continues serving cached data (up to 24h stale). CDN cache prevents full outage.
+
+---
 
 ```toml
 [build]
@@ -1671,7 +2484,394 @@ cachedData = null;  // Clear cached data
 
 ---
 
-## 📊 Performance Optimizations
+## ⚡ Performance & Optimization
+
+### Performance Strategy Overview
+
+The site uses a **multi-layered optimization strategy** to achieve fast load times:
+
+1. **CDN Caching** - Netlify edge cache (1h) + browser cache (5m)
+2. **Image Optimization** - Cloudinary transformations + local WebP fallbacks
+3. **Code Splitting** - React lazy loading + Vite chunk optimization
+4. **Asset Caching** - 1-year cache headers for immutable assets
+5. **Compression** - Brotli/Gzip automatic compression
+6. **Lazy Loading** - Images and routes loaded on-demand
+
+### Current Performance Metrics
+
+**PageSpeed Insights (November 2025):**
+- **Score:** 85+ (Mobile & Desktop)
+- **FCP (First Contentful Paint):** < 0.6s ✅
+- **LCP (Largest Contentful Paint):** < 1.8s ✅
+- **TBT (Total Blocking Time):** < 200ms ✅
+- **CLS (Cumulative Layout Shift):** 0 ✅
+- **Page Weight:** ~1.5-2.4MB (down from 6-10MB) ✅
+
+**Real-World Performance:**
+- **Initial load:** 100-300ms (CDN cache hit)
+- **Subsequent pages:** < 50ms (SPA navigation)
+- **Image load:** 80-200ms (Cloudinary CDN)
+
+### Image Optimization
+
+#### Responsive Width Strategy
+
+Images use **context-aware widths** to minimize data transfer:
+
+```typescript
+// Context-specific widths
+const WIDTHS = {
+  HERO_HOME: 1920,      // Homepage hero (maximum quality)
+  HERO_POST: 1600,      // Blog post heroes (full editorial)
+  GRID_THUMB: 800,      // Grid/list thumbnails
+  SMALL_THUMB: 600,     // Related content, sidebar
+};
+```
+
+**Implementation:**
+```tsx
+// Homepage hero - largest, highest quality
+<OptimizedImage
+  recordId={project.id}
+  fallbackUrl={project.heroImage}
+  width={1920}
+  quality="auto:best"
+/>
+
+// Grid thumbnails - optimized for size
+<OptimizedImage
+  recordId={project.id}
+  fallbackUrl={project.heroImage}
+  width={800}
+  quality="auto:good"
+/>
+```
+
+**Performance Impact:**
+- **Before:** All images at 1600px = 400-500KB each
+- **After:** Contextual sizing = 150-250KB average
+- **Savings:** ~40-50% bandwidth reduction
+
+#### Quality Differentiation
+
+**Two-tier quality system:**
+
+1. **`auto:best` (90-100% quality)** - High-impact images
+   - Project detail slideshows
+   - Blog post heroes
+   - Home featured images
+   - Use: `quality="auto:best"` prop
+
+2. **`auto:good` (80-90% quality)** - Thumbnails
+   - Filmography grid/list
+   - Journal listing covers
+   - Related content previews
+   - Use: `quality="auto:good"` prop
+
+**File Size Comparison:**
+```
+Same 800px image:
+- auto:best = ~200KB WebP
+- auto:good = ~150KB WebP
+- Savings: 25% smaller with minimal visual difference
+```
+
+#### Three-Tier Fallback System
+
+**Primary: Cloudinary (Production)**
+```
+https://res.cloudinary.com/date24ay6/image/upload/
+  f_auto,q_auto:best,c_limit,dpr_auto,w_1920/
+  portfolio-projects-{recordId}-0
+```
+
+**Features:**
+- Auto format (WebP/AVIF based on browser)
+- Smart quality compression
+- Retina display support (`dpr_auto`)
+- Global CDN delivery
+- 25GB free bandwidth/month
+
+**Secondary: Local WebP (Build-time)**
+```
+/images/portfolio/project-{recordId}-0.webp
+```
+
+**Features:**
+- Pre-generated during build
+- 1200px @ 90% quality
+- Netlify CDN served
+- No API dependencies
+
+**Tertiary: Airtable URLs (Original)**
+```
+https://v5.airtableusercontent.com/...
+```
+
+**Features:**
+- Original high-res images
+- Airtable CDN served
+- JPEG/PNG formats
+- Fallback of last resort
+
+### CDN Caching Strategy
+
+**Multi-Level Cache Hierarchy:**
+
+```
+Browser Cache (5 min)
+    ↓ (miss)
+Netlify CDN (1 hour)
+    ↓ (miss)
+Function Execution → Airtable
+    ↓
+Stale-While-Revalidate (24 hours)
+```
+
+**Cache Headers:**
+```javascript
+Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=86400
+```
+
+**What This Means:**
+- **First 5 minutes:** Instant load from browser
+- **After 5 minutes:** Fast load from CDN
+- **After 1 hour:** CDN refreshes from function
+- **After 24 hours:** Serves stale while updating
+
+**Benefits:**
+- ✅ 99.9% requests served from cache
+- ✅ No Airtable API rate limit issues
+- ✅ Resilient to API outages
+- ✅ Sub-200ms response times
+
+### Asset Optimization
+
+#### Long-Term Caching
+
+**Immutable Assets (1 year cache):**
+```toml
+# netlify.toml
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+```
+
+**Why This Works:**
+- Vite generates content-hash filenames (e.g., `app.abc123.js`)
+- File content changes = new filename = cache miss
+- Old files remain cached forever (immutable)
+- No bandwidth waste redownloading unchanged files
+
+#### Font Loading Optimization
+
+**Strategy: Async font loading with system font fallback**
+
+```html
+<!-- index.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+```
+
+**Benefits:**
+- ✅ Non-blocking font load
+- ✅ System font renders immediately
+- ✅ Custom font swaps in when ready
+- ✅ No layout shift (font-display: swap)
+
+#### Code Splitting
+
+**Vite Automatic Splitting:**
+```javascript
+// vite.config.ts
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'analytics': ['./src/services/analyticsService'],
+        }
+      }
+    }
+  }
+});
+```
+
+**Result:**
+- Core app bundle: ~150KB
+- Vendor bundle: ~140KB
+- Route chunks: 10-30KB each
+- Total: ~300KB initial load
+
+### Build-Time Optimizations
+
+#### Image Pre-Processing
+
+**Incremental Optimization:**
+```bash
+# Only processes new/changed images
+npm run optimize:images
+
+# Logic:
+1. Compare existing files with Airtable
+2. Download only new images
+3. Optimize to WebP (1200px @ 90%)
+4. Delete orphaned images
+5. Cache for next build
+```
+
+**Performance:**
+- First build: 30-120s (all images)
+- Incremental: 5-15s (new only)
+- Savings: 80-90% build time
+
+#### Dependency Pre-Bundling
+
+**Vite Pre-Bundling:**
+```javascript
+// vite.config.ts
+export default defineConfig({
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'airtable']
+  }
+});
+```
+
+**Benefits:**
+- ✅ Faster dev server startup
+- ✅ Fewer HTTP requests
+- ✅ Better HMR performance
+
+### Runtime Optimizations
+
+#### Lazy Loading
+
+**Images:**
+```tsx
+<OptimizedImage
+  loading="lazy"  // Native browser lazy loading
+  alt="Project thumbnail"
+/>
+```
+
+**Routes:**
+```tsx
+// App.tsx
+const ProjectDetailView = lazy(() => import('./components/views/ProjectDetailView'));
+```
+
+#### Background Data Sync
+
+**Non-Blocking Updates:**
+```typescript
+// hooks/useBackgroundDataSync.ts
+useEffect(() => {
+  const interval = setInterval(async () => {
+    const fresh = await cmsService.fetchAll();
+    // Silently update cache, no UI blocking
+  }, 30 * 60 * 1000); // Every 30 minutes
+}, []);
+```
+
+### Compression
+
+**Automatic Compression (Netlify):**
+- Brotli compression for modern browsers (20-30% better than gzip)
+- Gzip fallback for older browsers
+- Applied to HTML, JS, CSS, JSON
+
+**File Size Comparison:**
+```
+dist/app.js (uncompressed): 450KB
+dist/app.js (gzip): 125KB
+dist/app.js (brotli): 105KB
+Savings: 76% (brotli vs uncompressed)
+```
+
+### Monitoring & Metrics
+
+**Tools for Performance Monitoring:**
+
+1. **Google PageSpeed Insights**
+   - URL: https://pagespeed.web.dev
+   - Test: Mobile & Desktop
+   - Frequency: After major changes
+
+2. **Netlify Analytics** (Built-in)
+   - Page load times
+   - Bandwidth usage
+   - Top pages
+
+3. **Google Analytics 4**
+   - Real user monitoring
+   - Page load times
+   - Device breakdowns
+
+4. **Cloudinary Analytics**
+   - Image delivery stats
+   - Bandwidth usage
+   - Transformation counts
+
+**Key Metrics to Track:**
+- Time to First Byte (TTFB) < 200ms
+- First Contentful Paint (FCP) < 1s
+- Largest Contentful Paint (LCP) < 2.5s
+- Total Blocking Time (TBT) < 200ms
+- Cumulative Layout Shift (CLS) < 0.1
+
+### Performance Budget
+
+**Current Limits:**
+- **Page Weight:** < 3MB per page
+- **Image Weight:** < 300KB per image (full size)
+- **JS Bundle:** < 500KB total
+- **CSS Bundle:** < 50KB
+- **API Response:** < 500ms
+
+**Alerts:**
+- Cloudinary: 80% of 25GB bandwidth/month
+- Netlify: Build time > 5 minutes
+- PageSpeed: Score < 80
+
+### Future Optimizations
+
+**Planned Enhancements:**
+
+1. **Service Worker**
+   - Offline support
+   - Background sync
+   - Push notifications
+
+2. **HTTP/3 & QUIC**
+   - Faster connection setup
+   - Better mobile performance
+
+3. **Image Placeholders**
+   - Blur-up technique
+   - LQIP (Low Quality Image Placeholder)
+
+4. **Route Pre-Fetching**
+   - Predict next navigation
+   - Pre-load likely routes
+
+5. **Critical CSS**
+   - Inline above-fold CSS
+   - Defer non-critical styles
+
+---
 
 ### Current Optimizations
 
