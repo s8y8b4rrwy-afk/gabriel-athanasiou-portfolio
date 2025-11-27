@@ -10,11 +10,6 @@ publish = "dist"
   [context.production.environment]
     NETLIFY_BLOBS_CONTEXT = "production"
 
-# Scheduled function to sync Airtable data daily
-[[functions]]
-  name = "scheduled-sync"
-  schedule = "0 0 * * *"  # Run daily at midnight UTC
-
 # Cache optimized images between builds
 [[plugins]]
   package = "netlify-plugin-cache"
@@ -72,3 +67,11 @@ force = true
 from = "/*"
 to = "/index.html"
 status = 200
+
+# Scheduled function to sync Airtable data daily
+[[plugins]]
+package = "@netlify/plugin-scheduled-functions"
+
+  [[plugins.inputs]]
+  [plugins.inputs.functions.scheduled-sync]
+  schedule = "0 0 * * *"  # Run daily at midnight UTC
