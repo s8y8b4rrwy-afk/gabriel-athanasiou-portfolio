@@ -406,7 +406,6 @@ const syncAirtableData = async () => {
         } else {
           console.warn('⚠️ Cloudinary credentials missing - skipping upload');
         }
-      }
         
         // Generate optimized delivery URLs with highest quality
         cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-projects-${record.id}-${idx}`);
