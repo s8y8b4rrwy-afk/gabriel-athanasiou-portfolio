@@ -7,6 +7,7 @@
     "dev": "vite",
     "optimize:images": "node scripts/optimize-images.mjs",
     "test:images": "node scripts/test-image-fetch.mjs",
+    "migrate:cloudinary": "node scripts/migrate-to-cloudinary.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
     "build": "npm run optimize:images && vite build",
@@ -16,6 +17,7 @@
     "@netlify/functions": "^2.8.1",
     "@remix-run/router": "1.15.3",
     "airtable": "^0.12.2",
+    "cloudinary": "^2.8.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "6.22.3"
