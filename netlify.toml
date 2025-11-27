@@ -8,8 +8,8 @@ publish = "dist"
 # Configure functions to include sharp for image processing
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["sharp"]
-  included_files = ["node_modules/sharp/**/*"]
+  # Don't bundle sharp - let it run as external
+  external_node_modules = ["sharp", "@img/sharp-linux-x64", "@img/sharp-libvips-linux-x64"]
 
 # Enable Netlify Blobs and KV storage
 [context.production]
