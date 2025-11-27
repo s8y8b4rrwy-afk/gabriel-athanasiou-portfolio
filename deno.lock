@@ -11,13 +11,18 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@netlify/functions@^2.8.1",
         "npm:@remix-run/router@1.15.3",
         "npm:@types/node@^22.14.0",
         "npm:@vitejs/plugin-react@5",
         "npm:airtable@~0.12.2",
+        "npm:cloudinary@^2.8.0",
+        "npm:dotenv@^17.2.3",
+        "npm:netlify-plugin-cache@^1.0.3",
         "npm:react-dom@^19.2.0",
         "npm:react-router-dom@6.22.3",
         "npm:react@^19.2.0",
+        "npm:sharp@~0.34.5",
         "npm:typescript@~5.8.2",
         "npm:vite@^6.2.0"
       ]

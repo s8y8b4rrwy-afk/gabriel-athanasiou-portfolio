@@ -67,9 +67,9 @@ interface OptimizedImageProps {
   /** Image index for galleries (default: 0) */
   index?: number;
   /** 
-   * Total images in gallery (for naming consistency with optimization script).
-   * CRITICAL: Use project.gallery?.length || 2 for projects to match file naming.
-   * The optimization script generates files with -0 suffix when totalImages > 1.
+   * Total images in gallery (for local WebP naming consistency).
+   * OPTIONAL: Only needed if you want local WebP fallback.
+   * Cloudinary naming doesn't require this.
    */
   totalImages?: number;
   /** Alt text */
@@ -124,12 +124,18 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return null;
   }
 
-  const optimizedUrl = useMemo(() => (
+  // Get all three URL options: Cloudinary, local WebP, Airtable
+  const imageUrls = useMemo(() => 
     getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages)
-  ), [recordId, fallbackUrl, type, index, totalImages]);
+  , [recordId, fallbackUrl, type, index, totalImages]);
 
-  const [currentSrc, setCurrentSrc] = useState<string>(optimizedUrl);
-  const [triedFallback, setTriedFallback] = useState(false);
+  // Determine initial source based on feature flag
+  const initialSrc = imageUrls.useCloudinary && imageUrls.cloudinaryUrl 
+    ? imageUrls.cloudinaryUrl 
+    : imageUrls.localUrl;
+
+  const [currentSrc, setCurrentSrc] = useState<string>(initialSrc);
+  const [fallbackLevel, setFallbackLevel] = useState<number>(0); // 0=primary, 1=secondary, 2=tertiary
   const [isLoaded, setIsLoaded] = useState(false);
 
   const handleLoad = () => {
@@ -137,15 +143,29 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   const handleError = () => {
-    // Only try fallback once and only if fallback URL exists and is different
-    if (!triedFallback && fallbackUrl && currentSrc !== fallbackUrl) {
-      console.log(`Failed to load optimized image, trying fallback: ${fallbackUrl}`);
-      setTriedFallback(true);
+    // Try next fallback level
+    if (fallbackLevel === 0) {
+      // Try local WebP if we were using Cloudinary, or Airtable if we were using local
+      const nextSrc = imageUrls.useCloudinary ? imageUrls.localUrl : imageUrls.fallbackUrl;
+      console.log(`Image load failed, trying fallback level 1: ${nextSrc}`);
+      setFallbackLevel(1);
       setIsLoaded(false);
-      setCurrentSrc(fallbackUrl);
+      setCurrentSrc(nextSrc);
+    } else if (fallbackLevel === 1) {
+      // Try final fallback (Airtable URL)
+      if (currentSrc !== imageUrls.fallbackUrl) {
+        console.log(`Image load failed, trying final fallback: ${imageUrls.fallbackUrl}`);
+        setFallbackLevel(2);
+        setIsLoaded(false);
+        setCurrentSrc(imageUrls.fallbackUrl);
+      } else {
+        // Already at final fallback and it failed
+        console.error(`All image sources failed for: ${recordId}`);
+        setIsLoaded(true);
+      }
     } else {
-      // If fallback also fails or doesn't exist, mark as loaded to prevent infinite loop
-      console.error(`Failed to load image: ${currentSrc}`);
+      // All fallbacks exhausted
+      console.error(`All image sources failed for: ${recordId}`);
       setIsLoaded(true);
     }
   };
@@ -155,11 +175,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return (
       <picture>
         {/* Desktop (1024px+): Original JPEG for maximum quality */}
-        <source media="(min-width: 1024px)" srcSet={fallbackUrl} />
-        {/* Mobile/Tablet: Optimized WebP for performance */}
-        <source media="(max-width: 1023px)" srcSet={optimizedUrl} />
+        <source media="(min-width: 1024px)" srcSet={imageUrls.fallbackUrl} />
+        {/* Mobile/Tablet: Optimized image for performance */}
+        <source media="(max-width: 1023px)" srcSet={currentSrc} />
         <img
-          src={optimizedUrl}
+          src={currentSrc}
           alt={alt}
           loading={loading}
           decoding={decoding}

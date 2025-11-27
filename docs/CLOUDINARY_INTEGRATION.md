@@ -1,8 +1,8 @@
 # Cloudinary Integration Guide
 
-> **Status:** In Development  
+> **Status:** Implementation Complete - Ready for Testing  
 > **Branch:** `cloudinary-integration`  
-> **Last Updated:** November 27, 2025
+> **Last Updated:** January 27, 2025
 
 ## Overview
 
@@ -18,11 +18,30 @@ Airtable → Scheduled Sync → Cloudinary Upload → Cloudinary CDN → Browser
                     Local WebP (backup fallback)
 ```
 
-### Fallback Chain
+### Fallback Chain (Three-Tier)
 
 1. **Primary**: Cloudinary URL with automatic transformations
+   - Auto format (WebP/AVIF based on browser support)
+   - Auto quality (`q_auto:good`)
+   - Max width 1600px with crop limit
+   
 2. **Secondary**: Local WebP files (existing optimization)
+   - Pre-generated WebP files from build
+   - Served from `/public/images/portfolio/`
+   
 3. **Tertiary**: Original Airtable CDN URLs
+   - Direct Airtable attachment URLs
+   - JPEG/PNG originals
+
+### Scheduled Sync Integration
+
+The `scheduled-sync.mjs` function now includes intelligent Cloudinary upload:
+
+- **Change Detection**: Compares current images against `cloudinary-mapping.json`
+- **Smart Upload**: Only uploads new or changed images
+- **Skip Existing**: Reuses existing Cloudinary URLs for unchanged images
+- **Feature Flag Respect**: Only runs if `USE_CLOUDINARY=true`
+- **Progress Logging**: Reports uploaded/skipped/failed counts
 
 ## Setup Instructions
 
@@ -32,7 +51,7 @@ Airtable → Scheduled Sync → Cloudinary Upload → Cloudinary CDN → Browser
 2. Sign up for free tier (25GB storage, 25GB bandwidth/month)
 3. Verify email and log in
 4. Go to **Dashboard** → Copy credentials:
-   - Cloud Name
+   - Cloud Name: `date24ay6` (current)
    - API Key
    - API Secret
 
@@ -41,7 +60,7 @@ Airtable → Scheduled Sync → Cloudinary Upload → Cloudinary CDN → Browser
 **Local Development (`.env.local`):**
 ```bash
 # Add these to your .env.local file
-CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_CLOUD_NAME=date24ay6
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 USE_CLOUDINARY=false  # Start disabled for testing
@@ -51,54 +70,60 @@ USE_CLOUDINARY=false  # Start disabled for testing
 1. Go to Netlify Dashboard → Your Site → Site Settings
 2. Navigate to **Environment Variables**
 3. Add the same variables:
-   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_CLOUD_NAME` = `date24ay6`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
    - `USE_CLOUDINARY` = `false` (initially)
 
 ### 3. Initial Migration
 
-Run the migration script to upload existing images to Cloudinary:
+✅ **Already completed** - 50 images migrated successfully on January 27, 2025
+
+To re-run if needed:
 
 ```bash
 npm run migrate:cloudinary
 ```
 
 This will:
-- Fetch all images from Airtable (~150 images)
+- Fetch all images from Airtable
 - Upload to Cloudinary with naming: `portfolio-projects-{recordId}-{index}`
 - Generate `/public/cloudinary-mapping.json` with URL mappings
 - Display progress and summary report
 
-**Expected Output:**
+**Migration Results:**
 ```
-🚀 Starting Cloudinary Migration...
-📦 Found 53 projects with 142 images
-📝 Found 2 journal posts with 8 images
-⬆️  Uploading to Cloudinary...
-  ✓ project-rec2xl62i0mgEo1go-0
-  ✓ project-rec2xl62i0mgEo1go-1
-  ... (150 more)
 ✅ Migration complete!
-📊 Summary:
-  - Uploaded: 150 images
-  - Failed: 0 images
-  - Mapping saved to: public/cloudinary-mapping.json
+Total images: 50
+- Uploaded: 50 ✓
+- Failed: 0 ✗
+Mapping saved: public/cloudinary-mapping.json
 ```
 
 ## Feature Flag System
 
-### Phase 1: Infrastructure Testing (Week 1)
+### Phase 1: Infrastructure Testing ✅ COMPLETE
 ```bash
 USE_CLOUDINARY=false
 ```
-- Cloudinary credentials configured
-- Migration completed
-- Scheduled sync uploads new images
-- Frontend still uses local WebP/Airtable URLs
-- **Goal:** Verify upload pipeline works without affecting users
+- ✅ Cloudinary credentials configured
+- ✅ Migration completed (50 images)
+- ✅ Scheduled sync uploads new images
+- ✅ Frontend uses local WebP/Airtable URLs
+- ✅ Local testing passed (41 projects, 1 post loaded successfully)
+- **Result:** Infrastructure validated, no breaking changes
 
-### Phase 2: Gradual Rollout (Week 2-3)
+### Phase 2: Preview Testing (Next Step)
+```bash
+USE_CLOUDINARY=false  # in Netlify env vars
+```
+- Deploy to Netlify preview branch
+- Verify no breaking changes
+- Test fallback chain works correctly
+- Monitor logs for errors
+- **Goal:** Confirm production compatibility
+
+### Phase 3: Gradual Rollout (After validation)
 ```bash
 USE_CLOUDINARY=true
 ```

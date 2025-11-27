@@ -1,18 +1,45 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
-import { writeFile } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createHash } from 'crypto';
+import { v2 as cloudinary } from 'cloudinary';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Helper to get __dirname safely (only when needed)
+const getDirname = () => {
+  if (typeof import.meta.url === 'undefined') {
+    // Fallback for bundled/CommonJS context
+    return process.cwd();
+  }
+  const __filename = fileURLToPath(import.meta.url);
+  return path.dirname(__filename);
+};
 
 // ==========================================
 // CONFIGURATION
 // ==========================================
 const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
+
+// Cloudinary configuration
+const USE_CLOUDINARY = process.env.USE_CLOUDINARY === 'true';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+// Initialize Cloudinary if enabled and credentials available
+if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET,
+    secure: true
+  });
+  console.log('✅ Cloudinary configured');
+} else if (USE_CLOUDINARY) {
+  console.warn('⚠️ USE_CLOUDINARY=true but credentials missing');
+}
 
 // NOTE: Image optimization temporarily disabled due to Sharp compatibility issues
 // Images will use Airtable URLs directly (already CDN-served)
@@ -24,8 +51,205 @@ const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTAB
 
 // Calculate hash of data to detect changes
 const hashData = (data) => {
-  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 };
+
+// Load existing Cloudinary mapping
+const loadCloudinaryMapping = async () => {
+  try {
+    const mappingPath = path.join(process.cwd(), 'public', 'cloudinary-mapping.json');
+    const content = await readFile(mappingPath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.log('No existing Cloudinary mapping found, starting fresh');
+    return { generatedAt: new Date().toISOString(), projects: [], journal: [] };
+  }
+};
+
+// Save updated Cloudinary mapping
+const saveCloudinaryMapping = async (mapping) => {
+  try {
+    const mappingPath = path.join(process.cwd(), 'public', 'cloudinary-mapping.json');
+    await mkdir(path.dirname(mappingPath), { recursive: true });
+    await writeFile(mappingPath, JSON.stringify(mapping, null, 2), 'utf-8');
+    console.log(`✅ Updated cloudinary-mapping.json (${mapping.projects.length} projects, ${mapping.journal.length} journal posts)`);
+  } catch (error) {
+    console.error('Failed to save Cloudinary mapping:', error);
+  }
+};
+
+// Upload image to Cloudinary
+const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
+  try {
+    const result = await cloudinary.uploader.upload(imageUrl, {
+      public_id: publicId,
+      folder: '', // Already in public_id
+      resource_type: 'image',
+      format: 'webp',
+      quality: 'auto:good',
+      transformation: [
+        { width: 1600, crop: 'limit' }
+      ]
+    });
+    
+    return {
+      success: true,
+      publicId: result.public_id,
+      cloudinaryUrl: result.secure_url,
+      format: result.format,
+      size: result.bytes
+    };
+  } catch (error) {
+    console.error(`Failed to upload ${publicId}:`, error.message);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Process Cloudinary uploads for changed/new images
+const syncImagesToCloudinary = async (projects, posts, existingMapping) => {
+  if (!USE_CLOUDINARY) {
+    console.log('⏭️ Cloudinary disabled (USE_CLOUDINARY=false)');
+    return existingMapping;
+  }
+  
+  console.log('🔄 Checking for new/changed images to upload to Cloudinary...');
+  
+  // Build lookup of existing images
+  const existingImages = new Set();
+  existingMapping.projects.forEach(p => {
+    p.images?.forEach(img => existingImages.add(img.publicId));
+  });
+  existingMapping.journal.forEach(p => {
+    p.images?.forEach(img => existingImages.add(img.publicId));
+  });
+  
+  const newMapping = {
+    generatedAt: new Date().toISOString(),
+    projects: [],
+    journal: []
+  };
+  
+  let uploadCount = 0;
+  let skipCount = 0;
+  let failCount = 0;
+  
+  // Process projects
+  for (const project of projects) {
+    const projectData = {
+      recordId: project.id,
+      title: project.title,
+      images: []
+    };
+    
+    // Upload gallery images
+    const galleryUrls = project.gallery || [];
+    for (let i = 0; i < galleryUrls.length; i++) {
+      const imageUrl = galleryUrls[i];
+      const publicId = `portfolio-projects-${project.id}-${i}`;
+      
+      // Check if already uploaded
+      const existingProject = existingMapping.projects.find(p => p.recordId === project.id);
+      const existingImage = existingProject?.images?.find(img => img.index === i);
+      
+      if (existingImage && existingImage.originalUrl === imageUrl) {
+        // Image unchanged, keep existing entry
+        projectData.images.push(existingImage);
+        skipCount++;
+      } else {
+        // New or changed image, upload
+        const result = await uploadToCloudinary(imageUrl, publicId, project.title);
+        
+        if (result.success) {
+          projectData.images.push({
+            index: i,
+            publicId: result.publicId,
+            cloudinaryUrl: result.cloudinaryUrl,
+            originalUrl: imageUrl,
+            format: result.format,
+            size: result.size
+          });
+          uploadCount++;
+        } else {
+          // Upload failed, keep Airtable URL as fallback
+          projectData.images.push({
+            index: i,
+            publicId: publicId,
+            cloudinaryUrl: '',
+            originalUrl: imageUrl,
+            error: result.error
+          });
+          failCount++;
+        }
+      }
+    }
+    
+    newMapping.projects.push(projectData);
+  }
+  
+  // Process journal posts
+  for (const post of posts) {
+    if (!post.imageUrl) continue;
+    
+    const postData = {
+      recordId: post.id,
+      title: post.title,
+      images: []
+    };
+    
+    const publicId = `portfolio-journal-${post.id}`;
+    
+    // Check if already uploaded
+    const existingPost = existingMapping.journal.find(p => p.recordId === post.id);
+    const existingImage = existingPost?.images?.[0];
+    
+    if (existingImage && existingImage.originalUrl === post.imageUrl) {
+      // Image unchanged
+      postData.images.push(existingImage);
+      skipCount++;
+    } else {
+      // New or changed image
+      const result = await uploadToCloudinary(post.imageUrl, publicId, post.title);
+      
+      if (result.success) {
+        postData.images.push({
+          index: 0,
+          publicId: result.publicId,
+          cloudinaryUrl: result.cloudinaryUrl,
+          originalUrl: post.imageUrl,
+          format: result.format,
+          size: result.size
+        });
+        uploadCount++;
+      } else {
+        postData.images.push({
+          index: 0,
+          publicId: publicId,
+          cloudinaryUrl: '',
+          originalUrl: post.imageUrl,
+          error: result.error
+        });
+        failCount++;
+      }
+    }
+    
+    newMapping.journal.push(postData);
+  }
+  
+  console.log(`✅ Cloudinary sync complete: ${uploadCount} uploaded, ${skipCount} unchanged, ${failCount} failed`);
+  
+  // Save updated mapping
+  await saveCloudinaryMapping(newMapping);
+  
+  return newMapping;
+};
+
+// Calculate hash of data to detect changes (duplicate removed above)
+// const hashData = (data) => {
+//   return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+// };
 
 // Fetch with timeout to prevent hanging
 const fetchWithTimeout = async (url, options, timeout = 10000) => {
@@ -520,13 +744,13 @@ const syncAirtableData = async () => {
     // 11. Generate sitemap and share-meta files
     console.log('Generating sitemap.xml...');
     const sitemap = generateSitemap(projects, posts);
-    const sitemapPath = path.join(__dirname, '..', '..', 'public', 'sitemap.xml');
+    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
     await writeFile(sitemapPath, sitemap, 'utf-8');
     console.log(`✅ Sitemap written to ${sitemapPath}`);
     
     console.log('Generating share-meta.json...');
     const shareMeta = generateShareMeta(projects, posts, config);
-    const shareMetaPath = path.join(__dirname, '..', '..', 'public', 'share-meta.json');
+    const shareMetaPath = path.join(process.cwd(), 'public', 'share-meta.json');
     await writeFile(shareMetaPath, JSON.stringify(shareMeta, null, 2), 'utf-8');
     console.log(`✅ Share-meta written to ${shareMetaPath}`);
     
@@ -534,15 +758,26 @@ const syncAirtableData = async () => {
     const hash = createHash('sha256')
       .update(JSON.stringify(shareMeta.projects) + JSON.stringify(shareMeta.posts))
       .digest('hex');
-    const hashPath = path.join(__dirname, '..', '..', 'public', 'share-meta.hash');
+    const hashPath = path.join(process.cwd(), 'public', 'share-meta.hash');
     await writeFile(hashPath, hash, 'utf-8');
     console.log(`✅ Hash written: ${hash}`);
     
-    // 12. Return processed data for CDN caching
+    // 12. Sync images to Cloudinary (if enabled and credentials available)
+    let cloudinaryMapping = null;
+    if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+      const existingMapping = await loadCloudinaryMapping();
+      cloudinaryMapping = await syncImagesToCloudinary(projects, posts, existingMapping);
+    }
+    
+    // 13. Return processed data for CDN caching
     console.log('=== Sync Complete ===');
     console.log(`Projects: ${projects.length}`);
     console.log(`Posts: ${posts.length}`);
-    console.log('Note: Images using Airtable URLs (optimization disabled)');
+    if (USE_CLOUDINARY) {
+      console.log('✅ Cloudinary enabled');
+    } else {
+      console.log('Note: Images using Airtable URLs (Cloudinary disabled)');
+    }
     
     const finalData = {
       projects,
