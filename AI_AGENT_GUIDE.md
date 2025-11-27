@@ -9,7 +9,7 @@
 ## 🎉 Recent Major Changes
 
 ### November 27, 2025 - Video Thumbnail Fallback Fix
-**What Changed:** Fixed blank thumbnails for projects with videos but no still images.
+**What Changed:** Fixed blank thumbnails for projects with videos but no still images, including Vimeo private videos.
 
 **Details:**
 - Projects with video URLs but no gallery images now correctly show video thumbnails
@@ -18,14 +18,30 @@
 - Directly uses video thumbnail URL (YouTube/Vimeo) as fallback
 - Applies to HomeView, IndexView (both list and grid modes)
 
+**Vimeo Private Video Support:**
+- Updated `getVideoId()` to capture hash parameter from private Vimeo URLs (e.g., `vimeo.com/881242794/e394444e54`)
+- Updated `fetchVideoThumbnail()` to use Vimeo OEmbed API for private videos with hash
+- Public Vimeo videos continue using v2 API (faster, no authentication)
+- OEmbed API extracts thumbnail from full URL including hash parameter
+
 **Technical:**
-- Backend (`scheduled-sync-alt.mjs`) already correctly fetches video thumbnails via `fetchVideoThumbnail()`
-- Issue was in frontend: passing `totalImages=2` caused lookup for `project-{id}-0.webp` (doesn't exist)
+- Backend (`scheduled-sync-alt.mjs`) now properly handles both public and private Vimeo URLs
+- Frontend issue fixed: passing `totalImages=2` caused lookup for `project-{id}-0.webp` (doesn't exist)
 - Now passes `totalImages=0` → immediately uses `heroImage` (video thumbnail URL)
+- Added debug logging to track thumbnail fetching success/failure
 
-**Impact:** Projects with only video links now display thumbnails correctly across all views.
+**Video URL Formats Supported:**
+- YouTube: All standard formats (`youtube.com/watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `/live/`)
+- Vimeo Public: `vimeo.com/123456` or `vimeo.com/video/123456`
+- Vimeo Private: `vimeo.com/123456/abcd1234` (with hash parameter)
 
-**Files Updated:** `components/views/HomeView.tsx`, `components/views/IndexView.tsx`, `components/common/OptimizedImage.tsx`
+**Impact:** Projects with only video links (including private Vimeo) now display thumbnails correctly across all views.
+
+**Files Updated:** 
+- `components/views/HomeView.tsx` - Fixed hero and grid thumbnails
+- `components/views/IndexView.tsx` - Fixed list and grid view thumbnails (needs update for totalImages=0)
+- `components/common/OptimizedImage.tsx` - Skip WebP lookup when totalImages=0
+- `netlify/functions/scheduled-sync-alt.mjs` - Vimeo private video support + debug logging
 
 ---
 
