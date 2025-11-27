@@ -1,7 +1,7 @@
 /**
  * Image optimization utilities
  * Handles responsive images, lazy loading, and format selection
- * Now includes Netlify CDN optimized images with Airtable fallback
+ * Now includes Cloudinary CDN with local WebP and Airtable fallbacks
  */
 
 export interface ResponsiveImageProps {
@@ -13,82 +13,151 @@ export interface ResponsiveImageProps {
   decoding?: 'async' | 'sync' | 'auto';
 }
 
+export interface CloudinaryOptions {
+  width?: number;
+  quality?: 'auto:best' | 'auto:good' | 'auto:eco' | 'auto:low' | number;
+  format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+  crop?: 'limit' | 'fill' | 'fit' | 'scale';
+  dpr?: number | 'auto';
+}
+
 /**
- * Get optimized image URL for a record
- * Returns local optimized image if available, otherwise falls back to Airtable URL
+ * Build Cloudinary URL with automatic format and quality optimization
  * 
- * ⚠️ CRITICAL: Always pass totalImages parameter for consistency
+ * @param recordId - Airtable record ID
+ * @param type - 'project' or 'journal'
+ * @param index - Image index for multiple images (default: 0)
+ * @param options - Cloudinary transformation options
+ * @returns Cloudinary CDN URL
+ */
+export const buildCloudinaryUrl = (
+  recordId: string,
+  type: 'project' | 'journal' = 'project',
+  index: number = 0,
+  options: CloudinaryOptions = {}
+): string => {
+  // Read cloud name from environment (client-side only, from meta tag or window)
+  const cloudName = typeof window !== 'undefined' 
+    ? window.CLOUDINARY_CLOUD_NAME || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+    : null;
+
+  if (!cloudName) {
+    console.warn('buildCloudinaryUrl: CLOUDINARY_CLOUD_NAME not configured');
+    return '';
+  }
+
+  // Build public ID based on naming convention
+  // Projects: portfolio-projects-{recordId}-{index}
+  // Journal: portfolio-journal-{recordId} (no index)
+  const publicId = type === 'journal' 
+    ? `portfolio-journal-${recordId}`
+    : `portfolio-projects-${recordId}-${index}`;
+
+  // Default options
+  const {
+    width = 1600,
+    quality = 'auto:good',
+    format = 'auto',
+    crop = 'limit',
+    dpr = 'auto'
+  } = options;
+
+  // Build transformation string
+  const transformations = [
+    `f_${format}`,
+    `q_${quality}`,
+    `w_${width}`,
+    `c_${crop}`,
+    `dpr_${dpr}`
+  ].join(',');
+
+  // Construct Cloudinary URL
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
+};
+
+/**
+ * Get optimized image URL with three-tier fallback strategy
+ * 
+ * Fallback chain:
+ * 1. Cloudinary CDN (if USE_CLOUDINARY=true)
+ * 2. Local WebP files (existing optimization)
+ * 3. Original Airtable URL
+ * 
+ * ⚠️ CRITICAL: Always pass totalImages parameter for local WebP consistency
  * 
  * The optimization script generates images with index suffixes when totalImages > 1:
  * - totalImages = 1: project-{id}.webp (no suffix)
  * - totalImages > 1: project-{id}-0.webp, project-{id}-1.webp, etc.
- * 
- * In practice, most projects have multiple gallery images, so the script generates
- * files with the -0, -1, -2 suffix pattern. To ensure thumbnails load correctly:
- * 
- * ✅ CORRECT (for projects with galleries):
- * getOptimizedImageUrl(project.id, project.heroImage, 'project', 0, project.gallery.length || 2)
- * 
- * ❌ INCORRECT (will try to load project-{id}.webp which doesn't exist):
- * getOptimizedImageUrl(project.id, project.heroImage, 'project', 0, 1)
  * 
  * @param recordId - Airtable record ID
  * @param fallbackUrl - Original Airtable image URL
  * @param type - 'project' or 'journal'
  * @param index - Image index for multiple images (default: 0)
  * @param totalImages - Total number of images. MUST match optimization script output.
- *                      Use project.gallery.length || 2 for safety.
+ * @param cloudinaryOptions - Optional Cloudinary transformation options
+ * @returns Object with cloudinaryUrl, localUrl, and fallbackUrl
  */
 export const getOptimizedImageUrl = (
   recordId: string,
   fallbackUrl: string,
   type: 'project' | 'journal' = 'project',
   index: number = 0,
-  totalImages: number = 1
-): string => {
-  // If no fallback URL provided, return empty string
+  totalImages: number = 1,
+  cloudinaryOptions?: CloudinaryOptions
+): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
+  // If no fallback URL provided, return empty strings
   if (!fallbackUrl) {
     console.warn(`getOptimizedImageUrl: No fallback URL provided for record ${recordId}`);
-    return '';
+    return { cloudinaryUrl: '', localUrl: '', fallbackUrl: '', useCloudinary: false };
   }
   
-  // If no record ID, return fallback URL directly
+  // If no record ID, return fallback URL only
   if (!recordId) {
-    console.warn(`getOptimizedImageUrl: No record ID provided, using fallback URL`);
-    return fallbackUrl;
+    console.warn(`getOptimizedImageUrl: No record ID provided, using fallback URL only`);
+    return { cloudinaryUrl: '', localUrl: '', fallbackUrl, useCloudinary: false };
   }
+
+  // Check feature flag (client-side only)
+  const useCloudinary = typeof window !== 'undefined'
+    ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
+    : false;
   
-  // Build optimized image path - matches optimization script naming:
-  // Single image: project-{id}.webp
-  // Multiple images: project-{id}-0.webp, project-{id}-1.webp, etc.
+  // Build Cloudinary URL
+  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
+  
+  // Build local WebP path - matches optimization script naming
   const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;
-  const optimizedPath = `/images/portfolio/${imageId}.webp`;
+  const localUrl = `/images/portfolio/${imageId}.webp`;
   
-  // In production, check if optimized image exists by attempting to use it
-  // If it 404s, browser will handle the fallback
-  // For now, we return the optimized path and rely on runtime fallback in components
-  
-  // Check if we're in browser environment
-  if (typeof window !== 'undefined') {
-    // Return optimized path - if it doesn't exist, component should handle fallback
-    return optimizedPath;
-  }
-  
-  // Server-side: return optimized path
-  return optimizedPath;
+  return {
+    cloudinaryUrl,
+    localUrl,
+    fallbackUrl,
+    useCloudinary
+  };
 };
 
 /**
- * Get fallback URL for images that aren't optimized yet
+ * Generate responsive Cloudinary URLs for srcset
+ * 
+ * @param recordId - Airtable record ID
+ * @param type - 'project' or 'journal'
+ * @param index - Image index
+ * @returns srcset string with responsive breakpoints
  */
-export const getImageWithFallback = (
+export const buildCloudinarySrcSet = (
   recordId: string,
-  fallbackUrl: string,
   type: 'project' | 'journal' = 'project',
   index: number = 0
 ): string => {
-  const optimizedUrl = getOptimizedImageUrl(recordId, fallbackUrl, type, index);
-  return optimizedUrl;
+  const breakpoints = [400, 800, 1200, 1600];
+  
+  return breakpoints
+    .map(width => {
+      const url = buildCloudinaryUrl(recordId, type, index, { width });
+      return `${url} ${width}w`;
+    })
+    .join(', ');
 };
 
 /**

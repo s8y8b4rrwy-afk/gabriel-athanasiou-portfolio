@@ -1,5 +1,13 @@
 
 
+// Window type extensions for feature flags and environment variables
+declare global {
+  interface Window {
+    USE_CLOUDINARY?: string | boolean;
+    CLOUDINARY_CLOUD_NAME?: string;
+  }
+}
+
 // Enum for filtering
 export enum ProjectType {
   ALL = 'All',
