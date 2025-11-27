@@ -143,11 +143,24 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
             : [project.heroImage];
     
     const totalImages = rawSlides.length;
-    const slides = rawSlides.map((url, index) => ({
-        original: url,
-        optimized: shouldUseProcedural ? url : getOptimizedImageUrl(project.id, url, 'project', index, totalImages),
-        isProcedural: shouldUseProcedural
-    }));
+    const slides = rawSlides.map((url, index) => {
+        if (shouldUseProcedural) {
+            return {
+                original: url,
+                optimized: url,
+                isProcedural: true
+            };
+        }
+        const imageUrls = getOptimizedImageUrl(project.id, url, 'project', index, totalImages);
+        const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
+        return {
+            original: url,
+            optimized: primaryUrl,
+            fallbackUrl: imageUrls.fallbackUrl,
+            secondaryUrl: imageUrls.useCloudinary ? imageUrls.localUrl : imageUrls.fallbackUrl,
+            isProcedural: false
+        };
+    });
 
     useEffect(() => { 
         setIsPlaying(false);
@@ -195,7 +208,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
             <SEO 
                 title={project.title} 
                 description={project.description} 
-                image={project.heroImage ? getOptimizedImageUrl(project.id, project.heroImage, 'project', 0) : undefined}
+                image={project.heroImage ? (() => {
+                    const imageUrls = getOptimizedImageUrl(project.id, project.heroImage, 'project', 0);
+                    return imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.fallbackUrl;
+                })() : undefined}
                 type={isNarrative ? 'video.movie' : 'video.other'}
                 project={project}
             />
@@ -269,7 +285,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             onError={(e) => { 
                                 // Don't fallback if it's procedural (data URL won't fail)
                                 if (!slide.isProcedural) {
-                                    e.currentTarget.src = slide.original;
+                                    // Try fallback URLs in sequence
+                                    if (e.currentTarget.src === slide.optimized && slide.secondaryUrl) {
+                                        e.currentTarget.src = slide.secondaryUrl;
+                                    } else if (slide.fallbackUrl && e.currentTarget.src !== slide.fallbackUrl) {
+                                        e.currentTarget.src = slide.fallbackUrl;
+                                    } else {
+                                        e.currentTarget.src = slide.original;
+                                    }
                                 }
                             }}
                             className={`w-full h-full object-cover ease-linear will-change-transform
@@ -474,12 +497,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     ))}
 
                     {project.gallery && project.gallery.map((img, i) => {
-                        const optimizedUrl = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length);
+                        const imageUrls = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length);
+                        const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
                         return (
                             <div key={i} className="w-full overflow-hidden">
                                 <img 
-                                    src={optimizedUrl}
-                                    onError={(e) => { e.currentTarget.src = img; }}
+                                    src={primaryUrl}
+                                    onError={(e) => { 
+                                        // Try fallback URLs in sequence
+                                        if (e.currentTarget.src === primaryUrl) {
+                                            e.currentTarget.src = imageUrls.useCloudinary ? imageUrls.localUrl : imageUrls.fallbackUrl;
+                                        } else if (e.currentTarget.src !== imageUrls.fallbackUrl) {
+                                            e.currentTarget.src = imageUrls.fallbackUrl;
+                                        }
+                                    }}
                                     loading="lazy"
                                     className={`w-full transition ${THEME.animation.superSlow} ${THEME.animation.ease} hover:scale-[1.01] will-change-transform`} 
                                     alt={`${project.title} - Behind the scenes image ${i + 1}`} 
@@ -511,9 +542,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {(() => {
                         const hasHero = !!nextProject.heroImage;
                         const shouldProcedural = !hasHero && (!nextProject.gallery || nextProject.gallery.length === 0) && !nextProject.videoUrl;
-                        const src = hasHero && nextProject.heroImage
-                          ? getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0)
-                          : generateProceduralThumbnail({
+                        let src;
+                        if (hasHero && nextProject.heroImage) {
+                            const imageUrls = getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0);
+                            src = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
+                        } else {
+                            src = generateProceduralThumbnail({
                               title: nextProject.title,
                               year: nextProject.year,
                               type: nextProject.type,
@@ -522,6 +556,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                               showTitle: false,
                               showMetadata: false
                             });
+                        }
                         return (
                           <img 
                             src={src}

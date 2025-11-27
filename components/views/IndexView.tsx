@@ -134,7 +134,15 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     onClick={() => {
                                         navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
                                     }}
-                                    onMouseEnter={() => onHover(p.videoUrl ? { url: getOptimizedImageUrl(p.id, p.heroImage, 'project', 0), fallback: p.heroImage } : { url: p.heroImage, fallback: null })}
+                                    onMouseEnter={() => {
+                                        if (p.videoUrl) {
+                                            const imageUrls = getOptimizedImageUrl(p.id, p.heroImage, 'project', 0);
+                                            const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
+                                            onHover({ url: primaryUrl, fallback: p.heroImage });
+                                        } else {
+                                            onHover({ url: p.heroImage, fallback: null });
+                                        }
+                                    }}
                                     onMouseLeave={() => onHover({ url: null, fallback: null })}
                                     className={`group grid grid-cols-12 ${THEME.filmography.list.rowPadding} border-b border-white/10 items-center hover:bg-white/5 transition relative cursor-pointer gap-2 md:gap-0 animate-fade-in-up opacity-0`}
                                     style={{ animationDelay: `${i * staggerDelay}ms`, animationFillMode: 'forwards' }}

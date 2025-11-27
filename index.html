@@ -43,6 +43,13 @@
     <!-- Image optimization: preload hero images -->
     <link rel="prefetch" as="image" href="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1920">
 
+    <!-- Cloudinary Configuration -->
+    <script>
+        // Inject Cloudinary config for client-side image optimization
+        window.USE_CLOUDINARY = 'true';
+        window.CLOUDINARY_CLOUD_NAME = 'date24ay6';
+    </script>
+
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
