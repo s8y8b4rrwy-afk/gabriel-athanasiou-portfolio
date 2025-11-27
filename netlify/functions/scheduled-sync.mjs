@@ -1,6 +1,7 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
-import { writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile, mkdir, existsSync } from 'fs/promises';
+import { existsSync as existsSyncSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createHash } from 'crypto';
@@ -764,25 +765,38 @@ const syncAirtableData = async () => {
     });
     
     // 11. Generate sitemap and share-meta files
+    // Note: In Netlify Functions, these are served dynamically via sitemap.js function
+    // We store them in /tmp for caching, but don't fail if directory doesn't exist
     console.log('Generating sitemap.xml...');
     const sitemap = generateSitemap(projects, posts);
-    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-    await writeFile(sitemapPath, sitemap, 'utf-8');
-    console.log(`✅ Sitemap written to ${sitemapPath}`);
     
     console.log('Generating share-meta.json...');
     const shareMeta = generateShareMeta(projects, posts, config);
-    const shareMetaPath = path.join(process.cwd(), 'public', 'share-meta.json');
-    await writeFile(shareMetaPath, JSON.stringify(shareMeta, null, 2), 'utf-8');
-    console.log(`✅ Share-meta written to ${shareMetaPath}`);
     
-    // Generate hash for deployment trigger
-    const hash = createHash('sha256')
-      .update(JSON.stringify(shareMeta.projects) + JSON.stringify(shareMeta.posts))
-      .digest('hex');
-    const hashPath = path.join(process.cwd(), 'public', 'share-meta.hash');
-    await writeFile(hashPath, hash, 'utf-8');
-    console.log(`✅ Hash written: ${hash}`);
+    // Try to write to public directory (local dev) or /tmp (deployed function)
+    try {
+      const baseDir = existsSyncSync(path.join(process.cwd(), 'public')) 
+        ? path.join(process.cwd(), 'public')
+        : '/tmp';
+      
+      const sitemapPath = path.join(baseDir, 'sitemap.xml');
+      await writeFile(sitemapPath, sitemap, 'utf-8');
+      console.log(`✅ Sitemap written to ${sitemapPath}`);
+      
+      const shareMetaPath = path.join(baseDir, 'share-meta.json');
+      await writeFile(shareMetaPath, JSON.stringify(shareMeta, null, 2), 'utf-8');
+      console.log(`✅ Share-meta written to ${shareMetaPath}`);
+      
+      // Generate hash for deployment trigger
+      const hash = createHash('sha256')
+        .update(JSON.stringify(shareMeta.projects) + JSON.stringify(shareMeta.posts))
+        .digest('hex');
+      const hashPath = path.join(baseDir, 'share-meta.hash');
+      await writeFile(hashPath, hash, 'utf-8');
+      console.log(`✅ Hash written: ${hash}`);
+    } catch (writeError) {
+      console.warn('⚠️ Could not write sitemap/share-meta to disk (non-critical):', writeError.message);
+    }
     
     // 12. Sync images to Cloudinary (if enabled and credentials available)
     let cloudinaryMapping = null;
