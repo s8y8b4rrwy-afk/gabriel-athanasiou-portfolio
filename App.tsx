@@ -4,6 +4,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Project, BlogPost, HomeConfig } from './types';
 import { cmsService } from './services/cmsService';
 import { analyticsService } from './services/analyticsService';
+import { useBackgroundDataSync } from './hooks/useBackgroundDataSync';
 import { Navigation } from './components/Navigation';
 import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
@@ -38,6 +39,10 @@ export default function App() {
 
   const location = useLocation();
   const previousPathnameRef = useRef(location.pathname);
+
+  // Enable background sync to check for updates every 30 minutes
+  // When updates are found, cache is invalidated and new data loads on next navigation
+  useBackgroundDataSync(true, 30);
 
   useEffect(() => {
     const init = async () => {

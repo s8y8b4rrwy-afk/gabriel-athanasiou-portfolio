@@ -5,6 +5,16 @@ publish = "dist"
  # Only build when commit message contains [deploy] or [force-deploy]
  ignore = "bash scripts/ignore-netlify-build.sh"
 
+# Enable Netlify Blobs and KV storage
+[context.production]
+  [context.production.environment]
+    NETLIFY_BLOBS_CONTEXT = "production"
+
+# Scheduled function to sync Airtable data daily
+[[functions]]
+  name = "scheduled-sync"
+  schedule = "0 0 * * *"  # Run daily at midnight UTC
+
 # Cache optimized images between builds
 [[plugins]]
   package = "netlify-plugin-cache"

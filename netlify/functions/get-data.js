@@ -1,257 +1,68 @@
 import { builder } from '@netlify/functions';
-import Airtable from 'airtable';
-import { getVideoId, resolveVideoUrl, getVideoThumbnail } from '../../utils/videoHelpers.mjs';
-import { normalizeTitle, parseCreditsText } from '../../utils/textHelpers.mjs';
-import { slugify, makeUniqueSlug } from '../../utils/slugify.mjs';
+import { getStore } from '@netlify/blobs';
 
-const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop";
+const KV_DATA_KEY = 'airtable-data';
 
 const getDataHandler = async (event, context) => {
-    const token = process.env.AIRTABLE_API_KEY || process.env.VITE_AIRTABLE_TOKEN;
-    const baseId = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID;
+    // Initialize KV store
+    const kvStore = getStore('portfolio-kv');
 
-    if (!token || !baseId) {
-        return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Missing Keys' }), ttl: 300 };
-    }
-    const base = new Airtable({ apiKey: token }).base(baseId);
+    // Initialize KV store
+    const kvStore = getStore('portfolio-kv');
 
   try {
-    const projectRecords = await base('Projects').select().all();
+    // Fetch cached data from KV storage
+    const cachedDataStr = await kvStore.get(KV_DATA_KEY, { type: 'text' });
     
-    // Awards Map
-    let awardsMap = {};
-    try {
-        let awardRecords = [];
-        try { awardRecords = await base('Awards').select().all(); } catch (e) { awardRecords = await base('Festivals').select().all(); }
-        awardRecords.forEach(r => { awardsMap[r.id] = r.get('Name') || r.get('Award') || 'Unknown'; });
-    } catch (e) {}
-
-    // Clients Map - Try Client Book first, then Clients
-    let clientsMap = {};
-    try {
-        let clientRecords = [];
-        try { 
-            clientRecords = await base('Client Book').select().all(); 
-        } catch (e) { 
-            clientRecords = await base('Clients').select().all(); 
-        }
-        
-        clientRecords.forEach(r => { 
-            // Prioritize Company Name, REMOVED Name fallback
-            clientsMap[r.id] = r.get('Company Name') || r.get('Client') || r.get('Company') || 'Unknown'; 
-        });
-    } catch (e) {}
-
-    let journalRecords = [];
-    try { journalRecords = await base('Journal').select({ sort: [{ field: 'Date', direction: 'desc' }] }).all(); } catch (e) {}
-
-    let globalSettings = null;
-    try { const settings = await base('Settings').select({ maxRecords: 1 }).firstPage(); globalSettings = settings[0]; } catch (e) {}
-    
-    // Process Allowed Roles Filter
-    const allowedRolesRaw = globalSettings?.get('Allowed Roles');
-    const allowedRoles = allowedRolesRaw ? (Array.isArray(allowedRolesRaw) ? allowedRolesRaw : [allowedRolesRaw]) : [];
-
-    const publishedRecords = projectRecords.filter(r => {
-        if (!r.get('Feature')) return false;
-        
-        // Allowed Roles Filter
-        if (allowedRoles.length > 0) {
-            const projectRoles = r.get('Role') || [];
-            const pRoles = Array.isArray(projectRoles) ? projectRoles : [projectRoles];
-            return pRoles.some(role => allowedRoles.includes(role));
-        }
-        return true;
-    });
-
-    // Process Projects with Async Video Resolution
-    const projects = await Promise.all(publishedRecords.map(async record => {
-      
-        // External Links Logic
-        const rawExternalLinks = record.get('External Links') || '';
-        const extItems = rawExternalLinks.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
-        
-        const extLinks = [];
-        const extVideos = [];
-        
-        for (const item of extItems) {
-            if (!item.startsWith('http')) continue;
-            const resolved = await resolveVideoUrl(item);
-            const vidInfo = getVideoId(resolved);
-            if (vidInfo.type) {
-                extVideos.push(resolved);
-            } else {
-                 let label = "External Link";
-                try { 
-                    const hostname = new URL(item).hostname;
-                    const core = hostname.replace('www.', '').split('.')[0];
-                    if (core === 'imdb') label = 'IMDb';
-                    else if (core === 'youtube') label = 'YouTube';
-                    else if (core === 'linkedin') label = 'LinkedIn';
-                    else if (core === 'instagram') label = 'Instagram';
-                    else if (core === 'vimeo') label = 'Vimeo';
-                    else if (core === 'facebook') label = 'Facebook';
-                    else label = core.charAt(0).toUpperCase() + core.slice(1);
-                } catch(e){}
-                extLinks.push({ label, url: item });
-            }
-        }
-      
-      const rawVideoField = record.get('Video URL') || '';
-      const rawVideoUrls = rawVideoField.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
-      
-      const allVideoUrls = await Promise.all(rawVideoUrls.map(u => resolveVideoUrl(u)));
-      const videoUrl = allVideoUrls.length > 0 ? allVideoUrls[0] : '';
-      const extraVideoFieldUrls = allVideoUrls.slice(1);
-
-      const galleryField = record.get('Gallery');
-      const galleryUrls = galleryField ? galleryField.map(img => img.url) : [];
-
-      // FETCH THUMBNAIL ASYNC
-      const autoThumbnail = await fetchVideoThumbnail(videoUrl);
-
-      const heroImage = galleryUrls.length > 0 ? galleryUrls[0] : (autoThumbnail || PLACEHOLDER_IMAGE);
-
-      // CREDITS - Filter roles to only show Allowed Roles from Settings
-      const allRoles = record.get('Role') || [];
-      const myRoles = allRoles
-          .filter(r => allowedRoles.length === 0 || allowedRoles.includes(r))
-          .map(r => ({ role: r, name: 'Gabriel Athanasiou' }));
-      let extraCredits = [];
-      const rawCreditsText = record.get('Credits Text') || record.get('Credits');
-      if (rawCreditsText) {
-          extraCredits = parseCreditsText(rawCreditsText);
-      }
-      const credits = [...myRoles, ...extraCredits];
-      
-      const rawDate = record.get('Release Date') || record.get('Work Date');
-      const year = rawDate ? rawDate.substring(0, 4) : '';
-
-      let type = record.get('Project Type') || record.get('Kind') || 'Uncategorized';
-      const typeLower = type ? type.toLowerCase() : '';
-      if (typeLower.includes('short') || typeLower.includes('feature') || typeLower.includes('narrative')) type = 'Narrative';
-      else if (typeLower.includes('commercial') || typeLower.includes('tvc') || typeLower.includes('brand')) type = 'Commercial';
-      else if (typeLower.includes('music')) type = 'Music Video';
-      else if (typeLower.includes('documentary')) type = 'Documentary';
-      else type = 'Uncategorized';
-      
-      // Genre logic
-      let genres = record.get('Genre') || [];
-
-      const festivalsField = record.get('Festivals');
-      let awards = [];
-      if (festivalsField) {
-          if (Array.isArray(festivalsField)) awards = festivalsField.map(id => awardsMap[id] || id);
-          else if (typeof festivalsField === 'string') awards = festivalsField.split('\n').filter(s => s.trim().length > 0);
-          else awards = [String(festivalsField)];
-      }
-
-      // Client Resolution
-      let clientName = '';
-      const clientField = record.get('Client');
-      if (Array.isArray(clientField)) {
-        clientName = clientField.map(id => clientsMap[id] || id).join(', ');
-      } else if (clientField) {
-        clientName = clientsMap[clientField] || clientField;
-      }
-      
-      const brandName = record.get('Brand') || '';
-
-      const linkedArticleId = record.get('Related Article')?.[0] || record.get('Journal')?.[0] || record.get('Related Project')?.[0] || null;
-
-      return {
-        id: record.id,
-        title: normalizeTitle(record.get('Name')),
-        type: type,
-        genre: genres,
-        client: clientName,
-        brand: brandName,
-        year: year,
-        description: record.get('About') || '',
-        isFeatured: !!record.get('Front Page'),
-        heroImage: heroImage,
-        gallery: galleryUrls,
-        videoUrl: videoUrl,
-        additionalVideos: [...extraVideoFieldUrls, ...extVideos],
-        awards: awards,
-        credits: credits, 
-        externalLinks: extLinks,
-        relatedArticleId: linkedArticleId
+    if (!cachedDataStr) {
+      // No data available yet - scheduled sync hasn't run
+      return { 
+        statusCode: 503, 
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          'Retry-After': '300'
+        },
+        body: JSON.stringify({ 
+          error: 'Data not yet synced', 
+          message: 'Please wait for initial sync to complete'
+        })
       };
-    }));
-
-    projects.sort((a, b) => {
-        if (!a.year) return 1;
-        if (!b.year) return -1;
-        return b.year.localeCompare(a.year);
-    });
-
-    const posts = journalRecords.map(record => ({
-      id: record.id,
-      title: record.get('Title'),
-      date: record.get('Date'),
-      tags: record.get('Tags') || [],
-      content: record.get('Content') || '',
-      imageUrl: record.get('Cover Image')?.[0]?.url || '',
-      relatedProjectId: record.get('Related Project')?.[0] || record.get('Projects')?.[0] || null
-    }));
+    }
     
-    const defaultBio = "Gabriel Athanasiou is a director and visual artist based between London and Athens. With a background in fine art photography, his work is characterized by a rigorous attention to composition and an emotive, textural approach to light.\n\nHis narrative work explores themes of memory and temporal distortion, while his commercial portfolio includes campaigns for global luxury brands. He is currently developing his first feature film.";
-    const defaultImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000";
-
-    const config = {
-      showreel: {
-        enabled: !!globalSettings?.get('Showreel Enabled'),
-        videoUrl: globalSettings?.get('Showreel URL') || '',
-        placeholderImage: globalSettings?.get('Showreel Placeholder')?.[0]?.url || ''
+    const cachedData = JSON.parse(cachedDataStr);
+    
+    // Return cached data from CDN-backed storage
+    return { 
+      statusCode: 200, 
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=300',
+        'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
+        'X-Data-Version': cachedData.version || '1.0',
+        'X-Last-Updated': cachedData.lastUpdated || 'unknown'
       },
-      contact: {
-        email: globalSettings?.get('Contact Email') || '',
-        phone: globalSettings?.get('Contact Phone') || '',
-        repUK: globalSettings?.get('Rep UK') || '',
-        repUSA: globalSettings?.get('Rep USA') || '',
-        instagram: globalSettings?.get('Instagram URL') || '',
-        vimeo: globalSettings?.get('Vimeo URL') || '',
-        linkedin: globalSettings?.get('LinkedIn URL') || ''
-      },
-      about: {
-          bio: globalSettings?.get('Bio') || globalSettings?.get('Bio Text') || defaultBio,
-          profileImage: globalSettings?.get('About Image')?.[0]?.url || defaultImage
-      },
-      allowedRoles: allowedRoles
+      body: JSON.stringify({ 
+        projects: cachedData.projects, 
+        posts: cachedData.posts, 
+        config: cachedData.config 
+      }),
+      ttl: 3600 // Cache for 1 hour at edge
     };
 
-    // Attach slugs to projects and posts
-    try {
-        const used = new Set();
-        projects.forEach(p => { p.slug = makeUniqueSlug((p.title || p.id) + (p.year ? ` ${p.year}` : ''), used, p.id); });
-        posts.forEach(post => { post.slug = makeUniqueSlug((post.title || post.id) + (post.date ? ` ${post.date}` : ''), used, post.id); });
-    } catch (e) {
-        // non-fatal
-    }
-
-        return { 
-            statusCode: 200, 
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Cache-Control': 'public, max-age=300',
-                'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=900, stale-while-revalidate=86400'
-            },
-            body: JSON.stringify({ projects, posts, config }),
-            ttl: 900
-        };
-
   } catch (error) {
-        return { 
-            statusCode: 500, 
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Cache-Control': 'public, max-age=120',
-                'Netlify-CDN-Cache-Control': 'public, max-age=0, s-maxage=120'
-            },
-            body: JSON.stringify({ error: 'Failed to fetch' }),
-            ttl: 120
-        };
+    console.error('Failed to fetch cached data:', error);
+    return { 
+      statusCode: 500, 
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify({ 
+        error: 'Failed to fetch cached data',
+        message: error.message
+      })
+    };
   }
 };
 
