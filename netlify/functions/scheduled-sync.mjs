@@ -1,5 +1,12 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
+import { writeFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { createHash } from 'crypto';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ==========================================
 // CONFIGURATION
@@ -173,6 +180,77 @@ const parseExternalLinksData = (rawText) => {
   }
   
   return { links, videos };
+};
+
+// ==========================================
+// SITEMAP GENERATION
+// ==========================================
+
+const generateSitemap = (projects, posts) => {
+  const baseUrl = 'https://directedbygabriel.com';
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+  // Home page
+  xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${currentDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+
+  // Main pages
+  xml += `  <url>\n    <loc>${baseUrl}/work</loc>\n    <lastmod>${currentDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${baseUrl}/journal</loc>\n    <lastmod>${currentDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${baseUrl}/about</loc>\n    <lastmod>${currentDate}</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+
+  // Projects
+  projects.forEach(project => {
+    const lastmod = project.year ? `${project.year}-01-01` : currentDate;
+    const isNarrative = project.type === 'Narrative';
+    const priority = isNarrative ? '0.9' : (project.isFeatured ? '0.8' : '0.7');
+    
+    xml += `  <url>\n    <loc>${baseUrl}/work/${project.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`;
+  });
+
+  // Journal posts
+  posts.forEach(post => {
+    const lastmod = post.date || currentDate;
+    xml += `  <url>\n    <loc>${baseUrl}/journal/${post.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+  });
+
+  xml += '</urlset>';
+  return xml;
+};
+
+// ==========================================
+// SHARE META GENERATION
+// ==========================================
+
+const generateShareMeta = (projects, posts, config) => {
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    projects: projects.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: (p.description || '').slice(0, 220),
+      image: p.heroImage || '',
+      type: p.type,
+      year: p.year
+    })),
+    posts: posts.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: (p.content || '').replace(/\s+/g, ' ').trim().slice(0, 220),
+      image: p.imageUrl || '',
+      type: 'article',
+      date: p.date
+    })),
+    config: {
+      defaultOgImage: config.defaultOgImage || ''
+    }
+  };
+  
+  return manifest;
 };
 
 // ==========================================
@@ -439,7 +517,28 @@ const syncAirtableData = async () => {
       post.slug = makeUniqueSlug(base + (post.date ? ` ${post.date}` : ''), post.id);
     });
     
-    // 11. Return processed data for CDN caching
+    // 11. Generate sitemap and share-meta files
+    console.log('Generating sitemap.xml...');
+    const sitemap = generateSitemap(projects, posts);
+    const sitemapPath = path.join(__dirname, '..', '..', 'public', 'sitemap.xml');
+    await writeFile(sitemapPath, sitemap, 'utf-8');
+    console.log(`✅ Sitemap written to ${sitemapPath}`);
+    
+    console.log('Generating share-meta.json...');
+    const shareMeta = generateShareMeta(projects, posts, config);
+    const shareMetaPath = path.join(__dirname, '..', '..', 'public', 'share-meta.json');
+    await writeFile(shareMetaPath, JSON.stringify(shareMeta, null, 2), 'utf-8');
+    console.log(`✅ Share-meta written to ${shareMetaPath}`);
+    
+    // Generate hash for deployment trigger
+    const hash = createHash('sha256')
+      .update(JSON.stringify(shareMeta.projects) + JSON.stringify(shareMeta.posts))
+      .digest('hex');
+    const hashPath = path.join(__dirname, '..', '..', 'public', 'share-meta.hash');
+    await writeFile(hashPath, hash, 'utf-8');
+    console.log(`✅ Hash written: ${hash}`);
+    
+    // 12. Return processed data for CDN caching
     console.log('=== Sync Complete ===');
     console.log(`Projects: ${projects.length}`);
     console.log(`Posts: ${posts.length}`);

@@ -308,7 +308,8 @@ fetchVideoThumbnail(url: string): Promise<string>
 - `services/cmsService.ts` - Data fetching and processing
 - `components/VideoEmbed.tsx` - Video player component
 - `netlify/functions/get-data.js` - Server-side data API
-- `scripts/generate-share-meta.mjs` - Build-time manifest
+- `netlify/functions/scheduled-sync.mjs` - Scheduled data sync
+- `scripts/generate-share-meta.mjs` - Legacy build script (now in scheduled-sync)
 
 **Why Both Versions?**
 - `.ts` version uses browser `fetch()` API
@@ -339,8 +340,9 @@ calculateReadingTime(content: string): string
 - `services/cmsService.ts` - Title normalization, credits parsing
 - `netlify/functions/get-data.js` - Server-side processing
 - `netlify/functions/sitemap.js` - Sitemap generation
+- `netlify/functions/scheduled-sync.mjs` - Scheduled data sync
 - `netlify/edge-functions/meta-rewrite.ts` - Dynamic meta tags
-- `scripts/generate-share-meta.mjs` - Build-time manifest
+- `scripts/generate-share-meta.mjs` - Legacy build script (now in scheduled-sync)
 
 #### C. Slug Helpers (`utils/slugify.ts` / `.mjs`)
 
@@ -506,7 +508,7 @@ npm run test:images
 **Important:** Always pass optimized image URLs to the `image` prop using `getOptimizedImageUrl()`. This ensures social media previews (Facebook, Twitter, LinkedIn) use smaller WebP files instead of large Airtable JPEGs.
 
 **Meta Generation Files:**
-- `scripts/generate-share-meta.mjs` - Generates `/public/share-meta.json` at build time
+- `scripts/generate-share-meta.mjs` - Legacy script (now integrated into scheduled-sync.mjs)
 - `netlify/edge-functions/meta-rewrite.ts` - Injects meta tags for dynamic routes (SSR-like)
 
 ---
@@ -692,8 +694,8 @@ gabriel-athanasiou-portfolio--TEST/
 ├── scripts/
 │   ├── optimize-images.mjs    # Image optimization (build-time)
 │   ├── test-image-fetch.mjs   # Test Airtable images
-│   ├── generate-share-meta.mjs # Generate manifest
-│   │                          # 🔄 Now imports from utils/*.mjs
+│   ├── generate-share-meta.mjs # Legacy: Generate manifest (now in scheduled-sync)
+│   ├── generate-sitemap.mjs   # Legacy: Generate sitemap (now in scheduled-sync)
 │   └── ignore-netlify-build.sh # Selective deployment
 │
 ├── netlify/
@@ -752,7 +754,7 @@ npm run preview            # Preview production build locally
 # Building
 npm run build              # Full production build (with image optimization)
 npm run optimize:images    # Run image optimization only
-npm run build:content      # Generate share-meta.json only
+npm run build:content      # Legacy: Generate share-meta.json (now in scheduled-sync)
 
 # Testing
 npm run test:images        # Verify Airtable image URLs
@@ -866,7 +868,7 @@ Optional: Add reason (e.g., "Fixed broken video link")
 ### Build Process
 
 1. `npm run optimize:images` → Downloads & optimizes images to `/public/images/portfolio/`
-2. `npm run build:content` → Generates `/public/share-meta.json` manifest
+2. Sitemap & Share-meta → Generated daily by `scheduled-sync.mjs` (not during build)
 3. `vite build` → Bundles React app to `/dist/`
 4. Netlify deploys `/dist/` to CDN
 5. Netlify Functions deployed to serverless endpoints

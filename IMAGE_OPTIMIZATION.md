@@ -97,13 +97,11 @@ The optimization script generates files with **index suffixes** when a project h
    - Optimizes to WebP
    - Saves to `/public/images/portfolio/`
 
-2. **Content Generation** (`npm run build:content`)
-   - Generates share metadata
-   - Creates sitemap
-
-3. **Vite Build** (`vite build`)
+2. **Vite Build** (`vite build`)
    - Bundles application
    - Includes optimized images in `dist/`
+
+**Note:** Sitemap and share-meta generation now run via scheduled sync (daily at midnight UTC) instead of during build time. See `netlify/functions/scheduled-sync.mjs` for details.
 
 ### Example Output:
 
