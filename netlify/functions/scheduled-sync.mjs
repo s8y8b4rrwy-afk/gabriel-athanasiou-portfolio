@@ -316,10 +316,11 @@ const normalizeTitle = (title) => {
 };
 
 const calculateReadingTime = (text) => {
-  if (!text) return 1;
+  if (!text) return '1 min read';
   const words = text.trim().split(/\s+/).length;
   const minutes = Math.ceil(words / 200);
-  return Math.max(1, minutes);
+  const mins = Math.max(1, minutes);
+  return `${mins} min read`;
 };
 
 const parseCreditsText = (rawText) => {
