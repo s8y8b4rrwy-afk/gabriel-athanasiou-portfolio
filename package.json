@@ -7,6 +7,7 @@
     "dev": "vite",
     "optimize:images": "node scripts/optimize-images.mjs",
     "test:images": "node scripts/test-image-fetch.mjs",
+    "test:cloudinary": "node scripts/test-cloudinary.mjs",
     "migrate:cloudinary": "node scripts/migrate-to-cloudinary.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
