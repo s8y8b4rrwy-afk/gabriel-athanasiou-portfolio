@@ -12,12 +12,16 @@ interface AboutViewProps {
 export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
     const [showContent, setShowContent] = React.useState(false);
     React.useEffect(() => {
-        setShowContent(false);
-        const timer = setTimeout(() => setShowContent(true), 80); // 80ms delay
-        return () => clearTimeout(timer);
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
     }, []);
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen flex flex-col justify-between transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
             {/* Scroll Top on Mount */}
             <span className="hidden" ref={() => window.scrollTo(0,0)}></span>
             

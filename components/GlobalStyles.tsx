@@ -30,6 +30,12 @@ export const GlobalStyles: React.FC = () => {
         color: ${THEME.colors.textMain};
       }
       
+      /* Loading screen gradient animation */
+      @keyframes loadingShimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      
       /* Procedural hero animation: subtle evolving color + gradient drift */
       @keyframes heroHue {
         0% { filter: hue-rotate(0deg) saturate(1.05) contrast(1.03); }

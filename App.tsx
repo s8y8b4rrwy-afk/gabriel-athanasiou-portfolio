@@ -10,6 +10,7 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
+import { THEME } from './theme';
 // import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
 // Lazy load view components for code splitting
@@ -63,7 +64,7 @@ export default function App() {
   useEffect(() => {
     if (!loading) {
       setShowContent(false);
-      const timer = setTimeout(() => setShowContent(true), 80); // 80ms delay
+      const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
       return () => clearTimeout(timer);
     } else {
       setShowContent(false);
@@ -77,10 +78,35 @@ export default function App() {
     analyticsService.trackPageView(location.pathname, pageTitle);
   }, [location.pathname]);
 
-  if (loading || !showContent) return <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">Loading...</div>;
+  if (loading || !showContent) {
+    return (
+      <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
+        {THEME.pageTransitions.loading.showText && (
+          <div className="text-white/20 tracking-widest text-xs uppercase animate-pulse relative z-10">
+            Loading...
+          </div>
+        )}
+        {THEME.pageTransitions.loading.showGradient && (
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(
+                90deg,
+                ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
+                ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
+                ${THEME.pageTransitions.loading.gradientColors[2]} 100%
+              )`,
+              backgroundSize: '200% 100%',
+              animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+    <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
       <GlobalStyles />
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
 
@@ -88,8 +114,27 @@ export default function App() {
 
       <main>
         <Suspense fallback={
-          <div className="h-screen w-full bg-bg-main flex items-center justify-center text-white/20 tracking-widest text-xs uppercase animate-pulse">
-            Loading...
+          <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
+            {THEME.pageTransitions.loading.showText && (
+              <div className="text-white/20 tracking-widest text-xs uppercase animate-pulse relative z-10">
+                Loading...
+              </div>
+            )}
+            {THEME.pageTransitions.loading.showGradient && (
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(
+                    90deg,
+                    ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
+                    ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
+                    ${THEME.pageTransitions.loading.gradientColors[2]} 100%
+                  )`,
+                  backgroundSize: '200% 100%',
+                  animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
+                }}
+              />
+            )}
           </div>
         }>
           <PageTransition>

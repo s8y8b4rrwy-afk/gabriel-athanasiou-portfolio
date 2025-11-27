@@ -261,11 +261,34 @@ export const THEME = {
         size: "w-10 h-10 md:w-12 md:h-12",
       },
       
-      // Custom Cursor (Desktop only)
-      cursor: {
-        size: "w-[300px]",
-        radius: "rounded-none", // or "rounded-lg"
-        fadeOutDuration: "duration-300", // Fade in/out animation speed
-      }
+    // Custom Cursor (Desktop only)
+    cursor: {
+      size: "w-[300px]",
+      radius: "rounded-none", // or "rounded-lg"
+      fadeOutDuration: "duration-300", // Fade in/out animation speed
     }
-  };
+  },
+
+  // --------------------------------------------------------------------------
+  // 10. PAGE TRANSITIONS & LOADING
+  // --------------------------------------------------------------------------
+  pageTransitions: {
+    // Global fade-in effect when pages load
+    enabled: true,                    // Toggle fade-in globally
+    duration: "duration-200",         // Fade-in speed: "duration-300", "duration-500", "duration-700", "duration-1000"
+    delay: 100,                        // Delay in ms before fade starts (prevents flash)
+    
+    // Initial app loading screen
+    loading: {
+      showText: false,                // Show "Loading..." text?
+      showGradient: true,             // Show animated gradient background?
+      gradientColors: [               // Gradient color stops (if showGradient = true)
+        "rgba(255, 255, 255, 0.02)",
+        "rgba(255, 255, 255, 0.06)",
+        "rgba(255, 255, 255, 0.02)"
+      ],
+      animationDuration: "4s",        // Speed of gradient animation
+      animationEasing: "ease-in-out", // Easing function: "linear", "ease-in-out", "ease-out"
+    }
+  }
+};

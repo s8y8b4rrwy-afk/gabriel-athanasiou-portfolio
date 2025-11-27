@@ -81,6 +81,17 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const navigate = useNavigate();
     const location = useLocation();
     
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
+    }, []);
+    
     // Find project based on URL param
     const project = allProjects.find(p => (p.slug ? p.slug === slug : p.id === slug));
 
@@ -204,7 +215,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const visibleCredits = creditsExpanded ? project.credits : project.credits.slice(0, THEME.projectDetail.credits.initialVisibleCount);
 
     return (
-        <div className="bg-bg-main pb-0">
+        <div className={`bg-bg-main pb-0 transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             <SEO 
                 title={project.title} 
                 description={project.description} 

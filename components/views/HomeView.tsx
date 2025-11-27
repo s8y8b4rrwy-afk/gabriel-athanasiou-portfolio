@@ -26,6 +26,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
+    }, []);
+
     const showShowreel = config.showreel?.enabled && config.showreel.videoUrl;
     const featuredProjects = projects.filter(p => p.isFeatured);
     
@@ -35,7 +46,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     const featuredPost = posts[0];
 
     return (
-        <section className="w-full">
+        <section className={`w-full transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             {/* HERO SECTION */}
             <div className={`relative w-full h-[70vh] md:h-[80vh] lg:${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
                 {showShowreel ? (

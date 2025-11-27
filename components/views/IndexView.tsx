@@ -26,6 +26,17 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
+    }, []);
+
     // Session Storage Persistence
     const [filter, setFilter] = useState<string>(() => sessionStorage.getItem('filmographyFilter') || THEME.filmography.defaultTab);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => (sessionStorage.getItem('filmographyView') as 'list' | 'grid') || 'grid');
@@ -71,7 +82,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     const showCols = THEME.filmography.list;
 
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-center mb-20 gap-8">
                     {/* Category Filter */}

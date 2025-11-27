@@ -22,6 +22,17 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
+    }, []);
+
     const post = allPosts.find(p => (p.slug ? p.slug === slug : p.id === slug));
 
     // Scroll to top on slug change (browser back/forward)
@@ -57,7 +68,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
     }
 
     return (
-        <article className="bg-bg-main min-h-screen">
+        <article className={`bg-bg-main min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             <SEO 
                 title={post.title} 
                 description={post.content.substring(0, 150)} 

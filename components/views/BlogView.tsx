@@ -24,6 +24,17 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [showContent, setShowContent] = React.useState(false);
+    React.useEffect(() => {
+        if (THEME.pageTransitions.enabled) {
+            setShowContent(false);
+            const timer = setTimeout(() => setShowContent(true), THEME.pageTransitions.delay);
+            return () => clearTimeout(timer);
+        } else {
+            setShowContent(true);
+        }
+    }, []);
+
     const [filter, setFilter] = useState<string>("All");
     
     // Sort "Instagram" to the end of the tags list if present, but keep "All" first
@@ -38,7 +49,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     const displayPosts = filter === "All" ? posts : posts.filter(p => p.tags.includes(filter));
 
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen`}>
+        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-24">
                      <h1 className={`${THEME.typography.h1} mb-8 mix-blend-difference text-white`}>Journal</h1>
