@@ -364,6 +364,16 @@ const syncAirtableData = async () => {
       // Process production company
       let productionCompany = '';
       const productionCompanyField = f['Production Company'];
+      
+      // Debug: Log the first project's production company field
+      if (projectsRecords.indexOf(record) === 0) {
+        console.log('DEBUG - First project Production Company field:', productionCompanyField);
+        console.log('DEBUG - ClientsMap has', Object.keys(clientsMap).length, 'entries');
+        if (productionCompanyField && Array.isArray(productionCompanyField) && productionCompanyField.length > 0) {
+          console.log('DEBUG - First ID:', productionCompanyField[0], '→', clientsMap[productionCompanyField[0]]);
+        }
+      }
+      
       if (Array.isArray(productionCompanyField)) {
         productionCompany = productionCompanyField.map(id => clientsMap[id] || id).join(', ');
       } else if (productionCompanyField) {
