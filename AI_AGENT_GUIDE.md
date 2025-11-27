@@ -8,6 +8,67 @@
 
 ## 🎉 Recent Major Changes
 
+### November 27, 2025 - Cloudinary Integration Complete
+**What Changed:** Successfully integrated Cloudinary CDN for image hosting and delivery with full upload functionality.
+
+**The Problem:**
+- Images were stored only in Airtable attachments (not CDN-optimized)
+- No image caching or transformation system
+- Cloudinary URLs were generated but uploads weren't working
+- SDK wasn't configured with credentials
+
+**The Solution:**
+- ✅ Added Cloudinary SDK configuration to both sync functions
+- ✅ Configured `cloudinary.config()` with API credentials at initialization
+- ✅ Verified uploads working (all project images + journal covers)
+- ✅ Images now served from Cloudinary CDN with WebP conversion
+- ✅ Quality set to `auto:best` for maximum quality
+- ✅ Cache invalidation enabled for instant updates
+
+**Configuration:**
+```javascript
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+  secure: true
+});
+```
+
+**Environment Variables Required:**
+- `USE_CLOUDINARY=true` - Enable Cloudinary uploads
+- `CLOUDINARY_CLOUD_NAME=date24ay6` - Your cloud name
+- `CLOUDINARY_API_KEY` - API key from Cloudinary dashboard
+- `CLOUDINARY_API_SECRET` - API secret from Cloudinary dashboard
+
+**Upload Settings:**
+- Format: WebP (automatic conversion)
+- Quality: `auto:best` (90-100% quality)
+- Invalidate: `true` (clear CDN cache on re-upload)
+- Overwrite: `true` (replace existing images)
+
+**Delivery URLs:**
+- Base: `res.cloudinary.com/date24ay6/image/upload/`
+- Transformations: `f_auto,q_auto:best,c_limit,dpr_auto,w_1600/`
+- Public ID: `portfolio-projects-{recordId}-{index}` or `portfolio-journal-{recordId}`
+
+**Scheduled Sync:**
+- **Daily at midnight UTC**: Incremental sync (only uploads changed images)
+- **Uses cloudinary-mapping.json**: Tracks hashes to detect changes
+- **Efficient**: Skips unchanged images to save bandwidth and time
+
+**Manual Triggers:**
+- `sync-now.mjs` - Incremental sync (respects change detection)
+- `sync-now-realtime.mjs` - Full sync (uploads all images fresh)
+
+**Impact:** All images now served via Cloudinary CDN with WebP format, optimal compression, and instant cache invalidation. Page load times improved significantly.
+
+**Files Updated:** 
+- `netlify/functions/scheduled-sync.mjs` - Added SDK configuration
+- `netlify/functions/scheduled-sync-realtime.mjs` - Added SDK configuration
+
+---
+
 ### November 27, 2025 - Netlify Functions Cleanup
 **What Changed:** Organized Netlify functions with clear separation between incremental and realtime sync strategies.
 
