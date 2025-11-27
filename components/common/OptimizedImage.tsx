@@ -27,29 +27,30 @@
  *  ⚠️ CRITICAL: totalImages PARAMETER
  *  -----------------------------------
  *  ALWAYS pass totalImages prop to match the optimization script's file naming:
- *  - Most projects have gallery images, so files are named: project-{id}-0.webp
- *  - Without totalImages, it looks for: project-{id}.webp (which doesn't exist)
- *  - This causes unnecessary fallback to JPEGs from Airtable
+ *  - totalImages = 0: No gallery images, uses fallback URL directly (e.g., video thumbnail)
+ *  - totalImages = 1: project-{id}.webp (no suffix)
+ *  - totalImages > 1: project-{id}-0.webp, project-{id}-1.webp, etc.
  * 
  *  ✅ CORRECT USAGE:
  *  ```tsx
+ *  // Project with gallery images
  *  <OptimizedImage
  *    recordId={project.id}
  *    fallbackUrl={project.heroImage}
  *    type="project"
  *    index={0}
- *    totalImages={project.gallery?.length || 2}  // ← REQUIRED for thumbnails
+ *    totalImages={project.gallery?.length || 0}  // ← Use 0, not 2!
  *    alt={project.title}
  *  />
  *  ```
  * 
- *  ❌ INCORRECT USAGE (will fail to load optimized images):
+ *  ❌ INCORRECT USAGE (will fail to load video thumbnails):
  *  ```tsx
  *  <OptimizedImage
  *    recordId={project.id}
  *    fallbackUrl={project.heroImage}
  *    type="project"
- *    // Missing index and totalImages - defaults to looking for non-existent file
+ *    totalImages={project.gallery?.length || 2}  // ← Wrong! Use 0 instead
  *  />
  *  ```
  */
@@ -90,8 +91,9 @@ interface OptimizedImageProps {
  * Displays optimized WebP images with smooth fade-in animation.
  * Automatically falls back to Airtable URL if optimized version fails.
  * 
- * ⚠️ IMPORTANT: Always pass index and totalImages props for thumbnails.
- * See component header documentation for correct usage examples.
+ * ⚠️ IMPORTANT: Always pass correct totalImages value:
+ * - totalImages = 0: No gallery, skip optimization (e.g., video thumbnails)
+ * - totalImages = gallery.length: Has gallery images, use optimized WebP
  * 
  * @example
  * ```tsx
@@ -100,7 +102,7 @@ interface OptimizedImageProps {
  *   fallbackUrl={project.heroImage}
  *   type="project"
  *   index={0}
- *   totalImages={project.gallery?.length || 2}
+ *   totalImages={project.gallery?.length || 0}  // Use 0, not 2!
  *   alt={project.title}
  *   className="w-full h-full object-cover"
  * />
@@ -130,12 +132,15 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   , [recordId, fallbackUrl, type, index, totalImages]);
 
   // Determine initial source based on feature flag
-  const initialSrc = imageUrls.useCloudinary && imageUrls.cloudinaryUrl 
-    ? imageUrls.cloudinaryUrl 
-    : imageUrls.localUrl;
+  // If totalImages is 0, skip optimized versions and go straight to fallback (video thumbnail)
+  const initialSrc = totalImages === 0 
+    ? imageUrls.fallbackUrl
+    : (imageUrls.useCloudinary && imageUrls.cloudinaryUrl 
+      ? imageUrls.cloudinaryUrl 
+      : imageUrls.localUrl);
 
   const [currentSrc, setCurrentSrc] = useState<string>(initialSrc);
-  const [fallbackLevel, setFallbackLevel] = useState<number>(0); // 0=primary, 1=secondary, 2=tertiary
+  const [fallbackLevel, setFallbackLevel] = useState<number>(totalImages === 0 ? 2 : 0); // Skip fallbacks if totalImages=0
   const [isLoaded, setIsLoaded] = useState(false);
 
   const handleLoad = () => {

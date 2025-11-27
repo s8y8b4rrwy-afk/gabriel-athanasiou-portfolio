@@ -8,6 +8,27 @@
 
 ## 🎉 Recent Major Changes
 
+### November 27, 2025 - Video Thumbnail Fallback Fix
+**What Changed:** Fixed blank thumbnails for projects with videos but no still images.
+
+**Details:**
+- Projects with video URLs but no gallery images now correctly show video thumbnails
+- Changed `totalImages` parameter from `gallery.length || 2` to `gallery.length || 0`
+- When `totalImages = 0`, OptimizedImage skips looking for non-existent WebP files
+- Directly uses video thumbnail URL (YouTube/Vimeo) as fallback
+- Applies to HomeView, IndexView (both list and grid modes)
+
+**Technical:**
+- Backend (`scheduled-sync-alt.mjs`) already correctly fetches video thumbnails via `fetchVideoThumbnail()`
+- Issue was in frontend: passing `totalImages=2` caused lookup for `project-{id}-0.webp` (doesn't exist)
+- Now passes `totalImages=0` → immediately uses `heroImage` (video thumbnail URL)
+
+**Impact:** Projects with only video links now display thumbnails correctly across all views.
+
+**Files Updated:** `components/views/HomeView.tsx`, `components/views/IndexView.tsx`, `components/common/OptimizedImage.tsx`
+
+---
+
 ### November 26, 2025 - Image Loading Optimization
 **What Changed:** Fixed image lazy loading with clean fade-in effect.
 

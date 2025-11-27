@@ -169,7 +169,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                                             fallbackUrl={p.heroImage}
                                                             type="project"
                                                             index={0}
-                                                            totalImages={p.gallery?.length || 2}
+                                                            totalImages={p.gallery?.length || 0}
                                                             alt="Thumbnail"
                                                             loading="lazy"
                                                             className="w-full h-full object-cover"
@@ -237,7 +237,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             fallbackUrl={p.heroImage}
                                             type="project"
                                             index={0}
-                                            totalImages={p.gallery?.length || 2}
+                                            totalImages={p.gallery?.length || 0}
                                             alt={p.title}
                                             loading="lazy"
                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"

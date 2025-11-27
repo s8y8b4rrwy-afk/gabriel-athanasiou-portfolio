@@ -64,7 +64,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             fallbackUrl={heroProject.heroImage}
                             type="project"
                             index={0}
-                            totalImages={heroProject.gallery?.length || 2}
+                            totalImages={heroProject.gallery?.length || 0}
                             alt={heroProject.title}
                             loading="eager"
                             useOriginalOnDesktop={true}
@@ -103,7 +103,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     fallbackUrl={p.heroImage}
                                     type="project"
                                     index={0}
-                                    totalImages={p.gallery?.length || 2}
+                                    totalImages={p.gallery?.length || 0}
                                     alt={p.title}
                                     loading="lazy"
                                     className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"

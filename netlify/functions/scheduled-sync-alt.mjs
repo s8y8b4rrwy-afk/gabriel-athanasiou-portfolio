@@ -103,34 +103,44 @@ const parseCreditsText = (rawText) => {
 
 // Video processing utilities (simplified for server-side)
 const getVideoId = (url) => {
-  if (!url) return { type: null, id: null };
+  if (!url) return { type: null, id: null, hash: null };
   
   // YouTube
   const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const ytMatch = url.match(ytRegex);
-  if (ytMatch) return { type: 'youtube', id: ytMatch[1] };
+  if (ytMatch) return { type: 'youtube', id: ytMatch[1], hash: null };
   
-  // Vimeo
-  const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)/;
+  // Vimeo (with optional private hash)
+  const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)(?:\/(\w+))?/;
   const vimeoMatch = url.match(vimeoRegex);
-  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1] };
+  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1], hash: vimeoMatch[2] || null };
   
-  return { type: null, id: null };
+  return { type: null, id: null, hash: null };
 };
 
 const fetchVideoThumbnail = async (videoUrl) => {
   if (!videoUrl) return '';
   
-  const { type, id } = getVideoId(videoUrl);
+  const { type, id, hash } = getVideoId(videoUrl);
   
   try {
     if (type === 'youtube') {
       return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
     } else if (type === 'vimeo') {
-      const res = await fetchWithTimeout(`https://vimeo.com/api/v2/video/${id}.json`, {}, 5000);
-      if (!res.ok) return '';
-      const data = await res.json();
-      return data[0]?.thumbnail_large || '';
+      // For private/unlisted videos with hash, use OEmbed API
+      if (hash) {
+        const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}`;
+        const res = await fetchWithTimeout(oembedUrl, {}, 5000);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.thumbnail_url || '';
+      } else {
+        // Public videos can use the v2 API
+        const res = await fetchWithTimeout(`https://vimeo.com/api/v2/video/${id}.json`, {}, 5000);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data[0]?.thumbnail_large || '';
+      }
     }
   } catch (error) {
     console.warn(`Failed to fetch video thumbnail for ${videoUrl}:`, error.message);
@@ -297,7 +307,9 @@ const syncAirtableData = async () => {
       let heroImage = galleryUrls[0] || '';
       
       if (!heroImage && videoUrl) {
+        console.log(`Fetching thumbnail for ${f['Name']}: ${videoUrl}`);
         const thumbnailUrl = await fetchVideoThumbnail(videoUrl);
+        console.log(`Got thumbnail: ${thumbnailUrl || 'FAILED'}`);
         if (thumbnailUrl) heroImage = thumbnailUrl;
       }
       
@@ -375,6 +387,7 @@ const syncAirtableData = async () => {
         
         // Generate optimized delivery URLs with highest quality
         cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-projects-${record.id}-${idx}`);
+        // Fall back to original heroImage (which might be a video thumbnail) if no Cloudinary gallery exists
         cloudinaryHero = cloudinaryGallery[0] || heroImage;
       }
 
