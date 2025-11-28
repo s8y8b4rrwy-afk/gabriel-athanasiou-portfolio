@@ -33,6 +33,122 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - Airtable Fallback for Resilient Data Delivery
+**What Changed:** Added Airtable fallback to `get-data.js` function to ensure site remains functional if static JSON file fails.
+
+**The Problem:**
+- Site relied entirely on `portfolio-data.json` static file
+- If JSON file was corrupted, missing, or failed to load → empty site
+- No automatic recovery mechanism if static build failed
+- Users would see blank project/post listings with no data
+
+**The Solution:**
+- Added 3-tier fallback hierarchy in `get-data.js`:
+  1. **Primary:** Serve static `portfolio-data.json` (cached 7 days)
+  2. **Fallback:** Fetch minimal data from Airtable (cached 5 minutes)
+  3. **Last Resort:** Return empty structure with graceful defaults
+- Fallback fetches basic project titles/slugs to show something instead of nothing
+- Uses existing Airtable credentials from environment variables
+- Different cache strategy: 5 minutes for fallback vs 7 days for static
+
+**Technical Implementation:**
+
+```javascript
+// netlify/functions/get-data.js - 3-tier fallback
+export const handler = async (event, context) => {
+  try {
+    // 1. Try static file (primary)
+    const data = await readFile(dataPath, 'utf-8');
+    return { statusCode: 200, body: data };
+  } catch (error) {
+    try {
+      // 2. Try Airtable fallback
+      const fallbackData = await fetchAirtableFallback();
+      return {
+        statusCode: 200,
+        headers: { 'Cache-Control': 'public, max-age=300, must-revalidate' },
+        body: JSON.stringify(fallbackData)
+      };
+    } catch (fallbackError) {
+      // 3. Last resort: empty structure
+      return { statusCode: 200, body: JSON.stringify(emptyDefaults) };
+    }
+  }
+};
+
+// Minimal Airtable fetch for emergency use
+async function fetchAirtableFallback() {
+  const projectsUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Projects`;
+  const res = await fetch(projectsUrl, {
+    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+  });
+  
+  const data = await res.json();
+  return {
+    projects: data.records.map(rec => ({
+      id: rec.id,
+      title: rec.fields['Project Title'] || 'Untitled',
+      slug: ...,
+      // Minimal fields only
+    })),
+    posts: [],
+    config: { /* defaults */ },
+    source: 'airtable-fallback'
+  };
+}
+```
+
+**Fallback Behavior:**
+
+| Scenario | Result | Cache Duration | Data Source |
+|----------|--------|----------------|-------------|
+| Static JSON loads | Full data, all fields | 7 days (stale-while-revalidate) | `portfolio-data.json` |
+| JSON missing/corrupt | Minimal project data | 5 minutes | Airtable API |
+| Airtable also fails | Empty defaults | No cache | Hardcoded fallback |
+
+**What Fallback Includes:**
+- Project titles and slugs only (enough to show listings)
+- No gallery images, videos, or detailed metadata
+- Empty posts array (journal not available)
+- Default config values (contact/about/showreel disabled)
+- `source: 'airtable-fallback'` flag for debugging
+
+**Cache Strategy:**
+- **Static file:** `max-age=3600, s-maxage=86400, stale-while-revalidate=604800` (7 days)
+- **Fallback data:** `max-age=300, must-revalidate` (5 minutes, no stale serving)
+- **Empty defaults:** `no-cache` (not cached at all)
+
+**Environment Variables Required:**
+```bash
+AIRTABLE_TOKEN=your_token          # Airtable API token
+AIRTABLE_BASE_ID=your_base_id      # Airtable base ID
+```
+
+**When Fallback Triggers:**
+- Static JSON file not found (deployment issue)
+- JSON file corrupted (invalid JSON syntax)
+- File read permission error
+- Any other file system error
+
+**Updated Files:**
+- `netlify/functions/get-data.js` - Added fetchAirtableFallback() and 3-tier error handling
+
+**Performance Impact:**
+- Normal operation: Zero impact (static file served as before)
+- Fallback scenario: 1-2 second delay (Airtable API call)
+- Fallback is rare exception, not normal flow
+- Better UX than showing completely empty site
+
+**Monitoring:**
+- Check function logs for: `"⚠️ Failed to load static data"` (fallback triggered)
+- Check function logs for: `"✅ Successfully fetched fallback data from Airtable"` (fallback worked)
+- Check function logs for: `"❌ Airtable fallback also failed"` (last resort used)
+- Response includes `source` field to identify which tier was used
+
+**Impact:** Site now has resilience against static file failures. Users see something instead of nothing if JSON fails. Airtable acts as backup data source when static build has issues. Graceful degradation ensures site never completely breaks.
+
+---
+
 ### Nov 28 2025 - Journal Status Filtering with Public-Only Display
 **What Changed:** Added status-based filtering to journal posts for granular control over post visibility.
 
