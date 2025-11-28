@@ -184,7 +184,6 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                                             alt="Thumbnail"
                                                             loading="lazy"
                                                             className="w-full h-full object-cover"
-                                                            quality="auto:good"
                                                             width={800}
                                                         />
                                                     )}
@@ -254,7 +253,6 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             alt={p.title}
                                             loading="lazy"
                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
-                                            quality="auto:good"
                                             width={800}
                                         />
                                     ) : p.gallery && p.gallery.length > 0 ? (
@@ -267,7 +265,6 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                             alt={p.title}
                                             loading="lazy"
                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
-                                            quality="auto:good"
                                             width={800}
                                         />
                                     ) : (

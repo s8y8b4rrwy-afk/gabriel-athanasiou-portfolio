@@ -4,6 +4,8 @@
  * Now includes Cloudinary CDN with local WebP and Airtable fallbacks
  */
 
+export type CloudinaryPreset = 'ultra' | 'fine';
+
 export interface ResponsiveImageProps {
   src: string;
   alt: string;
@@ -19,10 +21,69 @@ export interface CloudinaryOptions {
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
   crop?: 'limit' | 'fill' | 'fit' | 'scale';
   dpr?: number | 'auto';
+  preset?: CloudinaryPreset;
 }
 
 /**
- * Build Cloudinary URL with automatic format and quality optimization
+ * Detect optimal preset based on device capabilities and network conditions
+ * 
+ * Decision logic:
+ * - Slow connection (saveData or 2G) → fine
+ * - Large viewport × DPR (≥1024px effective) → ultra
+ * - Default → fine
+ * 
+ * @returns CloudinaryPreset ('ultra' or 'fine')
+ */
+export const detectOptimalPreset = (): CloudinaryPreset => {
+  if (typeof window === 'undefined') return 'fine';
+
+  // Check network conditions
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  if (connection) {
+    if (connection.saveData || connection.effectiveType === '2g') {
+      console.log('🌐 Network: Slow connection detected, using fine preset');
+      return 'fine';
+    }
+  }
+
+  // Check viewport size and DPR
+  const viewportWidth = window.innerWidth;
+  const dpr = window.devicePixelRatio || 1;
+  const effectiveWidth = viewportWidth * dpr;
+
+  if (effectiveWidth >= 1024) {
+    console.log(`🖥️ Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using ultra preset`);
+    return 'ultra';
+  }
+
+  console.log(`📱 Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using fine preset`);
+  return 'fine';
+};
+
+/**
+ * Get session-cached preset (detects once per session)
+ * 
+ * @returns CloudinaryPreset ('ultra' or 'fine')
+ */
+export const getSessionPreset = (): CloudinaryPreset => {
+  if (typeof window === 'undefined') return 'fine';
+
+  const STORAGE_KEY = 'cloudinary_preset';
+  
+  // Check session storage
+  const cached = sessionStorage.getItem(STORAGE_KEY);
+  if (cached === 'ultra' || cached === 'fine') {
+    return cached as CloudinaryPreset;
+  }
+
+  // Detect and cache
+  const preset = detectOptimalPreset();
+  sessionStorage.setItem(STORAGE_KEY, preset);
+  return preset;
+};
+
+/**
+ * Build Cloudinary URL with preset-based quality optimization
  * 
  * @param recordId - Airtable record ID
  * @param type - 'project' or 'journal'
@@ -53,22 +114,29 @@ export const buildCloudinaryUrl = (
     ? `portfolio-journal-${recordId}`
     : `portfolio-projects-${recordId}-${index}`;
 
-  // Default options - using user's preferred delivery settings
+  // Map preset to quality value
+  let qualityValue: number | string = 'auto';
+  if (options.preset) {
+    qualityValue = options.preset === 'ultra' ? 90 : 75;
+  } else if (options.quality) {
+    qualityValue = options.quality;
+  }
+
+  // Default options - using preset-based quality
   const {
     width = 1600,        // Base width for full images, thumbnails use 800
-    quality = 'auto',    // Auto quality optimization
     format = 'webp',     // Force WebP format
     crop = 'limit',      // Prevent upscaling
     dpr = 'auto'         // Auto device pixel ratio
   } = options;
 
-  // Build transformation string: f_webp,w_1600,c_limit,dpr_auto,q_auto
+  // Build transformation string: f_webp,w_1600,c_limit,dpr_auto,q_90
   const transformations = [
     `f_${format}`,
     `w_${width}`,
     `c_${crop}`,
     `dpr_${dpr}`,
-    `q_${quality}`
+    `q_${qualityValue}`
   ].join(',');
 
   // Construct Cloudinary URL
@@ -94,7 +162,7 @@ export const buildCloudinaryUrl = (
  * @param type - 'project' or 'journal'
  * @param index - Image index for multiple images (default: 0)
  * @param totalImages - Total number of images. MUST match optimization script output.
- * @param quality - Quality setting for Cloudinary delivery ('auto:best' or 'auto:good')
+ * @param preset - Quality preset for Cloudinary delivery ('ultra' or 'fine')
  * @param width - Width for Cloudinary delivery (1600 for full images, 800 for thumbnails)
  * @returns Object with cloudinaryUrl, localUrl, and fallbackUrl
  */
@@ -104,7 +172,7 @@ export const getOptimizedImageUrl = (
   type: 'project' | 'journal' = 'project',
   index: number = 0,
   totalImages: number = 1,
-  quality?: 'auto:best' | 'auto:good',
+  preset?: CloudinaryPreset,
   width?: number
 ): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
   // If no fallback URL provided, return empty strings
@@ -124,8 +192,8 @@ export const getOptimizedImageUrl = (
     ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
     : false;
   
-  // Build Cloudinary URL with quality and width parameters
-  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, { quality, width });
+  // Build Cloudinary URL with preset and width parameters
+  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, { preset, width });
   
   // Build local WebP path - matches optimization script naming
   const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;

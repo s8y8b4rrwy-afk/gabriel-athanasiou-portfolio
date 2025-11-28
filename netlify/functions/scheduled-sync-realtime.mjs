@@ -26,6 +26,33 @@ if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_
   });
 }
 
+// Transformation presets for eager generation
+const TRANSFORMATION_PRESETS = {
+  widths: [800, 1600],
+  qualities: [90, 75],  // ultra, fine
+  dprs: [1.0, 2.0],
+  format: 'webp'
+};
+
+// Generate all eager transformation combinations (8 total: 2 widths × 2 qualities × 2 DPRs × 1 format)
+const EAGER_TRANSFORMATIONS = [];
+for (const width of TRANSFORMATION_PRESETS.widths) {
+  for (const quality of TRANSFORMATION_PRESETS.qualities) {
+    for (const dpr of TRANSFORMATION_PRESETS.dprs) {
+      EAGER_TRANSFORMATIONS.push({
+        width: width,
+        quality: quality,
+        dpr: dpr,
+        crop: 'limit',
+        format: TRANSFORMATION_PRESETS.format,
+        fetch_format: 'auto'
+      });
+    }
+  }
+}
+
+console.log(`🎯 Eager transformations configured: ${EAGER_TRANSFORMATIONS.length} variants per image`);
+
 // ==========================================
 // HELPER FUNCTIONS
 // ==========================================
@@ -222,8 +249,8 @@ const parseExternalLinksData = (rawText) => {
   return { links, videos };
 };
 
-// Upload image to Cloudinary at original resolution as WebP
-// Stores full-resolution originals, transformations applied only at delivery
+// Upload image to Cloudinary with eager transformations
+// Pre-generates 8 variants at upload time to eliminate cold-start delays
 const uploadToCloudinary = async (imageUrl, publicId) => {
   try {
     const result = await cloudinary.uploader.upload(imageUrl, {
@@ -232,9 +259,10 @@ const uploadToCloudinary = async (imageUrl, publicId) => {
       resource_type: 'image',
       format: 'webp', // Convert to WebP, keep original resolution
       quality: 'auto:best', // Highest quality with smart compression
+      eager: EAGER_TRANSFORMATIONS, // Pre-generate all 8 transformation variants
+      eager_async: false, // Generate synchronously (adds ~6-8 seconds per image)
       invalidate: true, // Clear CDN cache to force new transformations
       overwrite: true // Overwrite existing images with same public_id
-      // NO transformation array - stores at original resolution
     });
     
     return {

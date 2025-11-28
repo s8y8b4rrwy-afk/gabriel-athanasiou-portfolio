@@ -56,7 +56,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getSessionPreset, type CloudinaryPreset } from '../../utils/imageOptimization';
 
 interface OptimizedImageProps {
   /** Airtable record ID */
@@ -83,8 +83,8 @@ interface OptimizedImageProps {
   decoding?: 'async' | 'sync' | 'auto';
   /** Use original JPEG on desktop/large devices (1024px+) for maximum quality */
   useOriginalOnDesktop?: boolean;
-  /** Cloudinary quality setting: 'auto:best' (default, 90-100%) or 'auto:good' (80-90% for thumbnails) */
-  quality?: 'auto:best' | 'auto:good';
+  /** Cloudinary quality preset: 'ultra' (90%) or 'fine' (75%). Auto-detects if not provided. */
+  preset?: CloudinaryPreset;
   /** Cloudinary width: 1600 (default for full images) or 800 (for thumbnails) */
   width?: number;
 }
@@ -123,7 +123,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async',
   useOriginalOnDesktop = false,
-  quality = 'auto:best',
+  preset,
   width = 1600
 }) => {
   // If no fallback URL provided, don't render anything
@@ -132,10 +132,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return null;
   }
 
+  // Auto-detect preset if not provided
+  const activePreset = preset || getSessionPreset();
+
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 
-    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages, quality, width)
-  , [recordId, fallbackUrl, type, index, totalImages, quality, width]);
+    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages, activePreset, width)
+  , [recordId, fallbackUrl, type, index, totalImages, activePreset, width]);
 
   // Determine initial source based on feature flag
   // If totalImages is 0, skip optimized versions and go straight to fallback (video thumbnail)

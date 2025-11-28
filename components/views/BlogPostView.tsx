@@ -170,7 +170,6 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                                     type="project"
                                     alt={relatedProject.title}
                                     loading="lazy"
-                                    quality="auto:good"
                                     width={600}
                                     className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`}
                                 />
