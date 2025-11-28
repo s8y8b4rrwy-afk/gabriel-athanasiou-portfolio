@@ -10,6 +10,7 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { THEME } from './theme';
 // import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
@@ -79,30 +80,7 @@ export default function App() {
   }, [location.pathname]);
 
   if (loading || !showContent) {
-    return (
-      <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
-        {THEME.pageTransitions.loading.showText && (
-          <div className="text-white/20 tracking-widest text-xs uppercase animate-pulse relative z-10">
-            Loading...
-          </div>
-        )}
-        {THEME.pageTransitions.loading.showGradient && (
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(
-                90deg,
-                ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
-                ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
-                ${THEME.pageTransitions.loading.gradientColors[2]} 100%
-              )`,
-              backgroundSize: '200% 100%',
-              animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
-            }}
-          />
-        )}
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return (
