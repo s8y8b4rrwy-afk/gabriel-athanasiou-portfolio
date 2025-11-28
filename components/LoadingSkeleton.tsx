@@ -5,7 +5,7 @@ export const LoadingSkeleton: React.FC = () => {
   return (
     <div className="min-h-screen bg-bg-main animate-pulse">
       {/* Navigation skeleton */}
-      <div className={`${THEME.layout.header.height} border-b border-white/10 flex items-center justify-between px-6`}>
+      <div className={`${THEME.header.height} border-b border-white/10 flex items-center justify-between px-6`}>
         <div className="h-4 w-48 bg-white/5 rounded" />
         <div className="flex gap-8">
           <div className="h-4 w-20 bg-white/5 rounded" />
