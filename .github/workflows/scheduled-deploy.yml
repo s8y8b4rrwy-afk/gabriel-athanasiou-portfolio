@@ -101,6 +101,7 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add public/share-meta.json public/share-meta.hash
           git commit -m "chore: update share-meta manifest [deploy]"
+          git pull --rebase origin main
           git push origin HEAD:main
           echo "commit_created=true" >> $GITHUB_OUTPUT
 
@@ -111,6 +112,7 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
             echo "Latest commit lacks deploy marker. Creating empty deploy commit."
+            git pull --rebase origin main
             git commit --allow-empty -m "chore: scheduled deploy [deploy]"
             git push origin HEAD:main
             echo "commit_created=true" >> $GITHUB_OUTPUT
