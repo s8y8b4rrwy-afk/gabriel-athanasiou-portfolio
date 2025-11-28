@@ -3532,6 +3532,600 @@ Savings: 76% (brotli vs uncompressed)
 
 ---
 
+## 🌿 Git Workflow & Branch Management
+
+### Overview: Feature Branch Development
+
+This project uses a **feature branch workflow** to keep the main site stable while developing and testing new features. This approach:
+- Keeps `main` branch always deployable
+- Allows testing features in isolation
+- Saves Netlify build minutes through smart build optimization
+- Enables easy rollback if something breaks
+
+### Branch Strategy
+
+**Main Branch (Production)**
+- **Branch:** `main`
+- **Purpose:** Live production site
+- **Auto-deploys:** Yes, every push
+- **URL:** Your main production URL
+- **Protection:** Never push broken code here
+
+**Feature Branches**
+- **Naming:** `feature/descriptive-name` (e.g., `feature/optimistic-loading`)
+- **Purpose:** Develop and test new features
+- **Auto-deploys:** No (saves build minutes)
+- **Testing:** Local first, then deploy preview via PR
+
+**Hotfix Branches**
+- **Naming:** `hotfix/issue-description`
+- **Purpose:** Emergency fixes for production
+- **Workflow:** Create → Fix → PR → Merge immediately
+
+### Complete Feature Development Workflow
+
+#### 1. Create a New Feature Branch
+
+```bash
+# Make sure you're on main and it's up to date
+git checkout main
+git pull origin main
+
+# Create and switch to new feature branch
+git checkout -b feature/your-feature-name
+
+# Example:
+git checkout -b feature/image-lazy-loading
+```
+
+#### 2. Develop and Test Locally
+
+```bash
+# Start local development server
+npm run dev
+
+# Site runs at http://localhost:3000
+# Netlify functions at http://localhost:8888/.netlify/functions/*
+
+# Make your changes, test thoroughly locally
+# Commit frequently with descriptive messages
+git add .
+git commit -m "feat: add lazy loading to hero images"
+```
+
+**Best Practice:** Test everything possible locally before pushing. This includes:
+- UI changes and interactions
+- Component behavior
+- Edge functions with `netlify dev`
+- Different viewport sizes
+- Performance with DevTools
+
+#### 3. Push Feature Branch (No Build Triggered)
+
+```bash
+# Push to GitHub (does NOT trigger Netlify build)
+git push origin feature/your-feature-name
+```
+
+**What happens:**
+- ✅ Code pushed to GitHub
+- ❌ No Netlify build (saves build minutes)
+- ❌ No deploy preview yet
+
+**Why:** The `ignore-netlify-build.sh` script prevents automatic builds on feature branches unless you force it.
+
+#### 4. Create Pull Request for Testing
+
+When you're ready to test on a live URL (for mobile testing, sharing with others, or testing CDN behavior):
+
+**Option A: Via GitHub Web Interface**
+1. Go to your GitHub repository
+2. Click "Pull requests" → "New pull request"
+3. Base: `main` ← Compare: `feature/your-feature-name`
+4. Click "Create pull request"
+5. Add description of what you're testing
+
+**Option B: Via GitHub CLI**
+```bash
+# Install gh CLI if needed: brew install gh
+gh pr create --base main --head feature/your-feature-name --title "Feature: Your Feature Name" --body "Description of changes"
+```
+
+**What happens:**
+- ✅ Netlify creates a deploy preview (costs 1 build minute)
+- ✅ You get a unique URL: `deploy-preview-123--yoursite.netlify.app`
+- ✅ Every new commit to the feature branch updates the same preview
+- ✅ Comments, reviews, and feedback tracked in PR
+
+#### 5. Test Deploy Preview
+
+```bash
+# Continue making changes on your feature branch
+git add .
+git commit -m "fix: adjust loading animation timing"
+git push origin feature/your-feature-name
+
+# Each push updates the SAME deploy preview
+# No additional build minutes consumed per push
+```
+
+**Testing Checklist:**
+- [ ] Test on mobile devices (scan QR code from Netlify)
+- [ ] Test on different browsers
+- [ ] Verify edge functions work correctly
+- [ ] Check CDN caching behavior
+- [ ] Verify images load from Cloudinary
+- [ ] Test with production data
+- [ ] Check analytics tracking
+- [ ] Verify SEO metadata
+
+#### 6. Merge to Production
+
+When testing is complete and everything works:
+
+**Via GitHub Web Interface:**
+1. Go to your PR on GitHub
+2. Review all changes one final time
+3. Click "Merge pull request"
+4. Choose merge type:
+   - **Squash and merge** (recommended) - Combines all commits into one clean commit
+   - **Merge commit** - Keeps all individual commits
+   - **Rebase and merge** - Replays commits on top of main
+5. Confirm merge
+6. Delete feature branch (optional but recommended)
+
+**Via Command Line:**
+```bash
+# Switch to main branch
+git checkout main
+
+# Merge feature branch
+git merge feature/your-feature-name
+
+# Push to production
+git push origin main
+
+# Delete feature branch locally
+git branch -d feature/your-feature-name
+
+# Delete feature branch remotely
+git push origin --delete feature/your-feature-name
+```
+
+**What happens:**
+- ✅ Feature branch merged into `main`
+- ✅ Netlify automatically builds and deploys to production
+- ✅ Your live site updates within 2-3 minutes
+- ✅ Deploy preview is automatically cleaned up
+
+### Build Minute Optimization
+
+#### How Builds Are Controlled
+
+The `scripts/ignore-netlify-build.sh` script controls when Netlify builds run:
+
+```bash
+# Always builds:
+✅ Commits to main branch
+✅ Pull request deploy previews
+✅ Commits with [deploy] or [force-deploy] in message
+
+# Never builds (saves minutes):
+❌ Feature branch commits (unless forced)
+❌ Commits with [skip ci] in message
+```
+
+#### Current Build Configuration
+
+**What triggers builds:**
+1. **Push to `main`** - Automatic production deploy
+2. **Open/update PR** - Automatic deploy preview
+3. **Force build on feature branch** - Add `[deploy]` to commit message
+
+**What doesn't trigger builds:**
+- Regular commits to feature branches
+- Commits with `[skip ci]` or `[skip netlify]` in message
+
+#### Force Build on Feature Branch
+
+If you need to test a feature branch without creating a PR:
+
+```bash
+# Add [deploy] to commit message
+git commit -m "feat: test live behavior [deploy]"
+git push origin feature/your-feature-name
+
+# Netlify will build this specific commit
+# Creates a branch deploy at: feature-branch-name--yoursite.netlify.app
+```
+
+**When to use:**
+- Testing urgent fixes before PR
+- Sharing a quick preview without formal PR
+- Testing deployment-specific behavior
+
+**When NOT to use:**
+- Regular development (test locally instead)
+- Multiple iterations (use PR deploy preview instead)
+
+### Branch Management Commands
+
+#### Check Current Branch
+```bash
+git branch
+# * feature/your-feature-name  (asterisk shows current branch)
+#   main
+```
+
+#### Switch Between Branches
+```bash
+# Switch to existing branch
+git checkout main
+git checkout feature/your-feature-name
+
+# Create and switch to new branch
+git checkout -b feature/new-feature
+```
+
+#### Update Feature Branch with Latest Main
+```bash
+# On your feature branch
+git checkout feature/your-feature-name
+
+# Fetch latest from main
+git fetch origin main
+
+# Merge main into your feature branch
+git merge origin/main
+
+# Or rebase onto main (cleaner history)
+git rebase origin/main
+
+# Push updated feature branch
+git push origin feature/your-feature-name
+```
+
+#### Delete Branches
+```bash
+# Delete local branch (must not be on that branch)
+git branch -d feature/old-feature
+
+# Force delete if not merged
+git branch -D feature/abandoned-feature
+
+# Delete remote branch
+git push origin --delete feature/old-feature
+```
+
+#### View All Branches
+```bash
+# Local branches only
+git branch
+
+# All branches (local + remote)
+git branch -a
+
+# Remote branches only
+git branch -r
+```
+
+### Common Scenarios
+
+#### Scenario 1: Quick Fix to Production
+
+```bash
+# Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/fix-broken-link
+
+# Make fix and test locally
+# ... make changes ...
+git add .
+git commit -m "fix: correct project link URL"
+
+# Push and create PR
+git push origin hotfix/fix-broken-link
+gh pr create --title "Hotfix: Fix broken project link" --body "Urgent fix for broken link"
+
+# Test deploy preview quickly
+# If good, merge immediately via GitHub
+
+# Or merge directly if very urgent
+git checkout main
+git merge hotfix/fix-broken-link
+git push origin main
+```
+
+#### Scenario 2: Abandoned Feature (Clean Up)
+
+```bash
+# You decided not to finish a feature
+# First, make sure you're not on that branch
+git checkout main
+
+# Delete local branch
+git branch -D feature/abandoned-idea
+
+# Delete remote branch
+git push origin --delete feature/abandoned-idea
+```
+
+#### Scenario 3: Long-Running Feature (Keep Updated)
+
+```bash
+# Feature takes several days, main has moved ahead
+git checkout feature/long-feature
+
+# Get latest changes from main
+git fetch origin main
+git merge origin/main
+
+# Resolve any conflicts if they appear
+# ... fix conflicts ...
+git add .
+git commit -m "merge: resolve conflicts with main"
+
+# Continue working on feature
+```
+
+#### Scenario 4: Test Multiple Features Together
+
+```bash
+# Create integration branch
+git checkout -b integration/test-multiple-features
+
+# Merge first feature
+git merge feature/feature-one
+
+# Merge second feature
+git merge feature/feature-two
+
+# Test combined changes locally
+npm run dev
+
+# Push with [deploy] to test live
+git push origin integration/test-multiple-features
+git commit --allow-empty -m "test: integration test [deploy]"
+git push origin integration/test-multiple-features
+```
+
+### Netlify Dashboard Configuration
+
+#### Enable Branch Deploys (Optional)
+
+If you want specific feature branches to auto-deploy:
+
+1. Go to Netlify Dashboard
+2. Select your site
+3. Go to **Site settings** → **Build & deploy** → **Continuous Deployment**
+4. Under **Branch deploys**, click **Edit settings**
+5. Select **Let me add individual branches**
+6. Add specific branches you want to auto-deploy (e.g., `feature/optimistic-loading`)
+7. Save
+
+**Note:** This increases build minute usage. Only enable for branches you're actively testing.
+
+#### Deploy Contexts
+
+You can configure different build commands for different contexts:
+
+```toml
+# In netlify.toml
+
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build:preview"  # Could use different env vars
+
+[context.branch-deploy]
+  command = "npm run build:staging"
+```
+
+### Git Best Practices
+
+#### Commit Message Convention
+
+Use conventional commits for clarity:
+
+```bash
+# Feature
+git commit -m "feat: add image lazy loading"
+
+# Fix
+git commit -m "fix: resolve navigation menu overlap"
+
+# Documentation
+git commit -m "docs: update deployment guide"
+
+# Style/Formatting
+git commit -m "style: fix indentation in Navigation component"
+
+# Refactor
+git commit -m "refactor: extract image optimization logic"
+
+# Performance
+git commit -m "perf: optimize thumbnail generation"
+
+# Test
+git commit -m "test: add tests for image compression"
+
+# Chore (maintenance)
+git commit -m "chore: update dependencies"
+
+# Force deployment
+git commit -m "feat: add new feature [deploy]"
+
+# Skip CI
+git commit -m "docs: update readme [skip ci]"
+```
+
+#### Commit Frequency
+
+- **Commit often** during development (every logical change)
+- **Don't commit broken code** to main
+- **Test before committing** when possible
+- **Write descriptive messages** (future you will thank you)
+
+#### Branch Naming
+
+```bash
+# Good
+feature/image-optimization
+feature/add-contact-form
+hotfix/fix-mobile-nav
+fix/cloudinary-timeout
+
+# Bad
+feature/stuff
+test
+my-branch
+update
+```
+
+### Troubleshooting
+
+#### I'm on the wrong branch!
+
+```bash
+# Check current branch
+git branch
+
+# If you made commits on main by mistake
+git checkout -b feature/my-changes  # Creates new branch with your commits
+git checkout main
+git reset --hard origin/main  # Resets main to remote state
+```
+
+#### I want to undo my last commit
+
+```bash
+# Undo commit but keep changes
+git reset --soft HEAD~1
+
+# Undo commit and discard changes
+git reset --hard HEAD~1
+
+# Undo push to remote (dangerous!)
+git push origin +feature/your-branch  # Force push
+```
+
+#### My feature branch is behind main
+
+```bash
+git checkout feature/your-branch
+git fetch origin main
+git merge origin/main
+# Or: git rebase origin/main (cleaner history)
+git push origin feature/your-branch
+```
+
+#### Merge conflicts!
+
+```bash
+# Git will tell you which files have conflicts
+git status
+
+# Open conflicted files, look for:
+<<<<<<< HEAD
+your changes
+=======
+incoming changes
+>>>>>>> branch-name
+
+# Choose which version to keep, remove markers
+# Then:
+git add .
+git commit -m "merge: resolve conflicts"
+```
+
+#### I pushed to the wrong branch
+
+```bash
+# If you haven't pushed yet
+git reset --soft HEAD~1
+git checkout correct-branch
+git commit -m "your message"
+
+# If you already pushed
+# On wrong branch
+git reset --hard HEAD~1
+git push origin +wrong-branch  # Force push to remove
+
+# On correct branch
+git cherry-pick <commit-hash>  # Apply the commit here
+git push origin correct-branch
+```
+
+### Build Minute Monitoring
+
+#### Check Current Usage
+
+1. Netlify Dashboard → [Your Site] → Team settings → Billing
+2. View "Build minutes used this month"
+3. Free tier: 300 minutes/month
+4. Pro tier: 25,000 minutes/month
+
+#### Estimated Build Times
+
+- **Main branch deploy:** ~2-3 minutes
+- **Deploy preview:** ~2-3 minutes
+- **Feature branch (if enabled):** ~2-3 minutes
+
+#### Monthly Build Estimate
+
+With optimized workflow:
+- **Daily content updates:** 0 builds (auto-synced via function)
+- **Weekly code updates:** 4 builds × 3 min = 12 min/month
+- **Feature development:** 3 features × 5 PR iterations × 3 min = 45 min/month
+- **Total:** ~57 minutes/month (19% of free tier)
+
+**Without optimization (old way):**
+- **Daily builds:** 30 builds × 3 min = 90 min/month
+- **Feature testing:** 10 feature branch builds × 3 min = 30 min/month
+- **PR previews:** 45 min/month
+- **Total:** ~165 minutes/month (55% of free tier)
+
+### Quick Command Reference
+
+```bash
+# Branch Management
+git branch                           # List local branches
+git branch -a                        # List all branches
+git checkout -b feature/name         # Create and switch to new branch
+git checkout main                    # Switch to main
+git branch -d feature/name           # Delete local branch
+git push origin --delete feature/name # Delete remote branch
+
+# Feature Development
+git checkout -b feature/name         # Start new feature
+git add .                           # Stage changes
+git commit -m "feat: description"   # Commit
+git push origin feature/name        # Push to GitHub (no build)
+gh pr create                        # Create PR (triggers preview)
+
+# Update Feature Branch
+git checkout feature/name           # Switch to feature
+git fetch origin main              # Get latest main
+git merge origin/main              # Merge main into feature
+
+# Deploy to Production
+git checkout main                   # Switch to main
+git merge feature/name             # Merge feature
+git push origin main               # Deploy to production
+
+# Force Build on Feature
+git commit -m "feat: test [deploy]" # Add [deploy] to message
+git push origin feature/name       # Triggers build
+
+# Emergency Rollback
+git revert HEAD                    # Undo last commit
+git push origin main               # Deploy reverted version
+```
+
+---
+
 ## ⚡ Quick Reference
 
 ### Start Development
@@ -3562,4 +4156,4 @@ git push origin main
 **END OF GUIDE**
 
 > This document is a living reference. Update it as the codebase evolves.  
-> Last reviewed: November 26, 2025
+> Last reviewed: November 28, 2025

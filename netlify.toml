@@ -2,8 +2,9 @@
 command = "npm run build"
 functions = "netlify/functions"
 publish = "dist"
- # Only build when commit message contains [deploy] or [force-deploy]
- ignore = "bash scripts/ignore-netlify-build.sh"
+# Build optimization: Only build production branch and deploy previews
+# Feature branches will not auto-build unless you enable them specifically
+ignore = "bash scripts/ignore-netlify-build.sh"
 
 # Configure functions to include sharp for image processing
 [functions]
