@@ -2235,9 +2235,12 @@ interface Project {
   genre?: string[];        // ["Sci-Fi", "Drama"]
   productionCompany: string; // Production company (resolved from Production Company field → Client Book table)
   client?: string;         // Client/brand/agency name (optional)
-  year: string;            // Release year (YYYY)
+  year: string;            // Release year (YYYY) - extracted from releaseDate or workDate
+  releaseDate?: string;    // **NEW:** Full release date from Airtable (YYYY-MM-DD format)
+  workDate?: string;       // **NEW:** Full work/production date from Airtable (YYYY-MM-DD format)
   description: string;     // Project description
-  isFeatured: boolean;     // Show on home page?
+  isFeatured: boolean;     // Show on home page? (true if Display Status = Featured or Hero)
+  isHero?: boolean;        // **NEW:** Eligible for hero slot? (true only if Display Status = Hero)
   
   // Media
   heroImage: string;       // Main thumbnail (gallery[0] or video thumbnail)
@@ -2255,19 +2258,26 @@ interface Project {
 }
 ```
 
+**Field Notes:**
+- `year`: Auto-extracted from `releaseDate` OR `workDate` (first available)
+- `isFeatured`: Derived from Display Status (Featured OR Hero = true, Portfolio Only/Hidden = false)
+- `isHero`: Derived from Display Status (Hero only = true, all others = false)
+- `releaseDate` & `workDate`: Optional fields preserve full date info for advanced sorting/filtering
+- Projects automatically sorted by date (newest first) at build time
+
 ### Airtable Schema
 
 #### Projects Table (Required)
 | Field | Type | Purpose |
 |-------|------|---------|
 | `Name` | Single Line Text | Project title |
-| `Feature` | Checkbox | Visible on site? |
-| `Front Page` | Checkbox | Show on home page? |
+| `Display Status` | Single Select | **NEW:** Hidden / Portfolio Only / Featured / Hero (replaces Front Page checkbox) |
 | `Project Type` | Single Select | Narrative/Commercial/Music Video/Documentary |
 | `Genre` | Multiple Select | ["Sci-Fi", "Drama"] |
 | `Production Company` | Link to Client Book | Production company that produced the work |
 | `Client` | Single Line Text | Client/brand/agency name |
-| `Release Date` | Date | YYYY-MM-DD |
+| `Release Date` | Date | **NEW:** Full release date (YYYY-MM-DD) - primary sort field |
+| `Work Date` | Date | **NEW:** Production/work date (YYYY-MM-DD) - fallback if no release date |
 | `About` | Long Text | Description |
 | `Gallery` | Attachments | Images |
 | `Video URL` | Long Text | YouTube/Vimeo URLs (comma-separated) |
@@ -2276,6 +2286,18 @@ interface Project {
 | `Festivals` | Link to Awards | Award names |
 | `External Links` | Long Text | URLs (comma-separated) |
 | `Related Article` | Link to Journal | Related blog post |
+
+**Display Status Options (in order):**
+1. **Hidden** - Project completely excluded from sync (drafts, unpublished work)
+2. **Portfolio Only** - Syncs to site but not featured on homepage (sets `isFeatured: false`)
+3. **Featured** - Appears on front page grid (sets `isFeatured: true`)
+4. **Hero** - Eligible for hero slot on homepage (sets `isFeatured: true` and `isHero: true`)
+
+**Date Fields:**
+- **Release Date**: Official release/publication date (primary)
+- **Work Date**: When the project was created/produced (fallback)
+- **Year field**: Auto-extracted from Release Date OR Work Date (first available)
+- **Sorting**: Projects automatically sorted by Release Date → Work Date (newest first)
 
 #### Journal Table (Optional)
 | Field | Type | Purpose |
