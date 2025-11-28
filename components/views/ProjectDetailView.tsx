@@ -9,7 +9,7 @@ import { SocialShare } from '../SocialShare';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
 import { generateProceduralThumbnail } from '../../utils/thumbnailGenerator';
 import { saveScrollPosition } from '../../utils/scrollRestoration';
@@ -162,7 +162,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 isProcedural: true
             };
         }
-        const imageUrls = getOptimizedImageUrl(project.id, url, 'project', index, totalImages);
+        const imageUrls = getOptimizedImageUrl(project.id, url, 'project', index, totalImages, getSessionPreset());
         const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
         return {
             original: url,
@@ -220,7 +220,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 title={project.title} 
                 description={project.description} 
                 image={project.heroImage ? (() => {
-                    const imageUrls = getOptimizedImageUrl(project.id, project.heroImage, 'project', 0);
+                    const imageUrls = getOptimizedImageUrl(project.id, project.heroImage, 'project', 0, 1, getSessionPreset());
                     return imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.fallbackUrl;
                 })() : undefined}
                 type={isNarrative ? 'video.movie' : 'video.other'}
@@ -508,7 +508,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     ))}
 
                     {project.gallery && project.gallery.map((img, i) => {
-                        const imageUrls = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length);
+                        const imageUrls = getOptimizedImageUrl(project.id, img, 'project', i, project.gallery!.length, getSessionPreset());
                         const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
                         return (
                             <div key={i} className="w-full overflow-hidden">
@@ -555,7 +555,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         const shouldProcedural = !hasHero && (!nextProject.gallery || nextProject.gallery.length === 0) && !nextProject.videoUrl;
                         let src;
                         if (hasHero && nextProject.heroImage) {
-                            const imageUrls = getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0);
+                            const imageUrls = getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0, 1, getSessionPreset());
                             src = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
                         } else {
                             src = generateProceduralThumbnail({

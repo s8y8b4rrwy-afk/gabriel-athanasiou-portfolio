@@ -105,12 +105,17 @@ export default function App() {
                 style={{
                   background: `linear-gradient(
                     90deg,
-                    ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
-                    ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
-                    ${THEME.pageTransitions.loading.gradientColors[2]} 100%
+                    ${THEME.pageTransitions.loading.gradientColors.map((color, i) => 
+                      `${color} ${(i / (THEME.pageTransitions.loading.gradientColors.length - 1) * 100).toFixed(1)}%`
+                    ).join(', ')}
                   )`,
                   backgroundSize: '200% 100%',
-                  animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
+                  animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`,
+                  willChange: 'background-position',
+                  backfaceVisibility: 'hidden',
+                  transform: 'translateZ(0)',
+                  WebkitFontSmoothing: 'antialiased',
+                  imageRendering: 'smooth'
                 }}
               />
             )} */}

@@ -134,6 +134,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Auto-detect preset if not provided
   const activePreset = preset || getSessionPreset();
+  
+  console.log('🖼️ OptimizedImage:', { 
+    recordId, 
+    presetProp: preset, 
+    activePreset,
+    width 
+  });
 
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 

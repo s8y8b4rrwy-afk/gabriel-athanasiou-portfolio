@@ -8,7 +8,7 @@ import { parseMarkdown } from '../../utils/markdown';
 import { THEME } from '../../theme';
 import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { saveScrollPosition } from '../../utils/scrollRestoration';
 
@@ -73,7 +73,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 title={post.title} 
                 description={post.content.substring(0, 150)} 
                 image={post.imageUrl ? (() => {
-                    const imageUrls = getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0);
+                    const imageUrls = getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0, 1, getSessionPreset());
                     return imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.fallbackUrl;
                 })() : post.imageUrl}
                 type="article"

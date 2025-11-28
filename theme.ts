@@ -205,7 +205,7 @@ export const THEME = {
       
       // --- Next Project Preview ---
       nextProject: {
-        height: "h-[40vh]",
+        height: "h-[25vh]",
         overlayOpacity: 0.2, // Decreased from 0.3 for brightness
         hoverOverlayOpacity: 0.0,
       }
@@ -241,7 +241,7 @@ export const THEME = {
       ease: "ease-expo",
       
       // Fade In Up Stagger Delay
-      staggerDelay: 100, // ms
+      staggerDelay: 0,//100, // ms
     },
   
     // --------------------------------------------------------------------------
@@ -282,10 +282,14 @@ export const THEME = {
     loading: {
       showText: false,                // Show "Loading..." text?
       showGradient: true,             // Show animated gradient background?
-      gradientColors: [               // Gradient color stops (if showGradient = true)
-        "rgba(255, 255, 255, 0.02)",
+      gradientColors: [               // Gradient color stops (if showGradient = true) - more stops = smoother
+        "rgba(255, 255, 255, 0.01)",
+        "rgba(255, 255, 255, 0.03)",
         "rgba(255, 255, 255, 0.06)",
-        "rgba(255, 255, 255, 0.02)"
+        "rgba(255, 255, 255, 0.08)",
+        "rgba(255, 255, 255, 0.06)",
+        "rgba(255, 255, 255, 0.03)",
+        "rgba(255, 255, 255, 0.01)"
       ],
       animationDuration: "4s",        // Speed of gradient animation
       animationEasing: "ease-in-out", // Easing function: "linear", "ease-in-out", "ease-out"

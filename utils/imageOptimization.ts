@@ -66,18 +66,25 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
  * @returns CloudinaryPreset ('ultra' or 'fine')
  */
 export const getSessionPreset = (): CloudinaryPreset => {
-  if (typeof window === 'undefined') return 'fine';
+  if (typeof window === 'undefined') {
+    console.log('⚠️ SSR: Returning default preset "fine"');
+    return 'fine';
+  }
 
   const STORAGE_KEY = 'cloudinary_preset';
   
   // Check session storage
   const cached = sessionStorage.getItem(STORAGE_KEY);
+  console.log('📦 Session storage check:', { cached, type: typeof cached });
+  
   if (cached === 'ultra' || cached === 'fine') {
+    console.log(`✅ Using cached preset: ${cached}`);
     return cached as CloudinaryPreset;
   }
 
   // Detect and cache
   const preset = detectOptimalPreset();
+  console.log(`🎯 Detected and caching preset: ${preset}`);
   sessionStorage.setItem(STORAGE_KEY, preset);
   return preset;
 };
@@ -114,17 +121,38 @@ export const buildCloudinaryUrl = (
     ? `portfolio-journal-${recordId}`
     : `portfolio-projects-${recordId}-${index}`;
 
-  // Map preset to quality value
+  // Map preset to quality value AND width
   let qualityValue: number | string = 'auto';
+  let widthValue: number = 1600; // Default
+  
+  console.log('🔍 Preset check:', { 
+    'options.preset': options.preset, 
+    'typeof': typeof options.preset,
+    'truthy': !!options.preset 
+  });
+  
   if (options.preset) {
-    qualityValue = options.preset === 'ultra' ? 90 : 75;
+    // Ultra preset: higher quality + larger width for high-end devices
+    // Fine preset: optimized quality + standard width for all devices
+    if (options.preset === 'ultra') {
+      qualityValue = 90;
+      widthValue = 1600;
+      console.log(`✅ Preset "ultra" → quality 90, width 1600`);
+    } else {
+      qualityValue = 75;
+      widthValue = 1600;
+      console.log(`✅ Preset "fine" → quality 75, width 1600`);
+    }
   } else if (options.quality) {
     qualityValue = options.quality;
+    console.log(`✅ Using explicit quality ${qualityValue}`);
+  } else {
+    console.warn(`⚠️ No preset or quality specified, defaulting to "auto"`);
   }
 
-  // Default options - using preset-based quality
+  // Allow explicit width override if provided
   const {
-    width = 1600,        // Base width for full images, thumbnails use 800
+    width = widthValue,  // Use preset-determined width or explicit override
     format = 'webp',     // Force WebP format
     crop = 'limit',      // Prevent upscaling
     dpr = 'auto'         // Auto device pixel ratio
@@ -140,7 +168,20 @@ export const buildCloudinaryUrl = (
   ].join(',');
 
   // Construct Cloudinary URL
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
+  const finalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
+  
+  // Log complete transformation specs
+  console.log(`🎨 Cloudinary URL built:`, {
+    publicId,
+    preset: options.preset || 'none',
+    width,
+    quality: qualityValue,
+    format,
+    dpr,
+    url: finalUrl
+  });
+  
+  return finalUrl;
 };
 
 /**
@@ -175,6 +216,8 @@ export const getOptimizedImageUrl = (
   preset?: CloudinaryPreset,
   width?: number
 ): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
+  console.log('🚀 getOptimizedImageUrl called:', { recordId, type, index, preset, width, totalImages });
+  
   // If no fallback URL provided, return empty strings
   if (!fallbackUrl) {
     console.warn(`getOptimizedImageUrl: No fallback URL provided for record ${recordId}`);
@@ -192,8 +235,29 @@ export const getOptimizedImageUrl = (
     ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
     : false;
   
-  // Build Cloudinary URL with preset and width parameters
-  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, { preset, width });
+  // Build Cloudinary URL with preset and width parameters (only pass defined values)
+  const cloudinaryOptions: CloudinaryOptions = {};
+  
+  console.log('🔧 Building cloudinaryOptions:', {
+    'preset param': preset,
+    'preset type': typeof preset,
+    'preset truthy': !!preset,
+    'preset === undefined': preset === undefined,
+    'width param': width
+  });
+  
+  if (preset !== undefined) {
+    cloudinaryOptions.preset = preset;
+    console.log(`✅ Added preset to options: ${preset}`);
+  }
+  if (width !== undefined) {
+    cloudinaryOptions.width = width;
+    console.log(`✅ Added width to options: ${width}`);
+  }
+  
+  console.log('🔧 Final cloudinaryOptions:', cloudinaryOptions);
+  
+  const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
   
   // Build local WebP path - matches optimization script naming
   const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;

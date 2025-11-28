@@ -147,7 +147,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     }}
                                     onMouseEnter={() => {
                                         if (p.videoUrl) {
-                                            const imageUrls = getOptimizedImageUrl(p.id, p.heroImage, 'project', 0);
+                                            const imageUrls = getOptimizedImageUrl(p.id, p.heroImage, 'project', 0, 1, getSessionPreset());
                                             const primaryUrl = imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.localUrl;
                                             onHover({ url: primaryUrl, fallback: p.heroImage });
                                         } else {
