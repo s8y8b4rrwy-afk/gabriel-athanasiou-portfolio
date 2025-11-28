@@ -41,10 +41,9 @@ export const LoadingSkeleton: React.FC = () => {
       <div className={`${THEME.header.height}`}></div>
       <div className={`${THEME.header.paddingX} pt-20 pb-20 animate-pulse`}>
         <div className="max-w-7xl mx-auto space-y-8">
-          {/* Full width content blocks */}
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="w-full h-32 bg-white/5 rounded" />
-          ))}
+          {/* Two full width content blocks */}
+          <div className="w-full h-64 bg-white/5 rounded" />
+          <div className="w-full h-44 bg-white/5 rounded" />
         </div>
       </div>
     </div>
