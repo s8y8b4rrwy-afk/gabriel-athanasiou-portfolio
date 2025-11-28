@@ -20,7 +20,6 @@ export interface CloudinaryOptions {
   quality?: 'auto:best' | 'auto:good' | 'auto:eco' | 'auto:low' | number;
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
   crop?: 'limit' | 'fill' | 'fit' | 'scale';
-  dpr?: number | 'auto';
   preset?: CloudinaryPreset;
 }
 
@@ -154,16 +153,14 @@ export const buildCloudinaryUrl = (
   const {
     width = widthValue,  // Use preset-determined width or explicit override
     format = 'webp',     // Force WebP format
-    crop = 'limit',      // Prevent upscaling
-    dpr = 'auto'         // Auto device pixel ratio
+    crop = 'limit'       // Prevent upscaling
   } = options;
 
-  // Build transformation string: f_webp,w_1600,c_limit,dpr_auto,q_90
+  // Build transformation string: f_webp,w_1600,c_limit,q_90
   const transformations = [
     `f_${format}`,
     `w_${width}`,
     `c_${crop}`,
-    `dpr_${dpr}`,
     `q_${qualityValue}`
   ].join(',');
 
@@ -177,7 +174,6 @@ export const buildCloudinaryUrl = (
     width,
     quality: qualityValue,
     format,
-    dpr,
     url: finalUrl
   });
   

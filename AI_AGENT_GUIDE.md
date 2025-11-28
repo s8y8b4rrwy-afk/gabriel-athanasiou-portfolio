@@ -33,25 +33,74 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - Removed DPR Auto Parameter from Cloudinary URLs
+**What Changed:** Removed `dpr_auto` parameter from Cloudinary transformation URLs to prevent automatic server-side adjustments.
+
+**The Problem:**
+- Cloudinary was using `dpr_auto` to automatically detect device pixel ratio
+- This created additional transformation variants (1x, 2x, 3x) multiplying cache permutations
+- User wanted full manual control without any automatic Cloudinary decisions
+- DPR parameter was interfering with predictable caching strategy
+
+**The Solution:**
+- Removed `dpr` parameter entirely from `CloudinaryOptions` interface
+- Removed `dpr: 'auto'` from URL building logic
+- Removed `dpr` from console.log debugging output
+- URLs now use fixed transformations without automatic device detection
+
+**Updated Files:**
+- `utils/imageOptimization.ts` - Removed dpr from interface, URL builder, and console logs
+
+**Technical Details:**
+```typescript
+// Before: Automatic DPR adjustment
+f_webp,w_1600,c_limit,dpr_auto,q_90
+
+// After: Manual control only
+f_webp,w_1600,c_limit,q_90
+```
+
+**Cloudinary Options Interface:**
+```typescript
+export interface CloudinaryOptions {
+  width?: number;
+  quality?: 'auto:best' | 'auto:good' | 'auto:eco' | 'auto:low' | number;
+  format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+  crop?: 'limit' | 'fill' | 'fit' | 'scale';
+  preset?: CloudinaryPreset;  // No dpr property
+}
+```
+
+**Performance Impact:**
+- Eliminates automatic DPR variants (reduces transformation count)
+- More predictable caching behavior
+- User has complete control over image delivery
+- No server-side automatic adjustments
+
+**Impact:** Cloudinary now serves images exactly as specified without automatic device-based modifications. All transformations are explicitly controlled by the preset system.
+
+---
+
 ### Nov 28 2025 - Consistent Width Per Session for Cloudinary Images
 **What Changed:** Implemented consistent image width (1600px) across all pages throughout the browsing session, controlled by preset detection.
 
 **The Problem:**
 - Different pages were requesting different image widths (800px thumbnails, 1600px full images)
 - This created multiple transformation variants per image on Cloudinary
-- Each width × quality × DPR combination = separate cached file
+- Each width × quality combination = separate cached file
 - Inconsistent bandwidth usage and cache efficiency
 
 **The Solution:**
 - **Session-wide consistency:** All images use 1600px width for entire session
-- **Preset determines both quality AND width:**
-  - `'ultra'` preset → quality: 90, width: 1600
-  - `'fine'` preset → quality: 75, width: 1600
+- **Preset determines quality only (width is fixed at 1600px):**
+  - `'ultra'` preset → quality: 90, width: 1600, crop: limit
+  - `'fine'` preset → quality: 75, width: 1600, crop: limit
 - Removed all explicit width parameters from view components
 - Single transformation URL per preset across all pages
+- **No DPR parameter** - manual control only
 
 **Updated Files:**
-- `utils/imageOptimization.ts` - Map preset to both quality and width
+- `utils/imageOptimization.ts` - Map preset to quality, fixed width at 1600px
 - `components/views/ProjectDetailView.tsx` - Remove width params
 - `components/views/IndexView.tsx` - Remove width params
 - `components/views/BlogPostView.tsx` - Remove width params
@@ -75,15 +124,31 @@ if (options.preset === 'ultra') {
   qualityValue = 75;
   widthValue = 1600;
 }
+
+// Build transformation: f_webp,w_1600,c_limit,q_90 (no dpr)
+const transformations = [
+  `f_${format}`,      // webp
+  `w_${width}`,       // 1600
+  `c_${crop}`,        // limit (no upscaling)
+  `q_${qualityValue}` // 90 or 75
+].join(',');
 ```
 
+**Crop Mode Explained:**
+- `c_limit` = "limit the size" mode
+- **Never upscales** small images (prevents quality degradation)
+- **Only downscales** images larger than specified width
+- Maintains original aspect ratio
+- Most conservative option for quality preservation
+
 **Performance Impact:**
-- Reduced transformation variants from 16 to 8 per image (2 widths → 1 width)
+- Reduced transformation variants from 16 to 2 per image (2 presets only)
 - Consistent bandwidth usage across all pages
 - Better cache hit rate on Cloudinary CDN
 - Simpler transformation management
+- Predictable, manual control over image delivery
 
-**Impact:** All images now use consistent transformation URLs throughout the session. Preset detection happens once, cached in sessionStorage, and applied to all images. Cloudinary serves the exact same transformation variant regardless of which page the image appears on.
+**Impact:** All images now use consistent transformation URLs throughout the session. Preset detection happens once, cached in sessionStorage, and applied to all images. Cloudinary serves the exact same transformation variant regardless of which page the image appears on. No automatic DPR adjustments.
 
 ---
 
@@ -128,6 +193,67 @@ if (options.preset === 'ultra') {
 - Cloudinary was using dynamic transformations (dpr_auto, q_auto, w_auto)
 - Each unique transformation URL triggered on-demand generation (2-3 seconds)
 - First visitor with a new device combination experienced slow image loads
+- Unpredictable number of transformation variants created
+
+**The Solution:**
+- **Pre-generate 8 transformation variants per image at upload time**
+- Fixed matrix: 2 widths (800, 1600) × 2 qualities (90, 75) × 2 DPRs (1.0, 2.0) × 1 format (webp)
+- **Client-side preset detection** automatically selects 'ultra' or 'fine' based on:
+  - Viewport width × DPR (≥1024px effective → ultra)
+  - Slow connection (saveData or 2G) → fine
+  - Session-cached in sessionStorage for consistency
+- **Zero cold-start delays** - all transformations pre-generated and cached
+- **Note:** Client-side URLs no longer use DPR parameter (removed Nov 28, 2025)
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync.mjs` - Added EAGER_TRANSFORMATIONS array, updated uploadToCloudinary
+- `netlify/functions/scheduled-sync-realtime.mjs` - Same eager transformation additions
+- `utils/imageOptimization.ts` - Added detectOptimalPreset(), getSessionPreset(), CloudinaryPreset type, removed dpr
+- `components/common/OptimizedImage.tsx` - Added preset prop with auto-detection
+- `components/views/HomeView.tsx` - Removed quality props (auto-detect)
+- `components/views/IndexView.tsx` - Removed quality props (auto-detect)
+- `components/views/BlogView.tsx` - Removed quality props (auto-detect)
+- `components/views/BlogPostView.tsx` - Removed quality props (auto-detect)
+
+**Technical Details:**
+```javascript
+// Server-side: Transformation matrix (8 variants per image):
+TRANSFORMATION_PRESETS = {
+  widths: [800, 1600],
+  qualities: [90, 75],  // ultra, fine
+  dprs: [1.0, 2.0],     // Server generates both, client doesn't request DPR
+  format: 'webp'
+}
+
+// Client-side: Detection logic (no DPR in URL):
+if (connection.saveData || connection.effectiveType === '2g') return 'fine';
+if (viewportWidth * dpr >= 1024) return 'ultra';
+return 'fine';
+
+// Client-side URL format (no dpr parameter):
+// f_webp,w_1600,c_limit,q_90  (ultra)
+// f_webp,w_1600,c_limit,q_75  (fine)
+
+// Upload configuration:
+eager: EAGER_TRANSFORMATIONS,  // Pre-generate all 8 variants
+eager_async: false,            // Synchronous (adds ~6-8s per image)
+invalidate: true,              // Clear CDN cache
+overwrite: true                // Replace existing
+```
+
+**Performance Impact:**
+- **Upload time:** +6-8 seconds per image (only affects scheduled sync)
+- **First load:** 2-3 seconds → ~100-300ms (instant from cache)
+- **Storage:** ~180MB for 100 images (well within 25GB free tier)
+- **User experience:** Zero transformation delays on all devices
+
+**Trade-offs:**
+- Longer sync duration (13-17 minutes for 100 images vs 2-3 minutes)
+- Fixed transformation count (predictable, no surprises)
+- Deferred 4K support (can add 2400px width later if needed)
+- Client no longer uses DPR parameter (manual control)
+
+**Impact:** All images now load instantly on first request from any device. Quality automatically adapts to device capabilities without manual configuration. Server pre-generates with DPR variants, but client requests specific quality/width combinations without DPR parameter.
 - Unpredictable number of transformation variants created
 
 **The Solution:**
