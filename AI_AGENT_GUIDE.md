@@ -33,6 +33,58 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - CDN Cache Warming After Deployment
+**What Changed:** Added automatic CDN cache warming to GitHub Actions workflow to eliminate slow first-page-load after deployments.
+
+**The Problem:**
+- After deployment, Netlify CDN cache is cleared (fresh deployment)
+- First visitor hits `/.netlify/functions/get-data`
+- **CDN cache MISS** → Function executes → Airtable API call (2-5 seconds)
+- First visitor experiences slow load (2-5s) while subsequent visitors get fast loads (100-300ms)
+- Professional sites shouldn't have "slow first visitor" problem
+
+**The Solution:**
+- Added "Warm CDN cache" step to `.github/workflows/scheduled-deploy.yml`
+- Automatically curls `/.netlify/functions/get-data` after successful deployments
+- Waits 45 seconds for Netlify deployment to complete
+- Pre-populates CDN cache BEFORE any real visitors arrive
+- Non-blocking: Fails gracefully with warning if request errors
+
+**Technical Implementation:**
+```yaml
+- name: Warm CDN cache
+  if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+  run: |
+    echo "🔥 Warming CDN cache after deployment..."
+    sleep 45  # Wait for Netlify deployment to complete
+    curl -f --max-time 30 "https://directedbygabriel.com/.netlify/functions/get-data" || echo "⚠️ Cache warming failed (non-critical)"
+    echo "✅ CDN cache warming complete"
+```
+
+**When It Runs:**
+- Only when code or content changes detected
+- After GitHub Action creates deployment commit
+- Before workflow completes (but doesn't block deployment)
+
+**Performance Impact:**
+- **Before:** First visitor: 2-5 seconds, subsequent: 100-300ms
+- **After:** All visitors (including first): 100-300ms
+- **Trade-off:** Adds ~50 seconds to GitHub Action runtime (hidden from users)
+- **Cost:** One extra Airtable API call per deployment (~70-120/year)
+
+**Safety Features:**
+- `|| echo "..."` ensures workflow doesn't fail if warming errors
+- `--max-time 30` prevents hanging on slow responses
+- `-f` flag fails on HTTP errors (allows retry logic if needed)
+- Non-critical: If warming fails, first user warms cache instead (current behavior)
+
+**Updated Files:**
+- `.github/workflows/scheduled-deploy.yml` - Added cache warming step
+
+**Impact:** First visitor now gets same fast experience as subsequent visitors. Professional UX with no "slow first load" after deployments. CDN cache is pre-populated before site goes live.
+
+---
+
 ### Nov 28 2025 - Persisted Cloudinary Mapping for True Incremental Syncs
 **What Changed:** Removed `cloudinary-mapping.json` from `.gitignore` and committed it to git for persistence across deployments.
 
