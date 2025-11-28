@@ -33,6 +33,87 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - Journal Status Filtering with Public-Only Display
+**What Changed:** Added status-based filtering to journal posts for granular control over post visibility.
+
+**The Problem:**
+- No way to hide draft or scheduled journal posts from public view
+- All posts in Airtable were displayed on the website immediately
+- Needed ability to prepare posts in advance without publishing them
+- Wanted to control which posts appear in sitemap and social sharing metadata
+
+**The Solution:**
+- Added `status` field to BlogPost TypeScript interface (Public/Scheduled/Draft)
+- Build-time filtering: Only syncs Public or Scheduled posts (excludes Draft entirely)
+- Frontend filtering: BlogView only displays Public posts
+- Sitemap: Only includes Public posts (or Scheduled posts past their date)
+- Share metadata: Only includes Public posts (or Scheduled posts past their date)
+- Backward compatible: Posts without status field default to showing
+
+**Technical Implementation:**
+
+```javascript
+// scripts/sync-data.mjs - Filter during sync
+const status = f['Status'] || 'Draft';
+if (status !== 'Public' && status !== 'Scheduled') {
+  console.log(`⏭️ Skipping ${status} post: ${title}`);
+  continue; // Don't sync Draft posts at all
+}
+
+// Add status to cached data
+status: status,
+```
+
+```typescript
+// types.ts - Added status field
+export interface BlogPost {
+  // ... existing fields
+  status?: 'Public' | 'Scheduled' | 'Draft';
+  // ... other fields
+}
+```
+
+```tsx
+// components/views/BlogView.tsx - Filter display
+const publicPosts = posts.filter(post => post.status === 'Public' || !post.status);
+```
+
+**SEO Protection:**
+- **Sitemap:** Only Public posts included (or Scheduled past their date)
+- **Share Meta:** Only Public posts get Open Graph tags
+- **Frontend:** Only Public posts visible to users and search engines
+- **Cache:** Public + Scheduled synced (Scheduled hidden until status changed)
+
+**Status Flow:**
+1. **Draft** - Not synced, completely excluded from build
+2. **Scheduled** - Synced to cache but hidden from frontend/sitemap/meta
+3. **Public** - Fully visible everywhere (frontend, sitemap, social sharing)
+
+**Airtable Setup:**
+1. Go to Journal table
+2. Add field: "Status" (Single Select)
+3. Add options: Draft, Scheduled, Public
+4. Set default to "Draft" for new posts
+5. Change to "Public" when ready to publish
+6. Run `npm run build:data` to regenerate static cache
+
+**Updated Files:**
+- `scripts/sync-data.mjs` - Added status filtering during sync
+- `scripts/generate-sitemap.mjs` - Already filters by status
+- `scripts/generate-share-meta.mjs` - Already filters by status
+- `types.ts` - Added optional `status?` field to BlogPost interface
+- `components/views/BlogView.tsx` - Filter to Public posts only
+
+**Performance Impact:**
+- Draft posts excluded from sync (smaller cache file)
+- Scheduled posts cached but hidden (ready for instant publishing)
+- No runtime performance change
+- Backward compatible with existing posts
+
+**Impact:** Full control over journal post visibility. Can prepare posts in advance (Scheduled) without exposing them. Search engines and social crawlers only see Public posts. No risk of premature indexing. Change status in Airtable → next build updates visibility.
+
+---
+
 ### Nov 28 2025 - Display Status Field for Project Visibility Control
 **What Changed:** Replaced binary "Front Page" checkbox with granular "Display Status" single-select field offering 4-tier project visibility control.
 
