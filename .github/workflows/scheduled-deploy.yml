@@ -120,6 +120,14 @@ jobs:
           fi
 
 
+      - name: Warm CDN cache
+        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        run: |
+          echo "🔥 Warming CDN cache after deployment..."
+          sleep 45  # Wait for Netlify deployment to complete
+          curl -f --max-time 30 "https://directedbygabriel.com/.netlify/functions/get-data" || echo "⚠️ Cache warming failed (non-critical)"
+          echo "✅ CDN cache warming complete"
+
       - name: Skip Deploy
         if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
         run: echo "✅ No changes detected. Skipping deploy to save build credits."
