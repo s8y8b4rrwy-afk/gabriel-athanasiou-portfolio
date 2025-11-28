@@ -243,7 +243,14 @@ async function buildProjects(festivalsMap, clientsMap) {
     });
   }
 
-  console.log(`[sync-data] ✅ Fetched ${projects.length} projects`);
+  // Sort projects by release date (or work date as fallback), newest first
+  projects.sort((a, b) => {
+    const dateA = a.releaseDate || a.workDate || '';
+    const dateB = b.releaseDate || b.workDate || '';
+    return dateB.localeCompare(dateA); // Descending order (newest first)
+  });
+
+  console.log(`[sync-data] ✅ Fetched ${projects.length} projects (sorted by date)`);
   return projects;
 }
 

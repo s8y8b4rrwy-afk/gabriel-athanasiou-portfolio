@@ -1,85 +1,72 @@
 {
   "projects": [
     {
-      "id": "recEegt54sIu0M5ib",
-      "slug": "diesel-express-yourself-2022",
-      "title": "Diesel: Express Yourself",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2022",
-      "releaseDate": "2022-11-28",
-      "workDate": "",
-      "description": "",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-0JBr47mbJOLAgnvZxlL5Q/6kHMRnqelPo9e6uyKjcf_NlFfWCafMfG6DPhL5iJm3FLfGn22MxkZhpWpjLcfFCXTGQWFLgdlnR5jUpi5tA57lKEiPxTXZBtgA_X5VO9hgGDrOPCHkAr4vBNTp8tswgOEyH_3uHeXkDI1533NVzux1PBUNz_-rhGrGJa7O-c7DnDq8qsIPUCjQxMWiHV0mSC/P4P5-WwTzWa1e46OY2Rw84ke3Q1t81v3ThH3Vu030hE",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-0JBr47mbJOLAgnvZxlL5Q/6kHMRnqelPo9e6uyKjcf_NlFfWCafMfG6DPhL5iJm3FLfGn22MxkZhpWpjLcfFCXTGQWFLgdlnR5jUpi5tA57lKEiPxTXZBtgA_X5VO9hgGDrOPCHkAr4vBNTp8tswgOEyH_3uHeXkDI1533NVzux1PBUNz_-rhGrGJa7O-c7DnDq8qsIPUCjQxMWiHV0mSC/P4P5-WwTzWa1e46OY2Rw84ke3Q1t81v3ThH3Vu030hE",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/NAcK2njROKEa-yhBNJNk_w/MzcocbhpP-3_8OSOY5BwK4MAQJu_VUbyGIBRGm5IsFBOmJODzbL_03bB_Pm2Jp44qMANCzDvVe92dXdk1eC04UK14jMb4LM_a-sSI3kdm3rlUQ7sActJf7fF3I4rudfAWgEefjjG4P4oF35Wo7apir6Aqf_4a_lUHQiAJzq26cSQrFOHsX9a5enLUhuzMLi6/IqydTvQ72IMxDvWavh7f6lj18Pye_H074JhWpA0oJc0"
-      ],
-      "videoUrl": "https://vimeo.com/892956102?fl=pl&fe=vl",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec2xl62i0mgEo1go",
-      "slug": "i-look-at-the-times-2023",
-      "title": "I Look At The Times",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-05-25",
-      "description": "",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/qLWhriJaM-D7ITBn9XJnGw/kWyLxQ7mWYIrhzM1-gKfOoAVX_-x3aj0-_Onm81Iw_B1oWHwUOyfgYjKKu4zZO1vyDu0OeyckdTjqODFoO-fJV8qY1ughqp_ffoCz1lD5bJVojHNQXVr7FamARIpUKb7bbGM5569PbcpW-yCEoV1e7Pc5J4g8PppI1aP6gKJQeTtgJ4IvQNU9yoVeKle25Cv/2Q4ZqVGkdOiFSfGsGUEPuuzpJhjjkNYBmHNEpDS5opE",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/qLWhriJaM-D7ITBn9XJnGw/kWyLxQ7mWYIrhzM1-gKfOoAVX_-x3aj0-_Onm81Iw_B1oWHwUOyfgYjKKu4zZO1vyDu0OeyckdTjqODFoO-fJV8qY1ughqp_ffoCz1lD5bJVojHNQXVr7FamARIpUKb7bbGM5569PbcpW-yCEoV1e7Pc5J4g8PppI1aP6gKJQeTtgJ4IvQNU9yoVeKle25Cv/2Q4ZqVGkdOiFSfGsGUEPuuzpJhjjkNYBmHNEpDS5opE",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/zaRTjqEYkaSndlXXNprHIQ/dEHtaoZCnyMf878vKGSFC0y0LYuKwMB1_jPfwFQ5Yg-1bKGbvI9BLg-fZBlNo9DpVZfDvhKNOsw6ZWIOVNIGOceQqqRmV81-bbYfNPkQbWR5gczhI3hpuyWGryECvo7rz__ioDO1NWEtUoTapi1rcdOav5LPwQbYf4Xdt7WlGIiUBNOVEIjIaKzCextdKGhp/VVWbdvx6wDlRrAwz8s7Hyd5hqpF9NhJCaJwgs6LtW78",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/V9HqYoJz7lJIi_Mr7Hkmzw/SuyZ6WEgkUKBzNXYpj5C0Oyxysvm_MFSI2GSjF9YZjCgON8EiqBe7eWwKkpkC6zEXYwKGSmt1QriJnAzh_S6Da9bGt694Hr2NMXEyf5Aa0uA_QQoajKiBgbjw4BbIEb63xKj5Yo1Qu7HsnRL-tl8v1XR9kheZb0FpmlMIb0SjYEAddl2R0oncRb8bF3WgjAf/wIffojytlb0iscxOjfJu53zs_zJL1Fx7JNOsoRzRAtA",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AsrojQaewUf-26xnvE7_OA/a3w5BffL8EFRWp5M001HQLYumv23fpAwgmCytjeyPcngAP_xlDPRaNhxsSmJZ1aeyBX0TH28TjwDolri_Tu-949OO2nsSsT0QyHr_ax6Wnlzglk95G7Qk9raJOZ-wTl4sGyr_9Cgq4rtNOU1wQ09FdnDHYej7xmWynIJZfixb5rFxPSYhPmu9pFw-B76N_BY/Vr5IgxoYSF7AHIz58jvNXoExVACG4J-rqCEBFpfRDII"
-      ],
-      "videoUrl": "https://vimeo.com/798545289?turnstile=0.SkfY8gT3RnI5AGsPaDjRSi_mzTbXKWlPPWQA8Xc1MLzovmpurEAiMFtgpA4p2pFr2_cl2X3poHGETbSlk3ng7FOh0tzWWE_ldY8ZKU_ZCfENM84NMhnPh5UVMmk53dnn9YpGm0Md1hXXhCDIcbXRHAl--qEV4aN8k0_iRNgx7ZQ9ehdzfJGgW5WxGBmaAeEmO1_GhU3n1rKgAcTcj2DjGNQcVTWjP7yIcMlV47-OPuLiGeGU0LjpEOwMvxETKWo98QaaFIj4-E6BEqf7ZVODAU3aUISr9217XKZ-ACRBEnTSUVg6Bu-I-kW6Z8ja-Tp576IDSD4xlbI8wvcR7amCq5gQ1o9aUXee_aM96eGq99AlMQqSA01IqdCwpO6ocFKfpFnwVXgtA9Q5XLAZSLtTsJ0meda278e0oz5x-lLYqnjn-5jF8BcPJFNzr8bEwWCGAfbN9OG8uQAoQlhxbXkkskhm422VKVbxSOYhWS_x8Gd65xh1lEnzU01DC1L8MIQRnAKO_BcpUX2zAte652jxK28zv15K8PwSgSpgr_GYPQb2l6n_kjrLgsU8_AgJNri4DhMwXjPPMLw9U_bkJ_XFk9JxMaQ93iDPoCEDXw4jVjJxzL_gVNYadn9v56zx-zoQ9AHkBdRm7A9uwINjt_iW3UkvqIltvn28NVjXaj6FP2wbi6W66_PSZ-s74Bsho_VwYo8BQMkGfaNxrkLyoMrlKvMoVAfpwtXAKmAEs78Tn7q2VVVNHGiGBoHANASMcRltciSvsbAxiMoI4PofmaaHRRBao98wmtKWTiRW5hJe8cXu1MpvRN1Hj_koWCuzbckFZUmYRuFqLoa8X0i-IlpXcjBXYoBs-b_JWYG_2BZfepHnSNrqfPZCaac8sB0g7ybF.0B3LyZRFD51YP6DG_ZrXBA.10e8bc9aeb0f216206d062cf9c85b5023526d4361f8c1ecccc9c9305ab858b0c",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec3gxVcxcaIaaamx",
-      "slug": "the-secret-of-life-2016",
-      "title": "The Secret Of Life",
+      "id": "recNNKSzQAsbchpCi",
+      "slug": "the-newspaper-2025",
+      "title": "The Newspaper",
       "type": "Narrative",
       "kinds": [
         "Short Film"
       ],
       "genre": [
-        "Art House",
-        "Comedy"
+        "Drama",
+        "Mystery",
+        "Period"
       ],
-      "productionCompany": "Film Lemon",
+      "productionCompany": "Double J Films Limited ",
       "client": "",
-      "year": "2016",
+      "year": "2025",
       "releaseDate": "",
-      "workDate": "2016-04-05",
-      "description": "Aris finds out the secret of life, written in a small pink notebook.",
+      "workDate": "2025-02-11",
+      "description": "In a pristine 1950s suburb, a newlywed discovers cryptic puzzles in the daily newspaper that hint at a buried town secret and her husband’s past. As the clues unravel, so does her reality. The Newspaper is a suspenseful descent into appearances, trust, and the quiet power of uncovering the truth.",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/iqcWuUwVAmwemTKCKGQ3kw/FLVsT7ifpMYRHZk7Jjb6FLCWr6ty3BXqTXie00kdyYn1mhl2g3rrOknOPNTShKkUWiaWBLhgpjlJeRQ9_kD7xywjY5nvxpqRxtC1tRQ5LfeXa8mNqahB5rbVae0cCZvtQ7KDPiBPCJWDk0cTgvHIooqDF9ytzkG96590cMlOvRc/H9pdqinvHmkSw1WdPUNTYOrNeA0aEfgy-Dz3wL-9-X8",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/iqcWuUwVAmwemTKCKGQ3kw/FLVsT7ifpMYRHZk7Jjb6FLCWr6ty3BXqTXie00kdyYn1mhl2g3rrOknOPNTShKkUWiaWBLhgpjlJeRQ9_kD7xywjY5nvxpqRxtC1tRQ5LfeXa8mNqahB5rbVae0cCZvtQ7KDPiBPCJWDk0cTgvHIooqDF9ytzkG96590cMlOvRc/H9pdqinvHmkSw1WdPUNTYOrNeA0aEfgy-Dz3wL-9-X8",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/aU1eI_ZIEi_dStVIwceOvQ/X9_KJVm7uEMbYraLEHHI2GAbIFj3FZpp1ERyX5BvyRBYsQz1gwtckm2PoeR2gCbfMUXrRW7Sv-82LpW2Yy8Td-fYZt1z_MK1PHqiYvuChcZlM3K5adM2aBBDnLPHIgyFXhNmIU_fqdaZkI4peZAZFSBAkI4ARKZc7S4rA9cfEaSELcVq7QiytisMkzJ2DytV/F17C3BU2biGCpT-o1IvKE5V3ntYwShU1qo1DS-Ku2Hs",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AhmQ0oi2XEm7tSHRWhYJTQ/z73gJXb12fWvmIvr2bL3PSAwqNyZKQ5ssHS1EOdertwfmEElencH8BV7EoX_2ERKp5rWnBRUWHG7yU48CtJAA7XGR-fxJSVP9XkCUh-WV2tFRN3eJyivFb-jRr24svjBK_PM3ljARiWG0U5HIxtF9503BCwu42OslFdx44bCKGelWGQq7izgUUtAYBDHennC/JQYqbAsKeo81h-HqwhgPRKGS3DihHOw4O1NU8QI9Efw"
+      ],
+      "videoUrl": "https://vimeo.com/1091179299/956ce9fee0",
+      "additionalVideos": [],
+      "awards": [
+        "Raindance 2025"
+      ],
+      "credits": [],
+      "externalLinks": [
+        {
+          "label": "Letterboxd",
+          "url": "https://letterboxd.com/film/the-newspaper-2025/"
+        },
+        {
+          "label": "IMDb",
+          "url": "https://www.imdb.com/title/tt33990617/"
+        }
+      ],
+      "relatedArticleId": "recDXQQWqEqLnstIx"
+    },
+    {
+      "id": "recvC2kbUF9Dh5h6f",
+      "slug": "talon-pipesnug-fluesnug-2025",
+      "title": "Talon: Pipesnug & Fluesnug",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [
+        "Animation"
+      ],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2025",
+      "releaseDate": "",
+      "workDate": "2025-01-31",
+      "description": "For this animated project, Talon challenged me to create a unique and engaging way to showcase their Pipe Snug and Flue Snug sealing products. Instead of a conventional demonstration, I developed a game-inspired adventure, where two characters embark on a journey facing exaggerated, comical challenges that represent real-world sealing issues. Drawing inspiration from classic games, I designed a battle system reminiscent of Final Fantasy VII to integrate the product’s unique selling points (USPs). Every encounter—both characters and enemies—symbolizes the obstacles of proper sealing in a playful and engaging way. I was responsible for character design, scriptwriting, and storyboarding the entire project before collaborating with an animator, who brought everything to life. This was one of my first large-scale animated projects, blending storytelling, humor, and technical product showcasing into a fresh and dynamic experience.",
       "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/821851987-f61806e730d37fe469fc3475bc3d8e0c84fd8e7a67d50ce9640606491986a3ba-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/365961981/4c19e43bb3",
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/vIkrsPqmgToIWiUhahXajw/oufarDHVs1i0mw96CpWnXkidw7z4zVNAJGIiseJx12r6mInPbEnaWv4-FZQXYN6AaVhFYNwbKAVDp53bkz4EdFMhWTXMY717ZZFbRvWYgCK-yd1-69NoByakC4zvfbwiOrT2SRu9VWAnEkGRPPUL3NyF5k6ktylufRbhvtdjNrd6XNTr5bfKOiiuptuIvkYD/OnvDVl0UcxGi42NOveFiDKyeG2T5QjQNGanovBIvz3c",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/vIkrsPqmgToIWiUhahXajw/oufarDHVs1i0mw96CpWnXkidw7z4zVNAJGIiseJx12r6mInPbEnaWv4-FZQXYN6AaVhFYNwbKAVDp53bkz4EdFMhWTXMY717ZZFbRvWYgCK-yd1-69NoByakC4zvfbwiOrT2SRu9VWAnEkGRPPUL3NyF5k6ktylufRbhvtdjNrd6XNTr5bfKOiiuptuIvkYD/OnvDVl0UcxGi42NOveFiDKyeG2T5QjQNGanovBIvz3c"
+      ],
+      "videoUrl": "https://vimeo.com/1046489536/b18838d733?ts=0&share=copy",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -87,24 +74,24 @@
       "relatedArticleId": null
     },
     {
-      "id": "rec3po7P6S00cGYXX",
-      "slug": "aru-3-words-video-2023",
-      "title": "Aru 3 Words Video",
-      "type": "Uncategorized",
+      "id": "recryV8jTtQDWLB9B",
+      "slug": "squid-campaign-2025-2025",
+      "title": "Squid Campaign 2025",
+      "type": "Commercial",
       "kinds": [
-        "Social"
+        "Campaign"
       ],
       "genre": [],
       "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
+      "client": "SQUID",
+      "year": "2025",
       "releaseDate": "",
-      "workDate": "2023-10-30",
-      "description": "This is a 3 word video and stuff.",
+      "workDate": "2025-01-27",
+      "description": "After a successful collaboration with SQUID the year before, I was commissioned to lead their 2025 crowdfunding campaign. We traveled to Dublin to capture the story behind SQUID, meeting with the founders and crafting a dynamic video that blends motion graphics, live action, and animation. The video highlights SQUID’s innovative approach to digital loyalty cards and introduces Wave, their new feature designed to reward users seamlessly through purchases. The goal was to create an engaging and compelling piece to drive the campaign forward - and we did just that.",
       "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/TejbwNWk5JI/maxresdefault.jpg",
+      "heroImage": "https://i.vimeocdn.com/video/1984887183-fa809f85880f91a7c01567d52d49894ee0d817965ff414f48212c6c21baec124-d_295x166?region=us",
       "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=TejbwNWk5JI",
+      "videoUrl": "https://vimeo.com/1058682269/f0dc76ee99",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -112,34 +99,9 @@
       "relatedArticleId": null
     },
     {
-      "id": "rec4GWEg9Fzqz1vPk",
-      "slug": "gettin-lost-2018",
-      "title": "Gettin’ Lost",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2018",
-      "releaseDate": "",
-      "workDate": "2018-01-06",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/xLPnSsTXZYs/maxresdefault.jpg",
-      "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=xLPnSsTXZYs",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec5Tles2ludfUSpq",
-      "slug": "wakecup-a-serene-autumn-escape-2022",
-      "title": "Wakecup – A Serene Autumn Escape",
+      "id": "recrN5Q2SUgDfQDSG",
+      "slug": "neigbourly-2024",
+      "title": "Neigbourly",
       "type": "Commercial",
       "kinds": [
         "Commercial"
@@ -147,64 +109,39 @@
       "genre": [],
       "productionCompany": "Storyflow Entertainment Limited",
       "client": "",
-      "year": "2022",
+      "year": "2024",
       "releaseDate": "",
-      "workDate": "2022-01-01",
-      "description": "A project I created for WakeUp, WakeCup is a simple yet peaceful concept featuring their water bottle/thermos. The idea was to capture the feeling of a crisp autumn hike in the UK – someone enjoying a quiet moment in nature with their drink in hand. Serene, atmospheric, and effortless, the project was all about embracing the small joys of being outdoors. A fun and refreshing shoot that kept things minimal yet meaningful.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1557087653-cf66c2f732cd0cbbcd74d8e15426854f6e401d73e67519ba6cce179681180c4f-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/775976148",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec6xJwCFvFpCPMgZ",
-      "slug": "shire-homecare-2023",
-      "title": "Shire Homecare",
-      "type": "Uncategorized",
-      "kinds": [
-        "Promo"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-12-01",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1940196926-9b66f184e8d7c90bbac8b54a37d867a02c37e70ec34ec30c63fe57e282ead619-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/897550659",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec8AuJkcqKruETnG",
-      "slug": "erin-music-video-2019",
-      "title": "Erin Music Video",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Global Consultancy Services ",
-      "client": "",
-      "year": "2019",
-      "releaseDate": "",
-      "workDate": "2019-04-11",
+      "workDate": "2024-06-21",
       "description": "",
       "isFeatured": false,
       "heroImage": "",
       "gallery": [],
       "videoUrl": "",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recd04nWeAvqRXQwL",
+      "slug": "aru-open-day-videos-2024",
+      "title": "Aru: Open Day Videos",
+      "type": "Uncategorized",
+      "kinds": [
+        "Video"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2024",
+      "releaseDate": "",
+      "workDate": "2024-06-18",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1888786362-69c40eb75a14e0b0ecd40c794ad9d7d6080887559b569dca5fa4ab74c6b21764-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/974469679/c4e10c67c3",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -230,87 +167,6 @@
       "heroImage": "",
       "gallery": [],
       "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rec9d8M9kuWPnzbmt",
-      "slug": "material-life-2018",
-      "title": "Material Life",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2018",
-      "releaseDate": "",
-      "workDate": "2018-11-07",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/z0ypUWmTByk/maxresdefault.jpg",
-      "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=z0ypUWmTByk",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recAhJUVXiAJyvOAK",
-      "slug": "sports-analytics-school-launch-video-2023",
-      "title": "Sports Analytics School Launch Video",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-06-30",
-      "description": "We created the launch video for Sports Analytics School, a unique platform where football fans learn programming by analyzing real-time match data—almost like a game itself. The challenge was to showcase both the excitement of football and the learning process, while integrating key stats in a way that felt dynamic and engaging. Our approach blended real people enjoying the sport with motion graphics and stock footage, capturing the energy of both the game and the analytical process. Balancing storytelling with data visualization was tricky, but we found a rhythm that made it all work. A fun project that merges sports, tech, and education into an exciting experience!",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1795559945-4e9ae41551855f9cab24534937a6904432b10b295397079ca69d8a66af259982-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/911185728/a934cb9990",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recC9iL5Z1deoxc30",
-      "slug": "virgin-media-it-s-a-steal-2019",
-      "title": "Virgin Media It's A Steal",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [
-        "Comedy"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2019",
-      "releaseDate": "",
-      "workDate": "2019-09-06",
-      "description": "A fast-paced, comedic ad where a burglar’s night takes an unexpected turn – instead of making a getaway, they end up securing an incredible Virgin Media deal for their friends. A playful take on how irresistible the offers are! This was such a fun project to film, balancing tight timing with sharp storytelling to pack humor and energy into every second.",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/li_is9palpKt15k-Ms1N7A/ZbeHPhUSOG9z-xjlOwFhHdbsBPgQB81uQFfLf6NPD56C0D0ifW-Pj5k1cO5IBBpUvoeOSAyd4Ee-2eQSqUakef0vN6B-MQjkarIR6tslDHKJfBSLMJrBM7jbqIGYEuebC8mmxGaaKtCIHenXNJufpM66EijlmXGp2xFUZ6oIauJ9ctM17njlekq9r2U1SmYr/JSxgADrpvZQLq2ANm9lnM5cDolQbyTZk5YygbAHkEWY",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/li_is9palpKt15k-Ms1N7A/ZbeHPhUSOG9z-xjlOwFhHdbsBPgQB81uQFfLf6NPD56C0D0ifW-Pj5k1cO5IBBpUvoeOSAyd4Ee-2eQSqUakef0vN6B-MQjkarIR6tslDHKJfBSLMJrBM7jbqIGYEuebC8mmxGaaKtCIHenXNJufpM66EijlmXGp2xFUZ6oIauJ9ctM17njlekq9r2U1SmYr/JSxgADrpvZQLq2ANm9lnM5cDolQbyTZk5YygbAHkEWY",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Xi0SQsuJ1ybJw30TO23JIA/57P7MxyWMc3uium75eBESeoka-q-vrod5Ds2kFgqZzB7H1RK_9csvRywS-quHF5JpclrkqQQ1aDZzjzss06_ekSfAabXzupTg2lX9T2AKCUfpN9RCH3c_c-cp-4n-LVuGY3_ayFbMqxd4oRRcjo5NerAq3B8QsdJ8QFCyUSmOeXPi1RCM4tkeu9rsfORc7hU/UKoV4jx8ivAnuAwQq4SG2cvBaOfRhkXrDwGa8A0rpug",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/TS0r7qrTn9aVPPPm8Q95vA/Ehl-oLtBlipvus4cTodEcZoONAgh7YkBMFdtSdF6tymUAkZb3lFFMJhtMUFLzmzXW8A_XeIyCnoIXr9DVLW8fZecfDeOafH-rAg-pzO8yL53WDyW7Ep1Q_ExEX9IZT3dOkpQVMapYF6Rasp6fgEquHdQ3PVfswbcX3ibPMnsCyvrJuMGSh7K0bpYXo3C0xsJ/8-l4nE2tiJZ7LHGOSXNlP1t_5JZvWH_clH7LEza9-Sw"
-      ],
-      "videoUrl": "https://vimeo.com/396351507",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -349,24 +205,24 @@
       "relatedArticleId": null
     },
     {
-      "id": "recGP4lK31t7NWk1i",
-      "slug": "the-textile-building-investors-pitch-video-2022",
-      "title": "The Textile Building Investors’ Pitch Video",
-      "type": "Commercial",
+      "id": "recQ1KNF9qX94IbJm",
+      "slug": "abbey-quay-2024",
+      "title": "Abbey Quay",
+      "type": "Uncategorized",
       "kinds": [
         "Promo"
       ],
       "genre": [],
       "productionCompany": "Storyflow Entertainment Limited",
       "client": "",
-      "year": "2022",
+      "year": "2024",
       "releaseDate": "",
-      "workDate": "2022-12-13",
-      "description": "I directed the investor pitch video for The Textile Building, a landmark Victorian warehouse in Newark-on-Trent undergoing transformation into 39 modern apartments. The project presented the unique challenge of showcasing an unfinished building, which we addressed by integrating architectural renderings, aerial footage of the surrounding area, and interviews with the architects and developers. This approach effectively conveyed the vision and potential of the development to prospective investors.",
+      "workDate": "2024-01-25",
+      "description": "",
       "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1940196225-31562253c0a9716a98a3a4450a3cd2c314dcb24893fda52104daac07f9df6897-d_295x166?region=us",
+      "heroImage": "",
       "gallery": [],
-      "videoUrl": "https://vimeo.com/872351947",
+      "videoUrl": "",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -392,6 +248,577 @@
       "heroImage": "https://i.vimeocdn.com/video/1819045538-5075b8b99cb2f4f86afeab155e03bf4776bb4626ccec0b7c91f0df60b95ee7e0-d_295x166?region=us",
       "gallery": [],
       "videoUrl": "https://vimeo.com/924693982/c6f1951d6c",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recWobs12nEl6SX1A",
+      "slug": "uobm-aw23-2023",
+      "title": "Uobm Aw23",
+      "type": "Uncategorized",
+      "kinds": [
+        "Video"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-12-16",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://vumbnail.com/1021318638.jpg",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/1021318638/9ea1a6d473, https://vimeo.com/1021319370/197d81ed5f, https://vimeo.com/1021319110/4df4c33c95, https://vimeo.com/1021318879/c60602431b",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec6xJwCFvFpCPMgZ",
+      "slug": "shire-homecare-2023",
+      "title": "Shire Homecare",
+      "type": "Uncategorized",
+      "kinds": [
+        "Promo"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-12-01",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1940196926-9b66f184e8d7c90bbac8b54a37d867a02c37e70ec34ec30c63fe57e282ead619-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/897550659",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recxSNlQVhqiz1ftt",
+      "slug": "brand-storytelling-event-2023",
+      "title": "Brand Storytelling Event",
+      "type": "Uncategorized",
+      "kinds": [
+        "Event Video"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-11-24",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1761190324-a7fca645b3e56ea2603566fce521361e0d54073f6c797cc127e6b3dced8db8f4-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/889533159/edae4b50f1?share=copy",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recg8GIk3yfhudveK",
+      "slug": "cordex-x-polymateria-agritechnica-2023",
+      "title": "Cordex X Polymateria Agritechnica",
+      "type": "Uncategorized",
+      "kinds": [
+        "Promo"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-11-17",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/nJfyS4zEa3o/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=nJfyS4zEa3o",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recURzloIju3xMoDR",
+      "slug": "health-lottery-whish-2023",
+      "title": "Health Lottery Whish",
+      "type": "Commercial",
+      "kinds": [
+        "Social"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-11-03",
+      "description": "WHISH (Whitby Hidden Impairment Supported Help) is a wonderful space where parents and children with hidden impairments can engage in various activities together. For this project, we took a documentary-style approach, following a day at the facility and capturing heartfelt testimonials from parents. It was incredibly moving to witness the impact of WHISH firsthand and to highlight the importance of this community. Plus, we got to play with a big snake - which was an unexpected but fun bonus!",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1751772036-5dd9e8c215aabba917685de2164bf3a5af6585d7f4f99e5b5fcae47888b8bada-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/883315464/0850d50bbe",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec3po7P6S00cGYXX",
+      "slug": "aru-3-words-video-2023",
+      "title": "Aru 3 Words Video",
+      "type": "Uncategorized",
+      "kinds": [
+        "Social"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-10-30",
+      "description": "This is a 3 word video and stuff.",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/TejbwNWk5JI/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=TejbwNWk5JI",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recdnE3dAcg4aefgi",
+      "slug": "pascalle-video-courses-2023",
+      "title": "Pascalle Video Courses",
+      "type": "Uncategorized",
+      "kinds": [
+        "Courses"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-10-23",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "",
+      "gallery": [],
+      "videoUrl": "",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rectMqCkoDwqS9qks",
+      "slug": "easol-podcast-01-2023",
+      "title": "Easol: Podcast 01",
+      "type": "Uncategorized",
+      "kinds": [
+        "Social"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-09-28",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://vumbnail.com/1021317464.jpg",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/1021317464/069ff45669, https://vimeo.com/1021317547/8f90879c55",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recYUzFwdDdiIHdd6",
+      "slug": "gilley-uk-2023",
+      "title": "Gilley Uk",
+      "type": "Commercial",
+      "kinds": [
+        "Campaign"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "Gilley",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-08-02",
+      "description": "We were commissioned by Gilley UK, to create a compelling campaign video for their Kickstarter launch, introducing their innovative umbrella. Our approach blended dynamic cinematography - locking the camera to the product for a unique perspective - with mixed-media elements, including product photography, to enhance engagement. The video showcased the umbrella seamlessly integrated into everyday life in London. The result? A highly successful campaign that exceeded expectations, raising £74,550 from 1,123 backers, far surpassing the initial £6,500 goal.",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/v-CU5xAq_MdgV6u7cBb4cw/ckw_aK6Ig91fxq7d4LKBPuzu4tz5Re0rjS8SFh61zVTXYK5AfL2uReeaEhCFQz7-1YzwBbuXxSpwIHafKGr9RqIgHdzokGncwWs2y3HhNdWPbWWFKajkfX3lJCNv2vMBnHxidxXRftRyFNeHO54FvkhZzeURmcF3Ph9D77j_EDiD4peLhDn0n8HP5UQoapjn/H3JMSKltwiTOHHI-1HOyvOgxFJxpgcgKLitnxj5-lkw",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/v-CU5xAq_MdgV6u7cBb4cw/ckw_aK6Ig91fxq7d4LKBPuzu4tz5Re0rjS8SFh61zVTXYK5AfL2uReeaEhCFQz7-1YzwBbuXxSpwIHafKGr9RqIgHdzokGncwWs2y3HhNdWPbWWFKajkfX3lJCNv2vMBnHxidxXRftRyFNeHO54FvkhZzeURmcF3Ph9D77j_EDiD4peLhDn0n8HP5UQoapjn/H3JMSKltwiTOHHI-1HOyvOgxFJxpgcgKLitnxj5-lkw",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Zk79oZgPgts6_6KrAZZ0Tg/5xKhQs03v-FpUv14Q6_GQ4bFHqOsxWt8R4cfTRjd7AUVqe90PnLkI3NrbeGnWwKGFUC1GpAU3mbdLN07ojxS3eIsJCDzMIg7NXSW9X6j7ZnjxnWK_2bwPwv95YzkVTZ5ihXBndI3-Q4IudjrJYVAb-_DkKIUb9qCg-IsqTKwStzUL6PPVldjSAtQJt8KPlB7/B1xiq1ZRVYp946EQPolsOIC_hoR-QK5m7orol6JeTts",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/08YNbJB-oAhfAz1wt4ix1A/QJZu0RkTLcptCYt0xuecJF72noMLd_KoRJJa2Fw4QU4NbbQsF436PZkTT8ar0iFyTxkopoaSJ8qlajUdTuKQB3rKwpD8f-H0iT9BDMfc36mncvdBCMKvxDfsz1YuI0n0Kwq2wvBEc9HF-Ku8qloeBn4x92hIsiGwbt5YDR9OaA2FZwvLI0ojQzDi8tQIxfYp/xFiXkHqVi6q0k0EPXI1a79LcK-O4c4MkGhZKq6j7wNI"
+      ],
+      "videoUrl": "https://vimeo.com/883275482, https://vimeo.com/892877913",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recVlqGrss78joP5t",
+      "slug": "restspace-2023",
+      "title": "Restspace",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-07-17",
+      "description": "For RestSpace, I was commissioned to create a video campaign showcasing their innovative sleeping booths designed to help employees recharge during the workday. After exploring several concepts, we landed on a dynamic POV-style approach, immersing viewers in the firsthand experience of using RestSpace. To achieve the look of a seamless one-take, we mounted a RED Komodo camera directly onto the lead actor’s head - an exciting yet challenging process that required close collaboration. Since the actor essentially became the cinematographer, we worked together to ensure every moment was captured effectively. Choreographing movement through space, managing lighting shifts, and coordinating a large cast added to the complexity, but ultimately, we created a visually engaging and immersive commercial. It was a unique project, both technically and creatively, and a rewarding challenge to bring to life.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1976826673-3b8ac81bbe72da2757adf9d80eec5de2cc2cbb5ba3ab5c13dfc9112f7e111675-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/1051931785?share=copy",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recgkaJdMxZRAQ7b4",
+      "slug": "aru-courses-23-edit-2023",
+      "title": "Aru Courses 23 Edit",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-07-10",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://vumbnail.com/871956303.jpg",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/871956303, https://vimeo.com/871956434, https://vimeo.com/871956656",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recloUQzk1n5hFU57",
+      "slug": "anglia-ruskin-university-london-2023",
+      "title": "Anglia Ruskin University London",
+      "type": "Commercial",
+      "kinds": [
+        "Campaign"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-07-10",
+      "description": "For Anglia Ruskin University London, we led a large-scale campaign to capture the essence of student life and academic excellence. The project included producing many testimonial videos for individual courses, three hero videos showcasing the university’s facilities, and a hero video where students shared their experiences in a single word. Over several days, we conducted interviews with students and professors while capturing high-quality B-roll footage of the campus. We also incorporated aerial videography to highlight the university’s environment from a fresh perspective. The result was a dynamic and engaging campaign that authentically represented the university’s spirit and offerings.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1910066229-12b8a21095b4c180f7f76ccb405df7cdeaef835ab10387d93e655d6ae7572b8c-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/881242794/e394444e54",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recAhJUVXiAJyvOAK",
+      "slug": "sports-analytics-school-launch-video-2023",
+      "title": "Sports Analytics School Launch Video",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-06-30",
+      "description": "We created the launch video for Sports Analytics School, a unique platform where football fans learn programming by analyzing real-time match data—almost like a game itself. The challenge was to showcase both the excitement of football and the learning process, while integrating key stats in a way that felt dynamic and engaging. Our approach blended real people enjoying the sport with motion graphics and stock footage, capturing the energy of both the game and the analytical process. Balancing storytelling with data visualization was tricky, but we found a rhythm that made it all work. A fun project that merges sports, tech, and education into an exciting experience!",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1795559945-4e9ae41551855f9cab24534937a6904432b10b295397079ca69d8a66af259982-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/911185728/a934cb9990",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recfCKTEcmpkSWxsg",
+      "slug": "fraqua-vive-2023",
+      "title": "Fraqua Vive",
+      "type": "Commercial",
+      "kinds": [
+        "TVC"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-06-16",
+      "description": "I was commissioned to direct a dynamic 15-second TV spot for Fraqua, a water bottle designed by professional boxer Frank Ripley. Despite his young age, Frank developed an innovative solution for boxers -allowing them to hydrate without removing their gloves, tackling a unique challenge in the sport. To bring this to life, we focused on capturing Frank in action, highlighting the intensity of his training. We played with dramatic lighting and cinematic composition to emphasize the raw energy and focus of a professional boxer. The result? A visually striking and high-impact piece that reflects the spirit of Fraqua.",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/RLQnHBrnLOmqZCFfl0fEvg/r1nVmrIq-dOWrS2lXAWBdadHM8qVwwLkLVflVIUliL3vCyRJbAESqkVInw4a81TtSGwDXi_PEmpowNZ5xkT3c0d8JvIA7c7xT6C9o1x5vkCAFHttTqaoz46mpCiRSBis0NBHthRPqI9VV6mOQsk5T_BI_Vvf3gPj7lDOVxxcjU2KZ0rZ4zx2XUnTN8dN__t7/-NKKwPnAnTmwCYn_V0tmO_ofdbiA8yukC6GRc-l9NCw",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/RLQnHBrnLOmqZCFfl0fEvg/r1nVmrIq-dOWrS2lXAWBdadHM8qVwwLkLVflVIUliL3vCyRJbAESqkVInw4a81TtSGwDXi_PEmpowNZ5xkT3c0d8JvIA7c7xT6C9o1x5vkCAFHttTqaoz46mpCiRSBis0NBHthRPqI9VV6mOQsk5T_BI_Vvf3gPj7lDOVxxcjU2KZ0rZ4zx2XUnTN8dN__t7/-NKKwPnAnTmwCYn_V0tmO_ofdbiA8yukC6GRc-l9NCw"
+      ],
+      "videoUrl": "https://vimeo.com/862502132/f22792db0f",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec2xl62i0mgEo1go",
+      "slug": "i-look-at-the-times-2023",
+      "title": "I Look At The Times",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-05-25",
+      "description": "",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/qLWhriJaM-D7ITBn9XJnGw/kWyLxQ7mWYIrhzM1-gKfOoAVX_-x3aj0-_Onm81Iw_B1oWHwUOyfgYjKKu4zZO1vyDu0OeyckdTjqODFoO-fJV8qY1ughqp_ffoCz1lD5bJVojHNQXVr7FamARIpUKb7bbGM5569PbcpW-yCEoV1e7Pc5J4g8PppI1aP6gKJQeTtgJ4IvQNU9yoVeKle25Cv/2Q4ZqVGkdOiFSfGsGUEPuuzpJhjjkNYBmHNEpDS5opE",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/qLWhriJaM-D7ITBn9XJnGw/kWyLxQ7mWYIrhzM1-gKfOoAVX_-x3aj0-_Onm81Iw_B1oWHwUOyfgYjKKu4zZO1vyDu0OeyckdTjqODFoO-fJV8qY1ughqp_ffoCz1lD5bJVojHNQXVr7FamARIpUKb7bbGM5569PbcpW-yCEoV1e7Pc5J4g8PppI1aP6gKJQeTtgJ4IvQNU9yoVeKle25Cv/2Q4ZqVGkdOiFSfGsGUEPuuzpJhjjkNYBmHNEpDS5opE",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/zaRTjqEYkaSndlXXNprHIQ/dEHtaoZCnyMf878vKGSFC0y0LYuKwMB1_jPfwFQ5Yg-1bKGbvI9BLg-fZBlNo9DpVZfDvhKNOsw6ZWIOVNIGOceQqqRmV81-bbYfNPkQbWR5gczhI3hpuyWGryECvo7rz__ioDO1NWEtUoTapi1rcdOav5LPwQbYf4Xdt7WlGIiUBNOVEIjIaKzCextdKGhp/VVWbdvx6wDlRrAwz8s7Hyd5hqpF9NhJCaJwgs6LtW78",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/V9HqYoJz7lJIi_Mr7Hkmzw/SuyZ6WEgkUKBzNXYpj5C0Oyxysvm_MFSI2GSjF9YZjCgON8EiqBe7eWwKkpkC6zEXYwKGSmt1QriJnAzh_S6Da9bGt694Hr2NMXEyf5Aa0uA_QQoajKiBgbjw4BbIEb63xKj5Yo1Qu7HsnRL-tl8v1XR9kheZb0FpmlMIb0SjYEAddl2R0oncRb8bF3WgjAf/wIffojytlb0iscxOjfJu53zs_zJL1Fx7JNOsoRzRAtA",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AsrojQaewUf-26xnvE7_OA/a3w5BffL8EFRWp5M001HQLYumv23fpAwgmCytjeyPcngAP_xlDPRaNhxsSmJZ1aeyBX0TH28TjwDolri_Tu-949OO2nsSsT0QyHr_ax6Wnlzglk95G7Qk9raJOZ-wTl4sGyr_9Cgq4rtNOU1wQ09FdnDHYej7xmWynIJZfixb5rFxPSYhPmu9pFw-B76N_BY/Vr5IgxoYSF7AHIz58jvNXoExVACG4J-rqCEBFpfRDII"
+      ],
+      "videoUrl": "https://vimeo.com/798545289?turnstile=0.SkfY8gT3RnI5AGsPaDjRSi_mzTbXKWlPPWQA8Xc1MLzovmpurEAiMFtgpA4p2pFr2_cl2X3poHGETbSlk3ng7FOh0tzWWE_ldY8ZKU_ZCfENM84NMhnPh5UVMmk53dnn9YpGm0Md1hXXhCDIcbXRHAl--qEV4aN8k0_iRNgx7ZQ9ehdzfJGgW5WxGBmaAeEmO1_GhU3n1rKgAcTcj2DjGNQcVTWjP7yIcMlV47-OPuLiGeGU0LjpEOwMvxETKWo98QaaFIj4-E6BEqf7ZVODAU3aUISr9217XKZ-ACRBEnTSUVg6Bu-I-kW6Z8ja-Tp576IDSD4xlbI8wvcR7amCq5gQ1o9aUXee_aM96eGq99AlMQqSA01IqdCwpO6ocFKfpFnwVXgtA9Q5XLAZSLtTsJ0meda278e0oz5x-lLYqnjn-5jF8BcPJFNzr8bEwWCGAfbN9OG8uQAoQlhxbXkkskhm422VKVbxSOYhWS_x8Gd65xh1lEnzU01DC1L8MIQRnAKO_BcpUX2zAte652jxK28zv15K8PwSgSpgr_GYPQb2l6n_kjrLgsU8_AgJNri4DhMwXjPPMLw9U_bkJ_XFk9JxMaQ93iDPoCEDXw4jVjJxzL_gVNYadn9v56zx-zoQ9AHkBdRm7A9uwINjt_iW3UkvqIltvn28NVjXaj6FP2wbi6W66_PSZ-s74Bsho_VwYo8BQMkGfaNxrkLyoMrlKvMoVAfpwtXAKmAEs78Tn7q2VVVNHGiGBoHANASMcRltciSvsbAxiMoI4PofmaaHRRBao98wmtKWTiRW5hJe8cXu1MpvRN1Hj_koWCuzbckFZUmYRuFqLoa8X0i-IlpXcjBXYoBs-b_JWYG_2BZfepHnSNrqfPZCaac8sB0g7ybF.0B3LyZRFD51YP6DG_ZrXBA.10e8bc9aeb0f216206d062cf9c85b5023526d4361f8c1ecccc9c9305ab858b0c",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recaNFE1fKkSZnYTy",
+      "slug": "greenwich-peninsula-investor-s-pitch-video-2023",
+      "title": "Greenwich Peninsula Investor's Pitch Video",
+      "type": "Commercial",
+      "kinds": [
+        "Promo"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-04-19",
+      "description": "I was commissioned to direct an investor’s pitch video for Greenwich Peninsula, one of Europe’s largest regeneration projects, transforming 150 acres of former industrial land in North Greenwich, London, into a vibrant riverside community. Our goal was to showcase the dynamic lifestyle within the development and the rich history of the area. We employed aerial videography to capture the impressive architecture and the Peninsula’s integration into London’s skyline. The video featured interviews and testimonials, adopting a documentary-style format inspired by popular streaming platforms, to authentically convey the project’s vision and appeal. This project was particularly exciting as it allowed us to delve into the transformation of a significant London area, highlighting contributions from renowned architects and planners. The experience of exploring the site’s evolution and future potential was both enlightening and inspiring.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1940200095-29cf64496c3217b90ca9a6150c9f7fcd55d72a99436fbfa6f5d8929ecca90e67-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/864584365",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recUyEFIYQJpikSMf",
+      "slug": "lanique-raise-your-spirits-2023",
+      "title": "Lanique Raise Your Spirits",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [
+        "Comedy"
+      ],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-01-01",
+      "description": "This ad for Lanique was all about comedy and good times. The tagline, Raise Your Spirits, set the tone for a fun and lighthearted approach. The concept? A guy who’s completely unprepared for his party, messing up everything along the way—until his friends arrive with a bottle of Lanique. Suddenly, the night turns around, and they end up having the time of their lives, proving that Lanique can quite literally save the day. As someone with a strong comedy background, I loved working on this. The challenge was to create humor in a short time, relying on physical comedy and expressive reactions. With a tight shooting schedule, we had to be precise, but in the end, it all came together, and I’m really happy with the result!",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/67JBw6C2_NvoBku856yQ4Q/c79gsrjHBxCUMSF67eCEDfP82pEqGW6iXrQUgvv3k1vb724USZYtPXhu6HBX-Tla3fGi5BuRVwMsyYidEK4VuUDpGQTYLvGHSCIF4FGcEDcW5oarnQGE0_0sSUOYy4bNcSaIZLXVWcndBdzzEjpqFotUh9KK1_YYn59x9tlv8X5i2jaqrYklCwnN2-4bR3oF/X-hX39a1olGA_srHUyPEa_AYkDkj1binBKPkVG0x018",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/67JBw6C2_NvoBku856yQ4Q/c79gsrjHBxCUMSF67eCEDfP82pEqGW6iXrQUgvv3k1vb724USZYtPXhu6HBX-Tla3fGi5BuRVwMsyYidEK4VuUDpGQTYLvGHSCIF4FGcEDcW5oarnQGE0_0sSUOYy4bNcSaIZLXVWcndBdzzEjpqFotUh9KK1_YYn59x9tlv8X5i2jaqrYklCwnN2-4bR3oF/X-hX39a1olGA_srHUyPEa_AYkDkj1binBKPkVG0x018",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/3STIQqR5eMCUryaRqWEokA/MF85Gcx1lIw1uGKz01y3f4ArxyHnCd3aPVt73bgy0RltfLX2XoNyqkrQrMWYeK-umVGimMnwkscv1defPdPhzFE6Lvrs_W3DaiYOy6aWlEkcjsefUr1V3ySLJuYUHQ4tGkwJPcIv1bUhmGdhDFdvVAGSmnqsxGrCwBWsokGakl3TJIxVYmgZk_KmJPQFXj3t/OhUzZrcbWNpv18v7fCVdDWirv4lKPJo-TevtMFn6pso"
+      ],
+      "videoUrl": "https://vimeo.com/808453378",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recfez0UpZ2DYKOd3",
+      "slug": "losbros-impossible-to-resist-2023",
+      "title": "Losbros Impossible To Resist",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [
+        "Comedy"
+      ],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-01-01",
+      "description": "For this ad, I directed a fun, fast-paced film for LosBros, centered around the tagline Impossible to Resist. The concept? Two stranded bikers in the middle of nowhere, trying everything to hitch a ride - only to fail spectacularly. But the moment they crack open a LosBros drink, a stunning girl stops instantly. Just when they think their luck has turned, she swipes their drinks and drives off, leaving them in shock. The whole project was designed to be run-and-gun, embracing playful physical comedy, exaggerated expressions, and dynamic zooms—inspired by directors like Edgar Wright. With no dialogue, the humor relied purely on performance and visual storytelling. Coming from a comedy background, I loved working with the actress to fine-tune every reaction and beat. A light, energetic shoot with a sharp comedic twist - exactly what makes LosBros impossible to resist.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1633006280-5e2fa6c8cd1e6b72d9610a94edd1a527b04f13c771ded68f36711697391271af-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/808454484",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recpC3ajparAtzTWT",
+      "slug": "let-s-get-ready-to-rumble-energy-2023",
+      "title": "“Let’s Get Ready To Rumble” Energy",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2023",
+      "releaseDate": "",
+      "workDate": "2023-01-01",
+      "description": "I had the pleasure of creating a commercial for “Let’s Get Ready To Rumble” Energy, a dynamic beverage developed in collaboration with Hall of Fame boxing announcer Michael Buffer. This project was particularly exciting as it involved entirely practical effects, with no reliance on 3D animation. We utilized a specialized macro probe lens, the Laowa 24mm f/14 2X Macro Probe, known for its unique ability to capture close-up shots with a wide-angle perspective. This allowed us to achieve dynamic movements and intricate details, bringing the energy drink to life on screen. To enhance the visual impact, we experimented with lighting techniques to simulate a stormy atmosphere, incorporating rain effects to evoke the brand’s energetic essence. I also took on the editing process, ensuring the final video conveyed the intended intensity and excitement. It was a fulfilling day in the studio, resulting in a commercial that I’m truly proud of.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1633007135-fc595deb8fdc6becd9c86082caa195acccf6459adcda612ce1e65649476366e2-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/808455460",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recGP4lK31t7NWk1i",
+      "slug": "the-textile-building-investors-pitch-video-2022",
+      "title": "The Textile Building Investors’ Pitch Video",
+      "type": "Commercial",
+      "kinds": [
+        "Promo"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2022",
+      "releaseDate": "",
+      "workDate": "2022-12-13",
+      "description": "I directed the investor pitch video for The Textile Building, a landmark Victorian warehouse in Newark-on-Trent undergoing transformation into 39 modern apartments. The project presented the unique challenge of showcasing an unfinished building, which we addressed by integrating architectural renderings, aerial footage of the surrounding area, and interviews with the architects and developers. This approach effectively conveyed the vision and potential of the development to prospective investors.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1940196225-31562253c0a9716a98a3a4450a3cd2c314dcb24893fda52104daac07f9df6897-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/872351947",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recoaqKTgrqmy2gsW",
+      "slug": "daughters-united-2022",
+      "title": "Daughters United",
+      "type": "Commercial",
+      "kinds": [
+        "Interviews"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2022",
+      "releaseDate": "",
+      "workDate": "2022-12-06",
+      "description": "I was commissioned to direct a docu-style testimonial video for Daughters United, a UK-based charity dedicated to empowering women who have faced marginalization or mistreatment. The film captures the raw and powerful stories of the women involved, sharing their experiences and the impact of the support they’ve received. Through simple yet heartfelt testimonials, the video highlights the charity’s mission of fostering confidence, connection, and transformation. The strength of these women, combined with the authenticity of their voices, made this project particularly meaningful.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1721384507-cc12e7986e61e0c64d0286ebb22dd65bf0c2403796e490523eab6cc0f4df4aa8-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/862503878",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recEegt54sIu0M5ib",
+      "slug": "diesel-express-yourself-2022",
+      "title": "Diesel: Express Yourself",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2022",
+      "releaseDate": "2022-11-28",
+      "workDate": "",
+      "description": "",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-0JBr47mbJOLAgnvZxlL5Q/6kHMRnqelPo9e6uyKjcf_NlFfWCafMfG6DPhL5iJm3FLfGn22MxkZhpWpjLcfFCXTGQWFLgdlnR5jUpi5tA57lKEiPxTXZBtgA_X5VO9hgGDrOPCHkAr4vBNTp8tswgOEyH_3uHeXkDI1533NVzux1PBUNz_-rhGrGJa7O-c7DnDq8qsIPUCjQxMWiHV0mSC/P4P5-WwTzWa1e46OY2Rw84ke3Q1t81v3ThH3Vu030hE",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-0JBr47mbJOLAgnvZxlL5Q/6kHMRnqelPo9e6uyKjcf_NlFfWCafMfG6DPhL5iJm3FLfGn22MxkZhpWpjLcfFCXTGQWFLgdlnR5jUpi5tA57lKEiPxTXZBtgA_X5VO9hgGDrOPCHkAr4vBNTp8tswgOEyH_3uHeXkDI1533NVzux1PBUNz_-rhGrGJa7O-c7DnDq8qsIPUCjQxMWiHV0mSC/P4P5-WwTzWa1e46OY2Rw84ke3Q1t81v3ThH3Vu030hE",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/NAcK2njROKEa-yhBNJNk_w/MzcocbhpP-3_8OSOY5BwK4MAQJu_VUbyGIBRGm5IsFBOmJODzbL_03bB_Pm2Jp44qMANCzDvVe92dXdk1eC04UK14jMb4LM_a-sSI3kdm3rlUQ7sActJf7fF3I4rudfAWgEefjjG4P4oF35Wo7apir6Aqf_4a_lUHQiAJzq26cSQrFOHsX9a5enLUhuzMLi6/IqydTvQ72IMxDvWavh7f6lj18Pye_H074JhWpA0oJc0"
+      ],
+      "videoUrl": "https://vimeo.com/892956102?fl=pl&fe=vl",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -437,48 +864,56 @@
       "relatedArticleId": null
     },
     {
-      "id": "recNNKSzQAsbchpCi",
-      "slug": "the-newspaper-2025",
-      "title": "The Newspaper",
-      "type": "Narrative",
+      "id": "rec5Tles2ludfUSpq",
+      "slug": "wakecup-a-serene-autumn-escape-2022",
+      "title": "Wakecup – A Serene Autumn Escape",
+      "type": "Commercial",
       "kinds": [
-        "Short Film"
+        "Commercial"
+      ],
+      "genre": [],
+      "productionCompany": "Storyflow Entertainment Limited",
+      "client": "",
+      "year": "2022",
+      "releaseDate": "",
+      "workDate": "2022-01-01",
+      "description": "A project I created for WakeUp, WakeCup is a simple yet peaceful concept featuring their water bottle/thermos. The idea was to capture the feeling of a crisp autumn hike in the UK – someone enjoying a quiet moment in nature with their drink in hand. Serene, atmospheric, and effortless, the project was all about embracing the small joys of being outdoors. A fun and refreshing shoot that kept things minimal yet meaningful.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1557087653-cf66c2f732cd0cbbcd74d8e15426854f6e401d73e67519ba6cce179681180c4f-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/775976148",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recuJ26waUmWS1gX5",
+      "slug": "the-dyas-juna-2022",
+      "title": "The Dyas Juna",
+      "type": "Commercial",
+      "kinds": [
+        "Promo"
       ],
       "genre": [
-        "Drama",
-        "Mystery",
-        "Period"
+        "Documentary"
       ],
-      "productionCompany": "Double J Films Limited ",
+      "productionCompany": "Storyflow Entertainment Limited",
       "client": "",
-      "year": "2025",
+      "year": "2022",
       "releaseDate": "",
-      "workDate": "2025-02-11",
-      "description": "In a pristine 1950s suburb, a newlywed discovers cryptic puzzles in the daily newspaper that hint at a buried town secret and her husband’s past. As the clues unravel, so does her reality. The Newspaper is a suspenseful descent into appearances, trust, and the quiet power of uncovering the truth.",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/iqcWuUwVAmwemTKCKGQ3kw/FLVsT7ifpMYRHZk7Jjb6FLCWr6ty3BXqTXie00kdyYn1mhl2g3rrOknOPNTShKkUWiaWBLhgpjlJeRQ9_kD7xywjY5nvxpqRxtC1tRQ5LfeXa8mNqahB5rbVae0cCZvtQ7KDPiBPCJWDk0cTgvHIooqDF9ytzkG96590cMlOvRc/H9pdqinvHmkSw1WdPUNTYOrNeA0aEfgy-Dz3wL-9-X8",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/iqcWuUwVAmwemTKCKGQ3kw/FLVsT7ifpMYRHZk7Jjb6FLCWr6ty3BXqTXie00kdyYn1mhl2g3rrOknOPNTShKkUWiaWBLhgpjlJeRQ9_kD7xywjY5nvxpqRxtC1tRQ5LfeXa8mNqahB5rbVae0cCZvtQ7KDPiBPCJWDk0cTgvHIooqDF9ytzkG96590cMlOvRc/H9pdqinvHmkSw1WdPUNTYOrNeA0aEfgy-Dz3wL-9-X8",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/aU1eI_ZIEi_dStVIwceOvQ/X9_KJVm7uEMbYraLEHHI2GAbIFj3FZpp1ERyX5BvyRBYsQz1gwtckm2PoeR2gCbfMUXrRW7Sv-82LpW2Yy8Td-fYZt1z_MK1PHqiYvuChcZlM3K5adM2aBBDnLPHIgyFXhNmIU_fqdaZkI4peZAZFSBAkI4ARKZc7S4rA9cfEaSELcVq7QiytisMkzJ2DytV/F17C3BU2biGCpT-o1IvKE5V3ntYwShU1qo1DS-Ku2Hs",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AhmQ0oi2XEm7tSHRWhYJTQ/z73gJXb12fWvmIvr2bL3PSAwqNyZKQ5ssHS1EOdertwfmEElencH8BV7EoX_2ERKp5rWnBRUWHG7yU48CtJAA7XGR-fxJSVP9XkCUh-WV2tFRN3eJyivFb-jRr24svjBK_PM3ljARiWG0U5HIxtF9503BCwu42OslFdx44bCKGelWGQq7izgUUtAYBDHennC/JQYqbAsKeo81h-HqwhgPRKGS3DihHOw4O1NU8QI9Efw"
-      ],
-      "videoUrl": "https://vimeo.com/1091179299/956ce9fee0",
+      "workDate": "2022-01-01",
+      "description": "I was commissioned to create a promotional video for Dyas, a London-based fashion brand that collaborates with artists for each of their clothing lines. This project focused on Juna, a talented collage artist, exploring her creative process - from inspiration to artwork- and how her designs are transformed into textiles and clothing. The video had a documentary-style approach, which made it an especially engaging and rewarding experience for me.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/1494978512-97c01ccacc6ce5e10a7d1603408f90d59d1a4f87cd3df97feba2bdfaa2e9f2b3-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/743094724",
       "additionalVideos": [],
-      "awards": [
-        "Raindance 2025"
-      ],
+      "awards": [],
       "credits": [],
-      "externalLinks": [
-        {
-          "label": "Letterboxd",
-          "url": "https://letterboxd.com/film/the-newspaper-2025/"
-        },
-        {
-          "label": "IMDb",
-          "url": "https://www.imdb.com/title/tt33990617/"
-        }
-      ],
-      "relatedArticleId": "recDXQQWqEqLnstIx"
+      "externalLinks": [],
+      "relatedArticleId": null
     },
     {
       "id": "recP0DyB35ZBY85Kb",
@@ -543,6 +978,442 @@
       "relatedArticleId": null
     },
     {
+      "id": "recwmX7kG05YjKDPm",
+      "slug": "before-the-rooster-crows-2020",
+      "title": "Before The Rooster Crows",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Crime",
+        "Drama"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2020",
+      "releaseDate": "",
+      "workDate": "2020-02-26",
+      "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/UgJfdAqr0dB9KJIvBl69ww/GLQtebtxDHmA5wbyQd44TYcdWofNqSb3aVy9JpZolhQ2rh9z_JjuPkWU5QQzuJrHlw4Y5VzyrfpsQq1yppmKzXokP6oH2BOcL1LOpbhGhGKg3ZmSJ0DP-c-vniP7ze6Zg7WUMJATO4lWI_6PUMxz9YIhh0Z_AiieliIO-NOx38iNse0zNjbJQve6kUBBjaSS/HuDgb0zhRT1nEC2lpriExL_uWjFgvOKmpZuXh1-r-Sg",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/UgJfdAqr0dB9KJIvBl69ww/GLQtebtxDHmA5wbyQd44TYcdWofNqSb3aVy9JpZolhQ2rh9z_JjuPkWU5QQzuJrHlw4Y5VzyrfpsQq1yppmKzXokP6oH2BOcL1LOpbhGhGKg3ZmSJ0DP-c-vniP7ze6Zg7WUMJATO4lWI_6PUMxz9YIhh0Z_AiieliIO-NOx38iNse0zNjbJQve6kUBBjaSS/HuDgb0zhRT1nEC2lpriExL_uWjFgvOKmpZuXh1-r-Sg",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/CbLFV2JzsYrhkypSvEEooQ/-IlJMKwQyvbDa4D45GIhwKahkBQ_CLCdUErC5Q3B0PVtfbaLB-13ONrjpoQu3sT6Wli35dqvgC9i4kqk9J77PDj7yAiKttNckNLMc5MWJpfw8xbiIdQDPb3zmoY51_n567BiT6HJ36gIBz6DV-VMrLL_Z4hQ_e4jdNE4OUao5pyXhoRAWtssP0LHM7CEzFAG/G3V9sMsa1NHWbFZykLZsL085gizEDXqrxUPqfSUAt_E"
+      ],
+      "videoUrl": "https://vimeo.com/athanasiou/rooster",
+      "additionalVideos": [],
+      "awards": [
+        "Best Director - Arizona Short Film Festival",
+        "Best Short Film Nomination - Hollywood Verge Film Awards",
+        "Best Drama Film Nomination - Hollywood Verge Film Awards"
+      ],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recC9iL5Z1deoxc30",
+      "slug": "virgin-media-it-s-a-steal-2019",
+      "title": "Virgin Media It's A Steal",
+      "type": "Commercial",
+      "kinds": [
+        "Commercial"
+      ],
+      "genre": [
+        "Comedy"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2019",
+      "releaseDate": "",
+      "workDate": "2019-09-06",
+      "description": "A fast-paced, comedic ad where a burglar’s night takes an unexpected turn – instead of making a getaway, they end up securing an incredible Virgin Media deal for their friends. A playful take on how irresistible the offers are! This was such a fun project to film, balancing tight timing with sharp storytelling to pack humor and energy into every second.",
+      "isFeatured": true,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/li_is9palpKt15k-Ms1N7A/ZbeHPhUSOG9z-xjlOwFhHdbsBPgQB81uQFfLf6NPD56C0D0ifW-Pj5k1cO5IBBpUvoeOSAyd4Ee-2eQSqUakef0vN6B-MQjkarIR6tslDHKJfBSLMJrBM7jbqIGYEuebC8mmxGaaKtCIHenXNJufpM66EijlmXGp2xFUZ6oIauJ9ctM17njlekq9r2U1SmYr/JSxgADrpvZQLq2ANm9lnM5cDolQbyTZk5YygbAHkEWY",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/li_is9palpKt15k-Ms1N7A/ZbeHPhUSOG9z-xjlOwFhHdbsBPgQB81uQFfLf6NPD56C0D0ifW-Pj5k1cO5IBBpUvoeOSAyd4Ee-2eQSqUakef0vN6B-MQjkarIR6tslDHKJfBSLMJrBM7jbqIGYEuebC8mmxGaaKtCIHenXNJufpM66EijlmXGp2xFUZ6oIauJ9ctM17njlekq9r2U1SmYr/JSxgADrpvZQLq2ANm9lnM5cDolQbyTZk5YygbAHkEWY",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Xi0SQsuJ1ybJw30TO23JIA/57P7MxyWMc3uium75eBESeoka-q-vrod5Ds2kFgqZzB7H1RK_9csvRywS-quHF5JpclrkqQQ1aDZzjzss06_ekSfAabXzupTg2lX9T2AKCUfpN9RCH3c_c-cp-4n-LVuGY3_ayFbMqxd4oRRcjo5NerAq3B8QsdJ8QFCyUSmOeXPi1RCM4tkeu9rsfORc7hU/UKoV4jx8ivAnuAwQq4SG2cvBaOfRhkXrDwGa8A0rpug",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/TS0r7qrTn9aVPPPm8Q95vA/Ehl-oLtBlipvus4cTodEcZoONAgh7YkBMFdtSdF6tymUAkZb3lFFMJhtMUFLzmzXW8A_XeIyCnoIXr9DVLW8fZecfDeOafH-rAg-pzO8yL53WDyW7Ep1Q_ExEX9IZT3dOkpQVMapYF6Rasp6fgEquHdQ3PVfswbcX3ibPMnsCyvrJuMGSh7K0bpYXo3C0xsJ/8-l4nE2tiJZ7LHGOSXNlP1t_5JZvWH_clH7LEza9-Sw"
+      ],
+      "videoUrl": "https://vimeo.com/396351507",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recYknDnapMT18OhZ",
+      "slug": "pink-taxi-2019",
+      "title": "Pink Taxi",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Comedy"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2019",
+      "releaseDate": "",
+      "workDate": "2019-04-25",
+      "description": "One day Apostolis decides that he wants to be a superhero. He creates a suit that allows him to teleport but only once per day. His flatmate Vezos needs transportation in order to go to a very important job interview, Apostolis offers to help but Vezos refuses to believe that his flatmate suddenly turned into a superhero.",
+      "isFeatured": false,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/_Ak90rjbUROjptxEoBd_vQ/gHeWgek7fU3_P3ZSgPC1FZKyt7ol64BPKkt_DuHKqn42edoaXHCImCgay0WUCJVlJkxkCQvnRRqTy8PYA8iFmTMF1gTxhh363D0l9KaAWnOT9felodPtiPwbGiMABO3F6te1t6OLrpEz0Qk4RJ7ZNr1ygdEkvkA2-2tL06BsCvRZwvSKuqO4YMpJ0BMUucZ4/wuZHzxwk9KpMbnyGIow_MrTql_nFBF-Pc54hCFKuQfM",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/_Ak90rjbUROjptxEoBd_vQ/gHeWgek7fU3_P3ZSgPC1FZKyt7ol64BPKkt_DuHKqn42edoaXHCImCgay0WUCJVlJkxkCQvnRRqTy8PYA8iFmTMF1gTxhh363D0l9KaAWnOT9felodPtiPwbGiMABO3F6te1t6OLrpEz0Qk4RJ7ZNr1ygdEkvkA2-2tL06BsCvRZwvSKuqO4YMpJ0BMUucZ4/wuZHzxwk9KpMbnyGIow_MrTql_nFBF-Pc54hCFKuQfM",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/di5_l1eTqrvaFUST37nWWw/-o49aZkhz-7Yh3X3yMVd-fj8cJ8DzbEJK334MV9pwQUSCOS4iXadgTLy6S4WmWMr7CUko2mt_BF4KcjaYz3KxEBM9MaIXiaTaMTC-oxj9zb0rZ8cVYlbAd8CyjyhNj8v19pIuTvKHOMkT5_V3ApYWiVP8TAPZBqgzu_ERCTbiWq6wtQDlj4caS9UGb8EEKpB/vPQjSCkweRtO9Jpm-d7aNHaaLNlCTsSX6c_GcJWdOxw"
+      ],
+      "videoUrl": "https://vimeo.com/412397458/e681c1437b",
+      "additionalVideos": [],
+      "awards": [
+        "Best Comedy: Symi International Film Festival 2021",
+        "Best Short Film: Symi International Film Festival 2021",
+        "Best Greek Film: Symi International Film Festival 2021",
+        "Honorable Mention London World-Wide Comedy Short Film Festival 2019"
+      ],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec8AuJkcqKruETnG",
+      "slug": "erin-music-video-2019",
+      "title": "Erin Music Video",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Global Consultancy Services ",
+      "client": "",
+      "year": "2019",
+      "releaseDate": "",
+      "workDate": "2019-04-11",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "",
+      "gallery": [],
+      "videoUrl": "",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec9d8M9kuWPnzbmt",
+      "slug": "material-life-2018",
+      "title": "Material Life",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2018",
+      "releaseDate": "",
+      "workDate": "2018-11-07",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/z0ypUWmTByk/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=z0ypUWmTByk",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec4GWEg9Fzqz1vPk",
+      "slug": "gettin-lost-2018",
+      "title": "Gettin’ Lost",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2018",
+      "releaseDate": "",
+      "workDate": "2018-01-06",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/xLPnSsTXZYs/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=xLPnSsTXZYs",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recn0dqWz39TpCHNV",
+      "slug": "kim-2017",
+      "title": "Kim",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Coming of Age"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2017",
+      "releaseDate": "",
+      "workDate": "2017-09-29",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "",
+      "gallery": [],
+      "videoUrl": "",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recqKmuvw2HTSqEcA",
+      "slug": "justify-my-night-2017",
+      "title": "Justify My Night",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2017",
+      "releaseDate": "",
+      "workDate": "2017-06-14",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/5oyvbsD7Uk8/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=5oyvbsD7Uk8",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recXjyQW0bFtMSlM0",
+      "slug": "aiz-eitz-2017",
+      "title": "Aiz Eitz",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2017",
+      "releaseDate": "",
+      "workDate": "2017-04-19",
+      "description": "Two students struggle to survive the new ICE AGE.",
+      "isFeatured": false,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/341uVSeLr4R2odfUy9ATKw/0drq8r9WrdW588KrYmbM2hMfwWkyo3GXOqxJhOuwqSnXIQzmMufS2esBSEhtyboy7_e-RsaZzQpc79wPg0UCf576dpdI3SyOd2AKRgWu_VfWJfeCOEOoBsG8-DiyWBXq6z_mEJ81rylVrkDkpAN-2-jBCNM2DNdPEG_Zcp0rWCWHvLHLTfI-seLIoqTvf62F/_DWES8DN9suPEcHr6uM-VF4r8rOk7evAE__KTQLJL9s",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/341uVSeLr4R2odfUy9ATKw/0drq8r9WrdW588KrYmbM2hMfwWkyo3GXOqxJhOuwqSnXIQzmMufS2esBSEhtyboy7_e-RsaZzQpc79wPg0UCf576dpdI3SyOd2AKRgWu_VfWJfeCOEOoBsG8-DiyWBXq6z_mEJ81rylVrkDkpAN-2-jBCNM2DNdPEG_Zcp0rWCWHvLHLTfI-seLIoqTvf62F/_DWES8DN9suPEcHr6uM-VF4r8rOk7evAE__KTQLJL9s",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AJL9pVqDQ6XM7mYktS93jg/wE1O-FfYBWDfNhU4gdmwV5DegPvQpF0dHXVCiwyAoFGHRWTJD2hzSrFod3dLlW_A_QXOtDQEuHzAb4H_1WRLI6l3rJ_YAbWn44YVCDJadBtP8OqimQGy5vuT_kzhoUjlEhOwJl_tHjfPDI21lMmBdeOlQ4QMINudZu7jwkUPP-BjGfIkADTAMNai5kUzPg5s/JozEBu0MmshEa5cqEPS-KruSWCbLMNpCAfwOPFHMhuk",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ucA_5elqIKk97i7S7T7ZnQ/_zJUWE3Lq0mhS8DDoXucsMfW_8pFQshbm1raR8sP_WsXOtU_dazn7kGfsKIFTuHI7mRbmPrbDx8S0i_WubxhP-x-1V9MzDJmlbbvoD2L5l62GgjgkNCojya2fSSmOeczT9fpM9Kb0i2-QhnGsmuoDp4q2mThSzUFHElDOVZR8JVDzaHNuFf9y-eX7Vx_ls9K/OvlaQUDCVVD7m2D4nn3DqoR4J3dYqBkMfd1nMIi0Ffc"
+      ],
+      "videoUrl": "",
+      "additionalVideos": [
+        "https://www.youtube.com/watch?v=-RhCX-eTEIc&pp=0gcJCRUKAYcqIYzv"
+      ],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "reco9orD0pc1Afn1g",
+      "slug": "liveloula-2017",
+      "title": "Liveloula",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Drama"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2017",
+      "releaseDate": "",
+      "workDate": "2017-01-15",
+      "description": "A brother and a sister struggle in order to find money for their mothers chemotherapy.",
+      "isFeatured": false,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-9_ehrdsGz9h1Usbsrehng/xWOrzdkWJZP-uKfbPXtp9lqIMmvsnm1OPGvbY11FRqLiaSly_RR1aMolkAKP8yuijzJCvCrXzDVsjuelJ-E_r4xIQD9ip18sfhdAudtpINmJjLp1aJrZqdcp_4kIuiVfRNm8LWhuyF4hiDiO3YSpP39AuVTdUrx5NWvIG4AfeSSJXuxo9V9nlTZfPOjhML93/NtTscx0R-ZHqvaAj5CKc0UAz-6pY4-7242W8BozbC9E",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-9_ehrdsGz9h1Usbsrehng/xWOrzdkWJZP-uKfbPXtp9lqIMmvsnm1OPGvbY11FRqLiaSly_RR1aMolkAKP8yuijzJCvCrXzDVsjuelJ-E_r4xIQD9ip18sfhdAudtpINmJjLp1aJrZqdcp_4kIuiVfRNm8LWhuyF4hiDiO3YSpP39AuVTdUrx5NWvIG4AfeSSJXuxo9V9nlTZfPOjhML93/NtTscx0R-ZHqvaAj5CKc0UAz-6pY4-7242W8BozbC9E",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Cag-7BGTyN5qWeis8R714Q/4SqiTowlWgVog3dR6CqU-VH5lHSb-6UY8HAB33G0Q_e0tMZLQt7hFyvVPZT-QDEpfQ96-VUkNK1YYXOOGwX8uWmx7k00_S930Opg22CqmPwhMZhmfe3Z78MN1TaA_VDyBC2zP_r_gz0wXGw2LuTwsQa-VvhASkBVbcDSYgYUngVyEpy_w1aR_XS6ep9KpihN/Orni_9OfNWOKAb2VLifUq557wNDXSCAlytl8Hrm4ls8",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/EmXPqJvKQcTiuhWkI9HWUw/8m3AODvWJ7X1ZdqlO9PQ0qdWeWqnmZ7glINOClczuOPePw3raX--od8GZQ7OMNTwbMC6pQkqevRrKqffixZz1sZOz6vdZzEaMKqVYw27kVdbZVzOthGZxQjPuaGmYSxo0Ds99kWzqDYAKQTQkdBW18pMdnvzlAAj4FWG2wdYHlY9giAqzzIMHSGP6Nl_MNtp/H-fOODB8J6O2hKf6YQR2y_rUus_Sx-NvUWsRAENhPkw"
+      ],
+      "videoUrl": "https://www.youtube.com/watch?v=pqvz2xkoOF8&pp=ygUObGl2ZWxvdWxhIGZpbG0%3D",
+      "additionalVideos": [
+        "https://www.youtube.com/watch?v=5CQx_n04Cdk",
+        "https://www.youtube.com/watch?v=sWQVh6vGp74",
+        "https://www.youtube.com/watch?v=B_jSQoWjTQQ"
+      ],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recdMqD8kOcLfYIK5",
+      "slug": "earth-my-love-2017",
+      "title": "Earth, My Love",
+      "type": "Music Video",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Art House",
+        "Dance Film"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2017",
+      "releaseDate": "",
+      "workDate": "2017-01-01",
+      "description": "Earth and the forces of nature are fighting to survive from human demolition.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/821850973-cdee0c61c9400e9d9ce15e13035ec13a16ca76053c690eed2c95b75359ffb021-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/365960702/d469f3ae51",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recyk2RUZUY2LRoYy",
+      "slug": "the-big-thirst-2016",
+      "title": "The Big Thirst",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Comedy",
+        "Horror"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2016",
+      "releaseDate": "",
+      "workDate": "2016-07-24",
+      "description": "Young Odysseus discovers that something is going terribly wrong when he decides to visit his father's village for the first time.",
+      "isFeatured": false,
+      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ANQlUw-gAm-HJieBwCReZA/fgf8kQz1yuRZgxL1OjQmlHAC_qIwKQFiOASlFelpAQv26SrqnSGz3lGMEd6Iw_g3bMsYGYisO9nELpV5CfDU5zG7KtqsAkdmrEvl1ovQTekDt2vg9Rub1rzKSZJkDSFn3fFbB-8X-YHLr3OfXM5S7Kj4G9cvht1IhmF1Y1TxA3B-SguNLhrJqDpA9x4BOYf3/Bt3CcuRiVvxyKkVZ40cKdSNjuYVtzo9v9NcdRvQXQ6U",
+      "gallery": [
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ANQlUw-gAm-HJieBwCReZA/fgf8kQz1yuRZgxL1OjQmlHAC_qIwKQFiOASlFelpAQv26SrqnSGz3lGMEd6Iw_g3bMsYGYisO9nELpV5CfDU5zG7KtqsAkdmrEvl1ovQTekDt2vg9Rub1rzKSZJkDSFn3fFbB-8X-YHLr3OfXM5S7Kj4G9cvht1IhmF1Y1TxA3B-SguNLhrJqDpA9x4BOYf3/Bt3CcuRiVvxyKkVZ40cKdSNjuYVtzo9v9NcdRvQXQ6U",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/oxHbv86K2fFd1sU_oIalLA/T1Mq0BBDyrBan9_1q5KOWqN0kk4MyxsChUYLvTJJF2iFDxaeExLY_OuQQTF0QI4IP1PXhY_ShWTYk-YuQYim4LYeNxJvYExQ06QJpw10nYIXuKPCHZ9NcVW0x-8FugU9GZpwm3Vrc-MBv2HOl5YRi3-rPuKqo4jTNOyKM1maN8T9_rsYLH77vDV8BcFws7sX/DMJJfVEHBsWkmRJ0iHn3f5qSLfkQmtFppMNMWefX4YM",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/KQyOa1RsW2yJYFNiAxQAIQ/k1zsgATawBzNBjP4pWrOGKOTY7EaCXT0tZkR812a2K-9dR5NGZE1kmcRLY_N2oJlLsBhqxoJQFAKTKb8TvpNMTVPgp7CtGKMSslZ5VrVYCpcAnvp4mxIxll03Hfywe2zNmq1cg48bB3I4vaDJKAUcKYggD9VKSY6v_iBhpFaOPyz0w8uXoc80-ktySM7azLI/PMATgkln6fvfGahkLSjF4Ikt2EJJdUU85wbvJUIjQLc",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/DfIohjxb0YP5TUNmnvR3bw/hI2bG0__lUSH4g5pncIKqczCL-JYB2tGpfrmUjD8-ZCETurhHwxVQ14zgZh_C5tMip8y9uaM-9YqGw-pKbnavxI2sBIxd8GQN02EadxVWUl-00Ocj_tYgbbJsbyBDRq8fl2ude4TDvdJ2-ONfp4m7KTBmxMA9LvOUGg6r0Z8byeYRkTYejbdo-HzXEIs3dql/ec_3_ZOumNsHiNnt_q4dP3nxFB4QXcbS6q5pFaPimOU",
+        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/hRCkWVH2UVBRBAfU9S_BPw/x3ZI7WyyaWZdGDRSLRGk57CV0YExHiBxkayK-6z0J80LlrlL9d_ujv-CP1-bITO9THj9gdoJzURYuNc7AdG_4-9yyIFUzZlCiHtg2HI2DGF3CctEadSv2DpizUQaK98CfT-6KBNnK-i80D2AZwNlyu0uafNKe21j8w1w-9KQew1quncV6oCLzz5ZBe2UZLea/UpimhOE-7zGmYy9xFlchNt_K4KDLMYbpTYJulOIomXk"
+      ],
+      "videoUrl": "https://vimeo.com/athanasiou/thebigthirst?share=copy&fl=sv&fe=ci",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recbu0Ed9jwyB5Y5G",
+      "slug": "pure-souls-2016",
+      "title": "Pure Souls",
+      "type": "Music Video",
+      "kinds": [
+        "Music Video"
+      ],
+      "genre": [],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2016",
+      "releaseDate": "",
+      "workDate": "2016-07-20",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "https://img.youtube.com/vi/sXNI5YDbehk/maxresdefault.jpg",
+      "gallery": [],
+      "videoUrl": "https://www.youtube.com/watch?v=sXNI5YDbehk",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "rec3gxVcxcaIaaamx",
+      "slug": "the-secret-of-life-2016",
+      "title": "The Secret Of Life",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Art House",
+        "Comedy"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2016",
+      "releaseDate": "",
+      "workDate": "2016-04-05",
+      "description": "Aris finds out the secret of life, written in a small pink notebook.",
+      "isFeatured": false,
+      "heroImage": "https://i.vimeocdn.com/video/821851987-f61806e730d37fe469fc3475bc3d8e0c84fd8e7a67d50ce9640606491986a3ba-d_295x166?region=us",
+      "gallery": [],
+      "videoUrl": "https://vimeo.com/365961981/4c19e43bb3",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
+      "id": "recnbep6l8n9nsbXq",
+      "slug": "astathes-2015",
+      "title": "Astathes",
+      "type": "Narrative",
+      "kinds": [
+        "Short Film"
+      ],
+      "genre": [
+        "Drama"
+      ],
+      "productionCompany": "Film Lemon",
+      "client": "",
+      "year": "2015",
+      "releaseDate": "",
+      "workDate": "2015-07-09",
+      "description": "",
+      "isFeatured": false,
+      "heroImage": "",
+      "gallery": [],
+      "videoUrl": "",
+      "additionalVideos": [],
+      "awards": [],
+      "credits": [],
+      "externalLinks": [],
+      "relatedArticleId": null
+    },
+    {
       "id": "recPht2mguhMzxI9j",
       "slug": "project-michalis-2014",
       "title": "Project Michalis",
@@ -604,490 +1475,6 @@
       "relatedArticleId": null
     },
     {
-      "id": "recQ1KNF9qX94IbJm",
-      "slug": "abbey-quay-2024",
-      "title": "Abbey Quay",
-      "type": "Uncategorized",
-      "kinds": [
-        "Promo"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2024",
-      "releaseDate": "",
-      "workDate": "2024-01-25",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recURzloIju3xMoDR",
-      "slug": "health-lottery-whish-2023",
-      "title": "Health Lottery Whish",
-      "type": "Commercial",
-      "kinds": [
-        "Social"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-11-03",
-      "description": "WHISH (Whitby Hidden Impairment Supported Help) is a wonderful space where parents and children with hidden impairments can engage in various activities together. For this project, we took a documentary-style approach, following a day at the facility and capturing heartfelt testimonials from parents. It was incredibly moving to witness the impact of WHISH firsthand and to highlight the importance of this community. Plus, we got to play with a big snake - which was an unexpected but fun bonus!",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1751772036-5dd9e8c215aabba917685de2164bf3a5af6585d7f4f99e5b5fcae47888b8bada-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/883315464/0850d50bbe",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recUyEFIYQJpikSMf",
-      "slug": "lanique-raise-your-spirits-2023",
-      "title": "Lanique Raise Your Spirits",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [
-        "Comedy"
-      ],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-01-01",
-      "description": "This ad for Lanique was all about comedy and good times. The tagline, Raise Your Spirits, set the tone for a fun and lighthearted approach. The concept? A guy who’s completely unprepared for his party, messing up everything along the way—until his friends arrive with a bottle of Lanique. Suddenly, the night turns around, and they end up having the time of their lives, proving that Lanique can quite literally save the day. As someone with a strong comedy background, I loved working on this. The challenge was to create humor in a short time, relying on physical comedy and expressive reactions. With a tight shooting schedule, we had to be precise, but in the end, it all came together, and I’m really happy with the result!",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/67JBw6C2_NvoBku856yQ4Q/c79gsrjHBxCUMSF67eCEDfP82pEqGW6iXrQUgvv3k1vb724USZYtPXhu6HBX-Tla3fGi5BuRVwMsyYidEK4VuUDpGQTYLvGHSCIF4FGcEDcW5oarnQGE0_0sSUOYy4bNcSaIZLXVWcndBdzzEjpqFotUh9KK1_YYn59x9tlv8X5i2jaqrYklCwnN2-4bR3oF/X-hX39a1olGA_srHUyPEa_AYkDkj1binBKPkVG0x018",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/67JBw6C2_NvoBku856yQ4Q/c79gsrjHBxCUMSF67eCEDfP82pEqGW6iXrQUgvv3k1vb724USZYtPXhu6HBX-Tla3fGi5BuRVwMsyYidEK4VuUDpGQTYLvGHSCIF4FGcEDcW5oarnQGE0_0sSUOYy4bNcSaIZLXVWcndBdzzEjpqFotUh9KK1_YYn59x9tlv8X5i2jaqrYklCwnN2-4bR3oF/X-hX39a1olGA_srHUyPEa_AYkDkj1binBKPkVG0x018",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/3STIQqR5eMCUryaRqWEokA/MF85Gcx1lIw1uGKz01y3f4ArxyHnCd3aPVt73bgy0RltfLX2XoNyqkrQrMWYeK-umVGimMnwkscv1defPdPhzFE6Lvrs_W3DaiYOy6aWlEkcjsefUr1V3ySLJuYUHQ4tGkwJPcIv1bUhmGdhDFdvVAGSmnqsxGrCwBWsokGakl3TJIxVYmgZk_KmJPQFXj3t/OhUzZrcbWNpv18v7fCVdDWirv4lKPJo-TevtMFn6pso"
-      ],
-      "videoUrl": "https://vimeo.com/808453378",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recVlqGrss78joP5t",
-      "slug": "restspace-2023",
-      "title": "Restspace",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-07-17",
-      "description": "For RestSpace, I was commissioned to create a video campaign showcasing their innovative sleeping booths designed to help employees recharge during the workday. After exploring several concepts, we landed on a dynamic POV-style approach, immersing viewers in the firsthand experience of using RestSpace. To achieve the look of a seamless one-take, we mounted a RED Komodo camera directly onto the lead actor’s head - an exciting yet challenging process that required close collaboration. Since the actor essentially became the cinematographer, we worked together to ensure every moment was captured effectively. Choreographing movement through space, managing lighting shifts, and coordinating a large cast added to the complexity, but ultimately, we created a visually engaging and immersive commercial. It was a unique project, both technically and creatively, and a rewarding challenge to bring to life.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1976826673-3b8ac81bbe72da2757adf9d80eec5de2cc2cbb5ba3ab5c13dfc9112f7e111675-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/1051931785?share=copy",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recWobs12nEl6SX1A",
-      "slug": "uobm-aw23-2023",
-      "title": "Uobm Aw23",
-      "type": "Uncategorized",
-      "kinds": [
-        "Video"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-12-16",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://vumbnail.com/1021318638.jpg",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/1021318638/9ea1a6d473, https://vimeo.com/1021319370/197d81ed5f, https://vimeo.com/1021319110/4df4c33c95, https://vimeo.com/1021318879/c60602431b",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recXjyQW0bFtMSlM0",
-      "slug": "aiz-eitz-2017",
-      "title": "Aiz Eitz",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2017",
-      "releaseDate": "",
-      "workDate": "2017-04-19",
-      "description": "Two students struggle to survive the new ICE AGE.",
-      "isFeatured": false,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/341uVSeLr4R2odfUy9ATKw/0drq8r9WrdW588KrYmbM2hMfwWkyo3GXOqxJhOuwqSnXIQzmMufS2esBSEhtyboy7_e-RsaZzQpc79wPg0UCf576dpdI3SyOd2AKRgWu_VfWJfeCOEOoBsG8-DiyWBXq6z_mEJ81rylVrkDkpAN-2-jBCNM2DNdPEG_Zcp0rWCWHvLHLTfI-seLIoqTvf62F/_DWES8DN9suPEcHr6uM-VF4r8rOk7evAE__KTQLJL9s",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/341uVSeLr4R2odfUy9ATKw/0drq8r9WrdW588KrYmbM2hMfwWkyo3GXOqxJhOuwqSnXIQzmMufS2esBSEhtyboy7_e-RsaZzQpc79wPg0UCf576dpdI3SyOd2AKRgWu_VfWJfeCOEOoBsG8-DiyWBXq6z_mEJ81rylVrkDkpAN-2-jBCNM2DNdPEG_Zcp0rWCWHvLHLTfI-seLIoqTvf62F/_DWES8DN9suPEcHr6uM-VF4r8rOk7evAE__KTQLJL9s",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/AJL9pVqDQ6XM7mYktS93jg/wE1O-FfYBWDfNhU4gdmwV5DegPvQpF0dHXVCiwyAoFGHRWTJD2hzSrFod3dLlW_A_QXOtDQEuHzAb4H_1WRLI6l3rJ_YAbWn44YVCDJadBtP8OqimQGy5vuT_kzhoUjlEhOwJl_tHjfPDI21lMmBdeOlQ4QMINudZu7jwkUPP-BjGfIkADTAMNai5kUzPg5s/JozEBu0MmshEa5cqEPS-KruSWCbLMNpCAfwOPFHMhuk",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ucA_5elqIKk97i7S7T7ZnQ/_zJUWE3Lq0mhS8DDoXucsMfW_8pFQshbm1raR8sP_WsXOtU_dazn7kGfsKIFTuHI7mRbmPrbDx8S0i_WubxhP-x-1V9MzDJmlbbvoD2L5l62GgjgkNCojya2fSSmOeczT9fpM9Kb0i2-QhnGsmuoDp4q2mThSzUFHElDOVZR8JVDzaHNuFf9y-eX7Vx_ls9K/OvlaQUDCVVD7m2D4nn3DqoR4J3dYqBkMfd1nMIi0Ffc"
-      ],
-      "videoUrl": "",
-      "additionalVideos": [
-        "https://www.youtube.com/watch?v=-RhCX-eTEIc&pp=0gcJCRUKAYcqIYzv"
-      ],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recYUzFwdDdiIHdd6",
-      "slug": "gilley-uk-2023",
-      "title": "Gilley Uk",
-      "type": "Commercial",
-      "kinds": [
-        "Campaign"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "Gilley",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-08-02",
-      "description": "We were commissioned by Gilley UK, to create a compelling campaign video for their Kickstarter launch, introducing their innovative umbrella. Our approach blended dynamic cinematography - locking the camera to the product for a unique perspective - with mixed-media elements, including product photography, to enhance engagement. The video showcased the umbrella seamlessly integrated into everyday life in London. The result? A highly successful campaign that exceeded expectations, raising £74,550 from 1,123 backers, far surpassing the initial £6,500 goal.",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/v-CU5xAq_MdgV6u7cBb4cw/ckw_aK6Ig91fxq7d4LKBPuzu4tz5Re0rjS8SFh61zVTXYK5AfL2uReeaEhCFQz7-1YzwBbuXxSpwIHafKGr9RqIgHdzokGncwWs2y3HhNdWPbWWFKajkfX3lJCNv2vMBnHxidxXRftRyFNeHO54FvkhZzeURmcF3Ph9D77j_EDiD4peLhDn0n8HP5UQoapjn/H3JMSKltwiTOHHI-1HOyvOgxFJxpgcgKLitnxj5-lkw",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/v-CU5xAq_MdgV6u7cBb4cw/ckw_aK6Ig91fxq7d4LKBPuzu4tz5Re0rjS8SFh61zVTXYK5AfL2uReeaEhCFQz7-1YzwBbuXxSpwIHafKGr9RqIgHdzokGncwWs2y3HhNdWPbWWFKajkfX3lJCNv2vMBnHxidxXRftRyFNeHO54FvkhZzeURmcF3Ph9D77j_EDiD4peLhDn0n8HP5UQoapjn/H3JMSKltwiTOHHI-1HOyvOgxFJxpgcgKLitnxj5-lkw",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Zk79oZgPgts6_6KrAZZ0Tg/5xKhQs03v-FpUv14Q6_GQ4bFHqOsxWt8R4cfTRjd7AUVqe90PnLkI3NrbeGnWwKGFUC1GpAU3mbdLN07ojxS3eIsJCDzMIg7NXSW9X6j7ZnjxnWK_2bwPwv95YzkVTZ5ihXBndI3-Q4IudjrJYVAb-_DkKIUb9qCg-IsqTKwStzUL6PPVldjSAtQJt8KPlB7/B1xiq1ZRVYp946EQPolsOIC_hoR-QK5m7orol6JeTts",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/08YNbJB-oAhfAz1wt4ix1A/QJZu0RkTLcptCYt0xuecJF72noMLd_KoRJJa2Fw4QU4NbbQsF436PZkTT8ar0iFyTxkopoaSJ8qlajUdTuKQB3rKwpD8f-H0iT9BDMfc36mncvdBCMKvxDfsz1YuI0n0Kwq2wvBEc9HF-Ku8qloeBn4x92hIsiGwbt5YDR9OaA2FZwvLI0ojQzDi8tQIxfYp/xFiXkHqVi6q0k0EPXI1a79LcK-O4c4MkGhZKq6j7wNI"
-      ],
-      "videoUrl": "https://vimeo.com/883275482, https://vimeo.com/892877913",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recYknDnapMT18OhZ",
-      "slug": "pink-taxi-2019",
-      "title": "Pink Taxi",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Comedy"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2019",
-      "releaseDate": "",
-      "workDate": "2019-04-25",
-      "description": "One day Apostolis decides that he wants to be a superhero. He creates a suit that allows him to teleport but only once per day. His flatmate Vezos needs transportation in order to go to a very important job interview, Apostolis offers to help but Vezos refuses to believe that his flatmate suddenly turned into a superhero.",
-      "isFeatured": false,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/_Ak90rjbUROjptxEoBd_vQ/gHeWgek7fU3_P3ZSgPC1FZKyt7ol64BPKkt_DuHKqn42edoaXHCImCgay0WUCJVlJkxkCQvnRRqTy8PYA8iFmTMF1gTxhh363D0l9KaAWnOT9felodPtiPwbGiMABO3F6te1t6OLrpEz0Qk4RJ7ZNr1ygdEkvkA2-2tL06BsCvRZwvSKuqO4YMpJ0BMUucZ4/wuZHzxwk9KpMbnyGIow_MrTql_nFBF-Pc54hCFKuQfM",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/_Ak90rjbUROjptxEoBd_vQ/gHeWgek7fU3_P3ZSgPC1FZKyt7ol64BPKkt_DuHKqn42edoaXHCImCgay0WUCJVlJkxkCQvnRRqTy8PYA8iFmTMF1gTxhh363D0l9KaAWnOT9felodPtiPwbGiMABO3F6te1t6OLrpEz0Qk4RJ7ZNr1ygdEkvkA2-2tL06BsCvRZwvSKuqO4YMpJ0BMUucZ4/wuZHzxwk9KpMbnyGIow_MrTql_nFBF-Pc54hCFKuQfM",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/di5_l1eTqrvaFUST37nWWw/-o49aZkhz-7Yh3X3yMVd-fj8cJ8DzbEJK334MV9pwQUSCOS4iXadgTLy6S4WmWMr7CUko2mt_BF4KcjaYz3KxEBM9MaIXiaTaMTC-oxj9zb0rZ8cVYlbAd8CyjyhNj8v19pIuTvKHOMkT5_V3ApYWiVP8TAPZBqgzu_ERCTbiWq6wtQDlj4caS9UGb8EEKpB/vPQjSCkweRtO9Jpm-d7aNHaaLNlCTsSX6c_GcJWdOxw"
-      ],
-      "videoUrl": "https://vimeo.com/412397458/e681c1437b",
-      "additionalVideos": [],
-      "awards": [
-        "Best Comedy: Symi International Film Festival 2021",
-        "Best Short Film: Symi International Film Festival 2021",
-        "Best Greek Film: Symi International Film Festival 2021",
-        "Honorable Mention London World-Wide Comedy Short Film Festival 2019"
-      ],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recaNFE1fKkSZnYTy",
-      "slug": "greenwich-peninsula-investor-s-pitch-video-2023",
-      "title": "Greenwich Peninsula Investor's Pitch Video",
-      "type": "Commercial",
-      "kinds": [
-        "Promo"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-04-19",
-      "description": "I was commissioned to direct an investor’s pitch video for Greenwich Peninsula, one of Europe’s largest regeneration projects, transforming 150 acres of former industrial land in North Greenwich, London, into a vibrant riverside community. Our goal was to showcase the dynamic lifestyle within the development and the rich history of the area. We employed aerial videography to capture the impressive architecture and the Peninsula’s integration into London’s skyline. The video featured interviews and testimonials, adopting a documentary-style format inspired by popular streaming platforms, to authentically convey the project’s vision and appeal. This project was particularly exciting as it allowed us to delve into the transformation of a significant London area, highlighting contributions from renowned architects and planners. The experience of exploring the site’s evolution and future potential was both enlightening and inspiring.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1940200095-29cf64496c3217b90ca9a6150c9f7fcd55d72a99436fbfa6f5d8929ecca90e67-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/864584365",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recbu0Ed9jwyB5Y5G",
-      "slug": "pure-souls-2016",
-      "title": "Pure Souls",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2016",
-      "releaseDate": "",
-      "workDate": "2016-07-20",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/sXNI5YDbehk/maxresdefault.jpg",
-      "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=sXNI5YDbehk",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recd04nWeAvqRXQwL",
-      "slug": "aru-open-day-videos-2024",
-      "title": "Aru: Open Day Videos",
-      "type": "Uncategorized",
-      "kinds": [
-        "Video"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2024",
-      "releaseDate": "",
-      "workDate": "2024-06-18",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1888786362-69c40eb75a14e0b0ecd40c794ad9d7d6080887559b569dca5fa4ab74c6b21764-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/974469679/c4e10c67c3",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recdMqD8kOcLfYIK5",
-      "slug": "earth-my-love-2017",
-      "title": "Earth, My Love",
-      "type": "Music Video",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Art House",
-        "Dance Film"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2017",
-      "releaseDate": "",
-      "workDate": "2017-01-01",
-      "description": "Earth and the forces of nature are fighting to survive from human demolition.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/821850973-cdee0c61c9400e9d9ce15e13035ec13a16ca76053c690eed2c95b75359ffb021-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/365960702/d469f3ae51",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recdnE3dAcg4aefgi",
-      "slug": "pascalle-video-courses-2023",
-      "title": "Pascalle Video Courses",
-      "type": "Uncategorized",
-      "kinds": [
-        "Courses"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-10-23",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recfCKTEcmpkSWxsg",
-      "slug": "fraqua-vive-2023",
-      "title": "Fraqua Vive",
-      "type": "Commercial",
-      "kinds": [
-        "TVC"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-06-16",
-      "description": "I was commissioned to direct a dynamic 15-second TV spot for Fraqua, a water bottle designed by professional boxer Frank Ripley. Despite his young age, Frank developed an innovative solution for boxers -allowing them to hydrate without removing their gloves, tackling a unique challenge in the sport. To bring this to life, we focused on capturing Frank in action, highlighting the intensity of his training. We played with dramatic lighting and cinematic composition to emphasize the raw energy and focus of a professional boxer. The result? A visually striking and high-impact piece that reflects the spirit of Fraqua.",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/RLQnHBrnLOmqZCFfl0fEvg/r1nVmrIq-dOWrS2lXAWBdadHM8qVwwLkLVflVIUliL3vCyRJbAESqkVInw4a81TtSGwDXi_PEmpowNZ5xkT3c0d8JvIA7c7xT6C9o1x5vkCAFHttTqaoz46mpCiRSBis0NBHthRPqI9VV6mOQsk5T_BI_Vvf3gPj7lDOVxxcjU2KZ0rZ4zx2XUnTN8dN__t7/-NKKwPnAnTmwCYn_V0tmO_ofdbiA8yukC6GRc-l9NCw",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/RLQnHBrnLOmqZCFfl0fEvg/r1nVmrIq-dOWrS2lXAWBdadHM8qVwwLkLVflVIUliL3vCyRJbAESqkVInw4a81TtSGwDXi_PEmpowNZ5xkT3c0d8JvIA7c7xT6C9o1x5vkCAFHttTqaoz46mpCiRSBis0NBHthRPqI9VV6mOQsk5T_BI_Vvf3gPj7lDOVxxcjU2KZ0rZ4zx2XUnTN8dN__t7/-NKKwPnAnTmwCYn_V0tmO_ofdbiA8yukC6GRc-l9NCw"
-      ],
-      "videoUrl": "https://vimeo.com/862502132/f22792db0f",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recfez0UpZ2DYKOd3",
-      "slug": "losbros-impossible-to-resist-2023",
-      "title": "Losbros Impossible To Resist",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [
-        "Comedy"
-      ],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-01-01",
-      "description": "For this ad, I directed a fun, fast-paced film for LosBros, centered around the tagline Impossible to Resist. The concept? Two stranded bikers in the middle of nowhere, trying everything to hitch a ride - only to fail spectacularly. But the moment they crack open a LosBros drink, a stunning girl stops instantly. Just when they think their luck has turned, she swipes their drinks and drives off, leaving them in shock. The whole project was designed to be run-and-gun, embracing playful physical comedy, exaggerated expressions, and dynamic zooms—inspired by directors like Edgar Wright. With no dialogue, the humor relied purely on performance and visual storytelling. Coming from a comedy background, I loved working with the actress to fine-tune every reaction and beat. A light, energetic shoot with a sharp comedic twist - exactly what makes LosBros impossible to resist.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1633006280-5e2fa6c8cd1e6b72d9610a94edd1a527b04f13c771ded68f36711697391271af-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/808454484",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recg8GIk3yfhudveK",
-      "slug": "cordex-x-polymateria-agritechnica-2023",
-      "title": "Cordex X Polymateria Agritechnica",
-      "type": "Uncategorized",
-      "kinds": [
-        "Promo"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-11-17",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/nJfyS4zEa3o/maxresdefault.jpg",
-      "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=nJfyS4zEa3o",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recg9WSEULv8TImuh",
-      "slug": "it-s-a-matter-of-time-2014",
-      "title": "It’s A Matter Of Time",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Art House"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2014",
-      "releaseDate": "",
-      "workDate": "2014-01-05",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recgkaJdMxZRAQ7b4",
-      "slug": "aru-courses-23-edit-2023",
-      "title": "Aru Courses 23 Edit",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-07-10",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://vumbnail.com/871956303.jpg",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/871956303, https://vimeo.com/871956434, https://vimeo.com/871956656",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
       "id": "reclNk7d4VrkyeuIQ",
       "slug": "rose-2014",
       "title": "Rose",
@@ -1120,413 +1507,26 @@
       "relatedArticleId": null
     },
     {
-      "id": "recloUQzk1n5hFU57",
-      "slug": "anglia-ruskin-university-london-2023",
-      "title": "Anglia Ruskin University London",
-      "type": "Commercial",
-      "kinds": [
-        "Campaign"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-07-10",
-      "description": "For Anglia Ruskin University London, we led a large-scale campaign to capture the essence of student life and academic excellence. The project included producing many testimonial videos for individual courses, three hero videos showcasing the university’s facilities, and a hero video where students shared their experiences in a single word. Over several days, we conducted interviews with students and professors while capturing high-quality B-roll footage of the campus. We also incorporated aerial videography to highlight the university’s environment from a fresh perspective. The result was a dynamic and engaging campaign that authentically represented the university’s spirit and offerings.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1910066229-12b8a21095b4c180f7f76ccb405df7cdeaef835ab10387d93e655d6ae7572b8c-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/881242794/e394444e54",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recn0dqWz39TpCHNV",
-      "slug": "kim-2017",
-      "title": "Kim",
+      "id": "recg9WSEULv8TImuh",
+      "slug": "it-s-a-matter-of-time-2014",
+      "title": "It’s A Matter Of Time",
       "type": "Narrative",
       "kinds": [
         "Short Film"
       ],
       "genre": [
-        "Coming of Age"
+        "Art House"
       ],
       "productionCompany": "Film Lemon",
       "client": "",
-      "year": "2017",
+      "year": "2014",
       "releaseDate": "",
-      "workDate": "2017-09-29",
+      "workDate": "2014-01-05",
       "description": "",
       "isFeatured": false,
       "heroImage": "",
       "gallery": [],
       "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recnbep6l8n9nsbXq",
-      "slug": "astathes-2015",
-      "title": "Astathes",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Drama"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2015",
-      "releaseDate": "",
-      "workDate": "2015-07-09",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "reco9orD0pc1Afn1g",
-      "slug": "liveloula-2017",
-      "title": "Liveloula",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Drama"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2017",
-      "releaseDate": "",
-      "workDate": "2017-01-15",
-      "description": "A brother and a sister struggle in order to find money for their mothers chemotherapy.",
-      "isFeatured": false,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-9_ehrdsGz9h1Usbsrehng/xWOrzdkWJZP-uKfbPXtp9lqIMmvsnm1OPGvbY11FRqLiaSly_RR1aMolkAKP8yuijzJCvCrXzDVsjuelJ-E_r4xIQD9ip18sfhdAudtpINmJjLp1aJrZqdcp_4kIuiVfRNm8LWhuyF4hiDiO3YSpP39AuVTdUrx5NWvIG4AfeSSJXuxo9V9nlTZfPOjhML93/NtTscx0R-ZHqvaAj5CKc0UAz-6pY4-7242W8BozbC9E",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/-9_ehrdsGz9h1Usbsrehng/xWOrzdkWJZP-uKfbPXtp9lqIMmvsnm1OPGvbY11FRqLiaSly_RR1aMolkAKP8yuijzJCvCrXzDVsjuelJ-E_r4xIQD9ip18sfhdAudtpINmJjLp1aJrZqdcp_4kIuiVfRNm8LWhuyF4hiDiO3YSpP39AuVTdUrx5NWvIG4AfeSSJXuxo9V9nlTZfPOjhML93/NtTscx0R-ZHqvaAj5CKc0UAz-6pY4-7242W8BozbC9E",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/Cag-7BGTyN5qWeis8R714Q/4SqiTowlWgVog3dR6CqU-VH5lHSb-6UY8HAB33G0Q_e0tMZLQt7hFyvVPZT-QDEpfQ96-VUkNK1YYXOOGwX8uWmx7k00_S930Opg22CqmPwhMZhmfe3Z78MN1TaA_VDyBC2zP_r_gz0wXGw2LuTwsQa-VvhASkBVbcDSYgYUngVyEpy_w1aR_XS6ep9KpihN/Orni_9OfNWOKAb2VLifUq557wNDXSCAlytl8Hrm4ls8",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/EmXPqJvKQcTiuhWkI9HWUw/8m3AODvWJ7X1ZdqlO9PQ0qdWeWqnmZ7glINOClczuOPePw3raX--od8GZQ7OMNTwbMC6pQkqevRrKqffixZz1sZOz6vdZzEaMKqVYw27kVdbZVzOthGZxQjPuaGmYSxo0Ds99kWzqDYAKQTQkdBW18pMdnvzlAAj4FWG2wdYHlY9giAqzzIMHSGP6Nl_MNtp/H-fOODB8J6O2hKf6YQR2y_rUus_Sx-NvUWsRAENhPkw"
-      ],
-      "videoUrl": "https://www.youtube.com/watch?v=pqvz2xkoOF8&pp=ygUObGl2ZWxvdWxhIGZpbG0%3D",
-      "additionalVideos": [
-        "https://www.youtube.com/watch?v=5CQx_n04Cdk",
-        "https://www.youtube.com/watch?v=sWQVh6vGp74",
-        "https://www.youtube.com/watch?v=B_jSQoWjTQQ"
-      ],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recoaqKTgrqmy2gsW",
-      "slug": "daughters-united-2022",
-      "title": "Daughters United",
-      "type": "Commercial",
-      "kinds": [
-        "Interviews"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2022",
-      "releaseDate": "",
-      "workDate": "2022-12-06",
-      "description": "I was commissioned to direct a docu-style testimonial video for Daughters United, a UK-based charity dedicated to empowering women who have faced marginalization or mistreatment. The film captures the raw and powerful stories of the women involved, sharing their experiences and the impact of the support they’ve received. Through simple yet heartfelt testimonials, the video highlights the charity’s mission of fostering confidence, connection, and transformation. The strength of these women, combined with the authenticity of their voices, made this project particularly meaningful.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1721384507-cc12e7986e61e0c64d0286ebb22dd65bf0c2403796e490523eab6cc0f4df4aa8-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/862503878",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recpC3ajparAtzTWT",
-      "slug": "let-s-get-ready-to-rumble-energy-2023",
-      "title": "“Let’s Get Ready To Rumble” Energy",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-01-01",
-      "description": "I had the pleasure of creating a commercial for “Let’s Get Ready To Rumble” Energy, a dynamic beverage developed in collaboration with Hall of Fame boxing announcer Michael Buffer. This project was particularly exciting as it involved entirely practical effects, with no reliance on 3D animation. We utilized a specialized macro probe lens, the Laowa 24mm f/14 2X Macro Probe, known for its unique ability to capture close-up shots with a wide-angle perspective. This allowed us to achieve dynamic movements and intricate details, bringing the energy drink to life on screen. To enhance the visual impact, we experimented with lighting techniques to simulate a stormy atmosphere, incorporating rain effects to evoke the brand’s energetic essence. I also took on the editing process, ensuring the final video conveyed the intended intensity and excitement. It was a fulfilling day in the studio, resulting in a commercial that I’m truly proud of.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1633007135-fc595deb8fdc6becd9c86082caa195acccf6459adcda612ce1e65649476366e2-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/808455460",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recqKmuvw2HTSqEcA",
-      "slug": "justify-my-night-2017",
-      "title": "Justify My Night",
-      "type": "Music Video",
-      "kinds": [
-        "Music Video"
-      ],
-      "genre": [],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2017",
-      "releaseDate": "",
-      "workDate": "2017-06-14",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://img.youtube.com/vi/5oyvbsD7Uk8/maxresdefault.jpg",
-      "gallery": [],
-      "videoUrl": "https://www.youtube.com/watch?v=5oyvbsD7Uk8",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recrN5Q2SUgDfQDSG",
-      "slug": "neigbourly-2024",
-      "title": "Neigbourly",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2024",
-      "releaseDate": "",
-      "workDate": "2024-06-21",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recryV8jTtQDWLB9B",
-      "slug": "squid-campaign-2025-2025",
-      "title": "Squid Campaign 2025",
-      "type": "Commercial",
-      "kinds": [
-        "Campaign"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "SQUID",
-      "year": "2025",
-      "releaseDate": "",
-      "workDate": "2025-01-27",
-      "description": "After a successful collaboration with SQUID the year before, I was commissioned to lead their 2025 crowdfunding campaign. We traveled to Dublin to capture the story behind SQUID, meeting with the founders and crafting a dynamic video that blends motion graphics, live action, and animation. The video highlights SQUID’s innovative approach to digital loyalty cards and introduces Wave, their new feature designed to reward users seamlessly through purchases. The goal was to create an engaging and compelling piece to drive the campaign forward - and we did just that.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1984887183-fa809f85880f91a7c01567d52d49894ee0d817965ff414f48212c6c21baec124-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/1058682269/f0dc76ee99",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "rectMqCkoDwqS9qks",
-      "slug": "easol-podcast-01-2023",
-      "title": "Easol: Podcast 01",
-      "type": "Uncategorized",
-      "kinds": [
-        "Social"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-09-28",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://vumbnail.com/1021317464.jpg",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/1021317464/069ff45669, https://vimeo.com/1021317547/8f90879c55",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recuJ26waUmWS1gX5",
-      "slug": "the-dyas-juna-2022",
-      "title": "The Dyas Juna",
-      "type": "Commercial",
-      "kinds": [
-        "Promo"
-      ],
-      "genre": [
-        "Documentary"
-      ],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2022",
-      "releaseDate": "",
-      "workDate": "2022-01-01",
-      "description": "I was commissioned to create a promotional video for Dyas, a London-based fashion brand that collaborates with artists for each of their clothing lines. This project focused on Juna, a talented collage artist, exploring her creative process - from inspiration to artwork- and how her designs are transformed into textiles and clothing. The video had a documentary-style approach, which made it an especially engaging and rewarding experience for me.",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1494978512-97c01ccacc6ce5e10a7d1603408f90d59d1a4f87cd3df97feba2bdfaa2e9f2b3-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/743094724",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recvC2kbUF9Dh5h6f",
-      "slug": "talon-pipesnug-fluesnug-2025",
-      "title": "Talon: Pipesnug & Fluesnug",
-      "type": "Commercial",
-      "kinds": [
-        "Commercial"
-      ],
-      "genre": [
-        "Animation"
-      ],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2025",
-      "releaseDate": "",
-      "workDate": "2025-01-31",
-      "description": "For this animated project, Talon challenged me to create a unique and engaging way to showcase their Pipe Snug and Flue Snug sealing products. Instead of a conventional demonstration, I developed a game-inspired adventure, where two characters embark on a journey facing exaggerated, comical challenges that represent real-world sealing issues. Drawing inspiration from classic games, I designed a battle system reminiscent of Final Fantasy VII to integrate the product’s unique selling points (USPs). Every encounter—both characters and enemies—symbolizes the obstacles of proper sealing in a playful and engaging way. I was responsible for character design, scriptwriting, and storyboarding the entire project before collaborating with an animator, who brought everything to life. This was one of my first large-scale animated projects, blending storytelling, humor, and technical product showcasing into a fresh and dynamic experience.",
-      "isFeatured": false,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/vIkrsPqmgToIWiUhahXajw/oufarDHVs1i0mw96CpWnXkidw7z4zVNAJGIiseJx12r6mInPbEnaWv4-FZQXYN6AaVhFYNwbKAVDp53bkz4EdFMhWTXMY717ZZFbRvWYgCK-yd1-69NoByakC4zvfbwiOrT2SRu9VWAnEkGRPPUL3NyF5k6ktylufRbhvtdjNrd6XNTr5bfKOiiuptuIvkYD/OnvDVl0UcxGi42NOveFiDKyeG2T5QjQNGanovBIvz3c",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/vIkrsPqmgToIWiUhahXajw/oufarDHVs1i0mw96CpWnXkidw7z4zVNAJGIiseJx12r6mInPbEnaWv4-FZQXYN6AaVhFYNwbKAVDp53bkz4EdFMhWTXMY717ZZFbRvWYgCK-yd1-69NoByakC4zvfbwiOrT2SRu9VWAnEkGRPPUL3NyF5k6ktylufRbhvtdjNrd6XNTr5bfKOiiuptuIvkYD/OnvDVl0UcxGi42NOveFiDKyeG2T5QjQNGanovBIvz3c"
-      ],
-      "videoUrl": "https://vimeo.com/1046489536/b18838d733?ts=0&share=copy",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recwmX7kG05YjKDPm",
-      "slug": "before-the-rooster-crows-2020",
-      "title": "Before The Rooster Crows",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2020",
-      "releaseDate": "",
-      "workDate": "2020-02-26",
-      "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
-      "isFeatured": true,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/UgJfdAqr0dB9KJIvBl69ww/GLQtebtxDHmA5wbyQd44TYcdWofNqSb3aVy9JpZolhQ2rh9z_JjuPkWU5QQzuJrHlw4Y5VzyrfpsQq1yppmKzXokP6oH2BOcL1LOpbhGhGKg3ZmSJ0DP-c-vniP7ze6Zg7WUMJATO4lWI_6PUMxz9YIhh0Z_AiieliIO-NOx38iNse0zNjbJQve6kUBBjaSS/HuDgb0zhRT1nEC2lpriExL_uWjFgvOKmpZuXh1-r-Sg",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/UgJfdAqr0dB9KJIvBl69ww/GLQtebtxDHmA5wbyQd44TYcdWofNqSb3aVy9JpZolhQ2rh9z_JjuPkWU5QQzuJrHlw4Y5VzyrfpsQq1yppmKzXokP6oH2BOcL1LOpbhGhGKg3ZmSJ0DP-c-vniP7ze6Zg7WUMJATO4lWI_6PUMxz9YIhh0Z_AiieliIO-NOx38iNse0zNjbJQve6kUBBjaSS/HuDgb0zhRT1nEC2lpriExL_uWjFgvOKmpZuXh1-r-Sg",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/CbLFV2JzsYrhkypSvEEooQ/-IlJMKwQyvbDa4D45GIhwKahkBQ_CLCdUErC5Q3B0PVtfbaLB-13ONrjpoQu3sT6Wli35dqvgC9i4kqk9J77PDj7yAiKttNckNLMc5MWJpfw8xbiIdQDPb3zmoY51_n567BiT6HJ36gIBz6DV-VMrLL_Z4hQ_e4jdNE4OUao5pyXhoRAWtssP0LHM7CEzFAG/G3V9sMsa1NHWbFZykLZsL085gizEDXqrxUPqfSUAt_E"
-      ],
-      "videoUrl": "https://vimeo.com/athanasiou/rooster",
-      "additionalVideos": [],
-      "awards": [
-        "Best Director - Arizona Short Film Festival",
-        "Best Short Film Nomination - Hollywood Verge Film Awards",
-        "Best Drama Film Nomination - Hollywood Verge Film Awards"
-      ],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recxSNlQVhqiz1ftt",
-      "slug": "brand-storytelling-event-2023",
-      "title": "Brand Storytelling Event",
-      "type": "Uncategorized",
-      "kinds": [
-        "Event Video"
-      ],
-      "genre": [],
-      "productionCompany": "Storyflow Entertainment Limited",
-      "client": "",
-      "year": "2023",
-      "releaseDate": "",
-      "workDate": "2023-11-24",
-      "description": "",
-      "isFeatured": false,
-      "heroImage": "https://i.vimeocdn.com/video/1761190324-a7fca645b3e56ea2603566fce521361e0d54073f6c797cc127e6b3dced8db8f4-d_295x166?region=us",
-      "gallery": [],
-      "videoUrl": "https://vimeo.com/889533159/edae4b50f1?share=copy",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
-      "id": "recyk2RUZUY2LRoYy",
-      "slug": "the-big-thirst-2016",
-      "title": "The Big Thirst",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Comedy",
-        "Horror"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2016",
-      "releaseDate": "",
-      "workDate": "2016-07-24",
-      "description": "Young Odysseus discovers that something is going terribly wrong when he decides to visit his father's village for the first time.",
-      "isFeatured": false,
-      "heroImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ANQlUw-gAm-HJieBwCReZA/fgf8kQz1yuRZgxL1OjQmlHAC_qIwKQFiOASlFelpAQv26SrqnSGz3lGMEd6Iw_g3bMsYGYisO9nELpV5CfDU5zG7KtqsAkdmrEvl1ovQTekDt2vg9Rub1rzKSZJkDSFn3fFbB-8X-YHLr3OfXM5S7Kj4G9cvht1IhmF1Y1TxA3B-SguNLhrJqDpA9x4BOYf3/Bt3CcuRiVvxyKkVZ40cKdSNjuYVtzo9v9NcdRvQXQ6U",
-      "gallery": [
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/ANQlUw-gAm-HJieBwCReZA/fgf8kQz1yuRZgxL1OjQmlHAC_qIwKQFiOASlFelpAQv26SrqnSGz3lGMEd6Iw_g3bMsYGYisO9nELpV5CfDU5zG7KtqsAkdmrEvl1ovQTekDt2vg9Rub1rzKSZJkDSFn3fFbB-8X-YHLr3OfXM5S7Kj4G9cvht1IhmF1Y1TxA3B-SguNLhrJqDpA9x4BOYf3/Bt3CcuRiVvxyKkVZ40cKdSNjuYVtzo9v9NcdRvQXQ6U",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/oxHbv86K2fFd1sU_oIalLA/T1Mq0BBDyrBan9_1q5KOWqN0kk4MyxsChUYLvTJJF2iFDxaeExLY_OuQQTF0QI4IP1PXhY_ShWTYk-YuQYim4LYeNxJvYExQ06QJpw10nYIXuKPCHZ9NcVW0x-8FugU9GZpwm3Vrc-MBv2HOl5YRi3-rPuKqo4jTNOyKM1maN8T9_rsYLH77vDV8BcFws7sX/DMJJfVEHBsWkmRJ0iHn3f5qSLfkQmtFppMNMWefX4YM",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/KQyOa1RsW2yJYFNiAxQAIQ/k1zsgATawBzNBjP4pWrOGKOTY7EaCXT0tZkR812a2K-9dR5NGZE1kmcRLY_N2oJlLsBhqxoJQFAKTKb8TvpNMTVPgp7CtGKMSslZ5VrVYCpcAnvp4mxIxll03Hfywe2zNmq1cg48bB3I4vaDJKAUcKYggD9VKSY6v_iBhpFaOPyz0w8uXoc80-ktySM7azLI/PMATgkln6fvfGahkLSjF4Ikt2EJJdUU85wbvJUIjQLc",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/DfIohjxb0YP5TUNmnvR3bw/hI2bG0__lUSH4g5pncIKqczCL-JYB2tGpfrmUjD8-ZCETurhHwxVQ14zgZh_C5tMip8y9uaM-9YqGw-pKbnavxI2sBIxd8GQN02EadxVWUl-00Ocj_tYgbbJsbyBDRq8fl2ude4TDvdJ2-ONfp4m7KTBmxMA9LvOUGg6r0Z8byeYRkTYejbdo-HzXEIs3dql/ec_3_ZOumNsHiNnt_q4dP3nxFB4QXcbS6q5pFaPimOU",
-        "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/hRCkWVH2UVBRBAfU9S_BPw/x3ZI7WyyaWZdGDRSLRGk57CV0YExHiBxkayK-6z0J80LlrlL9d_ujv-CP1-bITO9THj9gdoJzURYuNc7AdG_4-9yyIFUzZlCiHtg2HI2DGF3CctEadSv2DpizUQaK98CfT-6KBNnK-i80D2AZwNlyu0uafNKe21j8w1w-9KQew1quncV6oCLzz5ZBe2UZLea/UpimhOE-7zGmYy9xFlchNt_K4KDLMYbpTYJulOIomXk"
-      ],
-      "videoUrl": "https://vimeo.com/athanasiou/thebigthirst?share=copy&fl=sv&fe=ci",
       "additionalVideos": [],
       "awards": [],
       "credits": [],
@@ -1576,7 +1576,7 @@
     ],
     "defaultOgImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/voU2mBTNqrwwoQy6W3bMRg/W3GvTl21mJxHXDgAUEi9bacRZKy9RDATzFO5Vm6MgTvYclKuMpQYpLhlv6ExNeJiQqU_x618NJnOxW7xIP5I7SZ1IAvpoA0YITHE0Mqmln0C35qarC4nnf13EAAyvVMRjeZzcQqXSZ1LCfZAhAaLGpI7D7Lbz3hqN1TL1pGQwBykgyZX4bUtJ7nliMFlNYyc/IvTmvYxIr-9TN_FRImzuSGuObQQHAPbO7YDivZe-Pew"
   },
-  "lastUpdated": "2025-11-28T14:53:07.127Z",
+  "lastUpdated": "2025-11-28T14:59:52.650Z",
   "version": "1.0",
   "source": "build-time-sync"
 }
