@@ -3,7 +3,24 @@ import { THEME } from '../theme';
 
 export const LoadingSkeleton: React.FC = () => {
   return (
-    <div className="min-h-screen bg-bg-main">
+    <div className="min-h-screen bg-bg-main relative">
+      {/* Animated gradient overlay - matches old loading screen */}
+      {THEME.pageTransitions.loading.showGradient && (
+        <div 
+          className="fixed inset-0 z-[100] pointer-events-none"
+          style={{
+            background: `linear-gradient(
+              90deg,
+              ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
+              ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
+              ${THEME.pageTransitions.loading.gradientColors[2]} 100%
+            )`,
+            backgroundSize: '200% 100%',
+            animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
+          }}
+        />
+      )}
+
       {/* Navigation skeleton - matches Navigation.tsx structure */}
       <nav className={`fixed top-0 left-0 w-full z-50 flex flex-col items-center md:flex-row ${THEME.header.gap} text-white ${THEME.header.paddingY} ${THEME.header.paddingX} ${THEME.header.background} animate-pulse`}>
         {/* Logo skeleton */}
