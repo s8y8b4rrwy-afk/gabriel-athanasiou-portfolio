@@ -3706,14 +3706,22 @@ The `scripts/ignore-netlify-build.sh` script controls when Netlify builds run:
 
 ```bash
 # Always builds:
-✅ Commits to main branch
 ✅ Pull request deploy previews
-✅ Commits with [deploy] or [force-deploy] in message
+✅ Main branch commits with [deploy] or [force-deploy] marker
+✅ Commits from scheduled-sync.mjs (when content changes)
+✅ Commits from GitHub Action weekly check (Sundays)
 
 # Never builds (saves minutes):
-❌ Feature branch commits (unless forced)
+❌ Regular commits to main without [deploy] marker
+❌ Feature branch commits (unless forced with [deploy])
 ❌ Commits with [skip ci] in message
 ```
+
+**Build Triggers:**
+1. **Content changes** - Midnight sync detects changes → Triggers build via webhook → Commit message contains "Scheduled sync"
+2. **Weekly code check** - Sunday 3 AM GitHub Action → Creates commit with [deploy] marker
+3. **Manual deploys** - Add [deploy] to commit message when pushing to main
+4. **Pull requests** - Always build deploy previews for testing
 
 #### Current Build Configuration
 
