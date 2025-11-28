@@ -10,6 +10,7 @@ import { Cursor } from './components/Cursor';
 import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { THEME } from './theme';
 // import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
@@ -32,6 +33,8 @@ const getPageTitle = (pathname: string): string => {
   return 'Page';
 };
 
+const CACHE_KEY = 'portfolio-cache-v1';
+
 export default function App() {
   const [data, setData] = useState<{ projects: Project[], posts: BlogPost[], config: HomeConfig }>({ projects: [], posts: [], config: {} });
   const [loading, setLoading] = useState(true);
@@ -47,14 +50,31 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
+      // 1. Try to load from localStorage cache first
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setData(parsed);
+          setLoading(false); // Show cached content immediately
+        }
+      } catch (error) {
+        console.error('Failed to load cached data:', error);
+      }
+
+      // 2. Fetch fresh data in background
       try {
         const result = await cmsService.fetchAll();
         setData(result);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(result));
         setLoading(false);
       } catch (error) {
-        console.error('Failed to initialize app:', error);
+        console.error('Failed to fetch fresh data:', error);
+        // If we had cache, we already showed it. Otherwise, show empty state
         setLoading(false);
-        setData({ projects: [], posts: [], config: {} });
+        if (!localStorage.getItem(CACHE_KEY)) {
+          setData({ projects: [], posts: [], config: {} });
+        }
       }
     };
     init();
@@ -79,30 +99,7 @@ export default function App() {
   }, [location.pathname]);
 
   if (loading || !showContent) {
-    return (
-      <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
-        {THEME.pageTransitions.loading.showText && (
-          <div className="text-white/20 tracking-widest text-xs uppercase animate-pulse relative z-10">
-            Loading...
-          </div>
-        )}
-        {THEME.pageTransitions.loading.showGradient && (
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(
-                90deg,
-                ${THEME.pageTransitions.loading.gradientColors[0]} 0%,
-                ${THEME.pageTransitions.loading.gradientColors[1]} 50%,
-                ${THEME.pageTransitions.loading.gradientColors[2]} 100%
-              )`,
-              backgroundSize: '200% 100%',
-              animation: `loadingShimmer ${THEME.pageTransitions.loading.animationDuration} ${THEME.pageTransitions.loading.animationEasing} infinite`
-            }}
-          />
-        )}
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return (

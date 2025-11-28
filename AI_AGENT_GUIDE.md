@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** November 27, 2025  
+> **Last Updated:** December 2025  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 
@@ -32,6 +32,40 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 > **All major changes documented in reverse chronological order (newest first)**
 
 ### 🎉 Recent Major Changes
+
+### December 2025 - Optimistic Loading with localStorage Cache
+**What Changed:** Implemented localStorage-based caching with professional skeleton loading screens to eliminate blank waiting screens and provide instant content on repeat visits.
+
+**The Problem:**
+- Users experienced slow initial page loads showing only a blank screen with "Loading..." text
+- Every visit (first or repeat) required 2-3 second wait for API response
+- No benefit from having visited the site before
+- Poor perceived performance and confusing UX
+
+**The Solution:**
+- **localStorage Cache Strategy:**
+  - Save complete data structure (projects, posts, config) to browser storage
+  - Read cache immediately on mount (synchronous, instant)
+  - Show cached content with zero delay on repeat visits
+  - Fetch fresh data in background and update cache silently
+  
+- **Professional Skeleton Loading:**
+  - Created LoadingSkeleton component matching actual layout
+  - Navigation bar, hero section, and 3-column grid placeholders
+  - Subtle pulse animation for better perceived performance
+  - Replaces blank "Loading..." text
+
+**Performance Impact:**
+- First visit: Better UX with skeleton instead of blank screen
+- Repeat visits: ~2-3 seconds faster (instant content display)
+- Offline capability: Shows last cached data gracefully
+- Zero breaking changes to data flow or API
+
+**Implementation Details:**
+- Cache key: `portfolio-cache-v1` (bump version to invalidate all caches)
+- Error handling: Try-catch around localStorage for incognito/private modes
+- Background sync: Existing 30-minute sync continues to work
+- See `docs/OPTIMISTIC_LOADING.md` for complete technical documentation
 
 ### November 27, 2025 - Cloudinary Eager Transformations for Zero Cold-Start Delays
 **What Changed:** Implemented eager transformation generation at upload time to eliminate 2-3 second delays when images are first requested from new device/viewport combinations.
