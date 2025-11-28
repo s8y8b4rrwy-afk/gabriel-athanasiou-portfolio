@@ -37,6 +37,8 @@ export interface Project {
   productionCompany: string; // Production company that produced the work
   client?: string; // Optional client/brand field
   year: string;
+  releaseDate?: string; // Full release date from Airtable (YYYY-MM-DD)
+  workDate?: string; // Full work/production date from Airtable (YYYY-MM-DD)
   description: string;
   isFeatured: boolean;
   

@@ -76,8 +76,68 @@ function normalizeProjectType(rawType) {
   return 'Uncategorized';
 }
 
+// Build lookup maps
+async function buildLookupMaps() {
+  console.log('[sync-data] 🗂️  Fetching lookup tables...');
+  const [festivalsRecords, clientsRecords] = await Promise.all([
+    fetchAirtableTable('Festivals', null),
+    fetchAirtableTable('Client Book', null)
+  ]);
+
+  const festivalsMap = {};
+  festivalsRecords.forEach(r => {
+    festivalsMap[r.id] = r.fields['Display Name'] || r.fields['Name'] || r.fields['Award'] || 'Unknown Award';
+  });
+
+  const clientsMap = {};
+  clientsRecords.forEach(r => {
+    clientsMap[r.id] = r.fields['Company'] || r.fields['Company Name'] || r.fields['Client'] || 'Unknown';
+  });
+
+  console.log(`[sync-data] ✅ Loaded ${Object.keys(festivalsMap).length} festivals, ${Object.keys(clientsMap).length} clients`);
+  return { festivalsMap, clientsMap };
+}
+
+// Parse external links and extract videos
+function parseExternalLinks(rawText) {
+  const links = [];
+  const videos = [];
+  
+  if (!rawText) return { links, videos };
+  
+  const items = rawText.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+  
+  for (const item of items) {
+    if (!item.startsWith('http')) continue;
+    
+    const videoInfo = getVideoId(item);
+    const isVideo = videoInfo.type !== null;
+    
+    if (isVideo) {
+      videos.push(item);
+    } else {
+      let label = "Link";
+      try {
+        const hostname = new URL(item).hostname;
+        const core = hostname.replace('www.', '').split('.')[0];
+        if (core === 'imdb') label = 'IMDb';
+        else if (core === 'youtube') label = 'YouTube';
+        else if (core === 'linkedin') label = 'LinkedIn';
+        else if (core === 'instagram') label = 'Instagram';
+        else if (core === 'vimeo') label = 'Vimeo';
+        else if (core === 'facebook') label = 'Facebook';
+        else label = core.charAt(0).toUpperCase() + core.slice(1);
+      } catch (e) {}
+      
+      links.push({ label, url: item });
+    }
+  }
+  
+  return { links, videos };
+}
+
 // Build projects
-async function buildProjects() {
+async function buildProjects(festivalsMap, clientsMap) {
   console.log('[sync-data] 📊 Fetching projects...');
   const records = await fetchAirtableTable('Projects', 'Release Date');
   const projects = [];
@@ -90,38 +150,41 @@ async function buildProjects() {
 
     const rawTitle = f['Name'] || 'Untitled';
     const title = normalizeTitle(rawTitle);
-    const year = (f['Release Date'] || f['Work Date'] || '').substring(0, 4);
-    const type = normalizeProjectType(f['Project Type'] || f['Kind']);
+    
+    // Extract date fields (Work Date is the actual production/work date, Release Date is public release)
+    const releaseDate = f['Release Date'] || '';
+    const workDate = f['Work Date'] || '';
+    const year = (releaseDate || workDate || '').substring(0, 4);
+    
+    // Get raw kind and project type
+    const rawKind = f['Kind'];
+    const rawType = f['Project Type'];
+    const kinds = rawKind ? (Array.isArray(rawKind) ? rawKind : [rawKind]) : [];
+    const type = normalizeProjectType(rawType || rawKind);
     
     // Gallery images
     const gallery = (f['Gallery'] || []).map(img => img.url).filter(Boolean);
-    const heroImage = gallery[0] || '';
     
-    // Video thumbnail fallback
-    let videoThumbnail = '';
-    if (!heroImage && f['Video URL']) {
-      const rawVideoUrls = f['Video URL'].split(/[,|\n]+/).map(s => s.trim()).filter(Boolean);
-      if (rawVideoUrls.length > 0) {
-        videoThumbnail = await getVideoThumbnail(rawVideoUrls[0]);
-      }
+    // Main video URL
+    const videoUrl = f['Video URL'] || '';
+    
+    // Get hero image with video thumbnail fallback
+    let heroImage = gallery[0] || '';
+    if (!heroImage && videoUrl) {
+      const videoThumbnail = await getVideoThumbnail(videoUrl);
+      if (videoThumbnail) heroImage = videoThumbnail;
     }
     
-    // Social image priority
-    const socialImage = (f['Social Image']?.[0]?.url) || heroImage || videoThumbnail || '';
-    
-    const description = (f['About'] || '').toString().replace(/\\s+/g, ' ').trim();
+    const description = (f['About'] || '').toString().replace(/\s+/g, ' ').trim();
     const baseSlug = makeSlug(title + (year ? '-' + year : ''));
     
-    // Parse video URLs
-    const videoUrls = (f['Video URL'] || '')
-      .split(/[,|\\n]+/)
-      .map(s => s.trim())
-      .filter(Boolean);
+    // Parse external links and extract additional videos
+    const linkData = parseExternalLinks(f['External Links']);
     
     // Parse credits
-    const creditsText = (f['Credits Text'] || '').toString();
+    const creditsText = (f['Credits Text'] || f['Credits'] || '').toString();
     const credits = creditsText
-      .split('\\n')
+      .split('\n')
       .map(line => line.trim())
       .filter(Boolean)
       .map(line => {
@@ -136,22 +199,47 @@ async function buildProjects() {
       })
       .filter(Boolean);
     
+    // Process awards (festivals)
+    let awards = [];
+    if (f['Festivals']) {
+      if (Array.isArray(f['Festivals'])) {
+        awards = f['Festivals'].map(id => festivalsMap[id] || id);
+      } else if (typeof f['Festivals'] === 'string') {
+        awards = f['Festivals'].split('\n').filter(s => s.trim().length > 0);
+      }
+    }
+    
+    // Resolve production company from linked records
+    let productionCompany = '';
+    const productionCompanyField = f['Production Company'];
+    if (Array.isArray(productionCompanyField)) {
+      productionCompany = productionCompanyField.map(id => clientsMap[id] || id).join(', ');
+    } else if (productionCompanyField) {
+      productionCompany = clientsMap[productionCompanyField] || productionCompanyField;
+    }
+    
     projects.push({
       id: r.id,
       slug: baseSlug,
       title,
-      year,
       type,
-      description: description.slice(0, 500),
-      heroImage: socialImage,
-      gallery,
-      videoUrls,
-      credits,
+      kinds,
+      genre: f['Genre'] || [],
+      productionCompany,
       client: f['Client'] || '',
-      productionCompany: f['Production Company'] || '',
-      awards: (f['Awards'] || []).map(awardId => awardId), // Keep as IDs for now
-      featured: !!f['Featured'],
-      isFeatured: !!f['Featured']
+      year,
+      releaseDate,
+      workDate,
+      description,
+      isFeatured: !!f['Front Page'],
+      heroImage,
+      gallery,
+      videoUrl,
+      additionalVideos: linkData.videos,
+      awards,
+      credits,
+      externalLinks: linkData.links,
+      relatedArticleId: f['Related Article']?.[0] || f['Journal']?.[0] || null
     });
   }
 
@@ -169,27 +257,44 @@ async function buildPosts() {
   for (const r of records) {
     const f = r.fields || {};
     
-    // Skip future posts
+    // Check status - only include Public or Scheduled (if date has passed)
+    const status = f['Status'] || 'Draft';
     const postDate = new Date(f['Date'] || now);
-    if (postDate > now) continue;
+    
+    if (status === 'Public') {
+      // Always include public posts
+    } else if (status === 'Scheduled' && postDate <= now) {
+      // Include scheduled posts if date has passed
+    } else {
+      // Skip draft or future scheduled posts
+      continue;
+    }
 
     const title = normalizeTitle(f['Title'] || 'Untitled');
     const content = (f['Content'] || '').toString();
-    const excerpt = (f['Excerpt'] || content.slice(0, 200)).toString();
     const readingTime = calculateReadingTime(content);
-    const coverImage = f['Cover Image']?.[0]?.url || '';
+    const imageUrl = f['Cover Image']?.[0]?.url || '';
     const slug = makeSlug(title + '-' + postDate.toISOString().split('T')[0]);
+    
+    // Parse related links
+    const rawLinks = f['Links'] || f['External Links'];
+    const relatedLinks = rawLinks 
+      ? rawLinks.split(',').map(s => s.trim()).filter(s => s.length > 0) 
+      : [];
 
     posts.push({
       id: r.id,
       slug,
       title,
-      content,
-      excerpt,
-      coverImage,
       date: f['Date'] || now.toISOString().split('T')[0],
       readingTime,
-      featured: !!f['Featured']
+      content,
+      imageUrl,
+      tags: f['Tags'] || [],
+      relatedProjectId: f['Related Project']?.[0] || f['Projects']?.[0] || null,
+      source: 'local',
+      externalUrl: '',
+      relatedLinks
     });
   }
 
@@ -206,11 +311,17 @@ async function buildConfig() {
     console.warn('[sync-data] ⚠️  No settings found, using defaults');
     return {
       showreel: { enabled: false, videoUrl: '', placeholderImage: '' },
-      contact: { email: '', phone: '', repUK: '', repUSA: '', instagram: '', vimeo: '', linkedin: '' }
+      contact: { email: '', phone: '', repUK: '', repUSA: '', instagram: '', vimeo: '', linkedin: '' },
+      about: { bio: '', profileImage: '' },
+      allowedRoles: [],
+      defaultOgImage: ''
     };
   }
 
   const f = records[0].fields || {};
+  const allowedRoles = f['Allowed Roles'] 
+    ? (Array.isArray(f['Allowed Roles']) ? f['Allowed Roles'] : [f['Allowed Roles']])
+    : [];
   
   return {
     showreel: {
@@ -219,31 +330,43 @@ async function buildConfig() {
       placeholderImage: f['Showreel Placeholder']?.[0]?.url || ''
     },
     contact: {
-      email: f['Email'] || '',
-      phone: f['Phone'] || '',
+      email: f['Contact Email'] || '',
+      phone: f['Contact Phone'] || '',
       repUK: f['Rep UK'] || '',
       repUSA: f['Rep USA'] || '',
-      instagram: f['Instagram'] || '',
-      vimeo: f['Vimeo'] || '',
-      linkedin: f['LinkedIn'] || ''
-    }
+      instagram: f['Instagram URL'] || '',
+      vimeo: f['Vimeo URL'] || '',
+      linkedin: f['LinkedIn URL'] || ''
+    },
+    about: {
+      bio: f['Bio'] || f['Bio Text'] || '',
+      profileImage: f['About Image']?.[0]?.url || ''
+    },
+    allowedRoles: allowedRoles,
+    defaultOgImage: f['Default OG Image']?.[0]?.url || ''
   };
 }
 
 // Main execution
 async function main() {
   try {
+    // First build lookup maps
+    const { festivalsMap, clientsMap } = await buildLookupMaps();
+    
+    // Then fetch all other data with resolved references
     const [projects, posts, config] = await Promise.all([
-      buildProjects(),
+      buildProjects(festivalsMap, clientsMap),
       buildPosts(),
       buildConfig()
     ]);
 
     const data = {
-      generatedAt: new Date().toISOString(),
       projects,
       posts,
-      config
+      config,
+      lastUpdated: new Date().toISOString(),
+      version: '1.0',
+      source: 'build-time-sync'
     };
 
     // Ensure output directory exists
@@ -256,10 +379,12 @@ async function main() {
     
     console.log('[sync-data] ✅ Successfully generated portfolio-data.json');
     console.log(`[sync-data] 📊 Stats: ${projects.length} projects, ${posts.length} posts`);
+    console.log(`[sync-data] 📍 Output: ${OUTPUT_FILE}`);
     process.exit(0);
 
   } catch (error) {
     console.error('[sync-data] ❌ Error:', error.message);
+    console.error(error.stack);
     process.exit(1);
   }
 }

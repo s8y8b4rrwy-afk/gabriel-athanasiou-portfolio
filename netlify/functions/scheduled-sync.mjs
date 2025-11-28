@@ -739,6 +739,7 @@ const syncAirtableData = async () => {
       return {
         id: record.id,
         title: normalizeTitle(f['Name']),
+        slug: '', // Will be generated later
         type: type,
         kinds: kinds,
         genre: f['Genre'] || [],
