@@ -33,6 +33,117 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - Static Build-Time Data Architecture (Zero Runtime Airtable Calls)
+**What Changed:** Complete architectural shift from runtime Airtable fetching to static build-time data generation.
+
+**The Problem:**
+- `get-data.js` was calling `scheduled-sync-realtime.mjs` on every request
+- This checked Airtable in real-time to detect changes
+- Even with CDN caching, cache misses triggered slow Airtable API calls
+- Users wanted data to be completely static, updated only during builds
+
+**The Solution:**
+- **Build-time sync:** `npm run build:data` fetches from Airtable and saves to `public/portfolio-data.json`
+- **Static serving:** `get-data.js` now simply reads and serves the static file (no Airtable calls)
+- **Build process:** `package.json` build script runs data sync before Vite build
+- **Aggressive caching:** Static file cached for 24 hours at CDN (since it only updates at build)
+
+**Technical Implementation:**
+
+```javascript
+// netlify/functions/get-data.js - Now just serves static file
+export const handler = async (event, context) => {
+  const dataPath = path.join(__dirname, '..', '..', 'public', 'portfolio-data.json');
+  const data = await readFile(dataPath, 'utf-8');
+  
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      // Cache for 24h at CDN (updates only at build time)
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+    },
+    body: data
+  };
+};
+```
+
+```javascript
+// netlify/functions/scheduled-sync.mjs - Saves static file during sync
+const finalData = {
+  projects,
+  posts,
+  config,
+  lastUpdated: new Date().toISOString(),
+  version: '1.0',
+  source: 'scheduled-sync'
+};
+
+const portfolioDataPath = path.join(baseDir, 'portfolio-data.json');
+await writeFile(portfolioDataPath, JSON.stringify(finalData, null, 2), 'utf-8');
+```
+
+```json
+// package.json - Build script runs data sync first
+{
+  "scripts": {
+    "build:data": "node scripts/sync-data.mjs",
+    "build": "npm run build:data && vite build"
+  }
+}
+```
+
+**Build Process Flow:**
+```
+1. npm run build
+   ↓
+2. npm run build:data (scripts/sync-data.mjs)
+   ↓
+3. Fetch from Airtable + Upload to Cloudinary
+   ↓
+4. Save to public/portfolio-data.json
+   ↓
+5. vite build (bundles React app + copies public/)
+   ↓
+6. Deploy to Netlify (static JSON file included)
+```
+
+**Runtime Flow:**
+```
+Browser → Netlify CDN → get-data.js → Read portfolio-data.json → Return
+```
+
+**Performance Impact:**
+- **Zero Airtable API calls at runtime** (only during builds)
+- **Instant response** (just reading a file, ~1-2ms)
+- **Predictable caching** (data only changes at build time)
+- **Lower costs** (no runtime function executions for data fetching)
+
+**Cache Strategy:**
+- `max-age=3600`: Browser caches for 1 hour
+- `s-maxage=86400`: CDN caches for 24 hours (safe since builds invalidate)
+- `stale-while-revalidate=604800`: Serve stale for 7 days while revalidating
+
+**When Data Updates:**
+1. **Scheduled midnight sync** - Airtable changes detected → Build triggered → New static file deployed
+2. **Manual deployment** - Run `npm run build` → Fresh data fetched → Deployed
+3. **GitHub Actions** - Weekly code check or manual trigger → Build includes fresh data
+
+**Updated Files:**
+- `netlify/functions/get-data.js` - Now serves static file instead of calling Airtable
+- `netlify/functions/scheduled-sync.mjs` - Saves complete data to portfolio-data.json
+- `package.json` - Build script runs data sync before Vite build
+- `scripts/sync-data.mjs` - Build-time data fetching script
+
+**Breaking Changes:**
+- None! Frontend `cmsService.ts` still calls `/.netlify/functions/get-data` as before
+- Data structure unchanged (same JSON format)
+- Zero code changes needed in React components
+
+**Impact:** Site now loads data instantly from static files generated at build time. Zero runtime Airtable API calls. Simpler, faster, more predictable. Data updates only when you deploy, not dynamically at runtime.
+
+---
+
 ### Nov 28 2025 - CDN Cache Warming After Deployment
 **What Changed:** Added automatic CDN cache warming to GitHub Actions workflow to eliminate slow first-page-load after deployments.
 

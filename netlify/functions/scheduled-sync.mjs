@@ -904,7 +904,21 @@ const syncAirtableData = async () => {
       cloudinaryMapping = await syncImagesToCloudinary(projects, posts, existingMapping);
     }
     
-    // 13. Return processed data for CDN caching
+    // 13. Save complete data to static JSON file for runtime serving
+    const finalData = {
+      projects,
+      posts,
+      config,
+      lastUpdated: new Date().toISOString(),
+      version: '1.0',
+      source: 'scheduled-sync'
+    };
+    
+    const portfolioDataPath = path.join(baseDir, 'portfolio-data.json');
+    await writeFile(portfolioDataPath, JSON.stringify(finalData, null, 2), 'utf-8');
+    console.log(`✅ Saved complete portfolio data to ${portfolioDataPath}`);
+    
+    // 14. Return processed data for CDN caching (with sync status)
     console.log('=== Sync Complete ===');
     console.log(`Projects: ${projects.length}`);
     console.log(`Posts: ${posts.length}`);
@@ -914,12 +928,8 @@ const syncAirtableData = async () => {
       console.log('Note: Images using Airtable URLs (Cloudinary disabled)');
     }
     
-    const finalData = {
-      projects,
-      posts,
-      config,
-      lastUpdated: new Date().toISOString(),
-      version: '1.0',
+    const responseData = {
+      ...finalData,
       sync: {
         contentChanged: contentChanged || false,
         buildTriggered: buildResult?.triggered || false,
@@ -933,7 +943,7 @@ const syncAirtableData = async () => {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
       },
-      body: JSON.stringify(finalData)
+      body: JSON.stringify(responseData)
     };
     
   } catch (error) {

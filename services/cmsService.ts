@@ -35,9 +35,9 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
     }
 
     try {
-        console.log('[cmsService] Fetching from cached endpoint');
+        console.log('[cmsService] Fetching from static portfolio data');
         
-        const response = await fetch('/.netlify/functions/get-data', {
+        const response = await fetch('/portfolio-data.json', {
             headers: {
                 'Accept': 'application/json'
             }

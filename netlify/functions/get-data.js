@@ -1,36 +1,58 @@
-import { builder } from '@netlify/functions';
-import { syncAirtableData } from './scheduled-sync-realtime.mjs';
+import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-const getDataHandler = async (event, context) => {
+// Get path to static data file generated at build time
+const getStaticDataPath = () => {
+  if (typeof import.meta.url === 'undefined') {
+    return path.join(process.cwd(), 'public', 'portfolio-data.json');
+  }
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  return path.join(__dirname, '..', '..', 'public', 'portfolio-data.json');
+};
+
+export const handler = async (event, context) => {
   try {
-    // Call the sync function to get fresh (or cached) data
-    const result = await syncAirtableData();
+    console.log('[get-data] Loading static portfolio data from build');
     
-    // Return the data with CDN cache headers
+    const dataPath = getStaticDataPath();
+    const data = await readFile(dataPath, 'utf-8');
+    
+    // Serve the static JSON generated at build time
     return {
-      statusCode: result.statusCode,
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+        // Cache aggressively since data only updates at build time
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
       },
-      body: result.body,
-      ttl: 3600 // Cache at edge for 1 hour
+      body: data
     };
 
   } catch (error) {
-    console.error('Failed to fetch data:', error);
+    console.error('[get-data] Failed to load static data:', error);
+    
+    // Return empty data structure as fallback
     return { 
-      statusCode: 500, 
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-cache'
       },
-      body: JSON.stringify({ 
-        error: 'Failed to fetch data',
-        message: error.message
+      body: JSON.stringify({
+        projects: [],
+        posts: [],
+        config: {
+          showreel: { enabled: false, videoUrl: '', placeholderImage: '' },
+          contact: { email: '', phone: '', repUK: '', repUSA: '', instagram: '', vimeo: '', linkedin: '' },
+          about: { text: '', socialImage: '' },
+          general: { allowedRoles: [] }
+        },
+        lastUpdated: new Date().toISOString(),
+        version: '1.0',
+        source: 'fallback'
       })
     };
   }
 };
-
-export const handler = builder(getDataHandler);
