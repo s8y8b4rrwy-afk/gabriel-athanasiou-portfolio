@@ -40,7 +40,8 @@ export interface Project {
   releaseDate?: string; // Full release date from Airtable (YYYY-MM-DD)
   workDate?: string; // Full work/production date from Airtable (YYYY-MM-DD)
   description: string;
-  isFeatured: boolean;
+  isFeatured: boolean; // Appears on front page (Display Status = "Featured" or "Hero")
+  isHero?: boolean; // Eligible to be hero on front page (Display Status = "Hero")
   
   // Media
   heroImage: string; // URL

@@ -145,8 +145,11 @@ async function buildProjects(festivalsMap, clientsMap) {
   for (const r of records) {
     const f = r.fields || {};
     
-    // Skip non-featured projects
-    if (!f['Feature']) continue;
+    // Check Display Status field (single select)
+    const displayStatus = f['Display Status'] || '';
+    
+    // Skip hidden projects entirely (don't sync to cache)
+    if (displayStatus === 'Hidden' || !displayStatus) continue;
 
     const rawTitle = f['Name'] || 'Untitled';
     const title = normalizeTitle(rawTitle);
@@ -231,7 +234,8 @@ async function buildProjects(festivalsMap, clientsMap) {
       releaseDate,
       workDate,
       description,
-      isFeatured: !!f['Front Page'],
+      isFeatured: displayStatus === 'Featured' || displayStatus === 'Hero',
+      isHero: displayStatus === 'Hero',
       heroImage,
       gallery,
       videoUrl,
