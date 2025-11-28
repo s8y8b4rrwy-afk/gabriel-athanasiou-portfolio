@@ -268,17 +268,13 @@ async function buildPosts() {
   for (const r of records) {
     const f = r.fields || {};
     
-    // Check status - only include Public or Scheduled (if date has passed)
+    // Check status - only include Public or Scheduled posts
     const status = f['Status'] || 'Draft';
     const postDate = new Date(f['Date'] || now);
     
-    if (status === 'Public') {
-      // Always include public posts
-    } else if (status === 'Scheduled' && postDate <= now) {
-      // Include scheduled posts if date has passed
-    } else {
-      // Skip draft or future scheduled posts
-      continue;
+    // Only sync Public or Scheduled posts (not Draft)
+    if (status !== 'Public' && status !== 'Scheduled') {
+      continue; // Skip Draft posts entirely
     }
 
     const title = normalizeTitle(f['Title'] || 'Untitled');
@@ -298,6 +294,7 @@ async function buildPosts() {
       slug,
       title,
       date: f['Date'] || now.toISOString().split('T')[0],
+      status, // Cache status field for frontend filtering
       readingTime,
       content,
       imageUrl,

@@ -37,8 +37,11 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
 
     const [filter, setFilter] = useState<string>("All");
     
+    // Filter to only show Public posts (exclude Scheduled/Draft)
+    const publicPosts = posts.filter(p => p.status === 'Public' || !p.status); // Default to showing if no status field
+    
     // Sort "Instagram" to the end of the tags list if present, but keep "All" first
-    const rawTags = Array.from(new Set(posts.flatMap(p => p.tags)));
+    const rawTags = Array.from(new Set(publicPosts.flatMap(p => p.tags)));
     const sortedTags = rawTags.sort((a: string, b: string) => {
         if (a === 'Instagram') return 1;
         if (b === 'Instagram') return -1;
@@ -46,7 +49,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     });
     const allTags = ["All", ...sortedTags];
 
-    const displayPosts = filter === "All" ? posts : posts.filter(p => p.tags.includes(filter));
+    const displayPosts = filter === "All" ? publicPosts : publicPosts.filter(p => p.tags.includes(filter));
 
     return (
         <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>

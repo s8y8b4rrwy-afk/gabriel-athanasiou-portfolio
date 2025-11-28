@@ -1098,34 +1098,6 @@
       "relatedArticleId": null
     },
     {
-      "id": "recnbep6l8n9nsbXq",
-      "slug": "astathes-2015",
-      "title": "Astathes",
-      "type": "Narrative",
-      "kinds": [
-        "Short Film"
-      ],
-      "genre": [
-        "Drama"
-      ],
-      "productionCompany": "Film Lemon",
-      "client": "",
-      "year": "2015",
-      "releaseDate": "",
-      "workDate": "2015-07-09",
-      "description": "",
-      "isFeatured": false,
-      "isHero": false,
-      "heroImage": "",
-      "gallery": [],
-      "videoUrl": "",
-      "additionalVideos": [],
-      "awards": [],
-      "credits": [],
-      "externalLinks": [],
-      "relatedArticleId": null
-    },
-    {
       "id": "recPht2mguhMzxI9j",
       "slug": "project-michalis-2014",
       "title": "Project Michalis",
@@ -1255,6 +1227,7 @@
       "slug": "world-premiere-at-raindance-film-festival-2025-11-24",
       "title": "World Premiere At Raindance Film Festival",
       "date": "2025-11-24",
+      "status": "Public",
       "readingTime": "1 min read",
       "content": "I’m proud to announce that my latest short film, **The Newspaper**, had it’s **world premiere** at the **Raindance Film Festival** in London, screening at **Piccadilly Vue**.\n**[The Newspaper](https://gabriel-athanasiou.super.site/fsoijdfsoifjsdoifjsdoifjsoifjsdodfidjs/the-newspaper)** is a political, psychological mystery thriller set in a meticulously crafted 1950s Britain. It follows newlyweds William and Jane Chase, whose perfect suburban life unravels when a cryptic crossword in the local paper begins to expose dark truths about their town — and their marriage. As secrets rise to the surface, Jane must decide how far she’s willing to go for the truth.\nA film about power, appearance, and rebellion, _The Newspaper_ is a love letter to mid-century aesthetics and the strength of voices long kept quiet.\nStay tuneed for a teaser trailer releasing soon.\n",
       "imageUrl": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/el4GEwFg3zfg9nCT4jQqUA/FDssCEDryj3uN9vZ6EABomD03DIr4qTndGicZBT4_Yj_3WpWKli0xcqhTpOKdTHOc3An-CeZboCZY9eqFB2aVD3lDbOyJ3jJj0ULZim8wohAjQRlSg770-zfyQmfcQta4RiJ19BBQRD1Xl6T4OOj8Q/8ZNg35jGfCTPorJwE9Ihyi96n2b0eIcUW2HkExXUAjs",
@@ -1262,6 +1235,23 @@
         "Announcement"
       ],
       "relatedProjectId": "recNNKSzQAsbchpCi",
+      "source": "local",
+      "externalUrl": "",
+      "relatedLinks": []
+    },
+    {
+      "id": "rec35FeKZ8TQDgEQw",
+      "slug": "untitled-2025-11-28",
+      "title": "Untitled",
+      "date": "2025-11-28",
+      "status": "Scheduled",
+      "readingTime": "1 min read",
+      "content": "",
+      "imageUrl": "",
+      "tags": [
+        "Personal"
+      ],
+      "relatedProjectId": null,
       "source": "local",
       "externalUrl": "",
       "relatedLinks": []
@@ -1291,7 +1281,7 @@
     ],
     "defaultOgImage": "https://v5.airtableusercontent.com/v3/u/47/47/1764352800000/voU2mBTNqrwwoQy6W3bMRg/W3GvTl21mJxHXDgAUEi9bacRZKy9RDATzFO5Vm6MgTvYclKuMpQYpLhlv6ExNeJiQqU_x618NJnOxW7xIP5I7SZ1IAvpoA0YITHE0Mqmln0C35qarC4nnf13EAAyvVMRjeZzcQqXSZ1LCfZAhAaLGpI7D7Lbz3hqN1TL1pGQwBykgyZX4bUtJ7nliMFlNYyc/IvTmvYxIr-9TN_FRImzuSGuObQQHAPbO7YDivZe-Pew"
   },
-  "lastUpdated": "2025-11-28T15:09:26.373Z",
+  "lastUpdated": "2025-11-28T15:20:20.124Z",
   "version": "1.0",
   "source": "build-time-sync"
 }

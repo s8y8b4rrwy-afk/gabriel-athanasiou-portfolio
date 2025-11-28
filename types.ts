@@ -63,6 +63,7 @@ export interface BlogPost {
   title: string;
   slug?: string;
   date: string;
+  status?: 'Public' | 'Scheduled' | 'Draft'; // Publication status from Airtable
   readingTime?: string; // e.g. "4 min read"
   content: string; // HTML or Markdown string
   imageUrl?: string;
