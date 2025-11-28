@@ -1,11 +1,15 @@
 name: Smart Netlify Deploy (Code + Content)
 
 on:
-  # Daily check for content changes at 2 AM UTC
-  schedule:
-    - cron: '0 2 * * *'
+  # Daily check for content changes at 2 AM UTC - DISABLED (now handled by scheduled-sync.mjs chain reaction)
+  # schedule:
+  #   - cron: '0 2 * * *'
+  
   # Weekly check for code changes on Sunday at 3 AM UTC  
+  schedule:
     - cron: '0 3 * * 0'
+  
+  # Manual trigger for emergencies
   workflow_dispatch:
 
 jobs:
