@@ -119,12 +119,52 @@ jobs:
             echo "commit_created=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Wait for Netlify deployment
+        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          echo "⏳ Waiting for Netlify deployment to complete..."
+          
+          # Get the commit SHA we just pushed
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "Watching for deployment of commit: $COMMIT_SHA"
+          
+          # Poll Netlify API for up to 10 minutes
+          MAX_ATTEMPTS=60
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # Get latest deployment for this commit
+            DEPLOY_STATUS=$(curl -s -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?commit_sha=$COMMIT_SHA" \
+              | jq -r '.[0].state // "not_found"')
+            
+            echo "Deployment status: $DEPLOY_STATUS"
+            
+            if [ "$DEPLOY_STATUS" = "ready" ]; then
+              echo "✅ Deployment complete!"
+              exit 0
+            elif [ "$DEPLOY_STATUS" = "error" ]; then
+              echo "❌ Deployment failed!"
+              exit 1
+            fi
+            
+            # Wait 10 seconds before next check
+            sleep 10
+          done
+          
+          echo "⚠️ Timeout waiting for deployment (non-critical)"
+          exit 0
 
       - name: Warm CDN cache
         if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
         run: |
           echo "🔥 Warming CDN cache after deployment..."
-          sleep 45  # Wait for Netlify deployment to complete
           curl -f --max-time 30 "https://directedbygabriel.com/.netlify/functions/get-data" || echo "⚠️ Cache warming failed (non-critical)"
           echo "✅ CDN cache warming complete"
 
