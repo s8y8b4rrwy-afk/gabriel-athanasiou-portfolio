@@ -29,6 +29,9 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
+// Build hook configuration
+const NETLIFY_BUILD_HOOK = process.env.NETLIFY_BUILD_HOOK;
+
 // Initialize Cloudinary if enabled and credentials available
 if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
   cloudinary.config({
@@ -80,6 +83,51 @@ console.log(`🎯 Eager transformations configured: ${EAGER_TRANSFORMATIONS.leng
 // Calculate hash of data to detect changes
 const hashData = (data) => {
   return createHash('sha256').update(JSON.stringify(data)).digest('hex');
+};
+
+// Load previous hash to detect changes
+const loadPreviousHash = async () => {
+  try {
+    const baseDir = existsSyncSync(path.join(process.cwd(), 'public')) 
+      ? path.join(process.cwd(), 'public')
+      : '/tmp';
+    const hashPath = path.join(baseDir, 'share-meta.hash');
+    const hash = await readFile(hashPath, 'utf-8');
+    return hash.trim();
+  } catch (error) {
+    console.log('ℹ️ No previous hash found (first run or file deleted)');
+    return null;
+  }
+};
+
+// Trigger Netlify build hook when content changes
+const triggerNetlifyBuild = async (reason = 'Content updated') => {
+  if (!NETLIFY_BUILD_HOOK) {
+    console.log('⏭️  NETLIFY_BUILD_HOOK not configured, skipping build trigger');
+    return { triggered: false, reason: 'No hook configured' };
+  }
+
+  const buildHookUrl = `https://api.netlify.com/build_hooks/${NETLIFY_BUILD_HOOK}`;
+  
+  try {
+    console.log('🔔 Triggering Netlify build...');
+    const response = await fetchWithTimeout(buildHookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trigger_title: reason })
+    }, 10000);
+
+    if (response.ok) {
+      console.log('✅ Netlify build triggered successfully');
+      return { triggered: true, reason };
+    } else {
+      console.error(`⚠️  Build hook failed: ${response.status} ${response.statusText}`);
+      return { triggered: false, reason: `HTTP ${response.status}` };
+    }
+  } catch (error) {
+    console.error('⚠️  Failed to trigger build hook:', error.message);
+    return { triggered: false, reason: error.message };
+  }
 };
 
 // Load existing Cloudinary mapping
@@ -543,6 +591,10 @@ const syncAirtableData = async () => {
     throw new Error('Airtable credentials not configured');
   }
   
+  // Variables to track content changes and build trigger
+  let contentChanged = false;
+  let buildResult = null;
+  
   try {
     // 1. Fetch all data from Airtable
     console.log('Fetching data from Airtable...');
@@ -818,12 +870,29 @@ const syncAirtableData = async () => {
       console.log(`✅ Share-meta written to ${shareMetaPath}`);
       
       // Generate hash for deployment trigger
-      const hash = createHash('sha256')
+      const currentHash = createHash('sha256')
         .update(JSON.stringify(shareMeta.projects) + JSON.stringify(shareMeta.posts))
         .digest('hex');
-      const hashPath = path.join(baseDir, 'share-meta.hash');
-      await writeFile(hashPath, hash, 'utf-8');
-      console.log(`✅ Hash written: ${hash}`);
+      
+      // Compare with previous hash to detect changes
+      const previousHash = await loadPreviousHash();
+      contentChanged = previousHash !== currentHash;
+      
+      if (contentChanged) {
+        console.log(`🔄 Content changed detected`);
+        console.log(`   Previous: ${previousHash ? previousHash.substring(0, 12) + '...' : 'none'}`);
+        console.log(`   Current:  ${currentHash.substring(0, 12)}...`);
+        
+        // Trigger Netlify build
+        buildResult = await triggerNetlifyBuild('Scheduled sync: Content updated');
+        
+        // Save new hash
+        const hashPath = path.join(baseDir, 'share-meta.hash');
+        await writeFile(hashPath, currentHash, 'utf-8');
+        console.log(`✅ Hash updated: ${currentHash}`);
+      } else {
+        console.log(`✅ No content changes detected (hash: ${currentHash.substring(0, 12)}...)`);
+      }
     } catch (writeError) {
       console.warn('⚠️ Could not write sitemap/share-meta to disk (non-critical):', writeError.message);
     }
@@ -850,7 +919,12 @@ const syncAirtableData = async () => {
       posts,
       config,
       lastUpdated: new Date().toISOString(),
-      version: '1.0'
+      version: '1.0',
+      sync: {
+        contentChanged: contentChanged || false,
+        buildTriggered: buildResult?.triggered || false,
+        buildReason: buildResult?.reason || 'No changes detected'
+      }
     };
     
     return {
