@@ -40,26 +40,11 @@ export const LoadingSkeleton: React.FC = () => {
       {/* Generic content placeholder - works for any page */}
       <div className={`${THEME.header.height}`}></div>
       <div className={`${THEME.header.paddingX} pt-20 pb-20 animate-pulse`}>
-        {/* Main content skeleton */}
-        <div className="max-w-7xl mx-auto space-y-12">
-          {/* Large content block (hero/header area) */}
-          <div className="space-y-6">
-            <div className="h-8 w-3/4 bg-white/10 rounded" />
-            <div className="h-4 w-1/2 bg-white/5 rounded" />
-          </div>
-          
-          {/* Grid of content blocks */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="space-y-4">
-                <div className="aspect-video bg-white/5 rounded" />
-                <div className="space-y-2">
-                  <div className="h-5 w-3/4 bg-white/10 rounded" />
-                  <div className="h-3 w-1/2 bg-white/5 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Full width content blocks */}
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="w-full h-32 bg-white/5 rounded" />
+          ))}
         </div>
       </div>
     </div>
