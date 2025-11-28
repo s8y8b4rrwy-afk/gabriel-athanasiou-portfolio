@@ -283,11 +283,11 @@ export const THEME = {
       showText: false,                // Show "Loading..." text?
       showGradient: true,             // Show animated gradient background?
       gradientColors: [               // Gradient color stops (if showGradient = true)
-        "rgba(255, 255, 255, 0.02)",
-        "rgba(255, 255, 255, 0.06)",
-        "rgba(255, 255, 255, 0.02)"
+        "rgba(255, 255, 255, 0.01)",
+        "rgba(255, 255, 255, 0.08)",
+        "rgba(255, 255, 255, 0.01)"
       ],
-      animationDuration: "4s",        // Speed of gradient animation
+      animationDuration: "3s",        // Speed of gradient animation
       animationEasing: "ease-in-out", // Easing function: "linear", "ease-in-out", "ease-out"
     }
   }
