@@ -33,7 +33,61 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
-### December 2025 - Optimistic Loading with localStorage Cache
+### Nov 28 2025 - Consistent Width Per Session for Cloudinary Images
+**What Changed:** Implemented consistent image width (1600px) across all pages throughout the browsing session, controlled by preset detection.
+
+**The Problem:**
+- Different pages were requesting different image widths (800px thumbnails, 1600px full images)
+- This created multiple transformation variants per image on Cloudinary
+- Each width × quality × DPR combination = separate cached file
+- Inconsistent bandwidth usage and cache efficiency
+
+**The Solution:**
+- **Session-wide consistency:** All images use 1600px width for entire session
+- **Preset determines both quality AND width:**
+  - `'ultra'` preset → quality: 90, width: 1600
+  - `'fine'` preset → quality: 75, width: 1600
+- Removed all explicit width parameters from view components
+- Single transformation URL per preset across all pages
+
+**Updated Files:**
+- `utils/imageOptimization.ts` - Map preset to both quality and width
+- `components/views/ProjectDetailView.tsx` - Remove width params
+- `components/views/IndexView.tsx` - Remove width params
+- `components/views/BlogPostView.tsx` - Remove width params
+
+**Technical Details:**
+```typescript
+// Before: Different widths per context
+getOptimizedImageUrl(id, url, 'project', 0, 1, preset, 1600); // Full image
+getOptimizedImageUrl(id, url, 'project', 0, 1, preset, 800);  // Thumbnail
+
+// After: Consistent width, preset determines quality
+getOptimizedImageUrl(id, url, 'project', 0, 1, preset); // Always 1600px
+```
+
+**Preset Logic:**
+```typescript
+if (options.preset === 'ultra') {
+  qualityValue = 90;
+  widthValue = 1600;
+} else {
+  qualityValue = 75;
+  widthValue = 1600;
+}
+```
+
+**Performance Impact:**
+- Reduced transformation variants from 16 to 8 per image (2 widths → 1 width)
+- Consistent bandwidth usage across all pages
+- Better cache hit rate on Cloudinary CDN
+- Simpler transformation management
+
+**Impact:** All images now use consistent transformation URLs throughout the session. Preset detection happens once, cached in sessionStorage, and applied to all images. Cloudinary serves the exact same transformation variant regardless of which page the image appears on.
+
+---
+
+### Nov 28 2025 - Optimistic Loading with localStorage Cache
 **What Changed:** Implemented localStorage-based caching with professional skeleton loading screens to eliminate blank waiting screens and provide instant content on repeat visits.
 
 **The Problem:**
