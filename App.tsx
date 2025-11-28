@@ -50,6 +50,8 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
+      let hasCache = false;
+      
       // 1. Try to load from localStorage cache first
       try {
         const cached = localStorage.getItem(CACHE_KEY);
@@ -57,23 +59,27 @@ export default function App() {
           const parsed = JSON.parse(cached);
           setData(parsed);
           setLoading(false); // Show cached content immediately
+          hasCache = true;
+          console.log('[App] Loaded data from localStorage cache');
         }
       } catch (error) {
-        console.error('Failed to load cached data:', error);
+        console.error('[App] Failed to load cached data:', error);
       }
 
       // 2. Fetch fresh data in background
       try {
+        console.log('[App] Fetching fresh data from API...');
         const result = await cmsService.fetchAll();
         setData(result);
         localStorage.setItem(CACHE_KEY, JSON.stringify(result));
         setLoading(false);
+        console.log('[App] Fresh data loaded and cached');
       } catch (error) {
-        console.error('Failed to fetch fresh data:', error);
-        // If we had cache, we already showed it. Otherwise, show empty state
-        setLoading(false);
-        if (!localStorage.getItem(CACHE_KEY)) {
-          setData({ projects: [], posts: [], config: {} });
+        console.error('[App] Failed to fetch fresh data:', error);
+        // If we had cache, we already showed it. Otherwise, ensure loading is false
+        if (!hasCache) {
+          console.log('[App] No cache and API failed, showing empty state');
+          setLoading(false);
         }
       }
     };
