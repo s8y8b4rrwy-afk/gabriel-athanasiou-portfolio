@@ -37,37 +37,29 @@ export const LoadingSkeleton: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero skeleton - matches HomeView hero structure */}
-      <div className={`relative w-full h-[70vh] md:h-[80vh] lg:${THEME.hero.height} bg-gradient-to-br from-white/5 to-transparent flex items-center justify-center overflow-hidden animate-pulse`}>
-        {/* Hero overlay */}
-        <div className="absolute inset-0 bg-black/10 z-10"></div>
-        
-        {/* Hero text skeleton */}
-        <div className={`absolute z-20 ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth} space-y-4`}>
-          <div className="h-4 w-32 bg-white/20 rounded mx-auto" />
-          <div className="h-12 w-96 bg-white/20 rounded mx-auto" />
-        </div>
-      </div>
-
-      {/* Grid section skeleton - matches HomeView filmstrip */}
-      <div className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10 animate-pulse`}>
-        {/* Section header skeleton */}
-        <div className="flex justify-between items-end mb-16 border-b border-white/10 pb-4">
-          <div className="h-3 w-28 bg-white/10 rounded" />
-          <div className="h-3 w-24 bg-white/10 rounded hidden md:block" />
-        </div>
-
-        {/* Grid skeleton */}
-        <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY}`}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="group block">
-              <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-white/5 overflow-hidden mb-6 rounded`}></div>
-              <div className="space-y-3">
-                <div className="h-5 w-3/4 bg-white/10 rounded" />
-                <div className="h-3 w-1/2 bg-white/5 rounded" />
+      {/* Generic content placeholder - works for any page */}
+      <div className={`${THEME.header.height}`}></div>
+      <div className={`${THEME.header.paddingX} pt-20 pb-20 animate-pulse`}>
+        {/* Main content skeleton */}
+        <div className="max-w-7xl mx-auto space-y-12">
+          {/* Large content block (hero/header area) */}
+          <div className="space-y-6">
+            <div className="h-8 w-3/4 bg-white/10 rounded" />
+            <div className="h-4 w-1/2 bg-white/5 rounded" />
+          </div>
+          
+          {/* Grid of content blocks */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <div className="aspect-video bg-white/5 rounded" />
+                <div className="space-y-2">
+                  <div className="h-5 w-3/4 bg-white/10 rounded" />
+                  <div className="h-3 w-1/2 bg-white/5 rounded" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
