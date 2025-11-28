@@ -33,6 +33,147 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 28 2025 - Display Status Field for Project Visibility Control
+**What Changed:** Replaced binary "Front Page" checkbox with granular "Display Status" single-select field offering 4-tier project visibility control.
+
+**The Problem:**
+- Front Page checkbox was too limited (only show/hide on front page)
+- No way to mark projects as drafts/hidden completely
+- No way to distinguish between "featured" and "hero" projects
+- Limited control over which projects sync to production
+
+**The Solution:**
+- Added "Display Status" single-select field in Airtable Projects table
+- Four visibility states:
+  1. **Hidden** - Project completely excluded from sync (drafts, unpublished work)
+  2. **Portfolio Only** - Syncs to site but not featured on homepage
+  3. **Featured** - Appears on front page grid (sets `isFeatured: true`)
+  4. **Hero** - Eligible for hero slot on homepage (sets `isFeatured: true` and `isHero: true`)
+
+**Technical Implementation:**
+
+```javascript
+// scripts/sync-data.mjs - Filter and derive flags from Display Status
+const displayStatus = f['Display Status'] || '';
+if (displayStatus === 'Hidden' || !displayStatus) continue; // Skip entirely
+
+// Derive boolean flags for frontend use
+isFeatured: displayStatus === 'Featured' || displayStatus === 'Hero',
+isHero: displayStatus === 'Hero',
+```
+
+**TypeScript Interface Updates:**
+```typescript
+// types.ts - Added new optional field
+export interface Project {
+  // ... existing fields
+  isFeatured: boolean;     // true if Featured OR Hero
+  isHero?: boolean;        // true only if Hero status
+  // ... other fields
+}
+```
+
+**Migration from Old System:**
+- Old: `Feature` checkbox → true/false
+- New: Display Status → Hidden/Portfolio Only/Featured/Hero
+- Mapping: Feature=true → Featured, Feature=false → Portfolio Only
+- Zero breaking changes (existing `isFeatured` field maintained)
+
+**Updated Files:**
+- `scripts/sync-data.mjs` - Added Display Status field check and flag derivation
+- `types.ts` - Added `isHero?: boolean` field to Project interface
+
+**Performance Impact:**
+- Build-time filtering reduces output size (Hidden projects excluded)
+- No runtime performance change (same data structure)
+- Maintains backward compatibility with existing frontend code
+
+**Usage Examples:**
+
+```typescript
+// Filter hero-eligible projects for homepage
+const heroProjects = projects.filter(p => p.isHero);
+
+// Show featured projects on front page
+const featuredProjects = projects.filter(p => p.isFeatured);
+
+// All synced projects (Hidden excluded at build)
+const allProjects = projects; // Portfolio Only, Featured, and Hero
+```
+
+**Airtable Setup:**
+1. Go to Projects table
+2. Add new field: "Display Status" (Single Select)
+3. Add options in order: Hidden, Portfolio Only, Featured, Hero
+4. Migrate existing projects from Feature checkbox
+5. Run `npm run build:data` to regenerate static cache
+
+**Impact:** Much more granular control over project visibility. Can now hide drafts completely, distinguish between featured and hero-eligible projects, and control exactly what syncs to production. Frontend code unchanged - new field is optional and backward compatible.
+
+---
+
+### Nov 28 2025 - Project Date Fields and Sorting
+**What Changed:** Added `releaseDate` and `workDate` fields to project schema, with automatic sorting by date (newest first) at build time.
+
+**The Problem:**
+- Only extracting year from dates, losing full date information
+- Projects appeared in arbitrary order from Airtable
+- No way to sort by actual release/production dates
+- Year extraction logic wasn't considering both date fields
+
+**The Solution:**
+- Added `releaseDate` and `workDate` fields to capture full dates from Airtable (YYYY-MM-DD format)
+- Updated year extraction to use releaseDate OR workDate as fallback
+- Implemented client-side sorting by date (newest first) using `localeCompare()`
+- Sorting happens at build time for optimal performance
+
+**Technical Implementation:**
+
+```javascript
+// scripts/sync-data.mjs - Extract both date fields
+const releaseDate = f['Release Date'] || '';
+const workDate = f['Work Date'] || '';
+const year = (releaseDate || workDate || '').substring(0, 4);
+
+// Add to project object
+releaseDate: releaseDate,
+workDate: workDate,
+year: year,
+
+// Sort after fetching (newest first)
+projects.sort((a, b) => {
+  const dateA = a.releaseDate || a.workDate || '';
+  const dateB = b.releaseDate || b.workDate || '';
+  return dateB.localeCompare(dateA); // Descending order
+});
+```
+
+**TypeScript Interface Updates:**
+```typescript
+// types.ts - Added optional date fields
+export interface Project {
+  year: string;                // Extracted from releaseDate or workDate
+  releaseDate?: string;        // Full release date (YYYY-MM-DD)
+  workDate?: string;           // Full work/production date (YYYY-MM-DD)
+  // ... other fields
+}
+```
+
+**Sort Logic:**
+- Primary: Use `releaseDate` if available
+- Fallback: Use `workDate` if no release date
+- Order: Descending (newest projects first)
+- Empty dates: Sorted to end
+
+**Updated Files:**
+- `scripts/sync-data.mjs` - Added date fields and sorting logic
+- `types.ts` - Added optional `releaseDate?` and `workDate?` fields
+- `public/portfolio-data.json` - Regenerated with new fields
+
+**Impact:** Projects now display in chronological order (newest first) with complete date information preserved. Year field correctly falls back to workDate if releaseDate is missing. No frontend changes needed - sorting happens at build time.
+
+---
+
 ### Nov 28 2025 - Static Build-Time Data Architecture (Zero Runtime Airtable Calls)
 **What Changed:** Complete architectural shift from runtime Airtable fetching to static build-time data generation.
 
