@@ -37,18 +37,11 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
     try {
         console.log('[cmsService] Fetching from cached endpoint');
         
-        // Add timeout to prevent hanging
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
         const response = await fetch('/.netlify/functions/get-data', {
             headers: {
                 'Accept': 'application/json'
-            },
-            signal: controller.signal
+            }
         });
-        
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
             if (response.status === 503) {
