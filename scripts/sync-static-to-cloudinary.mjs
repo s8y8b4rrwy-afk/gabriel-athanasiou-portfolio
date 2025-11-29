@@ -320,7 +320,10 @@ Files Synced:
 }
 
 // Run if executed directly
-main();
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  main();
+}
 
 // Export for use as module
 export { syncStaticFiles, getCloudinaryUrl, STATIC_FILES };

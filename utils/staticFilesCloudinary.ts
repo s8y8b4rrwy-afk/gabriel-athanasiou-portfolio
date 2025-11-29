@@ -6,6 +6,8 @@
  * instead of serving them locally.
  */
 
+import type { Project, BlogPost, HomeConfig } from '../types';
+
 // Cloudinary cloud name - can be overridden via environment variable
 const CLOUDINARY_CLOUD_NAME = typeof process !== 'undefined' 
   ? process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6'
@@ -25,6 +27,50 @@ export const STATIC_FILE_IDS = {
 } as const;
 
 export type StaticFileId = typeof STATIC_FILE_IDS[keyof typeof STATIC_FILE_IDS];
+
+/**
+ * Portfolio data structure returned from Cloudinary
+ */
+export interface PortfolioData {
+  projects: Project[];
+  posts: BlogPost[];
+  config: HomeConfig;
+  lastUpdated: string;
+  version: string;
+  source: string;
+}
+
+/**
+ * Share meta data structure for social media previews
+ */
+export interface ShareMetaProject {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image: string;
+  type: string;
+  year: string;
+}
+
+export interface ShareMetaPost {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image: string;
+  type: string;
+  date: string;
+}
+
+export interface ShareMetaData {
+  generatedAt: string;
+  projects: ShareMetaProject[];
+  posts: ShareMetaPost[];
+  config: {
+    defaultOgImage: string;
+  };
+}
 
 /**
  * Get the Cloudinary URL for a static file
@@ -123,15 +169,8 @@ export async function fetchStaticFile<T = string>(
 export async function fetchPortfolioData(options: {
   cloudName?: string;
   cache?: RequestCache;
-} = {}): Promise<{
-  projects: unknown[];
-  posts: unknown[];
-  config: unknown;
-  lastUpdated: string;
-  version: string;
-  source: string;
-}> {
-  return fetchStaticFile(STATIC_FILE_IDS.PORTFOLIO_DATA, {
+} = {}): Promise<PortfolioData> {
+  return fetchStaticFile<PortfolioData>(STATIC_FILE_IDS.PORTFOLIO_DATA, {
     ...options,
     parseJson: true
   });
@@ -145,13 +184,8 @@ export async function fetchPortfolioData(options: {
 export async function fetchShareMeta(options: {
   cloudName?: string;
   cache?: RequestCache;
-} = {}): Promise<{
-  generatedAt: string;
-  projects: unknown[];
-  posts: unknown[];
-  config: unknown;
-}> {
-  return fetchStaticFile(STATIC_FILE_IDS.SHARE_META, {
+} = {}): Promise<ShareMetaData> {
+  return fetchStaticFile<ShareMetaData>(STATIC_FILE_IDS.SHARE_META, {
     ...options,
     parseJson: true
   });
