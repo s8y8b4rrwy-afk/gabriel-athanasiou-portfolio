@@ -84,15 +84,15 @@ Serves the static `portfolio-data.json` file (no Airtable calls).
 - Returns with aggressive cache headers (24h CDN, 1h browser)
 - Falls back to empty data structure if file missing
 
-### 3. `netlify/functions/scheduled-sync.mjs`
-Midnight sync that detects changes and triggers builds.
+### 3. Manual Sync Functions
+Netlify functions for manual data sync (no automatic schedules).
 
-**What it does:**
-- Runs daily at midnight UTC
-- Fetches from Airtable
-- Compares hash to detect changes
-- Triggers Netlify build if changes detected
-- Saves complete data to `portfolio-data.json`
+**What they do:**
+- `airtable-sync.mjs` - Incremental sync with change detection
+- `sync-now.mjs` - Manual trigger endpoint
+- Fetch from Airtable only when triggered
+- Save data to `portfolio-data.json`
+- Upload to Cloudinary CDN
 
 ### 4. `package.json`
 Build script now runs data sync before Vite build.
@@ -101,10 +101,23 @@ Build script now runs data sync before Vite build.
 {
   "scripts": {
     "build:data": "node scripts/sync-data.mjs",
-    "build": "npm run build:data && vite build"
+    "build": "vite build",
+    "build:full": "npm run build:data && npm run build:sitemap && npm run sync:static && vite build"
   }
 }
 ```
+
+**Default build** (`npm run build`) skips data regeneration:
+- ✅ Faster builds (no Airtable API calls)
+- ✅ Works without Airtable credits  
+- ✅ Uses existing committed data files
+- ✅ Perfect for code-only changes
+
+**Full build** (`npm run build:full`) regenerates all data:
+- Syncs from Airtable
+- Generates sitemap and share-meta
+- Uploads to Cloudinary
+- Then builds site
 
 ---
 
@@ -310,7 +323,7 @@ git push origin main
 
 ### What Changed Internally
 - `get-data.js` now reads static file instead of calling Airtable
-- `scheduled-sync.mjs` saves complete data to `portfolio-data.json`
+- `airtable-sync.mjs` saves complete data to `portfolio-data.json` (manual trigger only)
 - Build process runs data sync before Vite build
 - Cache headers adjusted for 24h CDN caching
 

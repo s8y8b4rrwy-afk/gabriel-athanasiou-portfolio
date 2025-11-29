@@ -6,8 +6,18 @@ import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
-import { getVideoId, getVideoThumbnail } from '../utils/videoHelpers.mjs';
+import { getVideoThumbnail } from '../utils/videoHelpers.mjs';
 import { normalizeTitle, calculateReadingTime } from '../utils/textHelpers.mjs';
+import {
+  fetchAirtableTable,
+  buildLookupMaps,
+  parseExternalLinks,
+  makeSlug,
+  normalizeProjectType,
+  parseCreditsText,
+  resolveProductionCompany,
+  resolveAwards
+} from './lib/airtable-helpers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -60,123 +70,10 @@ async function loadCachedData() {
   return null;
 }
 
-// Fetch from Airtable with pagination
-async function fetchAirtableTable(tableName, sortField) {
-  const sortParam = sortField 
-    ? `&sort%5B0%5D%5Bfield%5D=${encodeURIComponent(sortField)}&sort%5B0%5D%5Bdirection%5D=desc` 
-    : '';
-  let allRecords = [];
-  let offset = null;
-
-  do {
-    const offsetParam = offset ? `&offset=${offset}` : '';
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}?${sortParam}${offsetParam}`;
-    
-    const res = await fetch(url, { 
-      headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } 
-    });
-
-    if (!res.ok) {
-      if (res.status === 429) {
-        const error = new Error(`Rate limit exceeded for ${tableName}`);
-        error.isRateLimit = true;
-        throw error;
-      }
-      throw new Error(`Failed to fetch ${tableName}: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    allRecords = allRecords.concat(data.records || []);
-    offset = data.offset;
-  } while (offset);
-
-  return allRecords;
-}
-
-// Generate slug
-function makeSlug(base) {
-  return base
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'item';
-}
-
-// Normalize project type
-function normalizeProjectType(rawType) {
-  if (!rawType) return 'Uncategorized';
-  const tl = rawType.toLowerCase();
-  if (/(short|feature|narrative)/.test(tl)) return 'Narrative';
-  if (/(commercial|tvc|brand)/.test(tl)) return 'Commercial';
-  if (/music/.test(tl)) return 'Music Video';
-  if (/documentary/.test(tl)) return 'Documentary';
-  return 'Uncategorized';
-}
-
-// Build lookup maps
-async function buildLookupMaps() {
-  console.log('[sync-data] 🗂️  Fetching lookup tables...');
-  const [festivalsRecords, clientsRecords] = await Promise.all([
-    fetchAirtableTable('Festivals', null),
-    fetchAirtableTable('Client Book', null)
-  ]);
-
-  const festivalsMap = {};
-  festivalsRecords.forEach(r => {
-    festivalsMap[r.id] = r.fields['Display Name'] || r.fields['Name'] || r.fields['Award'] || 'Unknown Award';
-  });
-
-  const clientsMap = {};
-  clientsRecords.forEach(r => {
-    clientsMap[r.id] = r.fields['Company'] || r.fields['Company Name'] || r.fields['Client'] || 'Unknown';
-  });
-
-  console.log(`[sync-data] ✅ Loaded ${Object.keys(festivalsMap).length} festivals, ${Object.keys(clientsMap).length} clients`);
-  return { festivalsMap, clientsMap };
-}
-
-// Parse external links and extract videos
-function parseExternalLinks(rawText) {
-  const links = [];
-  const videos = [];
-  
-  if (!rawText) return { links, videos };
-  
-  const items = rawText.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
-  
-  for (const item of items) {
-    if (!item.startsWith('http')) continue;
-    
-    const videoInfo = getVideoId(item);
-    const isVideo = videoInfo.type !== null;
-    
-    if (isVideo) {
-      videos.push(item);
-    } else {
-      let label = "Link";
-      try {
-        const hostname = new URL(item).hostname;
-        const core = hostname.replace('www.', '').split('.')[0];
-        if (core === 'imdb') label = 'IMDb';
-        else if (core === 'youtube') label = 'YouTube';
-        else if (core === 'linkedin') label = 'LinkedIn';
-        else if (core === 'instagram') label = 'Instagram';
-        else if (core === 'vimeo') label = 'Vimeo';
-        else if (core === 'facebook') label = 'Facebook';
-        else label = core.charAt(0).toUpperCase() + core.slice(1);
-      } catch (e) {}
-      
-      links.push({ label, url: item });
-    }
-  }
-  
-  return { links, videos };
-}
-
 // Build projects
 async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping) {
   console.log('[sync-data] 📦 Building projects...');
-  const records = await fetchAirtableTable('Projects', 'Release Date');
+  const records = await fetchAirtableTable('Projects', 'Release Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
   const projects = [];
   
   // Build a lookup map for Cloudinary URLs by recordId
@@ -239,41 +136,13 @@ async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping) {
     const linkData = parseExternalLinks(f['External Links']);
     
     // Parse credits
-    const creditsText = (f['Credits Text'] || f['Credits'] || '').toString();
-    const credits = creditsText
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => {
-        const colonIndex = line.indexOf(':');
-        if (colonIndex > 0) {
-          return {
-            role: line.substring(0, colonIndex).trim(),
-            name: line.substring(colonIndex + 1).trim()
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
+    const credits = parseCreditsText(f['Credits Text'] || f['Credits'] || '');
     
     // Process awards (festivals)
-    let awards = [];
-    if (f['Festivals']) {
-      if (Array.isArray(f['Festivals'])) {
-        awards = f['Festivals'].map(id => festivalsMap[id] || id);
-      } else if (typeof f['Festivals'] === 'string') {
-        awards = f['Festivals'].split('\n').filter(s => s.trim().length > 0);
-      }
-    }
+    const awards = resolveAwards(f['Festivals'], festivalsMap);
     
     // Resolve production company from linked records
-    let productionCompany = '';
-    const productionCompanyField = f['Production Company'];
-    if (Array.isArray(productionCompanyField)) {
-      productionCompany = productionCompanyField.map(id => clientsMap[id] || id).join(', ');
-    } else if (productionCompanyField) {
-      productionCompany = clientsMap[productionCompanyField] || productionCompanyField;
-    }
+    const productionCompany = resolveProductionCompany(f['Production Company'], clientsMap);
     
     projects.push({
       id: r.id,
@@ -315,7 +184,7 @@ async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping) {
 // Build posts
 async function buildPosts() {
   console.log('[sync-data] 📰 Fetching journal posts...');
-  const records = await fetchAirtableTable('Journal', 'Date');
+  const records = await fetchAirtableTable('Journal', 'Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
   const now = new Date();
   const posts = [];
 
@@ -367,7 +236,7 @@ async function buildPosts() {
 // Build config
 async function buildConfig() {
   console.log('[sync-data] ⚙️  Fetching settings...');
-  const records = await fetchAirtableTable('Settings', null);
+  const records = await fetchAirtableTable('Settings', null, AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
   
   if (records.length === 0) {
     console.warn('[sync-data] ⚠️  No settings found, using defaults');
@@ -459,8 +328,10 @@ async function main() {
     // Load Cloudinary mapping for permanent image URLs
     const cloudinaryMapping = loadCloudinaryMapping();
     
-    // First build lookup maps
-    const { festivalsMap, clientsMap } = await buildLookupMaps();
+    // Build lookup maps
+    console.log('[sync-data] 🗂️  Fetching lookup tables...');
+    const { festivalsMap, clientsMap } = await buildLookupMaps(AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
+    console.log(`[sync-data] ✅ Loaded ${Object.keys(festivalsMap).length} festivals, ${Object.keys(clientsMap).length} clients`);
     
     // Then fetch all other data with resolved references
     const [projects, posts, config] = await Promise.all([

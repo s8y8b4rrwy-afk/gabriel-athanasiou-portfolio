@@ -48,6 +48,7 @@ These guides provide additional context but **all critical information is in AI_
 - `docs/CLOUDINARY_INTEGRATION.md` - Image optimization system
 - `IMAGE_OPTIMIZATION.md` - Build-time image processing
 - **`docs/INCREMENTAL_SYNC_OPTIMIZATION.md`** - 90% API usage reduction guide ⭐
+- **`SHARED_HELPERS_REFACTORING.md`** - Shared utilities library and unit tests ⭐ **NEW**
 - `docs/INCREMENTAL_SYNC_QUICK_REF.md` - Quick reference for incremental sync
 
 ### Setup & Configuration

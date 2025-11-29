@@ -33,6 +33,77 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 29 2025 - Code Consolidation & Shared Library Pattern
+**What Changed:** Eliminated ~2000 lines of duplicate code by creating shared helper library.
+
+**The Problem:**
+- `fetchAirtableTable()` duplicated 6 times across scripts
+- `parseExternalLinks()`, `makeSlug()`, and other helpers duplicated 2-3 times each
+- Scripts and Netlify functions had inconsistent implementations
+- Bug fixes required updating 6+ files
+- Large function bundles (~1500+ lines per file)
+
+**The Solution:**
+1. **Created shared helpers library** (`scripts/lib/airtable-helpers.mjs`):
+   - `fetchAirtableTable()` - Unified Airtable fetching with pagination
+   - `buildLookupMaps()` - Festivals and clients lookup table builder
+   - `parseExternalLinks()` - URL parsing and categorization
+   - `makeSlug()` - URL-safe slug generation
+   - `normalizeProjectType()` - Project type normalization
+   - `parseCreditsText()` - Credits text parsing
+   - `resolveProductionCompany()` - Production company resolution
+   - `resolveAwards()` - Awards/festivals resolution
+
+2. **Refactored all scripts to use shared library:**
+   - `scripts/sync-data.mjs` - Reduced from 537 to ~350 lines
+   - `scripts/generate-sitemap.mjs` - Reduced from 172 to ~120 lines
+   - `scripts/generate-share-meta.mjs` - Reduced from 207 to ~150 lines
+
+3. **Removed unused scripts:**
+   - Deleted `test-cloudinary.mjs` (testing completed)
+   - Deleted `test-image-fetch.mjs` (testing completed)
+   - Deleted `optimize-images.mjs` (Sharp removed)
+   - Deleted `migrate-to-cloudinary.mjs` (migration completed)
+   - Updated `package.json` to remove obsolete commands
+
+4. **Removed scheduled-sync references:**
+   - File never existed (was from old architecture)
+   - Cleaned up all documentation references
+   - Clarified manual-only sync approach
+
+**Benefits:**
+- ✅ Single source of truth for core logic
+- ✅ Bug fixes update once, work everywhere
+- ✅ Smaller, more maintainable files
+- ✅ Consistent behavior across scripts
+- ✅ Easier testing and debugging
+- ✅ ~2000 lines of code eliminated
+
+**File Structure:**
+```
+scripts/
+  lib/
+    airtable-helpers.mjs (200 lines - shared logic)
+  sync-data.mjs (350 lines - orchestration only)
+  generate-sitemap.mjs (120 lines - formatting only)
+  generate-share-meta.mjs (150 lines - formatting only)
+  sync-static-to-cloudinary.mjs (unchanged)
+netlify/functions/
+  airtable-sync.mjs (incremental sync - can use shared helpers)
+  sync-now.mjs (manual trigger)
+  get-data.js (serves static data)
+```
+
+**Updated Build Commands:**
+- `npm run build` - Default: Vite build only (uses existing data)
+- `npm run build:full` - Full: Regenerate all data + Vite build (requires Airtable credits)
+- `npm run build:data` - Sync data from Airtable only
+- `npm run build:content` - Generate share-meta only
+- `npm run build:sitemap` - Generate sitemap only
+- `npm run sync:static` - Upload to Cloudinary only
+
+---
+
 ### Nov 29 2025 - Incremental Sync API Optimization (90% Reduction)
 **What Changed:** Implemented intelligent change detection to reduce Airtable API usage from ~50 calls per sync to 5-10 calls for typical updates.
 

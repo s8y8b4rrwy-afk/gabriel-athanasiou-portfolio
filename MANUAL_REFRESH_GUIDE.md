@@ -98,8 +98,8 @@ npm run sync:static          # Upload to Cloudinary CDN
 ## 🔧 Configuration Files
 
 ### Disabled Scheduled Functions:
-- ❌ `netlify/functions/scheduled-sync.mjs` - No longer runs on schedule
-- ❌ `netlify/functions/scheduled-sync-realtime.mjs` - No longer runs on schedule
+- ✅ All automatic schedules removed
+- ✅ All syncs require manual trigger
 - ❌ `.github/workflows/scheduled-deploy.yml` - All cron jobs disabled
 
 ### Active Manual Triggers:

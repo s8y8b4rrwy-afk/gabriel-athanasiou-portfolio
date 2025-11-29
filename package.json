@@ -6,16 +6,17 @@
   "scripts": {
     "dev": "netlify dev",
     "dev:vite": "vite",
-    "optimize:images": "node scripts/optimize-images.mjs",
-    "test:images": "node scripts/test-image-fetch.mjs",
-    "test:cloudinary": "node scripts/test-cloudinary.mjs",
-    "migrate:cloudinary": "node scripts/migrate-to-cloudinary.mjs",
     "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:data": "node scripts/sync-data.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
-    "build": "npm run build:content && npm run build:data && npm run build:sitemap && npm run sync:static && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "build:full": "npm run build:content && npm run build:data && npm run build:sitemap && npm run sync:static && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@netlify/functions": "^2.8.1",
@@ -29,10 +30,12 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/ui": "^4.0.14",
     "dotenv": "^17.2.3",
     "netlify-plugin-cache": "^1.0.3",
     "sharp": "^0.34.5",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vitest": "^4.0.14"
   }
 }

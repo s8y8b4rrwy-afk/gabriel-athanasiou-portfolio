@@ -29,7 +29,7 @@ Your portfolio now uses a **completely manual, decoupled workflow**:
 
 **Option 2: Local Development**
 ```bash
-# Sync from Airtable to local files
+# Full sync from Airtable to local files
 npm run build:data
 
 # Upload to Cloudinary CDN
@@ -39,6 +39,12 @@ npm run sync:static
 git add public/*.json public/sitemap.xml
 git commit -m "chore: sync data from Airtable [ci skip]"
 git push
+```
+
+**Note:** If you're out of Airtable credits, you can still build and deploy with existing data:
+```bash
+npm run build          # Uses existing static files
+git push              # Deploy code changes only
 ```
 
 **Option 3: Netlify Function**

@@ -6,8 +6,9 @@
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { getVideoId, getVideoThumbnail } from '../utils/videoHelpers.mjs';
+import { getVideoThumbnail } from '../utils/videoHelpers.mjs';
 import { normalizeTitle } from '../utils/textHelpers.mjs';
+import { fetchAirtableTable, makeSlug, normalizeProjectType } from './lib/airtable-helpers.mjs';
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
@@ -37,36 +38,8 @@ function loadCloudinaryMapping() {
   return null;
 }
 
-// Fetch a full Airtable table (similar to cmsService) but minimal & resilient.
-async function fetchAirtableTable(tableName, sortField) {
-  const sortParam = sortField ? `&sort%5B0%5D%5Bfield%5D=${encodeURIComponent(sortField)}&sort%5B0%5D%5Bdirection%5D=desc` : '';
-  let allRecords = [];
-  let offset = null;
-  do {
-    const offsetParam = offset ? `&offset=${offset}` : '';
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}?${sortParam}${offsetParam}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-    if (!res.ok) {
-      console.warn(`[share-meta] Table fetch failed: ${tableName} ${res.status}`);
-      break; // Return what we have so far.
-    }
-    const data = await res.json();
-    allRecords = allRecords.concat(data.records || []);
-    offset = data.offset;
-  } while (offset);
-  return allRecords;
-}
-
-function makeSlug(base) {
-  return base
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'item';
-}
-
 async function buildProjects(cloudinaryMapping, defaultOgImage) {
-  const records = await fetchAirtableTable('Projects', 'Release Date');
+  const records = await fetchAirtableTable('Projects', 'Release Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
   const items = [];
   
   // Build lookup map for Cloudinary URLs
@@ -139,7 +112,7 @@ async function buildProjects(cloudinaryMapping, defaultOgImage) {
 }
 
 async function buildPosts() {
-  const records = await fetchAirtableTable('Journal', 'Date');
+  const records = await fetchAirtableTable('Journal', 'Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
   const now = new Date();
   const items = [];
   
@@ -170,7 +143,7 @@ async function buildPosts() {
 
 async function buildConfig() {
   try {
-    const records = await fetchAirtableTable('Settings');
+    const records = await fetchAirtableTable('Settings', null, AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
     if (records.length === 0) return {};
     const f = records[0].fields || {};
     return {

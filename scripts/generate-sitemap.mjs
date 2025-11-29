@@ -8,46 +8,13 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { fetchAirtableTable, makeSlug } from './lib/airtable-helpers.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Import generateSitemap from TypeScript compiled output or re-implement
-// Since we can't easily import .ts in .mjs, let's implement inline
-
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
-
-async function fetchAirtableTable(tableName, sortField) {
-  const sortParam = sortField ? `&sort%5B0%5D%5Bfield%5D=${encodeURIComponent(sortField)}&sort%5B0%5D%5Bdirection%5D=desc` : '';
-  let allRecords = [];
-  let offset = null;
-  
-  do {
-    const offsetParam = offset ? `&offset=${offset}` : '';
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}?${sortParam}${offsetParam}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-    
-    if (!res.ok) {
-      console.warn(`[sitemap] Table fetch failed: ${tableName}`);
-      return [];
-    }
-    
-    const data = await res.json();
-    allRecords = allRecords.concat(data.records || []);
-    offset = data.offset;
-  } while (offset);
-  
-  return allRecords;
-}
-
-function makeSlug(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'item';
-}
 
 async function generateSitemap() {
   try {
@@ -56,8 +23,8 @@ async function generateSitemap() {
       return generateMinimalSitemap();
     }
 
-    const projectRecords = await fetchAirtableTable('Projects', 'Release Date');
-    const journalRecords = await fetchAirtableTable('Journal', 'Date');
+    const projectRecords = await fetchAirtableTable('Projects', 'Release Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
+    const journalRecords = await fetchAirtableTable('Journal', 'Date', AIRTABLE_TOKEN, AIRTABLE_BASE_ID);
     
     const baseUrl = 'https://directedbygabriel.com';
     const currentDate = new Date().toISOString().split('T')[0];

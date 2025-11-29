@@ -4,6 +4,33 @@
  * Now includes Cloudinary CDN with local WebP and Airtable fallbacks
  */
 
+// Enable debug logging in development only
+const DEBUG = import.meta.env.DEV;
+
+/**
+ * Cloudinary configuration
+ */
+export const cloudinaryConfig = {
+  get cloudName() {
+    return typeof window !== 'undefined'
+      ? window.CLOUDINARY_CLOUD_NAME || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+      : import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
+  },
+  get enabled() {
+    return typeof window !== 'undefined'
+      ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
+      : false;
+  }
+};
+
+/**
+ * Check if Cloudinary is enabled
+ * @returns {boolean} Whether Cloudinary feature flag is enabled
+ */
+export const isCloudinaryEnabled = (): boolean => {
+  return cloudinaryConfig.enabled;
+};
+
 export type CloudinaryPreset = 'ultra' | 'fine';
 
 export interface ResponsiveImageProps {
@@ -40,7 +67,7 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
   const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
   if (connection) {
     if (connection.saveData || connection.effectiveType === '2g') {
-      console.log('🌐 Network: Slow connection detected, using fine preset');
+      if (DEBUG) console.log('🌐 Network: Slow connection detected, using fine preset');
       return 'fine';
     }
   }
@@ -51,11 +78,11 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
   const effectiveWidth = viewportWidth * dpr;
 
   if (effectiveWidth >= 1024) {
-    console.log(`🖥️ Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using ultra preset`);
+    if (DEBUG) console.log(`🖥️ Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using ultra preset`);
     return 'ultra';
   }
 
-  console.log(`📱 Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using fine preset`);
+  if (DEBUG) console.log(`📱 Device: ${viewportWidth}px × ${dpr} DPR = ${effectiveWidth}px effective, using fine preset`);
   return 'fine';
 };
 
@@ -66,7 +93,6 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
  */
 export const getSessionPreset = (): CloudinaryPreset => {
   if (typeof window === 'undefined') {
-    console.log('⚠️ SSR: Returning default preset "fine"');
     return 'fine';
   }
 
@@ -74,16 +100,15 @@ export const getSessionPreset = (): CloudinaryPreset => {
   
   // Check session storage
   const cached = sessionStorage.getItem(STORAGE_KEY);
-  console.log('📦 Session storage check:', { cached, type: typeof cached });
   
   if (cached === 'ultra' || cached === 'fine') {
-    console.log(`✅ Using cached preset: ${cached}`);
+    if (DEBUG) console.log(`✅ Using cached preset: ${cached}`);
     return cached as CloudinaryPreset;
   }
 
   // Detect and cache
   const preset = detectOptimalPreset();
-  console.log(`🎯 Detected and caching preset: ${preset}`);
+  if (DEBUG) console.log(`🎯 Detected and caching preset: ${preset}`);
   sessionStorage.setItem(STORAGE_KEY, preset);
   return preset;
 };
@@ -103,13 +128,11 @@ export const buildCloudinaryUrl = (
   index: number = 0,
   options: CloudinaryOptions = {}
 ): string => {
-  // Read cloud name from environment (client-side only, from meta tag or window)
-  const cloudName = typeof window !== 'undefined' 
-    ? window.CLOUDINARY_CLOUD_NAME || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-    : null;
+  // Read cloud name from environment
+  const cloudName = cloudinaryConfig.cloudName;
 
   if (!cloudName) {
-    console.warn('buildCloudinaryUrl: CLOUDINARY_CLOUD_NAME not configured');
+    if (DEBUG) console.warn('CLOUDINARY_CLOUD_NAME not configured');
     return '';
   }
 
@@ -130,29 +153,18 @@ export const buildCloudinaryUrl = (
   let qualityValue: number = 75; // Default to fine preset
   let widthValue: number = 1600; // Default
   
-  console.log('🔍 Preset check:', { 
-    'options.preset': options.preset, 
-    'typeof': typeof options.preset,
-    'truthy': !!options.preset 
-  });
-  
   if (options.preset) {
     // Ultra preset: higher quality + larger width for high-end devices
     // Fine preset: optimized quality + standard width for all devices
     if (options.preset === 'ultra') {
       qualityValue = 90;
       widthValue = 1600;
-      console.log(`✅ Preset "ultra" → quality 90, width 1600`);
     } else {
       qualityValue = 75;
       widthValue = 1600;
-      console.log(`✅ Preset "fine" → quality 75, width 1600`);
     }
   } else if (options.quality && typeof options.quality === 'number') {
     qualityValue = options.quality;
-    console.log(`✅ Using explicit quality ${qualityValue}`);
-  } else {
-    console.log(`✅ No preset specified, using default "fine" (q_75)`);
   }
 
   // Allow explicit width override if provided
@@ -173,15 +185,9 @@ export const buildCloudinaryUrl = (
   // Construct Cloudinary URL
   const finalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
   
-  // Log complete transformation specs
-  console.log(`🎨 Cloudinary URL built:`, {
-    publicId,
-    preset: options.preset || 'none',
-    width,
-    quality: qualityValue,
-    format,
-    url: finalUrl
-  });
+  if (DEBUG) {
+    console.log('Cloudinary URL:', { publicId, preset: options.preset, width, quality: qualityValue });
+  }
   
   return finalUrl;
 };
@@ -218,46 +224,30 @@ export const getOptimizedImageUrl = (
   preset?: CloudinaryPreset,
   width?: number
 ): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
-  console.log('🚀 getOptimizedImageUrl called:', { recordId, type, index, preset, width, totalImages });
-  
   // If no fallback URL provided, return empty strings
   if (!fallbackUrl) {
-    console.warn(`getOptimizedImageUrl: No fallback URL provided for record ${recordId}`);
+    if (DEBUG) console.warn(`No fallback URL for record ${recordId}`);
     return { cloudinaryUrl: '', localUrl: '', fallbackUrl: '', useCloudinary: false };
   }
   
   // If no record ID, return fallback URL only
   if (!recordId) {
-    console.warn(`getOptimizedImageUrl: No record ID provided, using fallback URL only`);
+    if (DEBUG) console.warn('No record ID, using fallback URL only');
     return { cloudinaryUrl: '', localUrl: '', fallbackUrl, useCloudinary: false };
   }
 
-  // Check feature flag (client-side only)
-  const useCloudinary = typeof window !== 'undefined'
-    ? window.USE_CLOUDINARY === 'true' || window.USE_CLOUDINARY === true
-    : false;
+  // Check feature flag
+  const useCloudinary = isCloudinaryEnabled();
   
   // Build Cloudinary URL with preset and width parameters (only pass defined values)
   const cloudinaryOptions: CloudinaryOptions = {};
   
-  console.log('🔧 Building cloudinaryOptions:', {
-    'preset param': preset,
-    'preset type': typeof preset,
-    'preset truthy': !!preset,
-    'preset === undefined': preset === undefined,
-    'width param': width
-  });
-  
   if (preset !== undefined) {
     cloudinaryOptions.preset = preset;
-    console.log(`✅ Added preset to options: ${preset}`);
   }
   if (width !== undefined) {
     cloudinaryOptions.width = width;
-    console.log(`✅ Added width to options: ${width}`);
   }
-  
-  console.log('🔧 Final cloudinaryOptions:', cloudinaryOptions);
   
   const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
   
@@ -274,76 +264,7 @@ export const getOptimizedImageUrl = (
 };
 
 /**
- * Generate responsive Cloudinary URLs for srcset
- * 
- * @param recordId - Airtable record ID
- * @param type - 'project', 'journal', or 'config'
- * @param index - Image index
- * @returns srcset string with responsive breakpoints
- */
-export const buildCloudinarySrcSet = (
-  recordId: string,
-  type: 'project' | 'journal' | 'config' = 'project',
-  index: number = 0
-): string => {
-  const breakpoints = [400, 800, 1200, 1600];
-  
-  return breakpoints
-    .map(width => {
-      const url = buildCloudinaryUrl(recordId, type, index, { width });
-      return `${url} ${width}w`;
-    })
-    .join(', ');
-};
-
-/**
  * Legacy function for CDN-based optimization
- * Generate optimized image URL with size parameters
- * Works with any image CDN that supports width parameters
- */
-export const getOptimizedImageUrlLegacy = (
-  src: string,
-  width: number,
-  quality: number = 85
-): string => {
-  if (!src || !src.startsWith('http')) return src;
-
-  // Unsplash URLs
-  if (src.includes('unsplash.com')) {
-    return `${src}&w=${width}&q=${quality}&auto=format,compress`;
-  }
-
-  // Airtable attachment URLs (already optimized by Airtable)
-  if (src.includes('airtable.com') || src.includes('cdn.airtable.com')) {
-    return src;
-  }
-
-  // YouTube/Vimeo thumbnails
-  if (src.includes('img.youtube.com') || src.includes('vumbnail.com')) {
-    return src;
-  }
-
-  // Generic URLs - add width parameter if CDN supports it
-  return src.includes('?') ? `${src}&w=${width}&q=${quality}` : `${src}?w=${width}&q=${quality}`;
-};
-
-/**
- * Generate srcset string for responsive images
- * @deprecated - Use Cloudinary width parameter instead
- */
-/*
-export const generateSrcSet = (src: string): string => {
-  if (!src || !src.startsWith('http')) return src;
-  
-  const sizes = [480, 768, 1024, 1440, 1920];
-  return sizes
-    .map(width => `${getOptimizedImageUrl(src, width)} ${width}w`)
-    .join(', ');
-};
-*/
-
-/**
- * Get responsive sizes attribute for images
  */
 export const getImageSizes = (imageType: 'hero' | 'grid' | 'thumbnail' | 'profile'): string => {
   switch (imageType) {
