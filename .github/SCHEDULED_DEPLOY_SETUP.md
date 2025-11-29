@@ -1,6 +1,8 @@
-# Scheduled Netlify Deploy Setup
+# Manual Data Sync Setup
 
-This workflow deploys to Netlify weekly (or on-demand) **only if there are code changes**, saving build credits.
+> **⚠️ Note:** Automatic scheduled syncing is **disabled** to conserve Airtable API credits. Use manual triggers only.
+
+This workflow syncs data from Airtable and deploys to Netlify **on-demand** (manual trigger only).
 
 ## Setup Instructions
 
@@ -9,7 +11,7 @@ This workflow deploys to Netlify weekly (or on-demand) **only if there are code 
 1. Go to your Netlify site dashboard: https://app.netlify.com
 2. Navigate to **Site settings → Build & deploy → Build hooks**
 3. Click **Add build hook**
-4. Name it: `Scheduled Deploy`
+4. Name it: `Manual Deploy`
 5. Copy the generated webhook URL (looks like: `https://api.netlify.com/build_hooks/xxxxx`)
 
 ### 2. Add Build Hook to GitHub Secrets
@@ -22,49 +24,53 @@ This workflow deploys to Netlify weekly (or on-demand) **only if there are code 
    - Example: If your URL is `https://api.netlify.com/build_hooks/abc123xyz`, enter `abc123xyz`
 6. Click **Add secret**
 
-### 2.1 (Optional) Enable Content-Change Detection
+### 2.1 Enable Airtable Data Sync
 
-If you want the workflow to deploy when Airtable content changes (even without code changes), add these repository secrets so the manifest generator can run:
+To sync content from Airtable, add these repository secrets:
 
 - `AIRTABLE_API_KEY` – Your Airtable Personal Access Token
 - `AIRTABLE_BASE_ID` – The Base ID containing your content tables
 
-If these are not set, the workflow still works for code changes and will safely skip content checks.
-
 ### 3. Verify Setup
 
 1. Go to **Actions** tab in your GitHub repo
-2. Find **Scheduled Netlify Deploy** workflow
+2. Find **Manual Data Sync (Airtable + Deploy)** workflow
 3. Click **Run workflow** → **Run workflow** to test manually
-4. Check the logs to confirm it detects changes correctly
+4. Check the logs to confirm data syncs correctly
 
 ## How It Works
 
-- **Schedule**: Runs every Sunday at 2 AM UTC
-- **Smart Detection**: Only deploys if commits exist since last successful deploy
-- **Manual Trigger**: Can be triggered anytime from the Actions tab
+- **Trigger**: Manual only (via GitHub Actions UI)
+- **Smart Detection**: Only deploys if content changes detected
+- **API Conservation**: No automatic syncing = no unnecessary API calls
 - **Credit Saving**: Skips deploy if no changes = no wasted build minutes
 
-## Customize Schedule
+## Why Manual Only?
 
-Edit `.github/workflows/scheduled-deploy.yml` and change the cron expression:
+Automatic scheduled syncing was disabled to:
+
+1. **Conserve Airtable API credits** - API calls are limited per month
+2. **Give developers control** - Sync only when content actually changes
+3. **Avoid unnecessary builds** - Prevent wasted Netlify build minutes
+
+## How to Trigger a Sync
+
+1. Go to the **Actions** tab in your GitHub repository
+2. Select **"Manual Data Sync (Airtable + Deploy)"** from the workflow list
+3. Click **"Run workflow"** dropdown button
+4. Optionally enter a reason for the sync
+5. Click **"Run workflow"** to start
+
+## Re-enabling Automatic Sync (Not Recommended)
+
+If you need to re-enable automatic scheduled syncing, edit `.github/workflows/scheduled-deploy.yml` and uncomment the schedule section:
 
 ```yaml
-schedule:
-  - cron: '0 2 * * 0'  # Sunday 2 AM UTC
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Sunday 3 AM UTC (weekly)
+  workflow_dispatch:
+    # ... rest of config
 ```
 
-Examples:
-- Daily at midnight: `'0 0 * * *'`
-- Every 3 days: `'0 0 */3 * *'`
-- Bi-weekly (1st & 15th): `'0 0 1,15 * *'`
-
-## Disable Auto-Deploy on Push
-
-To **only** use scheduled deploys (no auto-build on every push):
-
-1. Go to Netlify dashboard → **Site settings → Build & deploy**
-2. Under **Build settings**, click **Stop builds**
-3. Or set **Deploy contexts** to only production branch manually
-
-This gives you full control over when builds happen.
+**Warning:** This will increase Airtable API usage and may exceed your credit limits.

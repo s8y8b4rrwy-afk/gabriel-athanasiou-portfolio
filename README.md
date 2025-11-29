@@ -23,6 +23,16 @@ npm run test:images      # Test Airtable image URLs
 npm run sync:static      # Sync static files to Cloudinary
 ```
 
+## 🔄 Data Sync
+
+Data syncing from Airtable is **manual only** to conserve API credits. To sync content:
+
+1. Go to the repository's **Actions** tab on GitHub
+2. Select **"Manual Data Sync (Airtable + Deploy)"** workflow
+3. Click **"Run workflow"** to sync data and trigger deployment
+
+See [docs/DATA_SYNC_GUIDE.md](./docs/DATA_SYNC_GUIDE.md) for detailed instructions.
+
 ## 🌍 Environment Variables
 
 Create `.env.local`:
@@ -57,6 +67,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 - [docs/CDN_CACHE_FINAL_IMPLEMENTATION.md](./docs/CDN_CACHE_FINAL_IMPLEMENTATION.md) - CDN caching architecture
 - [docs/CLOUDINARY_INTEGRATION.md](./docs/CLOUDINARY_INTEGRATION.md) - Cloudinary image optimization (production)
 - [docs/STATIC_FILES_HOSTING.md](./docs/STATIC_FILES_HOSTING.md) - Static files hosting with Cloudinary
+- [docs/DATA_SYNC_GUIDE.md](./docs/DATA_SYNC_GUIDE.md) - Manual data sync from Airtable
 - [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
 - [docs/PROCEDURAL_THUMBNAILS.md](./docs/PROCEDURAL_THUMBNAILS.md) - Procedural artwork generation
 
