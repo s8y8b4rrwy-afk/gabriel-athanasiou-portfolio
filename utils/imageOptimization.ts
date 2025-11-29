@@ -92,14 +92,14 @@ export const getSessionPreset = (): CloudinaryPreset => {
  * Build Cloudinary URL with preset-based quality optimization
  * 
  * @param recordId - Airtable record ID
- * @param type - 'project' or 'journal'
+ * @param type - 'project', 'journal', or 'config'
  * @param index - Image index for multiple images (default: 0)
  * @param options - Cloudinary transformation options
  * @returns Cloudinary CDN URL
  */
 export const buildCloudinaryUrl = (
   recordId: string,
-  type: 'project' | 'journal' = 'project',
+  type: 'project' | 'journal' | 'config' = 'project',
   index: number = 0,
   options: CloudinaryOptions = {}
 ): string => {
@@ -116,9 +116,15 @@ export const buildCloudinaryUrl = (
   // Build public ID based on naming convention
   // Projects: portfolio-projects-{recordId}-{index}
   // Journal: portfolio-journal-{recordId} (no index)
-  const publicId = type === 'journal' 
-    ? `portfolio-journal-${recordId}`
-    : `portfolio-projects-${recordId}-${index}`;
+  // Config: portfolio-config-{recordId} (profile, showreel, etc.)
+  let publicId: string;
+  if (type === 'journal') {
+    publicId = `portfolio-journal-${recordId}`;
+  } else if (type === 'config') {
+    publicId = `portfolio-config-${recordId}`;
+  } else {
+    publicId = `portfolio-projects-${recordId}-${index}`;
+  }
 
   // Map preset to quality value AND width
   let qualityValue: number | string = 'auto';
@@ -196,7 +202,7 @@ export const buildCloudinaryUrl = (
  * 
  * @param recordId - Airtable record ID
  * @param fallbackUrl - Original Airtable image URL
- * @param type - 'project' or 'journal'
+ * @param type - 'project', 'journal', or 'config'
  * @param index - Image index for multiple images (default: 0)
  * @param totalImages - Total number of images. MUST match optimization script output.
  * @param preset - Quality preset for Cloudinary delivery ('ultra' or 'fine')
@@ -206,7 +212,7 @@ export const buildCloudinaryUrl = (
 export const getOptimizedImageUrl = (
   recordId: string,
   fallbackUrl: string,
-  type: 'project' | 'journal' = 'project',
+  type: 'project' | 'journal' | 'config' = 'project',
   index: number = 0,
   totalImages: number = 1,
   preset?: CloudinaryPreset,
@@ -271,13 +277,13 @@ export const getOptimizedImageUrl = (
  * Generate responsive Cloudinary URLs for srcset
  * 
  * @param recordId - Airtable record ID
- * @param type - 'project' or 'journal'
+ * @param type - 'project', 'journal', or 'config'
  * @param index - Image index
  * @returns srcset string with responsive breakpoints
  */
 export const buildCloudinarySrcSet = (
   recordId: string,
-  type: 'project' | 'journal' = 'project',
+  type: 'project' | 'journal' | 'config' = 'project',
   index: number = 0
 ): string => {
   const breakpoints = [400, 800, 1200, 1600];

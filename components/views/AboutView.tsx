@@ -3,6 +3,7 @@ import React from 'react';
 import { HomeConfig } from '../../types';
 import { THEME } from '../../theme';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { OptimizedImage } from '../common/OptimizedImage';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
 
 interface AboutViewProps {
@@ -28,8 +29,16 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
                 <div className="md:col-span-5">
                     <div className="w-full aspect-[3/4] bg-gray-900 overflow-hidden relative grayscale hover:grayscale-0 transition duration-1000">
-                        {/* Profile image is from Settings table, not from projects/journal, so we use the original URL */}
-                        <img src={config.about?.profileImage} loading="lazy" className="w-full h-full object-cover" alt="Profile" />
+                        <OptimizedImage
+                            recordId="config-profile"
+                            fallbackUrl={config.about?.profileImage || ''}
+                            type="config"
+                            index={0}
+                            totalImages={1}
+                            alt="Profile"
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                 </div>
                 <div className="md:col-span-7 md:pl-12 flex flex-col h-full">

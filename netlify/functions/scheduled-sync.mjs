@@ -207,7 +207,8 @@ const syncImagesToCloudinary = async (projects, posts, existingMapping) => {
   const newMapping = {
     generatedAt: new Date().toISOString(),
     projects: [],
-    journal: []
+    journal: [],
+    config: { images: [] }
   };
   
   let uploadCount = 0;
@@ -315,6 +316,79 @@ const syncImagesToCloudinary = async (projects, posts, existingMapping) => {
     
     newMapping.journal.push(postData);
   }
+  
+  // Process config images (profile image, showreel placeholder)
+  const configImages = [];
+  
+  // Profile image
+  if (config.about?.profileImage) {
+    const publicId = 'portfolio-config-profile';
+    const existingConfigImage = existingMapping.config?.images?.find(img => img.type === 'profile');
+    
+    if (existingConfigImage && existingConfigImage.originalUrl === config.about.profileImage) {
+      configImages.push(existingConfigImage);
+      skipCount++;
+    } else {
+      const result = await uploadToCloudinary(config.about.profileImage, publicId, 'Profile Image');
+      
+      if (result.success) {
+        configImages.push({
+          type: 'profile',
+          publicId: result.publicId,
+          cloudinaryUrl: result.cloudinaryUrl,
+          originalUrl: config.about.profileImage,
+          format: result.format,
+          size: result.size
+        });
+        uploadCount++;
+      } else {
+        configImages.push({
+          type: 'profile',
+          publicId: publicId,
+          cloudinaryUrl: '',
+          originalUrl: config.about.profileImage,
+          error: result.error
+        });
+        failCount++;
+      }
+    }
+  }
+  
+  // Showreel placeholder
+  if (config.showreel?.placeholderImage) {
+    const publicId = 'portfolio-config-showreel';
+    const existingConfigImage = existingMapping.config?.images?.find(img => img.type === 'showreel');
+    
+    if (existingConfigImage && existingConfigImage.originalUrl === config.showreel.placeholderImage) {
+      configImages.push(existingConfigImage);
+      skipCount++;
+    } else {
+      const result = await uploadToCloudinary(config.showreel.placeholderImage, publicId, 'Showreel Placeholder');
+      
+      if (result.success) {
+        configImages.push({
+          type: 'showreel',
+          publicId: result.publicId,
+          cloudinaryUrl: result.cloudinaryUrl,
+          originalUrl: config.showreel.placeholderImage,
+          format: result.format,
+          size: result.size
+        });
+        uploadCount++;
+      } else {
+        configImages.push({
+          type: 'showreel',
+          publicId: publicId,
+          cloudinaryUrl: '',
+          originalUrl: config.showreel.placeholderImage,
+          error: result.error
+        });
+        failCount++;
+      }
+    }
+  }
+  
+  newMapping.config.images = configImages;
   
   console.log(`✅ Cloudinary sync complete: ${uploadCount} uploaded, ${skipCount} unchanged, ${failCount} failed`);
   
