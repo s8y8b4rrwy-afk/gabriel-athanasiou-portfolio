@@ -26,8 +26,24 @@ if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
 const OUTPUT_DIR = path.resolve('public');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'portfolio-data.json');
 const SHARE_META_FILE = path.join(OUTPUT_DIR, 'share-meta.json');
+const CLOUDINARY_MAPPING_FILE = path.join(OUTPUT_DIR, 'cloudinary-mapping.json');
 
 console.log('[sync-data] 🔄 Starting data sync...');
+
+// Load Cloudinary mapping for image URLs
+function loadCloudinaryMapping() {
+  try {
+    if (fs.existsSync(CLOUDINARY_MAPPING_FILE)) {
+      const content = fs.readFileSync(CLOUDINARY_MAPPING_FILE, 'utf-8');
+      const data = JSON.parse(content);
+      console.log('[sync-data] ✅ Loaded Cloudinary mapping');
+      return data;
+    }
+  } catch (error) {
+    console.warn('[sync-data] ⚠️ Could not load Cloudinary mapping:', error.message);
+  }
+  return null;
+}
 
 // Load existing cached data as fallback
 async function loadCachedData() {
@@ -158,10 +174,18 @@ function parseExternalLinks(rawText) {
 }
 
 // Build projects
-async function buildProjects(festivalsMap, clientsMap) {
-  console.log('[sync-data] 📊 Fetching projects...');
+async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping) {
+  console.log('[sync-data] 📦 Building projects...');
   const records = await fetchAirtableTable('Projects', 'Release Date');
   const projects = [];
+  
+  // Build a lookup map for Cloudinary URLs by recordId
+  const cloudinaryMap = {};
+  if (cloudinaryMapping?.projects) {
+    cloudinaryMapping.projects.forEach(project => {
+      cloudinaryMap[project.recordId] = project.images || [];
+    });
+  }
 
   for (const r of records) {
     const f = r.fields || {};
@@ -186,8 +210,17 @@ async function buildProjects(festivalsMap, clientsMap) {
     const kinds = rawKind ? (Array.isArray(rawKind) ? rawKind : [rawKind]) : [];
     const type = normalizeProjectType(rawType || rawKind);
     
-    // Gallery images
-    const gallery = (f['Gallery'] || []).map(img => img.url).filter(Boolean);
+    // Gallery images - Use Cloudinary URLs if available, fallback to Airtable URLs
+    const cloudinaryImages = cloudinaryMap[r.id] || [];
+    let gallery = [];
+    
+    if (cloudinaryImages.length > 0) {
+      // Use Cloudinary URLs
+      gallery = cloudinaryImages.map(img => img.cloudinaryUrl);
+    } else {
+      // Fallback to Airtable URLs
+      gallery = (f['Gallery'] || []).map(img => img.url).filter(Boolean);
+    }
     
     // Main video URL
     const videoUrl = f['Video URL'] || '';
@@ -423,12 +456,15 @@ function generateShareMeta(projects, posts, config) {
 // Main execution
 async function main() {
   try {
+    // Load Cloudinary mapping for permanent image URLs
+    const cloudinaryMapping = loadCloudinaryMapping();
+    
     // First build lookup maps
     const { festivalsMap, clientsMap } = await buildLookupMaps();
     
     // Then fetch all other data with resolved references
     const [projects, posts, config] = await Promise.all([
-      buildProjects(festivalsMap, clientsMap),
+      buildProjects(festivalsMap, clientsMap, cloudinaryMapping),
       buildPosts(),
       buildConfig()
     ]);

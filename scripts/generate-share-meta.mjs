@@ -20,6 +20,22 @@ if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
 const OUTPUT_DIR = path.resolve('public');
 const OUTPUT_JSON = path.join(OUTPUT_DIR, 'share-meta.json');
 const OUTPUT_HASH = path.join(OUTPUT_DIR, 'share-meta.hash');
+const CLOUDINARY_MAPPING = path.join(OUTPUT_DIR, 'cloudinary-mapping.json');
+
+// Load Cloudinary mapping for permanent image URLs
+function loadCloudinaryMapping() {
+  try {
+    if (fs.existsSync(CLOUDINARY_MAPPING)) {
+      const content = fs.readFileSync(CLOUDINARY_MAPPING, 'utf8');
+      const data = JSON.parse(content);
+      console.log(`[share-meta] ✅ Loaded Cloudinary mapping with ${data.projects?.length || 0} projects`);
+      return data;
+    }
+  } catch (e) {
+    console.warn('[share-meta] ⚠️ Could not load Cloudinary mapping:', e.message);
+  }
+  return null;
+}
 
 // Fetch a full Airtable table (similar to cmsService) but minimal & resilient.
 async function fetchAirtableTable(tableName, sortField) {
@@ -49,9 +65,18 @@ function makeSlug(base) {
     .slice(0, 80) || 'item';
 }
 
-async function buildProjects() {
+async function buildProjects(cloudinaryMapping) {
   const records = await fetchAirtableTable('Projects', 'Release Date');
   const items = [];
+  
+  // Build lookup map for Cloudinary URLs
+  const cloudinaryMap = {};
+  if (cloudinaryMapping?.projects) {
+    cloudinaryMapping.projects.forEach(project => {
+      cloudinaryMap[project.recordId] = project.images || [];
+    });
+  }
+  
   for (const r of records) {
     const f = r.fields || {};
     if (!f['Feature']) continue; // Respect visibility rule.
@@ -65,7 +90,17 @@ async function buildProjects() {
     else if (/music/.test(tl)) type = 'Music Video';
     else if (/documentary/.test(tl)) type = 'Documentary';
     else type = 'Uncategorized';
-    const gallery = (f['Gallery'] || []).map(img => img.url).filter(Boolean);
+    
+    // Use Cloudinary URLs if available, fallback to Airtable URLs
+    const cloudinaryImages = cloudinaryMap[r.id] || [];
+    let gallery = [];
+    
+    if (cloudinaryImages.length > 0) {
+      gallery = cloudinaryImages.map(img => img.cloudinaryUrl);
+    } else {
+      gallery = (f['Gallery'] || []).map(img => img.url).filter(Boolean);
+    }
+    
     const heroImage = gallery[0] || '';
     
     // Try video thumbnail if no gallery image
@@ -140,7 +175,8 @@ async function buildConfig() {
 
 async function main() {
   try {
-    const [projects, posts, config] = await Promise.all([buildProjects(), buildPosts(), buildConfig()]);
+    const cloudinaryMapping = loadCloudinaryMapping();
+    const [projects, posts, config] = await Promise.all([buildProjects(cloudinaryMapping), buildPosts(), buildConfig()]);
     const manifest = { generatedAt: new Date().toISOString(), projects, posts, config };
     const json = JSON.stringify(manifest, null, 2);
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
