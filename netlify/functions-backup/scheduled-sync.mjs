@@ -87,7 +87,7 @@ const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
       folder: '', // Already in public_id
       resource_type: 'image',
       format: 'webp', // Convert to WebP, keep original resolution
-      quality: 'auto:best' // Highest quality with smart compression
+      quality: 75, // Fine preset quality
       // NO transformation array - stores at original resolution
     });
     

@@ -85,7 +85,7 @@ async function uploadToCloudinary(imageUrl, publicId, retries = 3) {
         overwrite: true,
         resource_type: 'image',
         format: 'webp', // Convert to WebP during upload
-        quality: 'auto:good', // Automatic quality optimization
+        quality: 75, // Fine preset quality
         transformation: [
           { width: 1600, crop: 'limit' } // Max width 1600px
         ]

@@ -258,7 +258,7 @@ const uploadToCloudinary = async (imageUrl, publicId) => {
       folder: '',
       resource_type: 'image',
       format: 'webp', // Convert to WebP, keep original resolution
-      quality: 'auto:best', // Highest quality with smart compression
+      quality: 75, // Fine preset quality
       eager: EAGER_TRANSFORMATIONS, // Pre-generate all 8 transformation variants
       eager_async: false, // Generate synchronously (adds ~6-8 seconds per image)
       invalidate: true, // Clear CDN cache to force new transformations
@@ -488,8 +488,8 @@ const syncAirtableData = async () => {
           console.warn('⚠️ Cloudinary credentials missing - skipping upload');
         }
         
-        // Generate optimized delivery URLs with highest quality
-        cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-projects-${record.id}-${idx}`);
+        // Generate optimized delivery URLs with fine preset
+        cloudinaryGallery = galleryUrls.map((_, idx) => `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/q_75,w_1600,c_limit,f_auto,dpr_auto/portfolio-projects-${record.id}-${idx}`);
         // Fall back to original heroImage (which might be a video thumbnail) if no Cloudinary gallery exists
         cloudinaryHero = cloudinaryGallery[0] || heroImage;
       }
@@ -575,7 +575,7 @@ const syncAirtableData = async () => {
             }
             
             // Use optimized delivery URL with highest quality
-            cloudinaryImageUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto:best,c_limit,dpr_auto,w_1600/portfolio-journal-${record.id}`;
+            cloudinaryImageUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/q_75,w_1600,c_limit,f_auto,dpr_auto/portfolio-journal-${record.id}`;
           }
           
           // Parse links

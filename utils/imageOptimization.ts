@@ -17,7 +17,7 @@ export interface ResponsiveImageProps {
 
 export interface CloudinaryOptions {
   width?: number;
-  quality?: 'auto:best' | 'auto:good' | 'auto:eco' | 'auto:low' | number;
+  quality?: number; // Only numeric quality values, no auto
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
   crop?: 'limit' | 'fill' | 'fit' | 'scale';
   preset?: CloudinaryPreset;
@@ -127,7 +127,7 @@ export const buildCloudinaryUrl = (
   }
 
   // Map preset to quality value AND width
-  let qualityValue: number | string = 'auto';
+  let qualityValue: number = 75; // Default to fine preset
   let widthValue: number = 1600; // Default
   
   console.log('🔍 Preset check:', { 
@@ -148,11 +148,11 @@ export const buildCloudinaryUrl = (
       widthValue = 1600;
       console.log(`✅ Preset "fine" → quality 75, width 1600`);
     }
-  } else if (options.quality) {
+  } else if (options.quality && typeof options.quality === 'number') {
     qualityValue = options.quality;
     console.log(`✅ Using explicit quality ${qualityValue}`);
   } else {
-    console.warn(`⚠️ No preset or quality specified, defaulting to "auto"`);
+    console.log(`✅ No preset specified, using default "fine" (q_75)`);
   }
 
   // Allow explicit width override if provided
