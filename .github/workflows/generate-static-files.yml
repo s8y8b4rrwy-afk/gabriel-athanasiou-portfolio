@@ -37,6 +37,10 @@ concurrency:
 permissions:
   contents: write
 
+# Define static file paths as environment variables for consistency
+env:
+  STATIC_FILES: public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+
 jobs:
   generate-static-files:
     runs-on: ubuntu-latest
@@ -95,14 +99,25 @@ jobs:
       - name: Check for file changes
         id: check_changes
         run: |
-          # Check if any static files changed
-          if git diff --quiet -- public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml 2>/dev/null; then
+          # Check which files exist and have changes
+          # Using git status to handle both modified and new files
+          CHANGED_FILES=""
+          for file in $STATIC_FILES; do
+            if [ -f "$file" ]; then
+              # Check if file is modified or untracked
+              if ! git diff --quiet -- "$file" 2>/dev/null || git ls-files --others --exclude-standard | grep -q "^$file$"; then
+                CHANGED_FILES="$CHANGED_FILES $file"
+              fi
+            fi
+          done
+          
+          if [ -z "$CHANGED_FILES" ]; then
             echo "files_changed=false" >> $GITHUB_OUTPUT
             echo "📋 No changes detected in static files"
           else
             echo "files_changed=true" >> $GITHUB_OUTPUT
-            echo "📋 Changes detected in static files:"
-            git diff --stat -- public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+            echo "📋 Changes detected in static files:$CHANGED_FILES"
+            git diff --stat -- $STATIC_FILES 2>/dev/null || true
           fi
 
       - name: Commit updated static files
@@ -111,8 +126,18 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           
-          # Add static files
-          git add public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+          # Add static files (only existing ones)
+          for file in $STATIC_FILES; do
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+          
+          # Check if there are staged changes
+          if git diff --staged --quiet; then
+            echo "No staged changes to commit"
+            exit 0
+          fi
           
           # Create commit with appropriate message
           if [ "${{ github.event_name }}" = "schedule" ]; then
