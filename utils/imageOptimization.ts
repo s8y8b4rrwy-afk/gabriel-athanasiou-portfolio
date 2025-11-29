@@ -150,18 +150,18 @@ export const buildCloudinaryUrl = (
   }
 
   // Map preset to quality value AND width
-  let qualityValue: number = 75; // Default to fine preset
-  let widthValue: number = 1600; // Default
+  let qualityValue: number = 80; // Default to fine preset
+  let widthValue: number = 1000; // Default
   
   if (options.preset) {
     // Ultra preset: higher quality + larger width for high-end devices
-    // Fine preset: optimized quality + standard width for all devices
+    // Fine preset: optimized quality + smaller width for faster loading
     if (options.preset === 'ultra') {
       qualityValue = 90;
       widthValue = 1600;
     } else {
-      qualityValue = 75;
-      widthValue = 1600;
+      qualityValue = 80;
+      widthValue = 1000;
     }
   } else if (options.quality && typeof options.quality === 'number') {
     qualityValue = options.quality;

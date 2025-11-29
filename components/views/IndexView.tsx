@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { Project, ProjectType } from '../../types';
 import { THEME } from '../../theme';
-import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
 import { OptimizedImage } from '../common/OptimizedImage';
 
