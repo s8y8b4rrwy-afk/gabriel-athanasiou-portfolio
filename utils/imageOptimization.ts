@@ -4,6 +4,8 @@
  * Now includes Cloudinary CDN with local WebP and Airtable fallbacks
  */
 
+import { CLOUDINARY_PRESETS } from './cloudinaryConfig.mjs';
+
 // Enable debug logging in development only
 const DEBUG = import.meta.env.DEV;
 
@@ -149,18 +151,17 @@ export const buildCloudinaryUrl = (
   }
 
   // Map preset to quality value AND width
-  // Fine preset: q_75, w_800 (optimized for speed)
-  // Ultra preset: q_90, w_1600 (optimized for quality)
-  let qualityValue: number = 75;
-  let widthValue: number = 800;
+  // ⚠️ Values come from cloudinaryConfig.mjs - edit there, not here!
+  let qualityValue: number = CLOUDINARY_PRESETS.fine.quality;
+  let widthValue: number = CLOUDINARY_PRESETS.fine.width;
   
   if (options.preset) {
     if (options.preset === 'ultra') {
-      qualityValue = 90;
-      widthValue = 1600;
+      qualityValue = CLOUDINARY_PRESETS.ultra.quality;
+      widthValue = CLOUDINARY_PRESETS.ultra.width;
     } else {
-      qualityValue = 75;
-      widthValue = 800;
+      qualityValue = CLOUDINARY_PRESETS.fine.quality;
+      widthValue = CLOUDINARY_PRESETS.fine.width;
     }
   } else if (options.quality && typeof options.quality === 'number') {
     qualityValue = options.quality;

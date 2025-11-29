@@ -3,20 +3,20 @@
  * Used across netlify functions and scripts to avoid duplication
  */
 
+import { CLOUDINARY_PRESETS, CLOUDINARY_CONFIG } from './cloudinaryConfig.mjs';
+
 /**
  * Delivery transformation presets (NOT used for upload)
  * These define the quality and size variants available at delivery time.
  * Images are uploaded at original quality and transformed on-demand via URL parameters.
  * 
- * Presets:
- * - Fine: q_75, w_800 (optimized for speed, default)
- * - Ultra: q_90, w_1600 (optimized for quality, high-end devices)
+ * ⚠️ DO NOT EDIT - Import from cloudinaryConfig.mjs instead
  */
 export const TRANSFORMATION_PRESETS = {
-  widths: [800, 1600],
-  qualities: [75, 90],  // fine, ultra
-  dprs: [1.0, 2.0],
-  format: 'webp'
+  widths: [CLOUDINARY_PRESETS.fine.width, CLOUDINARY_PRESETS.ultra.width],
+  qualities: [CLOUDINARY_PRESETS.fine.quality, CLOUDINARY_PRESETS.ultra.quality],
+  dprs: CLOUDINARY_CONFIG.dprs,
+  format: CLOUDINARY_CONFIG.format
 };
 
 /**
