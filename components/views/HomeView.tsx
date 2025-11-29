@@ -75,7 +75,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             fallbackUrl={heroProject.heroImage}
                             type="project"
                             index={0}
-                            totalImages={0}
+                            totalImages={heroProject.gallery?.length || 0}
                             alt={heroProject.title}
                             loading="eager"
                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
