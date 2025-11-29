@@ -67,29 +67,72 @@ export default async (request: Request, context: Context) => {
     let html = await response.text();
 
     // Load manifest (cached by edge runtime per instance)
-    const manifestUrl = new URL("/share-meta.json", url.origin);
-    const manifestRes = await fetch(manifestUrl.toString());
-    
+    // Try share-meta.json first, fall back to portfolio-data.json if empty/unavailable
     let item: ShareItem | undefined;
-    // Ultimate fallback if manifest.config.defaultOgImage is not set
     const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
     let defaultOgImage = ULTIMATE_FALLBACK;
+    
+    const slug = pathname.split("/").filter(Boolean).pop() || "";
+    
+    // Try share-meta.json first
+    const manifestUrl = new URL("/share-meta.json", url.origin);
+    const manifestRes = await fetch(manifestUrl.toString());
     
     if (manifestRes.ok) {
       const manifest: ShareManifest & { config?: ManifestConfig } = await manifestRes.json();
       
-      // Use custom default OG image from Settings if available
-      if (manifest.config?.defaultOgImage) {
-        defaultOgImage = manifest.config.defaultOgImage;
+      // Check if manifest has data
+      const hasData = manifest.projects.length > 0 || manifest.posts.length > 0;
+      
+      if (hasData) {
+        // Use custom default OG image from Settings if available
+        if (manifest.config?.defaultOgImage) {
+          defaultOgImage = manifest.config.defaultOgImage;
+        }
+        
+        if (pathname.startsWith("/work/")) {
+          item = manifest.projects.find((p) => p.slug === slug || p.id === slug);
+        } else if (pathname.startsWith("/journal/")) {
+          item = manifest.posts.find((p) => p.slug === slug || p.id === slug);
+        }
       }
+    }
+    
+    // Fallback to portfolio-data.json if no item found
+    if (!item) {
+      const portfolioUrl = new URL("/portfolio-data.json", url.origin);
+      const portfolioRes = await fetch(portfolioUrl.toString());
       
-      // Extract slug from path (e.g., /work/example-slug -> example-slug)
-      const slug = pathname.split("/").filter(Boolean).pop() || "";
-      
-      if (pathname.startsWith("/work/")) {
-        item = manifest.projects.find((p) => p.slug === slug || p.id === slug);
-      } else if (pathname.startsWith("/journal/")) {
-        item = manifest.posts.find((p) => p.slug === slug || p.id === slug);
+      if (portfolioRes.ok) {
+        const portfolioData: any = await portfolioRes.json();
+        
+        if (pathname.startsWith("/work/") && portfolioData.projects) {
+          const project = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
+          if (project) {
+            item = {
+              id: project.id,
+              slug: project.slug,
+              title: project.title,
+              description: project.description || '',
+              image: project.heroImage || (project.gallery && project.gallery[0]) || '',
+              type: 'website',
+              year: project.year
+            };
+          }
+        } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
+          const post = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
+          if (post) {
+            item = {
+              id: post.id,
+              slug: post.slug,
+              title: post.title,
+              description: post.excerpt || post.content || '',
+              image: post.coverImage || '',
+              type: 'article',
+              date: post.date
+            };
+          }
+        }
       }
     }
 

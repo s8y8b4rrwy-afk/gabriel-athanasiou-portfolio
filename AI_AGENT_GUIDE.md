@@ -33,6 +33,106 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 29 2025 - Journal Navigation & Unpublished Post Protection
+**What Changed:** Fixed journal post navigation to skip unpublished entries and redirect users who try to access draft/scheduled posts.
+
+**The Problem:**
+- Next/Previous buttons in journal posts navigated to ALL posts (including drafts and scheduled)
+- Users could access unpublished journal entries by direct URL
+- No protection for draft or scheduled content
+- Analytics tracked views of unpublished posts
+- Navigation logic used `allPosts` array without filtering by publication status
+
+**The Solution:**
+1. **Filter navigation by publication status** - Next/Previous buttons only navigate to published posts
+2. **Redirect unpublished access** - Users accessing draft/scheduled posts are redirected to journal index
+3. **Skip analytics for unpublished** - No tracking for content that's not published
+4. **Early return protection** - Component doesn't render unpublished content
+
+**Technical Implementation:**
+
+```tsx
+// components/views/BlogPostView.tsx
+
+export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProjects, config }) => {
+    const post = allPosts.find(p => (p.slug ? p.slug === slug : p.id === slug));
+
+    // Redirect to journal index if post is not published
+    useEffect(() => {
+        if (post && post.status && post.status !== 'Public') {
+            navigate('/journal', { replace: true });
+        }
+    }, [post, navigate]);
+
+    // Track blog post view only for published posts
+    useEffect(() => {
+        if (post && (post.status === 'Public' || !post.status)) {
+            analyticsService.trackBlogPostView(post.id, post.title);
+        }
+    }, [post]);
+
+    if (!post) return null;
+    if (post.status && post.status !== 'Public') return null; // Don't render unpublished
+
+    // Filter to only published posts for navigation
+    const publishedPosts = allPosts.filter(p => p.status === 'Public' || !p.status);
+    const currentIndex = publishedPosts.findIndex(p => p.id === post.id);
+    const prevPost = currentIndex > 0 ? publishedPosts[currentIndex - 1] : null;
+    const nextPost = currentIndex < publishedPosts.length - 1 ? publishedPosts[currentIndex + 1] : null;
+    
+    // Rest of component...
+}
+```
+
+**Publication Status Logic:**
+```typescript
+// Posts are considered published if:
+// 1. status === 'Public' (explicitly marked as public in Airtable)
+// 2. !status (no status field - defaults to public for backwards compatibility)
+
+// Posts are NOT published if:
+// 1. status === 'Draft' (work in progress)
+// 2. status === 'Scheduled' (future publication date)
+```
+
+**User Experience:**
+
+| Scenario | Before | After |
+|----------|--------|-------|
+| **Next/Previous buttons** | Navigate to any adjacent post (including drafts) | Only navigate to published posts |
+| **Direct URL to draft** | Renders draft content | Redirects to /journal index |
+| **Analytics tracking** | Tracks all views including drafts | Only tracks published post views |
+| **Share-meta generation** | Included all posts | Only includes published posts |
+
+**Consistency Across Components:**
+- `BlogView.tsx` - Already filtered: `posts.filter(p => p.status === 'Public' || !p.status)`
+- `BlogPostView.tsx` - Now filtered: Navigation and access control added
+- `scripts/sync-data.mjs` - Already filtered: Share-meta only includes published posts
+- `netlify/functions/scheduled-sync.mjs` - Already filtered: Share-meta only includes published posts
+
+**Testing:**
+```bash
+# 1. Create a draft post in Airtable with status='Draft'
+# 2. Navigate to a published post
+# 3. Click Next/Previous - should skip the draft
+# 4. Try accessing draft URL directly - should redirect to /journal
+# 5. Check analytics - no events for draft views
+```
+
+**Updated Files:**
+- `components/views/BlogPostView.tsx` - Added publication filtering, redirect logic, and access control
+
+**Benefits:**
+- ✅ Content privacy - Drafts stay private until published
+- ✅ Better navigation UX - Users never encounter unpublished content
+- ✅ Accurate analytics - Only track public content views
+- ✅ Scheduled post support - Content can be prepared in advance
+- ✅ Consistent behavior - Matches BlogView filtering logic
+
+**Impact:** Users can no longer accidentally discover or navigate to unpublished journal content. Navigation flows only through published entries, maintaining content privacy and providing a cleaner user experience.
+
+---
+
 ### Nov 29 2025 - Rate Limit Fallback for All Data Sync Functions
 **What Changed:** Added comprehensive rate limit detection and fallback logic to both build-time and scheduled sync functions to handle Airtable API rate limits gracefully.
 
