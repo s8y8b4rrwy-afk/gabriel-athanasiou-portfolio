@@ -4,7 +4,7 @@
  * Fetches images from Airtable (Featured Projects + Public/Scheduled Journal entries)
  * and optimizes them to WebP format for Netlify CDN delivery.
  * 
- * Only processes NEW images (incremental optimization).
+ * Only processes NEW or CHANGED images (incremental optimization using metadata).
  */
 
 import dotenv from 'dotenv';
@@ -14,6 +14,7 @@ import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createHash } from 'crypto';
 
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
@@ -29,12 +30,54 @@ const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_A
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
 
 const OUTPUT_DIR = path.resolve(__dirname, '../public/images/portfolio');
+const METADATA_FILE = path.resolve(__dirname, '../public/images/portfolio/.image-metadata.json');
 const IMAGE_WIDTH = 1600; // Max width for optimal quality on retina displays
 const IMAGE_QUALITY = 90; // WebP quality (90 = excellent quality, minimal artifacts)
 
 // ==========================================
 // UTILITIES
 // ==========================================
+
+/**
+ * Generate a stable hash from Airtable attachment metadata
+ * Used to detect changes in images without relying on URLs which change with each fetch
+ */
+const generateAttachmentHash = (attachment) => {
+  if (!attachment) return null;
+  const stableData = {
+    id: attachment.id || '',
+    filename: attachment.filename || '',
+    size: attachment.size || 0,
+    type: attachment.type || ''
+  };
+  return createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+};
+
+/**
+ * Load metadata cache for change detection
+ */
+const loadMetadataCache = () => {
+  try {
+    if (fs.existsSync(METADATA_FILE)) {
+      const content = fs.readFileSync(METADATA_FILE, 'utf-8');
+      return JSON.parse(content);
+    }
+  } catch (error) {
+    console.warn('⚠️  Could not load metadata cache:', error.message);
+  }
+  return {};
+};
+
+/**
+ * Save metadata cache
+ */
+const saveMetadataCache = (cache) => {
+  try {
+    fs.writeFileSync(METADATA_FILE, JSON.stringify(cache, null, 2), 'utf-8');
+  } catch (error) {
+    console.warn('⚠️  Could not save metadata cache:', error.message);
+  }
+};
 
 /**
  * Ensure output directory exists
@@ -95,26 +138,26 @@ const getExistingImages = () => {
 };
 
 /**
- * Extract image URLs from Airtable record
+ * Extract image attachments from Airtable record (with full metadata)
  */
-const extractImageUrls = (record, type) => {
-  const urls = [];
+const extractImageAttachments = (record, type) => {
+  const attachments = [];
   
   if (type === 'project') {
     // Gallery images
     const gallery = record.get('Gallery');
     if (gallery && Array.isArray(gallery)) {
-      gallery.forEach(img => urls.push(img.url));
+      gallery.forEach(img => attachments.push(img));
     }
   } else if (type === 'journal') {
     // Cover image
     const coverImage = record.get('Cover Image');
     if (coverImage && coverImage[0]) {
-      urls.push(coverImage[0].url);
+      attachments.push(coverImage[0]);
     }
   }
   
-  return urls;
+  return attachments;
 };
 
 // ==========================================
@@ -133,11 +176,13 @@ const main = async () => {
   const base = new Airtable({ apiKey: AIRTABLE_TOKEN }).base(AIRTABLE_BASE_ID);
   
   try {
-    // Get existing optimized images
+    // Get existing optimized images and load metadata cache
     const existingImages = getExistingImages();
+    const metadataCache = loadMetadataCache();
     console.log(`📂 Found ${existingImages.size} existing optimized images\n`);
+    console.log(`📋 Using metadata-based change detection`);
     
-    const imagesToProcess = new Map(); // recordId -> { type, urls }
+    const imagesToProcess = new Map(); // recordId -> { type, attachments }
     
     // ==========================================
     // 1. Fetch Featured Projects
@@ -152,9 +197,9 @@ const main = async () => {
     console.log(`✓ Found ${projectRecords.length} featured projects`);
     
     projectRecords.forEach(record => {
-      const urls = extractImageUrls(record, 'project');
-      if (urls.length > 0) {
-        imagesToProcess.set(record.id, { type: 'project', urls });
+      const attachments = extractImageAttachments(record, 'project');
+      if (attachments.length > 0) {
+        imagesToProcess.set(record.id, { type: 'project', attachments });
       }
     });
     
@@ -173,9 +218,9 @@ const main = async () => {
       console.log(`✓ Found ${journalRecords.length} public/scheduled journal entries`);
       
       journalRecords.forEach(record => {
-        const urls = extractImageUrls(record, 'journal');
-        if (urls.length > 0) {
-          imagesToProcess.set(record.id, { type: 'journal', urls });
+        const attachments = extractImageAttachments(record, 'journal');
+        if (attachments.length > 0) {
+          imagesToProcess.set(record.id, { type: 'journal', attachments });
         }
       });
     } catch (error) {
@@ -186,9 +231,9 @@ const main = async () => {
     // 3. Build Set of Valid Image IDs from Airtable
     // ==========================================
     const validImageIds = new Set();
-    for (const [recordId, { type, urls }] of imagesToProcess) {
-      for (let i = 0; i < urls.length; i++) {
-        const imageId = `${type}-${recordId}${urls.length > 1 ? `-${i}` : ''}`;
+    for (const [recordId, { type, attachments }] of imagesToProcess) {
+      for (let i = 0; i < attachments.length; i++) {
+        const imageId = `${type}-${recordId}${attachments.length > 1 ? `-${i}` : ''}`;
         validImageIds.add(imageId);
       }
     }
@@ -219,24 +264,39 @@ const main = async () => {
     }
     
     // ==========================================
-    // 5. Process New Images
+    // 5. Process New/Changed Images (using metadata-based detection)
     // ==========================================
     console.log(`🔄 Processing images...\n`);
     
     let processedCount = 0;
     let skippedCount = 0;
     let errorCount = 0;
+    const newMetadataCache = {};
     
-    for (const [recordId, { type, urls }] of imagesToProcess) {
-      for (let i = 0; i < urls.length; i++) {
-        const url = urls[i];
-        const imageId = `${type}-${recordId}${urls.length > 1 ? `-${i}` : ''}`;
+    for (const [recordId, { type, attachments }] of imagesToProcess) {
+      for (let i = 0; i < attachments.length; i++) {
+        const attachment = attachments[i];
+        const url = attachment.url;
+        const imageId = `${type}-${recordId}${attachments.length > 1 ? `-${i}` : ''}`;
         const outputPath = path.join(OUTPUT_DIR, `${imageId}.webp`);
         
-        // Skip if already optimized
-        if (existingImages.has(imageId)) {
+        // Generate hash from attachment metadata for change detection
+        const currentHash = generateAttachmentHash(attachment);
+        const cachedHash = metadataCache[imageId];
+        
+        // Skip if file exists AND metadata hash matches (unchanged)
+        // Ensure currentHash is valid before comparing to avoid false positives
+        if (existingImages.has(imageId) && currentHash && cachedHash === currentHash) {
           skippedCount++;
+          newMetadataCache[imageId] = currentHash; // Preserve in new cache
           continue;
+        }
+        
+        // Log why we're processing this image
+        if (existingImages.has(imageId)) {
+          console.log(`  🔄 Re-processing (changed): ${imageId}`);
+        } else {
+          console.log(`  📥 Processing (new): ${imageId}`);
         }
         
         try {
@@ -248,6 +308,7 @@ const main = async () => {
           
           if (success) {
             processedCount++;
+            newMetadataCache[imageId] = currentHash; // Store new hash
             console.log(`  ✓ Saved: ${imageId}.webp\n`);
           } else {
             errorCount++;
@@ -259,12 +320,15 @@ const main = async () => {
       }
     }
     
+    // Save updated metadata cache
+    saveMetadataCache(newMetadataCache);
+    
     // ==========================================
     // 6. Summary
     // ==========================================
     console.log('\n📊 Summary:');
-    console.log(`  ✓ Processed: ${processedCount} new images`);
-    console.log(`  ⊘ Skipped: ${skippedCount} existing images`);
+    console.log(`  ✓ Processed: ${processedCount} new/changed images`);
+    console.log(`  ⊘ Skipped: ${skippedCount} unchanged images`);
     if (deletedCount > 0) {
       console.log(`  🗑️  Deleted: ${deletedCount} orphaned images`);
     }

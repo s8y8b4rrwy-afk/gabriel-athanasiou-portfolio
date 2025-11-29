@@ -1,6 +1,6 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
@@ -62,7 +62,33 @@ console.log(`🎯 Eager transformations configured: ${EAGER_TRANSFORMATIONS.leng
 
 // Calculate hash of data to detect changes
 const hashData = (data) => {
-  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
+};
+
+// Generate a stable hash from Airtable attachment metadata
+// This is used to detect changes in images without relying on URLs which change with each fetch
+const generateAttachmentHash = (attachment) => {
+  if (!attachment) return null;
+  
+  // Use stable Airtable metadata: id, filename, size, type
+  // These fields don't change unless the actual file changes
+  const stableData = {
+    id: attachment.id || '',
+    filename: attachment.filename || '',
+    size: attachment.size || 0,
+    type: attachment.type || ''
+  };
+  
+  return createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+};
+
+// Check if an attachment has changed by comparing metadata hashes
+const hasAttachmentChanged = (attachment, existingImage) => {
+  if (!existingImage) return true; // New image
+  if (!existingImage.airtableHash) return true; // No hash stored (legacy entry)
+  
+  const currentHash = generateAttachmentHash(attachment);
+  return currentHash !== existingImage.airtableHash;
 };
 
 // Load existing Cloudinary mapping
@@ -378,8 +404,10 @@ const syncAirtableData = async () => {
     const projects = await Promise.all(visibleProjects.map(async (record) => {
       const f = record.fields;
       
-      // Base gallery URLs direct from Airtable (highest resolution)
-      const galleryUrls = f['Gallery']?.map(img => img.url) || [];
+      // Preserve raw Airtable attachment metadata for change detection
+      // Each attachment has: id, url, filename, size, type, width, height, thumbnails
+      const galleryAttachments = f['Gallery'] || [];
+      const galleryUrls = galleryAttachments.map(img => img.url);
       
       // Get video URL and thumbnail
       const videoUrl = f['Video URL'] || '';
@@ -469,22 +497,25 @@ const syncAirtableData = async () => {
       let cloudinaryGallery = [];
       let cloudinaryHero = '';
       if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME) {
-        console.log(`🔵 Cloudinary enabled for ${f['Name']}: ${galleryUrls.length} images`);
+        console.log(`🔵 Cloudinary enabled for ${f['Name']}: ${galleryAttachments.length} images`);
         // Upload each gallery image to Cloudinary (if credentials available)
         if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
-          console.log('🔑 Cloudinary credentials found, checking for changes...');
+          console.log('🔑 Cloudinary credentials found, checking for changes using metadata...');
           const existingProject = existingMapping.projects.find(p => p.recordId === record.id);
           
-          for (let idx = 0; idx < galleryUrls.length; idx++) {
+          for (let idx = 0; idx < galleryAttachments.length; idx++) {
+            const attachment = galleryAttachments[idx];
             const publicId = `portfolio-projects-${record.id}-${idx}`;
             const existingImage = existingProject?.images?.find(img => img.index === idx);
             
-            // Check if image already exists and hasn't changed
-            if (existingImage && existingImage.originalUrl === galleryUrls[idx]) {
-              console.log(`⏭️ Skipping ${publicId} (unchanged)`);
+            // Use metadata-based change detection instead of URL comparison
+            const imageChanged = hasAttachmentChanged(attachment, existingImage);
+            
+            if (!imageChanged && existingImage?.cloudinaryUrl) {
+              console.log(`⏭️ Skipping ${publicId} (metadata unchanged: ${attachment.filename || 'unknown'})`);
             } else {
-              console.log(`📤 Uploading ${publicId} from ${galleryUrls[idx]}`);
-              const uploadResult = await uploadToCloudinary(galleryUrls[idx], publicId);
+              console.log(`📤 Uploading ${publicId} (${imageChanged ? 'changed' : 'new'}: ${attachment.filename || 'unknown'})`);
+              const uploadResult = await uploadToCloudinary(attachment.url, publicId);
               if (uploadResult.success) {
                 console.log(`✅ Uploaded ${publicId} - ${uploadResult.bytes} bytes`);
               } else {
@@ -517,6 +548,8 @@ const syncAirtableData = async () => {
         isFeatured: !!f['Front Page'],
         heroImage: useCloudinary ? cloudinaryHero : heroImage,
         gallery: useCloudinary ? cloudinaryGallery : galleryUrls,
+        // Store raw attachment metadata for Cloudinary change detection
+        _galleryAttachments: galleryAttachments,
         videoUrl: videoUrl,
         additionalVideos: linkData.videos,
         awards: awards,
@@ -555,24 +588,27 @@ const syncAirtableData = async () => {
         .map(async (record) => {
           const f = record.fields;
           
-          // Base cover image URL from Airtable (highest resolution)
-          const imageUrl = f['Cover Image']?.[0]?.url || '';
+          // Preserve raw Airtable attachment metadata for change detection
+          const coverImageAttachment = f['Cover Image']?.[0] || null;
+          const imageUrl = coverImageAttachment?.url || '';
           
           // If Cloudinary is enabled, upload and use optimized URL
           let cloudinaryImageUrl = imageUrl;
-          if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && imageUrl) {
-            console.log(`🔵 Uploading journal cover for ${f['Title']}`);
+          if (USE_CLOUDINARY && CLOUDINARY_CLOUD_NAME && imageUrl && coverImageAttachment) {
+            console.log(`🔵 Checking journal cover for ${f['Title']}`);
             // Upload journal cover image (if credentials available)
             if (CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
               const publicId = `portfolio-journal-${record.id}`;
               const existingPost = existingMapping.journal.find(p => p.recordId === record.id);
               const existingImage = existingPost?.images?.[0];
               
-              // Check if image already exists and hasn't changed
-              if (existingImage && existingImage.originalUrl === imageUrl) {
-                console.log(`⏭️ Skipping ${publicId} (unchanged)`);
+              // Use metadata-based change detection instead of URL comparison
+              const imageChanged = hasAttachmentChanged(coverImageAttachment, existingImage);
+              
+              if (!imageChanged && existingImage?.cloudinaryUrl) {
+                console.log(`⏭️ Skipping ${publicId} (metadata unchanged: ${coverImageAttachment.filename || 'unknown'})`);
               } else {
-                console.log(`📤 Uploading ${publicId} from ${imageUrl}`);
+                console.log(`📤 Uploading ${publicId} (${imageChanged ? 'changed' : 'new'}: ${coverImageAttachment.filename || 'unknown'})`);
                 const uploadResult = await uploadToCloudinary(imageUrl, publicId);
                 if (uploadResult.success) {
                   console.log(`✅ Uploaded ${publicId} - ${uploadResult.bytes} bytes`);
@@ -600,6 +636,8 @@ const syncAirtableData = async () => {
             content: f['Content'] || '',
             readingTime: calculateReadingTime(f['Content'] || ''),
             imageUrl: cloudinaryImageUrl,
+            // Store raw attachment metadata for Cloudinary change detection
+            _coverImageAttachment: coverImageAttachment,
             relatedProjectId: f['Related Project']?.[0] || f['Projects']?.[0] || null,
             source: 'local',
             relatedLinks: relatedLinks
@@ -640,45 +678,70 @@ const syncAirtableData = async () => {
       post.slug = makeUniqueSlug(base + (post.date ? ` ${post.date}` : ''), post.id);
     });
     
-    // 11. Update Cloudinary mapping with all current images
+    // 11. Update Cloudinary mapping with all current images (including metadata for change detection)
     if (USE_CLOUDINARY) {
       const updatedMapping = {
         generatedAt: new Date().toISOString(),
-        projects: projects.map(p => ({
-          recordId: p.id,
-          title: p.title,
-          images: p.gallery.map((url, idx) => ({
-            index: idx,
-            publicId: `portfolio-projects-${p.id}-${idx}`,
-            cloudinaryUrl: url,
-            originalUrl: (p.gallery || [])[idx] || url,
-            format: 'webp'
-          }))
-        })),
-        journal: posts.filter(post => post.imageUrl).map(post => ({
-          recordId: post.id,
-          title: post.title,
-          images: [{
-            index: 0,
-            publicId: `portfolio-journal-${post.id}`,
-            cloudinaryUrl: post.imageUrl,
-            originalUrl: post.imageUrl,
-            format: 'webp'
-          }]
-        }))
+        projects: projects.map(p => {
+          const galleryAttachments = p._galleryAttachments || [];
+          return {
+            recordId: p.id,
+            title: p.title,
+            images: p.gallery.map((url, idx) => {
+              const attachment = galleryAttachments[idx];
+              return {
+                index: idx,
+                publicId: `portfolio-projects-${p.id}-${idx}`,
+                cloudinaryUrl: url,
+                originalUrl: attachment?.url || url,
+                format: 'webp',
+                // Store Airtable metadata for future change detection
+                airtableHash: attachment ? generateAttachmentHash(attachment) : null,
+                airtableId: attachment?.id,
+                airtableFilename: attachment?.filename,
+                airtableSize: attachment?.size,
+                airtableType: attachment?.type
+              };
+            })
+          };
+        }),
+        journal: posts.filter(post => post.imageUrl).map(post => {
+          const attachment = post._coverImageAttachment;
+          return {
+            recordId: post.id,
+            title: post.title,
+            images: [{
+              index: 0,
+              publicId: `portfolio-journal-${post.id}`,
+              cloudinaryUrl: post.imageUrl,
+              originalUrl: attachment?.url || post.imageUrl,
+              format: 'webp',
+              // Store Airtable metadata for future change detection
+              airtableHash: attachment ? generateAttachmentHash(attachment) : null,
+              airtableId: attachment?.id,
+              airtableFilename: attachment?.filename,
+              airtableSize: attachment?.size,
+              airtableType: attachment?.type
+            }]
+          };
+        })
       };
       
       await saveCloudinaryMapping(updatedMapping);
     }
     
-    // 12. Return processed data for CDN caching
+    // 12. Strip internal attachment metadata before returning (used only for Cloudinary sync)
+    const cleanProjects = projects.map(({ _galleryAttachments, ...rest }) => rest);
+    const cleanPosts = posts.map(({ _coverImageAttachment, ...rest }) => rest);
+    
+    // 13. Return processed data for CDN caching
     console.log('=== Sync Complete ===');
-    console.log(`Projects: ${projects.length}`);
-    console.log(`Posts: ${posts.length}`);
+    console.log(`Projects: ${cleanProjects.length}`);
+    console.log(`Posts: ${cleanPosts.length}`);
     
     const finalData = {
-      projects,
-      posts,
+      projects: cleanProjects,
+      posts: cleanPosts,
       config,
       lastUpdated: new Date().toISOString(),
       version: '1.0'
