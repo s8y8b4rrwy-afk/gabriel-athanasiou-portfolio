@@ -89,7 +89,6 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                              alt={post.title}
                                              loading="lazy"
                                              className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
-                                             width={800}
                                         />
                                          {post.source === 'instagram' && (
                                              <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1.5 rounded-full">

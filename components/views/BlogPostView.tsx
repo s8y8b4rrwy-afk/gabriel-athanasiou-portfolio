@@ -112,7 +112,6 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                         type="journal"
                         alt={post.title}
                         loading="eager"
-                        width={1600}
                         className="w-full h-full object-cover animate-reveal will-change-transform"
                     />
                 )}
@@ -182,7 +181,6 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                                     type="project"
                                     alt={relatedProject.title}
                                     loading="lazy"
-                                    width={600}
                                     className={`w-full h-full object-cover group-hover:scale-[1.05] transition-transform ${THEME.animation.medium} ${THEME.animation.ease}`}
                                 />
                             </div>

@@ -63,8 +63,8 @@ interface OptimizedImageProps {
   recordId: string;
   /** Fallback Airtable image URL */
   fallbackUrl: string;
-  /** Image type: 'project' or 'journal' */
-  type?: 'project' | 'journal';
+  /** Image type: 'project', 'journal', or 'config' */
+  type?: 'project' | 'journal' | 'config';
   /** Image index for galleries (default: 0) */
   index?: number;
   /** 
@@ -83,10 +83,8 @@ interface OptimizedImageProps {
   decoding?: 'async' | 'sync' | 'auto';
   /** Use original JPEG on desktop/large devices (1024px+) for maximum quality */
   useOriginalOnDesktop?: boolean;
-  /** Cloudinary quality preset: 'ultra' (90%) or 'fine' (75%). Auto-detects if not provided. */
+  /** Cloudinary quality preset: 'ultra' (q_90, w_1600) or 'fine' (q_75, w_800). Auto-detects if not provided. */
   preset?: CloudinaryPreset;
-  /** Cloudinary width: 1600 (default for full images) or 800 (for thumbnails) */
-  width?: number;
 }
 
 /**
@@ -123,8 +121,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async',
   useOriginalOnDesktop = false,
-  preset,
-  width = 1600
+  preset
 }) => {
   // If no fallback URL provided, don't render anything
   if (!fallbackUrl) {
@@ -138,13 +135,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   console.log('🖼️ OptimizedImage:', { 
     recordId, 
     presetProp: preset, 
-    activePreset,
-    width 
+    activePreset
   });
 
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 
-    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal', index, totalImages, activePreset, width)
+    getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal' | 'config', index, totalImages, activePreset)
   , [recordId, fallbackUrl, type, index, totalImages, activePreset, width]);
 
   // Determine initial source based on feature flag

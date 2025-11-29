@@ -152,7 +152,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                         totalImages={1}
                                         alt={featuredPost.title}
                                         loading="lazy"
-                                        width={800}
                                         className="w-full h-full object-cover transform-gpu grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                     />
                                 )}

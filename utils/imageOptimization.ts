@@ -43,11 +43,10 @@ export interface ResponsiveImageProps {
 }
 
 export interface CloudinaryOptions {
-  width?: number;
   quality?: number; // Only numeric quality values, no auto
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
   crop?: 'limit' | 'fill' | 'fit' | 'scale';
-  preset?: CloudinaryPreset;
+  preset?: CloudinaryPreset; // Determines both quality AND width (800 or 1600)
 }
 
 /**
@@ -150,29 +149,29 @@ export const buildCloudinaryUrl = (
   }
 
   // Map preset to quality value AND width
-  let qualityValue: number = 80; // Default to fine preset
-  let widthValue: number = 1000; // Default
+  // Fine preset: q_75, w_800 (optimized for speed)
+  // Ultra preset: q_90, w_1600 (optimized for quality)
+  let qualityValue: number = 75;
+  let widthValue: number = 800;
   
   if (options.preset) {
-    // Ultra preset: higher quality + larger width for high-end devices
-    // Fine preset: optimized quality + smaller width for faster loading
     if (options.preset === 'ultra') {
       qualityValue = 90;
       widthValue = 1600;
     } else {
-      qualityValue = 80;
-      widthValue = 1000;
+      qualityValue = 75;
+      widthValue = 800;
     }
   } else if (options.quality && typeof options.quality === 'number') {
     qualityValue = options.quality;
   }
 
-  // Allow explicit width override if provided
+  // Use preset width (no manual overrides allowed for consistency)
   const {
-    width = widthValue,  // Use preset-determined width or explicit override
     format = 'webp',     // Force WebP format
     crop = 'limit'       // Prevent upscaling
   } = options;
+  const width = widthValue;
 
   // Build transformation string: f_webp,w_1600,c_limit,q_90
   const transformations = [
@@ -211,8 +210,7 @@ export const buildCloudinaryUrl = (
  * @param type - 'project', 'journal', or 'config'
  * @param index - Image index for multiple images (default: 0)
  * @param totalImages - Total number of images. MUST match optimization script output.
- * @param preset - Quality preset for Cloudinary delivery ('ultra' or 'fine')
- * @param width - Width for Cloudinary delivery (1600 for full images, 800 for thumbnails)
+ * @param preset - Quality preset for Cloudinary delivery ('ultra' = q_90/w_1600, 'fine' = q_75/w_800)
  * @returns Object with cloudinaryUrl, localUrl, and fallbackUrl
  */
 export const getOptimizedImageUrl = (
@@ -221,8 +219,7 @@ export const getOptimizedImageUrl = (
   type: 'project' | 'journal' | 'config' = 'project',
   index: number = 0,
   totalImages: number = 1,
-  preset?: CloudinaryPreset,
-  width?: number
+  preset?: CloudinaryPreset
 ): { cloudinaryUrl: string; localUrl: string; fallbackUrl: string; useCloudinary: boolean } => {
   // If no fallback URL provided, return empty strings
   if (!fallbackUrl) {
@@ -239,14 +236,11 @@ export const getOptimizedImageUrl = (
   // Check feature flag
   const useCloudinary = isCloudinaryEnabled();
   
-  // Build Cloudinary URL with preset and width parameters (only pass defined values)
+  // Build Cloudinary URL with preset (determines both quality and width)
   const cloudinaryOptions: CloudinaryOptions = {};
   
   if (preset !== undefined) {
     cloudinaryOptions.preset = preset;
-  }
-  if (width !== undefined) {
-    cloudinaryOptions.width = width;
   }
   
   const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
