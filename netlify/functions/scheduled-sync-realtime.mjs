@@ -1,6 +1,6 @@
 import { schedule } from '@netlify/functions';
 import fetch from 'node-fetch';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
@@ -62,7 +62,7 @@ console.log(`🎯 Eager transformations configured: ${EAGER_TRANSFORMATIONS.leng
 
 // Calculate hash of data to detect changes
 const hashData = (data) => {
-  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 };
 
 // Generate a stable hash from Airtable attachment metadata
@@ -79,7 +79,7 @@ const generateAttachmentHash = (attachment) => {
     type: attachment.type || ''
   };
   
-  return crypto.createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+  return createHash('md5').update(JSON.stringify(stableData)).digest('hex');
 };
 
 // Check if an attachment has changed by comparing metadata hashes

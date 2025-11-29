@@ -68,13 +68,20 @@ Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Clo
 - `sync-now-realtime.mjs` - Trigger realtime sync manually
 
 **Common Features:**
-- **Smart change detection** - Both methods check mapping file before uploading
+- **Metadata-based change detection** - Uses Airtable attachment metadata (id, filename, size, type) instead of URLs
 - Feature Flag Respect: Only uploads if credentials are available
 - Progress Logging: Reports uploaded/skipped/failed counts
 - Automatic retry logic for failed uploads
 - Preserves Airtable fallback URLs
 - Cache invalidation support (`invalidate: true`, `overwrite: true`)
-- **Safe from automatic re-uploads** - Images only upload when truly changed
+- **Safe from automatic re-uploads** - Images only upload when metadata hash changes
+
+**Note on Airtable `filterByFormula`:**
+The sync fetches all records rather than filtering by `LAST_MODIFIED_TIME()` because:
+1. Record modification time doesn't indicate attachment changes
+2. A record could be modified (e.g., title change) without attachment changes
+3. The metadata-based hash comparison efficiently skips unchanged images on the client side
+4. This approach is more reliable than server-side filtering for detecting actual image changes
 
 ## Setup Instructions
 

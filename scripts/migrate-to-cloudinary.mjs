@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { createHash } from 'crypto';
 
 // Load .env.local (development) or .env (production)
 dotenv.config({ path: '.env.local' });
@@ -26,8 +27,6 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
-import crypto from 'crypto';
-
 // Generate a stable hash from Airtable attachment metadata
 // This is used to detect changes in images without relying on URLs which change with each fetch
 function generateAttachmentHash(attachment) {
@@ -42,7 +41,7 @@ function generateAttachmentHash(attachment) {
     type: attachment.type || ''
   };
   
-  return crypto.createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+  return createHash('md5').update(JSON.stringify(stableData)).digest('hex');
 }
 
 // Validate environment variables
