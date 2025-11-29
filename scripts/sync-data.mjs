@@ -29,6 +29,21 @@ const SHARE_META_FILE = path.join(OUTPUT_DIR, 'share-meta.json');
 
 console.log('[sync-data] 🔄 Starting data sync...');
 
+// Load existing cached data as fallback
+async function loadCachedData() {
+  try {
+    if (fs.existsSync(OUTPUT_FILE)) {
+      const content = fs.readFileSync(OUTPUT_FILE, 'utf-8');
+      const data = JSON.parse(content);
+      console.log('[sync-data] ✅ Loaded existing cached data as fallback');
+      return data;
+    }
+  } catch (error) {
+    console.warn('[sync-data] ⚠️ Could not load cached data:', error.message);
+  }
+  return null;
+}
+
 // Fetch from Airtable with pagination
 async function fetchAirtableTable(tableName, sortField) {
   const sortParam = sortField 
@@ -46,6 +61,11 @@ async function fetchAirtableTable(tableName, sortField) {
     });
 
     if (!res.ok) {
+      if (res.status === 429) {
+        const error = new Error(`Rate limit exceeded for ${tableName}`);
+        error.isRateLimit = true;
+        throw error;
+      }
       throw new Error(`Failed to fetch ${tableName}: ${res.status} ${res.statusText}`);
     }
 
@@ -441,6 +461,36 @@ async function main() {
     process.exit(0);
 
   } catch (error) {
+    // Check if error is due to rate limiting
+    if (error.isRateLimit || error.message?.includes('Rate limit') || error.message?.includes('429')) {
+      console.error('[sync-data] ⚠️ Airtable API rate limit exceeded');
+      console.log('[sync-data] 🔄 Attempting to use cached data as fallback...');
+      
+      const cachedData = await loadCachedData();
+      
+      if (cachedData && cachedData.projects && cachedData.posts) {
+        console.log('[sync-data] ✅ Using cached data (last updated: ' + cachedData.lastUpdated + ')');
+        console.log('[sync-data] 📊 Cached data: ' + cachedData.projects.length + ' projects, ' + cachedData.posts.length + ' posts');
+        
+        // Update share-meta from cached data
+        const shareMeta = generateShareMeta(cachedData.projects, cachedData.posts, cachedData.config);
+        
+        if (!fs.existsSync(OUTPUT_DIR)) {
+          fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+        }
+        
+        fs.writeFileSync(SHARE_META_FILE, JSON.stringify(shareMeta, null, 2), 'utf-8');
+        console.log('[sync-data] ✅ Regenerated share-meta.json from cached data');
+        console.log('[sync-data] 📍 Using stale data until rate limit resets');
+        console.log('[sync-data] ⏰ Rate limit typically resets at start of next month (Dec 1st)');
+        process.exit(0);
+      } else {
+        console.error('[sync-data] ❌ No cached data available and rate limit exceeded');
+        console.error('[sync-data] 💡 Site will use empty fallback until rate limit resets');
+        process.exit(1);
+      }
+    }
+    
     console.error('[sync-data] ❌ Error:', error.message);
     console.error(error.stack);
     process.exit(1);

@@ -344,6 +344,27 @@ const fetchWithTimeout = async (url, options, timeout = 10000) => {
   }
 };
 
+// Load existing cached data as fallback during rate limits
+const loadCachedData = async () => {
+  try {
+    const baseDir = existsSyncSync(path.join(process.cwd(), 'public')) 
+      ? path.join(process.cwd(), 'public')
+      : '/tmp';
+    
+    const portfolioDataPath = path.join(baseDir, 'portfolio-data.json');
+    
+    if (existsSyncSync(portfolioDataPath)) {
+      const content = await readFile(portfolioDataPath, 'utf-8');
+      const data = JSON.parse(content);
+      console.log('✅ Loaded existing cached data as fallback');
+      return data;
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not load cached data:', error.message);
+  }
+  return null;
+};
+
 // Fetch all records from an Airtable table with pagination
 const fetchAirtableTable = async (tableName, sortField) => {
   const sortParam = sortField 
@@ -363,6 +384,14 @@ const fetchAirtableTable = async (tableName, sortField) => {
       });
       
       if (!res.ok) {
+        // Check for rate limiting
+        if (res.status === 429) {
+          const error = new Error(`Rate limit exceeded for ${tableName}`);
+          error.isRateLimit = true;
+          error.statusCode = 429;
+          throw error;
+        }
+        
         // Tolerant for optional tables
         if (['Awards', 'Festivals', 'Settings', 'Journal', 'Clients', 'Client Book'].includes(tableName)) {
           console.log(`Optional table ${tableName} not found or empty`);
@@ -948,6 +977,72 @@ const syncAirtableData = async () => {
     };
     
   } catch (error) {
+    // Check if error is due to rate limiting
+    if (error.isRateLimit || error.statusCode === 429 || error.message?.includes('Rate limit') || error.message?.includes('429')) {
+      console.error('⚠️ Airtable API rate limit exceeded');
+      console.log('🔄 Attempting to use cached data as fallback...');
+      
+      const cachedData = await loadCachedData();
+      
+      if (cachedData && cachedData.projects && cachedData.posts) {
+        console.log('✅ Using cached data (last updated: ' + cachedData.lastUpdated + ')');
+        console.log('📊 Cached data: ' + cachedData.projects.length + ' projects, ' + cachedData.posts.length + ' posts');
+        
+        // Update share-meta from cached data
+        const shareMeta = generateShareMeta(cachedData.projects, cachedData.posts, cachedData.config);
+        
+        try {
+          const baseDir = existsSyncSync(path.join(process.cwd(), 'public')) 
+            ? path.join(process.cwd(), 'public')
+            : '/tmp';
+          
+          const shareMetaPath = path.join(baseDir, 'share-meta.json');
+          await writeFile(shareMetaPath, JSON.stringify(shareMeta, null, 2), 'utf-8');
+          console.log('✅ Regenerated share-meta.json from cached data');
+        } catch (writeError) {
+          console.warn('⚠️ Could not write share-meta (non-critical):', writeError.message);
+        }
+        
+        console.log('📍 Using stale data until rate limit resets');
+        console.log('⏰ Rate limit typically resets at start of next month (Dec 1st)');
+        
+        // Return cached data with warning
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'public, max-age=300, s-maxage=600, must-revalidate',
+            'X-Data-Source': 'cached-fallback'
+          },
+          body: JSON.stringify({
+            ...cachedData,
+            sync: {
+              contentChanged: false,
+              buildTriggered: false,
+              buildReason: 'Rate limit exceeded - using cached data',
+              rateLimitHit: true,
+              cachedDataAge: cachedData.lastUpdated
+            }
+          })
+        };
+      } else {
+        console.error('❌ No cached data available and rate limit exceeded');
+        return {
+          statusCode: 503,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Retry-After': '3600'
+          },
+          body: JSON.stringify({
+            success: false,
+            error: 'Rate limit exceeded and no cached data available',
+            rateLimitHit: true,
+            timestamp: new Date().toISOString()
+          })
+        };
+      }
+    }
+    
     console.error('Sync failed:', error);
     throw error;
   }
