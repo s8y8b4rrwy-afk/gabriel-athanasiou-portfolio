@@ -76,6 +76,11 @@ jobs:
             echo "static_files_valid=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Fail if static files missing
+        if: steps.verify_static.outputs.static_files_valid == 'false'
+        run: |
+          echo "::error::Required static files are missing. Run 'Generate Static Files' workflow first."
+          exit 1
       - name: Create deploy marker commit
         if: steps.check_code.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
