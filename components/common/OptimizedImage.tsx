@@ -58,6 +58,9 @@
 import React, { useState, useMemo } from 'react';
 import { getOptimizedImageUrl, getSessionPreset, type CloudinaryPreset } from '../../utils/imageOptimization';
 
+// Enable debug logging in development only
+const DEBUG = import.meta.env.DEV;
+
 interface OptimizedImageProps {
   /** Airtable record ID */
   recordId: string;
@@ -132,11 +135,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Auto-detect preset if not provided
   const activePreset = preset || getSessionPreset();
   
-  console.log('🖼️ OptimizedImage:', { 
-    recordId, 
-    presetProp: preset, 
-    activePreset
-  });
+  if (DEBUG) {
+    console.log('🖼️ OptimizedImage:', { 
+      recordId, 
+      preset: activePreset,
+      type
+    });
+  }
 
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 
