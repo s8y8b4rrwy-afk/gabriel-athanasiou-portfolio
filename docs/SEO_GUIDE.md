@@ -98,6 +98,13 @@ Blog posts receive **Article** schema:
 - ✅ **Year/Release Date** - For chronological indexing
 - ✅ **Project Type** - Helps categorization (Narrative/Commercial/etc)
 
+### Settings Table (Site-wide Configuration):
+- ✅ **Default OG Image** - Fallback image for social media previews when project/post has no images
+  - Recommended size: 1200x630px
+  - Used for homepage, about page, and any content without specific images
+  - Uploaded to Cloudinary during sync for CDN performance
+  - Ultimate fallback: Unsplash placeholder (only if this field is empty)
+
 ### Highly Recommended:
 - 🌟 **Video URL** - Enables video rich snippets
 - 🌟 **Credits** - Shows team, helps authority
@@ -188,10 +195,18 @@ Test how links appear on social media:
 ## Technical Implementation
 
 ### Files Modified:
-- `components/SEO.tsx` - Enhanced with Movie/Article schema
-- `components/views/ProjectDetailView.tsx` - Passes full project data
-- `components/views/BlogPostView.tsx` - Passes full post data
+- `components/SEO.tsx` - Enhanced with Movie/Article schema + configurable default OG image
+- `components/views/ProjectDetailView.tsx` - Passes full project data + config
+- `components/views/BlogPostView.tsx` - Passes full post data + config
+- `netlify/edge-functions/meta-rewrite.ts` - Dynamic meta injection using config.defaultOgImage
 - `utils/sitemapGenerator.ts` - Prioritizes narrative projects
+
+### OG Image Fallback Chain:
+1. **Specific image**: Project hero image or blog post cover
+2. **Config default**: `config.defaultOgImage` from Airtable Settings
+3. **Ultimate fallback**: Unsplash placeholder (only if config is empty)
+
+This ensures all pages have appropriate social media preview images, using your branded default image instead of generic placeholders.
 
 ### Schema Types Used:
 - **Movie** - Narrative projects

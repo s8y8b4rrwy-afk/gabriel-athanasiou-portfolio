@@ -150,6 +150,101 @@ This prevents conflicts and ensures your React site takes over completely.
 
 ---
 
+## 🧪 Branch Deployments & Testing (Advanced)
+
+### What are Branch Deployments?
+
+Netlify can automatically deploy **every branch** you push to GitHub, giving each one its own unique URL. This is perfect for:
+- Testing new features before going live
+- Sharing work-in-progress with others
+- QA testing without affecting production
+
+### Enable Branch Deploys
+
+**In Netlify Dashboard:**
+1. Go to your site
+2. **Site settings** → **Build & deploy** → **Continuous deployment**
+3. Scroll to **"Branch deploys"**
+4. Select **"Let me add individual branches"** or **"All branches"**
+5. If individual, add your test branch name (e.g., `fix-share-meta-generation`)
+6. Click **Save**
+
+Now when you push any branch to GitHub:
+```bash
+git push origin fix-share-meta-generation
+```
+
+Netlify automatically creates a preview at:
+```
+https://fix-share-meta-generation--your-site-name.netlify.app
+```
+
+### Testing Your Current Branch from Terminal
+
+Since you just pushed `fix-share-meta-generation`, here's how to set up testing:
+
+**Option 1: Enable in Netlify Dashboard (Manual)**
+- Follow steps above to enable branch deploys
+- Wait ~2 minutes for build
+- Visit: `https://fix-share-meta-generation--your-site-name.netlify.app`
+
+**Option 2: Use Netlify CLI (Command Line)**
+```bash
+# Install Netlify CLI globally
+npm install -g netlify-cli
+
+# Login to Netlify
+netlify login
+
+# Link your local project to Netlify site
+netlify link
+
+# Deploy current branch to preview URL
+netlify deploy
+
+# Deploy to production (main branch only!)
+netlify deploy --prod
+```
+
+The `netlify deploy` command gives you a **temporary preview URL** instantly without pushing to GitHub.
+
+### What Gets Deployed?
+
+When you push `fix-share-meta-generation`:
+1. Netlify detects the push
+2. Runs `npm run build:data` (fetches from Airtable)
+3. Runs `npm run build` (builds React app)
+4. Deploys to branch-specific URL
+5. **Your production site is NOT affected**
+
+### Testing Checklist for Branch Deploys
+
+- [ ] Social media previews show correct images (iMessage, Facebook)
+- [ ] Project pages load with proper OG images
+- [ ] Default OG image from Airtable Settings is used when no project image
+- [ ] Edge function injects correct meta tags (view page source)
+- [ ] share-meta.json is populated (visit `/share-meta.json` directly)
+- [ ] Cloudinary images load correctly
+- [ ] No console errors in browser DevTools
+
+### Merge to Production
+
+Once testing is complete:
+```bash
+# Switch to main branch
+git checkout main
+
+# Merge your feature branch
+git merge fix-share-meta-generation
+
+# Push to production
+git push origin main
+```
+
+Netlify automatically deploys `main` branch to your production URL (`directedbygabriel.com`).
+
+---
+
 ## ✅ What to Expect
 
 ### Immediately After Setup
