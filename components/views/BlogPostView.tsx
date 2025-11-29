@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { BlogPost, Project } from '../../types';
+import { BlogPost, Project, HomeConfig } from '../../types';
 import { CloseButton } from '../common/CloseButton';
 import { SocialShare } from '../SocialShare';
 import { parseMarkdown } from '../../utils/markdown';
@@ -15,9 +15,10 @@ import { saveScrollPosition } from '../../utils/scrollRestoration';
 interface BlogPostViewProps { 
     allPosts: BlogPost[]; 
     allProjects: Project[];
+    config: HomeConfig;
 }
 
-export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProjects }) => {
+export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProjects, config }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -78,6 +79,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 })() : post.imageUrl}
                 type="article"
                 post={post}
+                defaultOgImage={config.defaultOgImage}
             />
             <CloseButton onClick={() => {
                 // Save current page scroll position before navigating back

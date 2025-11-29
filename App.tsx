@@ -149,6 +149,7 @@ export default function App() {
                   <ProjectDetailView 
                       allProjects={data.projects}
                       allPosts={data.posts}
+                      config={data.config}
                   />
               } />
               {/* ...existing code... */}
@@ -163,6 +164,7 @@ export default function App() {
                   <BlogPostView 
                       allPosts={data.posts}
                       allProjects={data.projects}
+                      config={data.config}
                   />
               } />
               {/* ...existing code... */}

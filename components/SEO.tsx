@@ -10,20 +10,24 @@ interface SEOProps {
   url?: string;
   project?: Project; // Enhanced: Pass full project data for rich schema
   post?: BlogPost; // Enhanced: Pass full post data for article schema
+  defaultOgImage?: string; // Custom default OG image from Airtable Settings
 }
 
-// Default fallback image (can be overridden by Airtable Settings > Default OG Image)
-const FALLBACK_OG_IMAGE = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
+// Ultimate fallback image (used if Airtable Settings defaultOgImage is not configured)
+const ULTIMATE_FALLBACK_OG_IMAGE = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
 
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
   description = "Director based in London & Athens. Narrative, Commercial, Music Video.",
-  image = FALLBACK_OG_IMAGE,
+  image,
   type = 'website',
   url,
   project,
-  post
+  post,
+  defaultOgImage
 }) => {
+  // Use provided image, or fallback to config default, or ultimate fallback
+  const ogImage = image || defaultOgImage || ULTIMATE_FALLBACK_OG_IMAGE;
   
   const fullTitle = title ? `${title} | GABRIEL ATHANASIOU` : "GABRIEL ATHANASIOU | Director";
   const siteUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
@@ -47,13 +51,13 @@ export const SEO: React.FC<SEOProps> = ({
     updateMeta('description', description);
     updateMeta('og:title', fullTitle, 'property');
     updateMeta('og:description', description, 'property');
-    updateMeta('og:image', image, 'property');
+    updateMeta('og:image', ogImage, 'property');
     updateMeta('og:type', type, 'property');
     updateMeta('og:url', siteUrl, 'property');
     updateMeta('twitter:card', 'summary_large_image');
     updateMeta('twitter:title', fullTitle);
     updateMeta('twitter:description', description);
-    updateMeta('twitter:image', image);
+    updateMeta('twitter:image', ogImage);
     updateMeta('twitter:creator', '@gabrielcine');
     
     // Enhanced: Add video-specific Open Graph tags if project has video

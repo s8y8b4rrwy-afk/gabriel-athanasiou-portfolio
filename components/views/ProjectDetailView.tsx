@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Project, BlogPost } from '../../types';
+import { Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { CloseButton } from '../common/CloseButton';
 import { SocialShare } from '../SocialShare';
@@ -17,6 +17,7 @@ import { saveScrollPosition } from '../../utils/scrollRestoration';
 interface ProjectDetailViewProps { 
     allProjects: Project[];
     allPosts: BlogPost[];
+    config: HomeConfig;
 }
 
 // Helper function to group awards by festival
@@ -76,7 +77,7 @@ const groupAwardsByFestival = (awards: string[]): { festival: string; awards: st
     }));
 };
 
-export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts }) => {
+export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts, config }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -225,6 +226,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 })() : undefined}
                 type={isNarrative ? 'video.movie' : 'video.other'}
                 project={project}
+                defaultOgImage={config.defaultOgImage}
             />
             
             {/* --- THEATRE MODE OVERLAY (PORTAL) --- */}

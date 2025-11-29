@@ -22,10 +22,11 @@ interface ShareManifest {
 }
 
 // Default fallback meta (will be enhanced from manifest if available)
+// Note: DEFAULT_META.image is a placeholder - actual default comes from manifest.config.defaultOgImage
 const DEFAULT_META = {
   title: "GABRIEL ATHANASIOU | Director",
   description: "Director based in London & Athens. Narrative, Commercial, Music Video.",
-  image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200",
+  image: "", // Populated from manifest.config.defaultOgImage or ultimate fallback
   type: "website"
 };
 
@@ -70,7 +71,9 @@ export default async (request: Request, context: Context) => {
     const manifestRes = await fetch(manifestUrl.toString());
     
     let item: ShareItem | undefined;
-    let defaultOgImage = DEFAULT_META.image;
+    // Ultimate fallback if manifest.config.defaultOgImage is not set
+    const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
+    let defaultOgImage = ULTIMATE_FALLBACK;
     
     if (manifestRes.ok) {
       const manifest: ShareManifest & { config?: ManifestConfig } = await manifestRes.json();
