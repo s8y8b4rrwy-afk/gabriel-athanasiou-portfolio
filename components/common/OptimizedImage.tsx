@@ -141,7 +141,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Get all three URL options: Cloudinary, local WebP, Airtable
   const imageUrls = useMemo(() => 
     getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal' | 'config', index, totalImages, activePreset)
-  , [recordId, fallbackUrl, type, index, totalImages, activePreset, width]);
+  , [recordId, fallbackUrl, type, index, totalImages, activePreset]);
 
   // Determine initial source based on feature flag
   // If totalImages is 0, skip optimized versions and go straight to fallback (video thumbnail)
