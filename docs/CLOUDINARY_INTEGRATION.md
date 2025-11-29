@@ -225,19 +225,94 @@ https://res.cloudinary.com/date24ay6/image/upload/
 
 ### Change Detection
 
-Scheduled sync only uploads images when:
-- New project/post added to Airtable
-- Existing image URL changed in Airtable
-- Image hash differs from previous sync
+Scheduled sync uses **Airtable attachment metadata** for change detection instead of URLs. This is critical because Airtable generates new signed URLs on each API fetch, which would otherwise cause unnecessary re-uploads.
 
-**Hash Calculation:**
+**Why Metadata-Based Detection:**
+- Airtable attachment URLs are temporary signed URLs that change with every fetch
+- URL-based comparison would incorrectly detect all images as "changed"
+- Metadata (id, filename, size, type) remains stable unless the actual file changes
+
+**Detection Logic:**
 ```javascript
-const imageHash = crypto.createHash('md5')
-  .update(imageUrl)
-  .digest('hex');
+// Generate a stable hash from Airtable attachment metadata
+const generateAttachmentHash = (attachment) => {
+  const stableData = {
+    id: attachment.id || '',           // Unique Airtable attachment ID
+    filename: attachment.filename || '', // Original filename
+    size: attachment.size || 0,         // File size in bytes
+    type: attachment.type || ''         // MIME type (e.g., 'image/jpeg')
+  };
+  return crypto.createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+};
 ```
 
-Prevents unnecessary uploads and bandwidth usage.
+Scheduled sync only uploads images when:
+- New project/post added to Airtable
+- Airtable attachment metadata hash differs from stored hash
+- No hash stored (legacy entry or first sync)
+
+**Mapping File Structure (`cloudinary-mapping.json`):**
+```json
+{
+  "generatedAt": "2025-11-29T00:00:00.000Z",
+  "projects": [{
+    "recordId": "recXXXXX",
+    "title": "Project Name",
+    "images": [{
+      "index": 0,
+      "publicId": "portfolio-projects-recXXXXX-0",
+      "cloudinaryUrl": "https://res.cloudinary.com/.../...",
+      "originalUrl": "https://v5.airtableusercontent.com/...",
+      "format": "webp",
+      "size": 123456,
+      "airtableHash": "abc123...",    // MD5 hash of metadata
+      "airtableId": "attXXXXX",       // Airtable attachment ID
+      "airtableFilename": "image.jpg", // Original filename
+      "airtableSize": 123456,         // Original file size
+      "airtableType": "image/jpeg"    // MIME type
+    }]
+  }]
+}
+```
+
+This prevents unnecessary uploads and saves Airtable API credits and Cloudinary bandwidth.
+
+## Data Integrity
+
+### Maintaining Consistency Across Sync Sessions
+
+The sync process maintains data integrity through several mechanisms:
+
+1. **Atomic Mapping Updates**: The `cloudinary-mapping.json` file is only updated after all uploads complete successfully for a sync session.
+
+2. **Fallback Chain**: If Cloudinary URLs fail, the system falls back to original Airtable URLs:
+   - Primary: Cloudinary optimized URL
+   - Secondary: Local WebP files
+   - Tertiary: Original Airtable attachment URL
+
+3. **Metadata Preservation**: Each image entry preserves:
+   - Original Airtable URL (for fallback)
+   - Airtable attachment metadata (for change detection)
+   - Cloudinary public ID (for stable referencing)
+
+4. **Error Handling**: Failed uploads are tracked and the original Airtable URL is preserved:
+   ```javascript
+   {
+     "publicId": "portfolio-projects-recXXX-0",
+     "cloudinaryUrl": "",  // Empty indicates failed upload
+     "originalUrl": "https://v5.airtableusercontent.com/...",
+     "error": "Upload timeout"
+   }
+   ```
+
+5. **Rate Limit Resilience**: When Airtable rate limits are hit, cached data is served with appropriate headers indicating stale data.
+
+### Verifying Data Integrity
+
+To verify sync integrity:
+1. Check `cloudinary-mapping.json` for entries with empty `cloudinaryUrl`
+2. Review Netlify Function logs for failed uploads
+3. Compare image counts between Airtable and mapping file
 
 ## Monitoring & Usage
 

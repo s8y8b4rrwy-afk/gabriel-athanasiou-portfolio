@@ -26,6 +26,25 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
+import crypto from 'crypto';
+
+// Generate a stable hash from Airtable attachment metadata
+// This is used to detect changes in images without relying on URLs which change with each fetch
+function generateAttachmentHash(attachment) {
+  if (!attachment) return null;
+  
+  // Use stable Airtable metadata: id, filename, size, type
+  // These fields don't change unless the actual file changes
+  const stableData = {
+    id: attachment.id || '',
+    filename: attachment.filename || '',
+    size: attachment.size || 0,
+    type: attachment.type || ''
+  };
+  
+  return crypto.createHash('md5').update(JSON.stringify(stableData)).digest('hex');
+}
+
 // Validate environment variables
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
   console.error('❌ Missing Airtable credentials (AIRTABLE_TOKEN, AIRTABLE_BASE_ID)');
@@ -148,7 +167,8 @@ async function migrate() {
     };
 
     for (let i = 0; i < gallery.length; i++) {
-      const imageUrl = gallery[i].url;
+      const attachment = gallery[i];
+      const imageUrl = attachment.url;
       const publicId = `portfolio-projects-${record.id}-${i}`;
 
       process.stdout.write(`  Uploading: ${publicId}...`);
@@ -166,7 +186,13 @@ async function migrate() {
           cloudinaryUrl: result.secureUrl,
           originalUrl: imageUrl,
           format: result.format,
-          size: result.bytes
+          size: result.bytes,
+          // Store Airtable metadata for future change detection
+          airtableHash: generateAttachmentHash(attachment),
+          airtableId: attachment.id,
+          airtableFilename: attachment.filename,
+          airtableSize: attachment.size,
+          airtableType: attachment.type
         });
       } else {
         stats.failed++;
@@ -202,11 +228,11 @@ async function migrate() {
   console.log('⬆️  Uploading journal images...');
   for (const record of publicJournal) {
     const fields = record.fields;
-    const coverImage = fields['Cover Image']?.[0];
+    const attachment = fields['Cover Image']?.[0];
 
-    if (!coverImage) continue;
+    if (!attachment) continue;
 
-    const imageUrl = coverImage.url;
+    const imageUrl = attachment.url;
     const publicId = `portfolio-journal-${record.id}`;
 
     process.stdout.write(`  Uploading: ${publicId}...`);
@@ -221,11 +247,20 @@ async function migrate() {
       mapping.journal.push({
         recordId: record.id,
         title: fields['Title'] || 'Untitled',
-        publicId: result.publicId,
-        cloudinaryUrl: result.secureUrl,
-        originalUrl: imageUrl,
-        format: result.format,
-        size: result.bytes
+        images: [{
+          index: 0,
+          publicId: result.publicId,
+          cloudinaryUrl: result.secureUrl,
+          originalUrl: imageUrl,
+          format: result.format,
+          size: result.bytes,
+          // Store Airtable metadata for future change detection
+          airtableHash: generateAttachmentHash(attachment),
+          airtableId: attachment.id,
+          airtableFilename: attachment.filename,
+          airtableSize: attachment.size,
+          airtableType: attachment.type
+        }]
       });
     } else {
       stats.failed++;
