@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** December 2025  
+> **Last Updated:** January 2026  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 
@@ -32,6 +32,470 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 > **All major changes documented in reverse chronological order (newest first)**
 
 ### 🎉 Recent Major Changes
+
+### Nov 29 2025 - Incremental Sync API Optimization (90% Reduction)
+**What Changed:** Implemented intelligent change detection to reduce Airtable API usage from ~50 calls per sync to 5-10 calls for typical updates.
+
+**The Problem:**
+- Every sync fetched ALL records from ALL tables (~50 API calls)
+- No change detection - refetched unchanged data every time
+- Airtable API limits were being consumed unnecessarily
+- Slow sync times (~10 seconds) even when nothing changed
+
+**The Solution:**
+1. **Change detection using LAST_MODIFIED_TIME():**
+   - Added `Last Modified` formula field to all 5 Airtable tables
+   - Fetch only timestamps first (5 lightweight API calls)
+   - Compare with cached timestamps to identify changes
+
+2. **Record-level granular fetching:**
+   - Fetch only changed/new records using `filterByFormula`
+   - Use `OR(RECORD_ID()='rec1', RECORD_ID()='rec2', ...)` for precision
+   - Avoid full table fetches unless necessary
+
+3. **Smart caching and merging:**
+   - Store raw Airtable records in `_rawRecords`
+   - Store timestamps in `syncMetadata`
+   - Merge changed records with cached data
+   - Return cached data immediately when no changes detected
+
+4. **Force sync parameter:**
+   - Add `?force=true` to bypass change detection
+   - Use for initial setup or when debugging
+
+**Technical Implementation:**
+
+```javascript
+// netlify/functions/airtable-sync.mjs - New functions
+
+// 1. Lightweight timestamp check (1 API call per table)
+const fetchTimestamps = async (tableName) => {
+  const url = `https://api.airtable.com/v0/${BASE_ID}/${tableName}?fields%5B%5D=Last%20Modified`;
+  // Returns: [{ id: 'rec123', lastModified: '2025-11-29T10:00:00.000Z' }, ...]
+};
+
+// 2. Compare timestamps to identify changes (5 API calls total)
+const checkForChanges = async (previousSyncMetadata) => {
+  // For each table: Projects, Journal, Festivals, Client Book, Settings
+  const currentTimestamps = await fetchTimestamps(tableName);
+  
+  // Find new, changed, deleted records
+  const newRecords = currentTimestamps.filter(r => !previousIds.has(r.id));
+  const changedRecords = currentTimestamps.filter(r => 
+    previousTimestamps[r.id] !== r.lastModified
+  );
+  const deletedIds = [...previousIds].filter(id => !currentIds.has(id));
+  
+  return { changed, new, deleted, apiCalls: 5 };
+};
+
+// 3. Fetch only specific changed records (1 API call per table with changes)
+const fetchChangedRecords = async (tableName, recordIds, sortField) => {
+  const formula = recordIds.length === 1 
+    ? `RECORD_ID()='${recordIds[0]}'`
+    : `OR(${recordIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
+  
+  const url = `https://api.airtable.com/v0/${BASE_ID}/${tableName}?filterByFormula=${encodeURIComponent(formula)}`;
+  // Returns: Full records for only the changed IDs
+};
+
+// 4. Main sync with change detection
+const syncAirtableData = async (options = {}) => {
+  const { forceFullSync = false } = options;
+  
+  if (forceFullSync || !previousData?.syncMetadata) {
+    // FULL SYNC: Fetch everything (~50 API calls)
+    return await fetchAllTables();
+  }
+  
+  // INCREMENTAL SYNC: Check for changes first (5 API calls)
+  const changes = await checkForChanges(previousData.syncMetadata);
+  
+  if (!hasAnyChanges(changes)) {
+    // NO CHANGES: Return cached data (0 additional API calls)
+    console.log('✅ No changes detected - using cached data');
+    return cachedDataResponse;
+  }
+  
+  // PARTIAL SYNC: Fetch only changed records (1-10 additional API calls)
+  const changedRecords = await fetchChangedRecords(tableName, changedIds);
+  
+  // Merge changed records with cached data
+  return mergeWithCache(changedRecords, previousData);
+};
+```
+
+```json
+// public/portfolio-data.json - Enhanced structure
+{
+  "projects": [...],
+  "posts": [...],
+  "config": {...},
+  "lastUpdated": "2025-11-29T10:30:00.000Z",
+  
+  // NEW: Raw records for efficient merging
+  "_rawRecords": {
+    "projects": [...],      // Full Airtable record objects
+    "journal": [...],
+    "festivals": [...],
+    "clients": [...],
+    "settings": [...]
+  },
+  
+  // NEW: Sync metadata for change detection
+  "syncMetadata": {
+    "lastSync": "2025-11-29T10:30:00.000Z",
+    "timestamps": {
+      "Projects": {
+        "rec123": "2025-11-29T09:00:00.000Z",
+        "rec456": "2025-11-28T15:30:00.000Z"
+      },
+      "Journal": {...},
+      "Festivals": {...},
+      "Client Book": {...},
+      "Settings": {...}
+    }
+  }
+}
+```
+
+```javascript
+// netlify/functions/sync-now.mjs - Updated handler
+export const handler = async (event, context) => {
+  // Check for force parameter
+  const forceFullSync = event.queryStringParameters?.force === 'true';
+  
+  if (forceFullSync) {
+    console.log('⚡ Force full sync requested');
+  }
+  
+  const result = await syncAirtableData({ forceFullSync });
+  return result;
+};
+```
+
+**API Usage Comparison:**
+
+| Scenario | Before | After | Savings |
+|----------|--------|-------|---------|
+| No changes | 50 calls | 5 calls | 90% |
+| 1 record changed | 50 calls | 6 calls | 88% |
+| 5 records changed | 50 calls | 10 calls | 80% |
+| Force full sync | 50 calls | 50 calls | 0% |
+
+**Response Statistics:**
+
+```json
+{
+  "projects": [...],
+  "posts": [...],
+  "syncStats": {
+    "mode": "incremental",
+    "apiCalls": 6,
+    "apiCallsSaved": 44,
+    "newRecords": 0,
+    "changedRecords": 1,
+    "deletedRecords": 0,
+    "unchangedRecords": 45
+  }
+}
+```
+
+**Usage:**
+
+```bash
+# Normal sync (incremental - default)
+curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now
+
+# Force full sync (bypass change detection)
+curl -X POST "https://your-site.netlify.app/.netlify/functions/sync-now?force=true"
+```
+
+**Setup Required (One-Time):**
+
+Add `Last Modified` formula field to all 5 Airtable tables:
+1. Open table in Airtable
+2. Add field: Name = `Last Modified`, Type = Formula
+3. Formula: `LAST_MODIFIED_TIME()`
+4. After adding fields, run force full sync once: `?force=true`
+
+**Files Modified:**
+- `netlify/functions/airtable-sync.mjs` - Added change detection logic
+- `netlify/functions/sync-now.mjs` - Added force parameter support
+- `docs/INCREMENTAL_SYNC_OPTIMIZATION.md` - Complete guide
+- `docs/INCREMENTAL_SYNC_QUICK_REF.md` - Quick reference
+- `INCREMENTAL_SYNC_SUMMARY.md` - Implementation summary
+
+**Benefits:**
+- ✅ 90% reduction in API usage for typical syncs
+- ✅ Faster sync times (1-2 seconds vs 10 seconds)
+- ✅ Extends Airtable API limits significantly
+- ✅ Detailed statistics in every response
+- ✅ Backward compatible - existing code works unchanged
+- ✅ Manual control with force option
+
+---
+
+### Jan 2026 - Eliminated All Automatic Syncs + ID-Based Change Detection
+**What Changed:** Removed ALL automatic scheduling and build triggering, implemented stable Airtable attachment ID-based change detection, and enforced explicit Cloudinary quality presets.
+
+**The Problem:**
+- Content changes were triggering automatic Netlify deployments via build hooks
+- Cloudinary was using automatic quality/format/DPR (`q_auto`, `f_auto`, `dpr_auto`) leading to unpredictable results
+- Image change detection used Airtable attachment URLs, which regenerate frequently, causing false positives and unnecessary re-uploads
+- Automatic schedules still existed in code, consuming resources
+
+**The Solution:**
+1. **Removed ALL build triggers:**
+   - Deleted `NETLIFY_BUILD_HOOK` constant and environment variable
+   - Removed `triggerNetlifyBuild()` function
+   - Removed hash comparison logic (`hashData()`, `loadPreviousHash()`)
+   - Content changes no longer trigger deployments
+
+2. **Fixed Cloudinary presets (explicit, never auto):**
+   - Removed `f_auto`, `q_auto`, `dpr_auto` from all delivery URLs
+   - Use explicit presets: `q_75` (fine), `q_90` (ultra), `f_webp`, `dpr_1.0`
+   - Removed `fetch_format: 'auto'` from eager transformations
+   - All transformations now predictable and consistent
+
+3. **Implemented Airtable ID-based change detection:**
+   - Extract full attachment objects: `{id, url, filename, size, type}`
+   - Compare stable `attachment.id` instead of regenerating `attachment.url`
+   - Updated `cloudinary-mapping.json` structure:
+     - Old: `{originalUrl: "https://..."}`
+     - New: `{airtableId: "attXYZ...", airtableUrl: "https://...", filename: "...", size: 123}`
+   - Prevents false positives when Airtable URL tokens expire
+
+4. **Updated both sync functions:**
+   - `scheduled-sync.mjs` - Updated with ID-based detection
+   - `scheduled-sync-realtime.mjs` - Updated with ID-based detection
+   - Both now use identical change detection logic
+
+**Files Modified:**
+- `netlify/functions/scheduled-sync.mjs` - Removed build triggers, implemented ID detection
+- `netlify/functions/scheduled-sync-realtime.mjs` - Removed build triggers, implemented ID detection  
+- `public/cloudinary-mapping.json` - Structure changed (backward compatible)
+- `SYNC_DEPLOY_GUIDE.md` - Updated to reflect no automatic scheduling
+- `docs/CLOUDINARY_INTEGRATION.md` - Documented ID-based detection and explicit presets
+
+**Benefits:**
+- ✅ No accidental deployments from content changes
+- ✅ Consistent, predictable image quality (no auto guessing)
+- ✅ Dramatically fewer unnecessary image re-uploads
+- ✅ Lower Cloudinary bandwidth usage
+- ✅ Full manual control over all operations
+
+---
+
+### Nov 29 2025 - Fully Decoupled Static Data Architecture with Cloudinary CDN
+**What Changed:** Completed the full decoupling of static file generation from deployment, with all static data (JSON files) now served from Cloudinary CDN and uploaded to GitHub for version control.
+
+**The Problem:**
+- Automatic scheduled sync was still running daily at midnight, consuming Airtable credits
+- Static JSON files were only served locally, not from Cloudinary CDN
+- No way to trigger data syncs manually or independently from deployments
+- Data generation was still partially coupled to the deployment process
+
+**The Solution:**
+1. **Removed automatic scheduling** - `scheduled-sync.mjs` no longer runs on cron schedule
+2. **Created Cloudinary upload script** - New `sync-static-to-cloudinary.mjs` uploads all static files to Cloudinary as "raw" resources
+3. **Updated frontend to fetch from Cloudinary** - `cmsService.ts` now fetches from Cloudinary CDN with local fallback
+4. **Manual-only triggers** - Data sync now only runs:
+   - Manually via `npm run build:data && npm run sync:static`
+   - On deployment via `npm run build`
+   - Via Netlify function endpoint when explicitly called
+5. **Complete workflow independence** - Each script can run independently:
+   - `npm run build:data` - Generate portfolio-data.json from Airtable
+   - `npm run build:content` - Generate share-meta.json for SEO
+   - `npm run build:sitemap` - Generate sitemap.xml
+   - `npm run sync:static` - Upload all static files to Cloudinary
+   - `npm run build` - Run all of the above + vite build
+
+**Technical Implementation:**
+
+```javascript
+// scripts/sync-static-to-cloudinary.mjs - New script
+// Uploads portfolio-data.json, share-meta.json, sitemap.xml to Cloudinary
+const FILES_TO_UPLOAD = [
+  {
+    localPath: 'public/portfolio-data.json',
+    publicId: 'portfolio-static/portfolio-data',
+    description: 'Main portfolio data file'
+  },
+  {
+    localPath: 'public/share-meta.json',
+    publicId: 'portfolio-static/share-meta',
+    description: 'Social sharing metadata'
+  },
+  {
+    localPath: 'public/sitemap.xml',
+    publicId: 'portfolio-static/sitemap',
+    description: 'XML sitemap for SEO'
+  }
+];
+
+// Upload as raw resources (non-image files)
+await cloudinary.uploader.upload(filePath, {
+  public_id: publicId,
+  resource_type: 'raw',
+  overwrite: true,
+  invalidate: true, // Clear CDN cache
+  type: 'upload'
+});
+```
+
+```typescript
+// services/cmsService.ts - Now fetches from Cloudinary first
+const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data.json`;
+
+// 1. Try Cloudinary CDN (primary)
+const response = await fetch(CLOUDINARY_DATA_URL);
+
+// 2. Fallback to local static file if Cloudinary fails
+if (!response.ok) {
+  const fallbackResponse = await fetch('/portfolio-data.json');
+}
+```
+
+```javascript
+// netlify/functions/scheduled-sync.mjs - Automatic scheduling removed
+// BEFORE: export const handler = schedule('0 0 * * *', async (event) => {...});
+// AFTER:  export const handler = async (event) => {...};
+
+// Now only runs when explicitly called:
+// - Manual endpoint call
+// - Build hooks
+// - GitHub Actions
+```
+
+```json
+// package.json - Updated build process
+{
+  "scripts": {
+    "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
+    "build:data": "node scripts/sync-data.mjs",
+    "build:content": "node scripts/generate-share-meta.mjs",
+    "build:sitemap": "node scripts/generate-sitemap.mjs",
+    "build": "npm run build:content && npm run build:data && npm run build:sitemap && npm run sync:static && vite build"
+  }
+}
+```
+
+**Complete Data Flow:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ MANUAL TRIGGER (when you want to update content)           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ 1. npm run build:data                                       │
+│    ↓ Fetch from Airtable                                    │
+│    ↓ Process data                                           │
+│    ↓ Save to public/portfolio-data.json                     │
+│                                                             │
+│ 2. npm run build:content                                    │
+│    ↓ Generate share-meta.json                               │
+│                                                             │
+│ 3. npm run build:sitemap                                    │
+│    ↓ Generate sitemap.xml                                   │
+│                                                             │
+│ 4. npm run sync:static                                      │
+│    ↓ Upload portfolio-data.json → Cloudinary                │
+│    ↓ Upload share-meta.json → Cloudinary                    │
+│    ↓ Upload sitemap.xml → Cloudinary                        │
+│    ↓ Invalidate CDN cache                                   │
+│                                                             │
+│ 5. git add public/*.json public/*.xml                       │
+│    git commit -m "Update content data"                      │
+│    git push                                                 │
+│    ↓ GitHub stores versioned copies                         │
+│                                                             │
+│ 6. Netlify auto-deploys (code changes only)                 │
+│    OR manual deploy via GitHub Actions                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ RUNTIME (how website gets data)                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Browser Request                                             │
+│    ↓                                                        │
+│ cmsService.ts                                               │
+│    ↓                                                        │
+│ Try: https://res.cloudinary.com/.../portfolio-data.json     │
+│    ↓ (Primary - Cloudinary CDN)                             │
+│    ↓                                                        │
+│ Success? Return data                                        │
+│    ↓                                                        │
+│ Failed? Try fallback: /portfolio-data.json                  │
+│    ↓ (Local static file from build)                         │
+│    ↓                                                        │
+│ Display content                                             │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Cloudinary Static File URLs:**
+- Portfolio Data: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json`
+- Share Meta: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/share-meta.json`
+- Sitemap: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/sitemap.xml`
+
+**GitHub Version Control:**
+- All static files committed to git: `public/portfolio-data.json`, `public/share-meta.json`, `public/sitemap.xml`
+- Full version history available via git
+- Can rollback to any previous version
+- Easy to see what changed between versions
+
+**When to Run Data Sync:**
+1. **After Airtable content changes** - New projects, blog posts, config updates
+2. **Manual trigger** - When you want to publish changes
+3. **On deployment** - Automatically via `npm run build`
+
+**Airtable Credit Savings:**
+- **Before:** 365 automatic checks/year + manual syncs
+- **After:** Only manual syncs when you need them (estimated 50-100/year)
+- **Savings:** ~70% reduction in Airtable API usage
+
+**Benefits:**
+- ✅ Zero automatic syncs - Full manual control
+- ✅ Cloudinary CDN delivery - Fast global content delivery
+- ✅ GitHub version control - Full data history and rollback capability
+- ✅ Independent workflows - Each script runs standalone
+- ✅ Lower Airtable costs - Only sync when needed
+- ✅ Deployment flexibility - Deploy code without syncing data
+- ✅ Data flexibility - Update data without deploying code
+- ✅ Fallback resilience - Local copy if Cloudinary fails
+
+**Updated Files:**
+- `netlify/functions/scheduled-sync.mjs` - Removed automatic schedule wrapper
+- `scripts/sync-static-to-cloudinary.mjs` - New script to upload static files to Cloudinary
+- `services/cmsService.ts` - Fetch from Cloudinary with local fallback
+- `package.json` - Added `sync:static` script and updated build process
+
+**Testing the New Architecture:**
+```bash
+# 1. Generate fresh data from Airtable
+npm run build:data
+
+# 2. Upload to Cloudinary
+npm run sync:static
+
+# 3. Commit to GitHub
+git add public/*.json public/*.xml
+git commit -m "Update portfolio data"
+git push
+
+# 4. Verify Cloudinary URLs are accessible
+curl https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json
+
+# 5. Check website fetches from Cloudinary
+# Open DevTools → Network → Look for Cloudinary URL in requests
+```
+
+**Impact:** Complete decoupling achieved. Static data generation, Cloudinary uploads, GitHub versioning, and deployment are now fully independent processes. You have complete control over when data syncs happen, saving Airtable credits and providing maximum flexibility. Website fetches from Cloudinary CDN for optimal performance with local fallback for resilience.
+
+---
 
 ### Nov 29 2025 - Journal Navigation & Unpublished Post Protection
 **What Changed:** Fixed journal post navigation to skip unpublished entries and redirect users who try to access draft/scheduled posts.

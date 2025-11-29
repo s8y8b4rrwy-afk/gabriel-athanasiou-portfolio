@@ -24,8 +24,12 @@ let cacheTimestamp: number | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 
 // ==========================================
-// DATA FETCHING FROM CACHED ENDPOINT
+// DATA FETCHING FROM CLOUDINARY CDN
 // ==========================================
+
+// Cloudinary CDN URL for static portfolio data (primary source)
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
+const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data.json`;
 
 const fetchCachedData = async (): Promise<ApiResponse> => {
     // Check if cache is still valid
@@ -34,20 +38,18 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         return cachedData;
     }
 
+    // Try Cloudinary CDN first (primary source)
     try {
-        console.log('[cmsService] Fetching from static portfolio data');
+        console.log('[cmsService] Fetching from Cloudinary CDN');
         
-        const response = await fetch('/portfolio-data.json', {
+        const response = await fetch(CLOUDINARY_DATA_URL, {
             headers: {
                 'Accept': 'application/json'
             }
         });
 
         if (!response.ok) {
-            if (response.status === 503) {
-                throw new Error('Data not yet synced. Please wait a moment and refresh.');
-            }
-            throw new Error(`Failed to fetch data: ${response.statusText}`);
+            throw new Error(`Cloudinary fetch failed: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -60,25 +62,56 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         };
         cacheTimestamp = Date.now();
 
-        console.log(`[cmsService] Loaded ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+        console.log(`[cmsService] ✅ Loaded from Cloudinary: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
         
         return cachedData;
-    } catch (error) {
-        console.error('[cmsService] Failed to fetch cached data:', error);
+    } catch (cloudinaryError) {
+        console.warn('[cmsService] ⚠️ Cloudinary fetch failed, trying local fallback:', cloudinaryError);
         
-        // If we have stale cache, return it
-        if (cachedData) {
-            console.warn('[cmsService] Using stale cache due to fetch error');
+        // Fallback to local static file
+        try {
+            const response = await fetch('/portfolio-data.json', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Local fetch failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // Cache the data
+            cachedData = {
+                projects: data.projects || [],
+                posts: data.posts || [],
+                config: data.config || getDefaultConfig()
+            };
+            cacheTimestamp = Date.now();
+
+            console.log(`[cmsService] ✅ Loaded from local fallback: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+            
             return cachedData;
+        } catch (localError) {
+            console.error('[cmsService] ❌ Both Cloudinary and local fetch failed');
+            console.error('Cloudinary error:', cloudinaryError);
+            console.error('Local error:', localError);
+            
+            // If we have stale cache, return it
+            if (cachedData) {
+                console.warn('[cmsService] Using stale cache due to fetch errors');
+                return cachedData;
+            }
+            
+            // Last resort: return empty data with default config
+            console.warn('[cmsService] No cache available, using default empty state');
+            return {
+                projects: [],
+                posts: [],
+                config: getDefaultConfig()
+            };
         }
-        
-        // Last resort: return empty data with default config
-        console.warn('[cmsService] No cache available, using default empty state');
-        return {
-            projects: [],
-            posts: [],
-            config: getDefaultConfig()
-        };
     }
 };
 

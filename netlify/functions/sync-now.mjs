@@ -1,9 +1,10 @@
-import { syncAirtableData } from './scheduled-sync.mjs';
+import { syncAirtableData } from './airtable-sync.mjs';
 
 /**
  * Manual trigger endpoint for the sync function
  * 
  * Call this via: /.netlify/functions/sync-now
+ * Force full sync: /.netlify/functions/sync-now?force=true
  * 
  * Useful for:
  * - Testing the sync process
@@ -25,7 +26,15 @@ export const handler = async (event, context) => {
 
   try {
     console.log('Manual sync triggered');
-    const result = await syncAirtableData();
+    
+    // Check for force parameter
+    const forceFullSync = event.queryStringParameters?.force === 'true';
+    
+    if (forceFullSync) {
+      console.log('⚡ Force full sync requested');
+    }
+    
+    const result = await syncAirtableData({ forceFullSync });
     return result;
   } catch (error) {
     console.error('Manual sync failed:', error);

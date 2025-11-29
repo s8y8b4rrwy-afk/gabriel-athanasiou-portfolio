@@ -1,4 +1,8 @@
-name: Manual Deploy to Netlify
+name: Deploy to Netlify
+
+# Manual deployment workflow
+# Separate from data sync - only deploys the site
+# Does NOT sync data from Airtable
 
 on:
   workflow_dispatch:
@@ -6,7 +10,7 @@ on:
       reason:
         description: 'Reason for deployment (optional)'
         required: false
-        default: 'Manual content update'
+        default: 'Manual deployment'
 
 permissions:
   contents: write
@@ -27,11 +31,25 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           # Only create an empty commit if latest commit lacks marker
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
-            git commit --allow-empty -m "chore: manual deploy [deploy]
+            git commit --allow-empty -m "chore: manual deployment [deploy]
             
             Reason: ${{ github.event.inputs.reason }}"
             git push origin HEAD:main
-            echo "✅ Deploy marker added - Netlify will auto-deploy via ignore-netlify-build.sh"
+            echo "✅ Deploy marker added - Netlify will build and deploy"
           else
-            echo "Latest commit already has deploy marker - Netlify will deploy automatically"
+            echo "ℹ️ Latest commit already has deploy marker - Netlify will deploy automatically"
           fi
+
+      - name: Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🚀 Deployment Triggered"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Deploy marker committed to main branch"
+          echo "✅ Netlify will automatically build and deploy"
+          echo ""
+          echo "⏳ Check Netlify dashboard for build progress:"
+          echo "   https://app.netlify.com"
+          echo ""
+          echo "⚠️ NOTE: This does NOT sync data from Airtable"
+          echo "   To sync data first, run 'Sync Data' workflow"

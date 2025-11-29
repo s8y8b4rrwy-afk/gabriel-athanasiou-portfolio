@@ -47,6 +47,8 @@ These guides provide additional context but **all critical information is in AI_
 - `docs/CDN_CACHE_FINAL_IMPLEMENTATION.md` - CDN architecture details
 - `docs/CLOUDINARY_INTEGRATION.md` - Image optimization system
 - `IMAGE_OPTIMIZATION.md` - Build-time image processing
+- **`docs/INCREMENTAL_SYNC_OPTIMIZATION.md`** - 90% API usage reduction guide ⭐
+- `docs/INCREMENTAL_SYNC_QUICK_REF.md` - Quick reference for incremental sync
 
 ### Setup & Configuration
 - `docs/ENV_SETUP.md` - Environment variables reference
@@ -58,8 +60,10 @@ These guides provide additional context but **all critical information is in AI_
 - `docs/SCROLL_RESTORATION.md` - Scroll position handling
 - `docs/HOVER_ANIMATIONS.md` - Interactive animations
 
-### CI/CD
+### CI/CD & Sync
 - `.github/SCHEDULED_DEPLOY_SETUP.md` - GitHub Actions workflows
+- `SYNC_DEPLOY_GUIDE.md` - Manual sync workflow
+- `STATIC_BUILD_ARCHITECTURE.md` - Build-time data architecture
 - `docs/COMPRESSION_COMPARISON.md` - Image compression analysis
 
 ---

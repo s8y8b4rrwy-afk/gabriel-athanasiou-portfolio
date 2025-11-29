@@ -196,45 +196,66 @@ portfolio-journal-recDXQQWqEqLnstIx
 
 ### Cloudinary Transformations
 
-**Upload Settings (highest quality):**
-- Format: `auto` (best format per browser)
-- Quality: `auto:best` (highest quality with smart compression)
-- Max Width: `2400px` (retina display support)
-- Crop: `limit` (preserve aspect ratio)
+**Upload Settings (highest quality for source):**
+- Quality: `100` (lossless upload)
+- Eager Transformations: 8 variants generated on upload
+  - Widths: `800px`, `1600px`
+  - Qualities: `q_75` (fine), `q_90` (ultra)
+  - DPRs: `1.0`, `2.0` (standard and retina)
+  - Format: `webp` (explicit, no auto)
 
 **Delivery Settings:**
-- Format: `f_auto` (WebP/AVIF with JPEG fallback)
-- Quality: `q_auto:best` (highest quality optimization)
+- Format: `f_webp` (explicit WebP)
+- Quality: `q_75` (fine preset, default) or `q_90` (ultra preset, high quality)
 - Width: `w_1600` (responsive delivery)
-- Crop: `c_limit` (no distortion)
-- DPR: `dpr_auto` (automatic retina detection)
+- Crop: `c_limit` (preserve aspect ratio, no distortion)
+- DPR: `dpr_1.0` (explicit, no auto detection)
 
-**Example Production URL:**
+**Example Production URL (Fine Preset):**
 ```
 https://res.cloudinary.com/date24ay6/image/upload/
-  f_auto,q_auto:best,c_limit,dpr_auto,w_1600/
+  q_75,w_1600,c_limit,f_webp,dpr_1.0/
   portfolio-projects-recNNKSzQAsbchpCi-0
 ```
 
-**Quality Levels Available:**
-- `auto:best` - Highest quality (current setting)
-- `auto:good` - Good quality (80-90%)
-- `auto:eco` - Economy quality (60-70%)
-- `auto:low` - Low quality (40-50%)
-- `1-100` - Manual percentage
+**Quality Presets:**
+- `q_75` - **Fine** (default, balanced quality/size)
+- `q_90` - **Ultra** (high quality, larger file)
+- `q_100` - **Lossless** (upload only, not for delivery)
+
+⚠️ **Note:** Auto quality (`q_auto`), auto format (`f_auto`), and auto DPR (`dpr_auto`) are NOT used to ensure consistent, predictable delivery.
 
 ### Change Detection
 
-Scheduled sync only uploads images when:
-- New project/post added to Airtable
-- Existing image URL changed in Airtable
-- Image hash differs from previous sync
+The sync functions use **Airtable attachment ID-based change detection** to avoid unnecessary re-uploads:
 
-**Hash Calculation:**
-```javascript
-const imageHash = crypto.createHash('md5')
-  .update(imageUrl)
-  .digest('hex');
+**How It Works:**
+1. Each Airtable attachment has a stable `id` field (e.g., `attXYZ123...`)
+2. Sync function extracts full attachment object: `{id, url, filename, size, type}`
+3. Compares `attachment.id` against `cloudinary-mapping.json`
+4. Only uploads if:
+   - Image is new (ID not in mapping)
+   - Attachment ID changed (different file uploaded to same field)
+
+**Why ID instead of URL?**
+- Airtable regenerates attachment URLs frequently (expiring tokens)
+- URL comparison causes false positives → unnecessary re-uploads
+- Attachment ID remains stable even when URL changes
+
+**Mapping Structure:**
+```json
+{
+  "projects": [{
+    "recordId": "rec123",
+    "images": [{
+      "airtableId": "attXYZ789",
+      "airtableUrl": "https://dl.airtable.com/...",
+      "cloudinaryUrl": "https://res.cloudinary.com/...",
+      "filename": "image.jpg",
+      "size": 2048576
+    }]
+  }]
+}
 ```
 
 Prevents unnecessary uploads and bandwidth usage.

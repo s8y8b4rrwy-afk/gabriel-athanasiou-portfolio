@@ -10,10 +10,11 @@
     "test:images": "node scripts/test-image-fetch.mjs",
     "test:cloudinary": "node scripts/test-cloudinary.mjs",
     "migrate:cloudinary": "node scripts/migrate-to-cloudinary.mjs",
+    "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:data": "node scripts/sync-data.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
-    "build": "npm run build:content && npm run build:data && vite build",
+    "build": "npm run build:content && npm run build:data && npm run build:sitemap && npm run sync:static && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

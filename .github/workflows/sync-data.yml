@@ -1,0 +1,109 @@
+name: Sync Data (Airtable → GitHub + Cloudinary)
+
+# Manual-only data sync workflow
+# NO automatic schedules - syncs only when you trigger it
+# Does NOT trigger deployments - deployment is separate
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for sync (optional)'
+        required: false
+        default: 'Manual content sync'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log sync trigger
+        run: |
+          echo "📊 Manual data sync triggered"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync from Airtable
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          VITE_AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
+          VITE_AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          echo "📥 Fetching data from Airtable..."
+          npm run build:data
+          npm run build:content
+          npm run build:sitemap
+          echo "✅ Data sync complete"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet -- public/portfolio-data.json public/share-meta.json public/sitemap.xml; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No data changes detected"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✅ Data changes detected"
+          fi
+
+      - name: Commit to GitHub
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+          git commit -m "chore: sync data from Airtable [ci skip]
+          
+          Reason: ${{ github.event.inputs.reason }}
+          Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push origin main
+          echo "✅ Changes committed to GitHub"
+
+      - name: Upload to Cloudinary
+        if: steps.check_changes.outputs.changed == 'true'
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          echo "☁️ Uploading to Cloudinary CDN..."
+          npm run sync:static
+          echo "✅ Upload complete"
+
+      - name: Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Sync Summary"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          if [ "${{ steps.check_changes.outputs.changed }}" = "true" ]; then
+            echo "✅ Data synced successfully"
+            echo "✅ Changes committed to GitHub"
+            echo "✅ Files uploaded to Cloudinary CDN"
+            echo ""
+            echo "📂 Updated files:"
+            echo "  • public/portfolio-data.json"
+            echo "  • public/share-meta.json"
+            echo "  • public/sitemap.xml"
+            echo ""
+            echo "⚠️ NOTE: Deployment NOT triggered automatically"
+            echo "To deploy changes, run 'Manual Deploy' workflow"
+          else
+            echo "ℹ️ No changes detected - no action taken"
+          fi
