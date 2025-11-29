@@ -25,6 +25,7 @@ if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
 
 const OUTPUT_DIR = path.resolve('public');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'portfolio-data.json');
+const SHARE_META_FILE = path.join(OUTPUT_DIR, 'share-meta.json');
 
 console.log('[sync-data] 🔄 Starting data sync...');
 
@@ -355,6 +356,50 @@ async function buildConfig() {
   };
 }
 
+// Generate share-meta.json for social media previews
+function generateShareMeta(projects, posts, config) {
+  console.log('[sync-data] 🔗 Generating share-meta.json...');
+  
+  // Only include Public posts (or Scheduled posts that are past their date)
+  const publicPosts = posts.filter(post => {
+    if (post.status === 'Public') return true;
+    if (post.status === 'Scheduled') {
+      const postDate = new Date(post.date);
+      const now = new Date();
+      return postDate <= now;
+    }
+    return false;
+  });
+  
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    projects: projects.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: (p.description || '').slice(0, 220),
+      image: p.heroImage || '',
+      type: p.type,
+      year: p.year
+    })),
+    posts: publicPosts.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: (p.content || '').replace(/\s+/g, ' ').trim().slice(0, 220),
+      image: p.imageUrl || '',
+      type: 'article',
+      date: p.date
+    })),
+    config: {
+      defaultOgImage: config.defaultOgImage || ''
+    }
+  };
+  
+  console.log(`[sync-data] ✅ Generated share-meta with ${manifest.projects.length} projects, ${manifest.posts.length} posts`);
+  return manifest;
+}
+
 // Main execution
 async function main() {
   try {
@@ -382,12 +427,17 @@ async function main() {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
 
-    // Write to file
+    // Write portfolio-data.json
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    
     console.log('[sync-data] ✅ Successfully generated portfolio-data.json');
+    
+    // Generate and write share-meta.json
+    const shareMeta = generateShareMeta(projects, posts, config);
+    fs.writeFileSync(SHARE_META_FILE, JSON.stringify(shareMeta, null, 2), 'utf-8');
+    console.log('[sync-data] ✅ Successfully generated share-meta.json');
+    
     console.log(`[sync-data] 📊 Stats: ${projects.length} projects, ${posts.length} posts`);
-    console.log(`[sync-data] 📍 Output: ${OUTPUT_FILE}`);
+    console.log(`[sync-data] 📍 Outputs: ${OUTPUT_FILE}, ${SHARE_META_FILE}`);
     process.exit(0);
 
   } catch (error) {
