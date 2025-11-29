@@ -13,6 +13,8 @@
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:data": "node scripts/sync-data.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
+    "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
+    "sync:static:force": "node scripts/sync-static-to-cloudinary.mjs --force",
     "build": "npm run build:content && npm run build:data && vite build",
     "preview": "vite preview"
   },
