@@ -102,6 +102,8 @@ For local development or CI/CD:
 
 ```bash
 # Airtable (required for data sync)
+# Local development uses AIRTABLE_TOKEN or VITE_AIRTABLE_TOKEN
+# GitHub Actions uses AIRTABLE_API_KEY secret (mapped to AIRTABLE_TOKEN internally)
 AIRTABLE_TOKEN=your_token       # or VITE_AIRTABLE_TOKEN
 AIRTABLE_BASE_ID=your_base_id   # or VITE_AIRTABLE_BASE_ID
 
@@ -114,6 +116,20 @@ CLOUDINARY_API_SECRET=your_api_secret
 NETLIFY_AUTH_TOKEN=your_auth_token
 NETLIFY_SITE_ID=your_site_id
 ```
+
+### GitHub Actions Secrets
+
+For the workflows to function, add these secrets in **Settings → Secrets and variables → Actions**:
+
+| Secret Name | Description |
+|-------------|-------------|
+| `AIRTABLE_API_KEY` | Your Airtable Personal Access Token |
+| `AIRTABLE_BASE_ID` | The Airtable Base ID |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `NETLIFY_AUTH_TOKEN` | Netlify authentication token |
+| `NETLIFY_SITE_ID` | Netlify site ID |
 
 ## Troubleshooting
 

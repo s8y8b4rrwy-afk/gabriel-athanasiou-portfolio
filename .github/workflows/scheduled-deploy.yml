@@ -114,16 +114,16 @@ jobs:
 
       - name: Ensure deploy marker commit
         if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        env:
+          SYNC_REASON: ${{ github.event.inputs.reason }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
             echo "Latest commit lacks deploy marker. Creating empty deploy commit."
             git pull --rebase origin main
-            # Escape special characters in the reason input for safe shell usage
-            REASON='${{ github.event.inputs.reason }}'
-            REASON="${REASON:-Manual content sync from Airtable}"
-            # Use printf to safely handle special characters
+            # Use environment variable to safely handle special characters
+            REASON="${SYNC_REASON:-Manual content sync from Airtable}"
             git commit --allow-empty -m "chore: manual data sync [deploy] - ${REASON}"
             git push origin HEAD:main
             echo "commit_created=true" >> $GITHUB_OUTPUT
