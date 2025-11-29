@@ -1,7 +1,6 @@
 # Data Sync Guide
 
-> **Status:** ✅ Manual Sync Only  
-> **Last Updated:** November 2025
+> **Status:** ✅ Manual Sync Only
 
 ## Overview
 

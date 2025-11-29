@@ -120,8 +120,11 @@ jobs:
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
             echo "Latest commit lacks deploy marker. Creating empty deploy commit."
             git pull --rebase origin main
-            REASON="${{ github.event.inputs.reason }}"
-            git commit --allow-empty -m "chore: manual data sync [deploy] - ${REASON:-Manual content sync from Airtable}"
+            # Escape special characters in the reason input for safe shell usage
+            REASON='${{ github.event.inputs.reason }}'
+            REASON="${REASON:-Manual content sync from Airtable}"
+            # Use printf to safely handle special characters
+            git commit --allow-empty -m "chore: manual data sync [deploy] - ${REASON}"
             git push origin HEAD:main
             echo "commit_created=true" >> $GITHUB_OUTPUT
           else
