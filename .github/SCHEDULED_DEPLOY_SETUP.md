@@ -2,6 +2,13 @@
 
 This workflow deploys to Netlify weekly (or on-demand) **only if there are code changes**, saving build credits.
 
+## ⚠️ Important: Static File Generation is Now Separate
+
+As of the recent update, static file generation (portfolio-data.json, share-meta.json, sitemap.xml) is handled by a **separate workflow**: `Generate Static Files`.
+
+- See [Static File Generation Documentation](../docs/STATIC_FILE_GENERATION.md) for details
+- Run the static file generation workflow first if you need to update content
+
 ## Setup Instructions
 
 ### 1. Create a Netlify Build Hook
@@ -22,28 +29,51 @@ This workflow deploys to Netlify weekly (or on-demand) **only if there are code 
    - Example: If your URL is `https://api.netlify.com/build_hooks/abc123xyz`, enter `abc123xyz`
 6. Click **Add secret**
 
-### 2.1 (Optional) Enable Content-Change Detection
+### 2.1 Add Netlify API Credentials (for deployment status checking)
 
-If you want the workflow to deploy when Airtable content changes (even without code changes), add these repository secrets so the manifest generator can run:
+For the workflow to monitor deployment status:
 
-- `AIRTABLE_API_KEY` – Your Airtable Personal Access Token
-- `AIRTABLE_BASE_ID` – The Base ID containing your content tables
-
-If these are not set, the workflow still works for code changes and will safely skip content checks.
+- `NETLIFY_AUTH_TOKEN` – Your Netlify Personal Access Token
+- `NETLIFY_SITE_ID` – Your Netlify Site ID
 
 ### 3. Verify Setup
 
 1. Go to **Actions** tab in your GitHub repo
-2. Find **Scheduled Netlify Deploy** workflow
+2. Find **Smart Netlify Deploy (Code Changes Only)** workflow
 3. Click **Run workflow** → **Run workflow** to test manually
 4. Check the logs to confirm it detects changes correctly
 
 ## How It Works
 
-- **Schedule**: Runs every Sunday at 2 AM UTC
+- **Schedule**: Runs every Sunday at 3 AM UTC
 - **Smart Detection**: Only deploys if commits exist since last successful deploy
 - **Manual Trigger**: Can be triggered anytime from the Actions tab
 - **Credit Saving**: Skips deploy if no changes = no wasted build minutes
+- **Uses Pre-generated Files**: Deployment uses static files already in the repository
+
+### Workflow Separation
+
+```
+┌─────────────────────────────────┐
+│  Generate Static Files          │
+│  (generate-static-files.yml)    │
+│  - Daily at 2 AM UTC            │
+│  - Or manual trigger            │
+└───────────────┬─────────────────┘
+                │
+                ▼
+        Version-controlled
+        static files in repo
+                │
+                ▼
+┌─────────────────────────────────┐
+│  Smart Netlify Deploy           │
+│  (scheduled-deploy.yml)         │
+│  - Weekly at 3 AM UTC           │
+│  - Or manual trigger            │
+│  - Uses pre-generated files     │
+└─────────────────────────────────┘
+```
 
 ## Customize Schedule
 
@@ -51,7 +81,7 @@ Edit `.github/workflows/scheduled-deploy.yml` and change the cron expression:
 
 ```yaml
 schedule:
-  - cron: '0 2 * * 0'  # Sunday 2 AM UTC
+  - cron: '0 3 * * 0'  # Sunday 3 AM UTC
 ```
 
 Examples:

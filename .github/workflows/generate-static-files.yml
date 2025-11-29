@@ -1,0 +1,167 @@
+name: Generate Static Files
+
+# Dedicated workflow for static file generation
+# This workflow is independent from deployment and generates:
+# - sitemap.xml
+# - portfolio-data.json  
+# - share-meta.json
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for regenerating static files (optional)'
+        required: false
+        default: 'Manual regeneration'
+      generate_sitemap:
+        description: 'Generate sitemap.xml'
+        required: false
+        default: 'true'
+        type: boolean
+      generate_data:
+        description: 'Generate portfolio-data.json and share-meta.json'
+        required: false
+        default: 'true'
+        type: boolean
+
+  # Scheduled trigger - runs daily at 2 AM UTC to check for content changes
+  schedule:
+    - cron: '0 2 * * *'
+
+# Prevent concurrent runs
+concurrency:
+  group: generate-static-files
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate-static-files:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for Airtable credentials
+        id: check_creds
+        run: |
+          if [ -z "${{ secrets.AIRTABLE_API_KEY }}" ] || [ -z "${{ secrets.AIRTABLE_BASE_ID }}" ]; then
+            echo "has_credentials=false" >> $GITHUB_OUTPUT
+            echo "::warning::Airtable credentials not configured. Static file generation requires AIRTABLE_API_KEY and AIRTABLE_BASE_ID secrets."
+          else
+            echo "has_credentials=true" >> $GITHUB_OUTPUT
+            echo "✅ Airtable credentials found"
+          fi
+
+      - name: Generate portfolio-data.json and share-meta.json
+        if: steps.check_creds.outputs.has_credentials == 'true' && (github.event_name == 'schedule' || github.event.inputs.generate_data == 'true')
+        id: generate_data
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          echo "🔄 Generating portfolio-data.json and share-meta.json..."
+          node scripts/sync-data.mjs
+          echo "✅ Data files generated successfully"
+          echo "data_generated=true" >> $GITHUB_OUTPUT
+
+      - name: Generate sitemap.xml
+        if: steps.check_creds.outputs.has_credentials == 'true' && (github.event_name == 'schedule' || github.event.inputs.generate_sitemap == 'true')
+        id: generate_sitemap
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          echo "🔄 Generating sitemap.xml..."
+          node scripts/generate-sitemap.mjs
+          echo "✅ Sitemap generated successfully"
+          echo "sitemap_generated=true" >> $GITHUB_OUTPUT
+
+      - name: Check for file changes
+        id: check_changes
+        run: |
+          # Check if any static files changed
+          if git diff --quiet -- public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml 2>/dev/null; then
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "📋 No changes detected in static files"
+          else
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "📋 Changes detected in static files:"
+            git diff --stat -- public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+          fi
+
+      - name: Commit updated static files
+        if: steps.check_changes.outputs.files_changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          
+          # Add static files
+          git add public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+          
+          # Create commit with appropriate message
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            COMMIT_MSG="chore: update static files (scheduled) [ci skip]"
+          else
+            COMMIT_MSG="chore: update static files (${{ github.event.inputs.reason || 'manual' }}) [ci skip]"
+          fi
+          
+          git commit -m "$COMMIT_MSG"
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}
+          echo "✅ Static files committed and pushed"
+
+      - name: Skip notification
+        if: steps.check_creds.outputs.has_credentials == 'false'
+        run: |
+          echo "::error::Cannot generate static files without Airtable credentials."
+          echo "Please add the following secrets to your repository:"
+          echo "  - AIRTABLE_API_KEY (Airtable Personal Access Token)"
+          echo "  - AIRTABLE_BASE_ID (Airtable Base ID)"
+          exit 1
+
+      - name: Summary
+        run: |
+          echo "## Static Files Generation Summary 📦" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.generate_data.outputs.data_generated }}" = "true" ]; then
+            echo "| portfolio-data.json | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+            echo "| share-meta.json | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| portfolio-data.json | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+            echo "| share-meta.json | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.generate_sitemap.outputs.sitemap_generated }}" = "true" ]; then
+            echo "| sitemap.xml | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| sitemap.xml | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_changes.outputs.files_changed }}" = "true" ]; then
+            echo "✅ **Changes committed to repository**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📋 **No changes detected - files are up to date**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Trigger Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "- **Reason:** ${{ github.event.inputs.reason || 'Not specified' }}" >> $GITHUB_STEP_SUMMARY
+          fi

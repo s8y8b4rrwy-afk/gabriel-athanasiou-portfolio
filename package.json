@@ -13,9 +13,11 @@
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:data": "node scripts/sync-data.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
+    "generate:static": "npm run build:data && npm run build:sitemap",
     "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
     "sync:static:force": "node scripts/sync-static-to-cloudinary.mjs --force",
-    "build": "npm run build:content && npm run build:data && vite build",
+    "build": "vite build",
+    "build:full": "npm run generate:static && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

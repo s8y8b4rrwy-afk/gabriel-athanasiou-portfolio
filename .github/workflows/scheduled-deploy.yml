@@ -1,10 +1,10 @@
-name: Smart Netlify Deploy (Code + Content)
+name: Smart Netlify Deploy (Code Changes Only)
+
+# This workflow handles deployment only - static file generation is now handled
+# by the separate 'Generate Static Files' workflow (generate-static-files.yml).
+# This workflow uses pre-generated static files from the repository.
 
 on:
-  # Daily check for content changes at 2 AM UTC - DISABLED (now handled by scheduled-sync.mjs chain reaction)
-  # schedule:
-  #   - cron: '0 2 * * *'
-  
   # Weekly check for code changes on Sunday at 3 AM UTC  
   schedule:
     - cron: '0 3 * * 0'
@@ -18,16 +18,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Determine run type
-        id: run_type
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "cron_expr=${{ github.event.schedule }}" >> $GITHUB_OUTPUT
-            echo "Scheduled run triggered by cron: ${{ github.event.schedule }}"
-          else
-            echo "cron_expr=manual" >> $GITHUB_OUTPUT
-            echo "Manual or dispatch run."
-          fi
       - name: Install GitHub CLI
         run: |
           sudo apt-get update -y
@@ -38,25 +28,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Check for code changes
         id: check_code
         run: |
-          # Skip code diff on daily (content-only) cron
-          if [ "${{ steps.run_type.outputs.cron_expr }}" = "0 2 * * *" ]; then
-            echo "Daily content cron - skipping code change detection."
-            echo "code_changed=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
           LAST_DEPLOY_SHA=$(gh run list --workflow=scheduled-deploy.yml --status=success --limit=1 --json headSha --jq '.[0].headSha' || echo "")
           
           if [ -z "$LAST_DEPLOY_SHA" ]; then
-            echo "No previous deploy found. Will check content."
-            echo "code_changed=false" >> $GITHUB_OUTPUT
+            echo "No previous deploy found. Will deploy."
+            echo "code_changed=true" >> $GITHUB_OUTPUT
           else
             CURRENT_SHA=$(git rev-parse HEAD)
             # Exclude manifest-only commits (marked with [ci skip])
@@ -72,41 +51,33 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate share manifest
-        id: generate
-        env:
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      - name: Verify static files exist
+        id: verify_static
         run: |
-          node scripts/generate-share-meta.mjs
-          echo "Manifest generated. Checking for diff..."
-          if [ ! -f public/share-meta.json ] || [ ! -f public/share-meta.hash ]; then
-            echo "No manifest files found; treating as no content change."
-            echo "content_changed=false" >> $GITHUB_OUTPUT
+          echo "📋 Verifying pre-generated static files..."
+          MISSING_FILES=""
+          
+          if [ ! -f "public/portfolio-data.json" ]; then
+            MISSING_FILES="$MISSING_FILES portfolio-data.json"
+          fi
+          if [ ! -f "public/share-meta.json" ]; then
+            MISSING_FILES="$MISSING_FILES share-meta.json"
+          fi
+          if [ ! -f "public/sitemap.xml" ]; then
+            MISSING_FILES="$MISSING_FILES sitemap.xml"
+          fi
+          
+          if [ -n "$MISSING_FILES" ]; then
+            echo "::warning::Missing static files:$MISSING_FILES"
+            echo "::warning::Run 'Generate Static Files' workflow first to generate these files."
+            echo "static_files_valid=false" >> $GITHUB_OUTPUT
           else
-            if git diff --quiet -- public/share-meta.json public/share-meta.hash; then
-              echo "content_changed=false" >> $GITHUB_OUTPUT
-            else
-              echo "content_changed=true" >> $GITHUB_OUTPUT
-            fi
+            echo "✅ All required static files present"
+            echo "static_files_valid=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit updated manifest
-        if: steps.generate.outputs.content_changed == 'true'
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git add public/share-meta.json public/share-meta.hash
-          git commit -m "chore: update share-meta manifest [deploy]"
-          git pull --rebase origin main
-          git push origin HEAD:main
-          echo "commit_created=true" >> $GITHUB_OUTPUT
-
-      - name: Ensure deploy marker commit
-        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+      - name: Create deploy marker commit
+        if: steps.check_code.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
@@ -122,7 +93,7 @@ jobs:
           fi
 
       - name: Wait for Netlify deployment
-        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        if: steps.check_code.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch'
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
@@ -165,12 +136,30 @@ jobs:
           exit 0
 
       - name: Warm CDN cache
-        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        if: steps.check_code.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           echo "🔥 Warming CDN cache after deployment..."
           curl -f --max-time 30 "https://directedbygabriel.com/.netlify/functions/get-data" || echo "⚠️ Cache warming failed (non-critical)"
           echo "✅ CDN cache warming complete"
 
       - name: Skip Deploy
-        if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false'
         run: echo "✅ No changes detected. Skipping deploy to save build credits."
+
+      - name: Summary
+        run: |
+          echo "## Deployment Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Code changes | ${{ steps.check_code.outputs.code_changed == 'true' && '✅ Detected' || '⏭️ None' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Static files | ${{ steps.verify_static.outputs.static_files_valid == 'true' && '✅ Valid' || '⚠️ Missing' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_code.outputs.code_changed }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "✅ **Deployment triggered**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⏭️ **Deployment skipped** (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "ℹ️ *Static file generation is now handled by the 'Generate Static Files' workflow.*" >> $GITHUB_STEP_SUMMARY
