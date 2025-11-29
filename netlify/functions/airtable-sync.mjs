@@ -84,12 +84,10 @@ const saveCloudinaryMapping = async (mapping) => {
 };
 
 // Upload image to Cloudinary using shared helper
-// Note: Eager transformations enabled ONLY for home hero image (first featured project's first image)
-const uploadToCloudinary = async (imageUrl, publicId, title = '', enableEager = false) => {
+// Images uploaded at original quality with no transformations
+const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
   return uploadToCloudinaryHelper(cloudinary, imageUrl, publicId, {
-    title,
-    eager: enableEager, // Only true for home hero image
-    quality: 100
+    title
   });
 };
 
@@ -122,10 +120,6 @@ const syncImagesToCloudinary = async (projects, posts, existingMapping) => {
   let skipCount = 0;
   let failCount = 0;
   
-  // Identify first featured project for hero image eager loading
-  const firstFeaturedProject = projects.find(p => p.isFeatured);
-  const heroProjectId = firstFeaturedProject?.id;
-  
   // Process projects
   for (const project of projects) {
     const projectData = {
@@ -152,13 +146,8 @@ const syncImagesToCloudinary = async (projects, posts, existingMapping) => {
         projectData.images.push(existingImage);
         skipCount++;
       } else {
-        // New or changed image, upload
-        // Enable eager transformations ONLY for home hero image (first featured project, index 0)
-        const isHeroImage = project.id === heroProjectId && i === 0;
-        if (isHeroImage) {
-          console.log(`⚡ Uploading HOME HERO image with eager transformations: ${project.title}`);
-        }
-        const result = await uploadToCloudinary(imageUrl, publicId, project.title, isHeroImage);
+        // New or changed image, upload at original quality
+        const result = await uploadToCloudinary(imageUrl, publicId, project.title);
         
         if (result.success) {
           projectData.images.push({

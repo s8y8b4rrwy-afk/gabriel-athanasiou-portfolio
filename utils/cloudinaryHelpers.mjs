@@ -4,18 +4,24 @@
  */
 
 /**
- * Transformation presets for eager generation
- * Generates 8 variants: 2 widths × 2 qualities × 2 DPRs × 1 format
+ * Delivery transformation presets (NOT used for upload)
+ * These define the quality and size variants available at delivery time.
+ * Images are uploaded at original quality and transformed on-demand via URL parameters.
+ * 
+ * Presets:
+ * - Fine: q_75, w_800 (optimized for speed, default)
+ * - Ultra: q_90, w_1600 (optimized for quality, high-end devices)
  */
 export const TRANSFORMATION_PRESETS = {
   widths: [800, 1600],
-  qualities: [90, 75],  // ultra, fine
+  qualities: [75, 90],  // fine, ultra
   dprs: [1.0, 2.0],
   format: 'webp'
 };
 
 /**
  * Generate all eager transformation combinations
+ * @deprecated No longer used - transformations now happen on-demand at delivery time
  * @returns {Array} Array of transformation objects (8 variants)
  */
 export const generateEagerTransformations = () => {
@@ -39,44 +45,34 @@ export const generateEagerTransformations = () => {
 };
 
 /**
- * Upload image to Cloudinary with optional eager transformations
+ * Upload image to Cloudinary at original quality without any transformations
  * 
- * Note: Eager transformations are disabled by default for faster uploads.
- * Transformations are generated on-demand (first request has ~2-3s delay).
+ * Note: Images are stored at original resolution and format.
+ * Transformations (quality, format, size) are applied only at delivery time via URL parameters.
  * 
  * @param {Object} cloudinary - Configured Cloudinary instance
  * @param {string} imageUrl - Source image URL to upload
  * @param {string} publicId - Public ID for the uploaded image
  * @param {Object} options - Upload options
  * @param {string} options.title - Image title (for metadata)
- * @param {boolean} options.eager - Whether to pre-generate transformations (default: false)
- * @param {number} options.quality - Upload quality (default: 100)
  * @param {boolean} options.overwrite - Whether to overwrite existing (default: true)
  * @returns {Promise<Object>} Upload result with success status and metadata
  */
 export const uploadToCloudinary = async (cloudinary, imageUrl, publicId, options = {}) => {
   const {
     title = '',
-    eager = false, // Disabled by default for faster uploads
-    quality = 100,
     overwrite = true
   } = options;
   
+  // Upload original image without any transformations
+  // Transformations happen at delivery time only
   const uploadOptions = {
     public_id: publicId,
     folder: '', // Already in public_id
     resource_type: 'image',
-    format: 'webp',
-    quality,
     overwrite
+    // NO format, quality, or eager transformations
   };
-  
-  // Add eager transformations if explicitly enabled
-  // Note: Adds ~6-8 seconds per image upload but eliminates cold-start delays
-  if (eager) {
-    uploadOptions.eager = generateEagerTransformations();
-    uploadOptions.eager_async = false;
-  }
   
   try {
     const result = await cloudinary.uploader.upload(imageUrl, uploadOptions);
