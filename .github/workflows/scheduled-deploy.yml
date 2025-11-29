@@ -1,16 +1,23 @@
-name: Smart Netlify Deploy (Code + Content)
+name: Manual Data Sync (Airtable + Deploy)
 
 on:
-  # Daily check for content changes at 2 AM UTC - DISABLED (now handled by scheduled-sync.mjs chain reaction)
+  # Automatic schedules are DISABLED to conserve Airtable API credits
+  # Use the manual trigger (workflow_dispatch) to sync data when needed
+  #
+  # Previously:
+  # - Daily check for content changes at 2 AM UTC - DISABLED
+  # - Weekly check for code changes on Sunday at 3 AM UTC - DISABLED
+  #
   # schedule:
-  #   - cron: '0 2 * * *'
+  #   - cron: '0 3 * * 0'
   
-  # Weekly check for code changes on Sunday at 3 AM UTC  
-  schedule:
-    - cron: '0 3 * * 0'
-  
-  # Manual trigger for emergencies
+  # Manual trigger - use this to sync data from Airtable when needed
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual sync/deploy'
+        required: false
+        default: 'Manual content sync from Airtable'
 
 jobs:
   check-and-deploy:
@@ -113,7 +120,9 @@ jobs:
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
             echo "Latest commit lacks deploy marker. Creating empty deploy commit."
             git pull --rebase origin main
-            git commit --allow-empty -m "chore: scheduled deploy [deploy]"
+            git commit --allow-empty -m "chore: manual data sync [deploy]
+            
+            Reason: ${{ github.event.inputs.reason }}"
             git push origin HEAD:main
             echo "commit_created=true" >> $GITHUB_OUTPUT
           else
@@ -172,5 +181,22 @@ jobs:
           echo "✅ CDN cache warming complete"
 
       - name: Skip Deploy
-        if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
-        run: echo "✅ No changes detected. Skipping deploy to save build credits."
+        if: steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        run: echo "✅ No content changes detected from Airtable. No deployment needed."
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Manual Data Sync Summary 📊" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** ${{ github.event.inputs.reason || 'Not specified' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Code changes detected: ${{ steps.check_code.outputs.code_changed || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Content changes detected: ${{ steps.generate.outputs.content_changed || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Notes" >> $GITHUB_STEP_SUMMARY
+          echo "- This workflow syncs data from Airtable and triggers a Netlify deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Automatic scheduled syncs are **disabled** to conserve API credits" >> $GITHUB_STEP_SUMMARY
+          echo "- Use this workflow manually when you need to sync content changes" >> $GITHUB_STEP_SUMMARY
