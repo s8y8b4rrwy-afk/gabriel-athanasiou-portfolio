@@ -39,7 +39,7 @@ permissions:
 
 # Define static file paths as environment variables for consistency
 env:
-  STATIC_FILES: public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
+  STATIC_FILES: public/portfolio-data.json public/share-meta.json public/sitemap.xml
 
 jobs:
   generate-static-files:
