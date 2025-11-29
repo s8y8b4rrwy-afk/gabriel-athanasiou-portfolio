@@ -65,7 +65,7 @@ function makeSlug(base) {
     .slice(0, 80) || 'item';
 }
 
-async function buildProjects(cloudinaryMapping) {
+async function buildProjects(cloudinaryMapping, defaultOgImage) {
   const records = await fetchAirtableTable('Projects', 'Release Date');
   const items = [];
   
@@ -103,17 +103,26 @@ async function buildProjects(cloudinaryMapping) {
     
     const heroImage = gallery[0] || '';
     
+    // Check if project has video content
+    const hasVideo = !!(f['Video URL'] && f['Video URL'].trim());
+    
     // Try video thumbnail if no gallery image
     let videoThumbnail = '';
-    if (!heroImage && f['Video URL']) {
+    if (!heroImage && hasVideo) {
       const rawVideoUrls = f['Video URL'].split(/[,|\n]+/).map(s => s.trim()).filter(Boolean);
       if (rawVideoUrls.length > 0) {
         videoThumbnail = await getVideoThumbnail(rawVideoUrls[0]);
       }
     }
     
-    // Priority: Social Image > Gallery > Video Thumbnail > Empty
-    const socialImage = (f['Social Image'] && f['Social Image'][0] && f['Social Image'][0].url) || heroImage || videoThumbnail || '';
+    // Priority: Social Image > Gallery > Video Thumbnail > Default OG Image (if no video AND no gallery)
+    let socialImage = (f['Social Image'] && f['Social Image'][0] && f['Social Image'][0].url) || heroImage || videoThumbnail;
+    
+    // If project has neither video nor gallery images, use default OG image
+    if (!socialImage && !hasVideo && gallery.length === 0) {
+      socialImage = defaultOgImage || '';
+    }
+    
     const description = (f['About'] || '').toString().replace(/\s+/g, ' ').trim();
     const baseSlug = makeSlug(title + (year ? '-' + year : ''));
     items.push({
@@ -176,7 +185,9 @@ async function buildConfig() {
 async function main() {
   try {
     const cloudinaryMapping = loadCloudinaryMapping();
-    const [projects, posts, config] = await Promise.all([buildProjects(cloudinaryMapping), buildPosts(), buildConfig()]);
+    const config = await buildConfig();
+    const defaultOgImage = config.defaultOgImage || '';
+    const [projects, posts] = await Promise.all([buildProjects(cloudinaryMapping, defaultOgImage), buildPosts()]);
     const manifest = { generatedAt: new Date().toISOString(), projects, posts, config };
     const json = JSON.stringify(manifest, null, 2);
     if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });

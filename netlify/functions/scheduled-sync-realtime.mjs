@@ -10,6 +10,9 @@ import path from 'path';
 // ==========================================
 const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
+
+// Fallback bio picture with Cloudinary presets (fine: q_75, ultra: q_90)
+const FALLBACK_BIO_IMAGE = 'https://res.cloudinary.com/date24ay6/image/upload/v1764382938/ZAF08121_nagmpv.jpg';
 // Cloudinary (server-side) feature flag and config
 const USE_CLOUDINARY = process.env.USE_CLOUDINARY === 'true';
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -352,7 +355,7 @@ const syncAirtableData = async () => {
       },
       about: {
         bio: settingsFields['Bio'] || settingsFields['Bio Text'] || '',
-        profileImage: settingsFields['About Image']?.[0]?.url || ''
+        profileImage: settingsFields['About Image']?.[0]?.url || FALLBACK_BIO_IMAGE
       },
       allowedRoles: allowedRoles,
       defaultOgImage: settingsFields['Default OG Image']?.[0]?.url || ''
@@ -380,13 +383,19 @@ const syncAirtableData = async () => {
       
       // Get video URL and thumbnail
       const videoUrl = f['Video URL'] || '';
+      const hasVideo = !!(videoUrl && videoUrl.trim());
       let heroImage = galleryUrls[0] || '';
       
-      if (!heroImage && videoUrl) {
+      if (!heroImage && hasVideo) {
         console.log(`Fetching thumbnail for ${f['Name']}: ${videoUrl}`);
         const thumbnailUrl = await fetchVideoThumbnail(videoUrl);
         console.log(`Got thumbnail: ${thumbnailUrl || 'FAILED'}`);
         if (thumbnailUrl) heroImage = thumbnailUrl;
+      }
+      
+      // If project has neither video nor gallery images, use default OG image
+      if (!heroImage && !hasVideo && galleryUrls.length === 0) {
+        heroImage = config.defaultOgImage || '';
       }
       
       // Parse external links

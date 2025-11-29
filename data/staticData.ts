@@ -24,7 +24,7 @@ export const STATIC_CONFIG: HomeConfig = {
     },
     about: {
         bio: "Gabriel Athanasiou is a director and visual artist based between London and Athens. With a background in fine art photography, his work is characterized by a rigorous attention to composition and an emotive, textural approach to light.\n\n(This is a static backup loaded because the live connection is unavailable.)",
-        profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000"
+        profileImage: "https://res.cloudinary.com/date24ay6/image/upload/v1764382938/ZAF08121_nagmpv.jpg"
     },
     allowedRoles: ["Director"]
 };
