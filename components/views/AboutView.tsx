@@ -30,7 +30,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
                 <div className="md:col-span-5">
                     <div className="w-full aspect-[3/4] bg-gray-900 overflow-hidden relative grayscale hover:grayscale-0 transition duration-1000">
                         <OptimizedImage
-                            recordId="config-profile"
+                            recordId="profile"
                             fallbackUrl={config.about?.profileImage || ''}
                             type="config"
                             index={0}
