@@ -166,7 +166,6 @@ const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
       quality: 75, // Fine preset quality
       eager: EAGER_TRANSFORMATIONS, // Pre-generate all 8 transformation variants
       eager_async: false, // Generate synchronously (adds ~6-8 seconds per image)
-      invalidate: true, // Clear CDN cache
       overwrite: true // Replace existing images
     });
     
