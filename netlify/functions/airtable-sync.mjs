@@ -29,8 +29,8 @@ const getDirname = () => {
 const AIRTABLE_TOKEN = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
 
-// Fallback bio picture with Cloudinary presets (fine: q_75, ultra: q_90)
-const FALLBACK_BIO_IMAGE = 'https://res.cloudinary.com/date24ay6/image/upload/v1764382938/ZAF08121_nagmpv.jpg';
+// Fallback bio picture with Cloudinary transformation presets (ultra quality)
+const FALLBACK_BIO_IMAGE = 'https://res.cloudinary.com/date24ay6/image/upload/f_webp,q_90,w_1600,c_limit/v1764382938/ZAF08121_nagmpv.jpg';
 
 // Cloudinary configuration
 const USE_CLOUDINARY = process.env.USE_CLOUDINARY === 'true';
