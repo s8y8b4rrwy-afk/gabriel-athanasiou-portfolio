@@ -48,6 +48,7 @@ export async function syncAllData(config) {
     projects: [],
     journal: [],
     about: null,
+    config: null,
     errors: [],
     timestamp: new Date().toISOString()
   };
@@ -89,11 +90,20 @@ export async function syncAllData(config) {
     );
     if (verbose) console.log('[sync-core] ✅ Synced about page data');
 
+    // Sync config/settings data
+    results.config = await buildConfig(
+      airtableToken,
+      airtableBaseId,
+      verbose
+    );
+    if (verbose) console.log('[sync-core] ✅ Synced config/settings data');
+
     // Save portfolio data
     const portfolioData = {
       projects: results.projects,
-      journal: results.journal,
+      posts: results.journal, // Use 'posts' for consistency with frontend
       about: results.about,
+      config: results.config,
       generatedAt: results.timestamp
     };
 
@@ -269,6 +279,29 @@ async function buildAbout(token, baseId, verbose) {
   } : null;
 
   return { bio, picture };
+}
+
+/**
+ * Build config/settings data from Airtable
+ */
+async function buildConfig(token, baseId, verbose) {
+  if (verbose) console.log('[sync-core] ⚙️  Building config/settings...');
+  try {
+    const records = await fetchAirtableTable('Settings', null, token, baseId);
+    
+    if (records.length === 0) {
+      return { defaultOgImage: '' };
+    }
+
+    const f = records[0].fields || {};
+    const defaultOgImageAttachments = f['Default OG Image'] || [];
+    const defaultOgImage = defaultOgImageAttachments[0] ? defaultOgImageAttachments[0].url : '';
+
+    return { defaultOgImage };
+  } catch (error) {
+    console.warn('[sync-core] ⚠️ Could not fetch Settings table:', error.message);
+    return { defaultOgImage: '' };
+  }
 }
 
 /**

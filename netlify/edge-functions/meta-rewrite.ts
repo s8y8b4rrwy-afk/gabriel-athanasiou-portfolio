@@ -162,7 +162,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
       "@type": "Article",
       "headline": item.title,
       "description": truncate(item.content || item.description || '', 200),
-      "image": item.coverImage || item.image,
+      "image": item.imageUrl || item.coverImage || item.image,
       "url": canonicalUrl,
       "author": {
         "@type": "Person",
@@ -214,10 +214,20 @@ export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // Only process share-relevant routes
-  if (!pathname.startsWith("/work/") && !pathname.startsWith("/journal/")) {
+  // Process all main routes for OG tags
+  const shouldProcess = 
+    pathname === '/' ||
+    pathname === '/work' ||
+    pathname === '/about' ||
+    pathname === '/journal' ||
+    pathname.startsWith('/work/') ||
+    pathname.startsWith('/journal/');
+
+  if (!shouldProcess) {
     return; // Pass through to next handler
   }
+
+  console.log(`[meta-rewrite] Processing: ${pathname}`);
 
   try {
     // Fetch the original index.html from the published site
@@ -233,8 +243,16 @@ export default async (request: Request, context: Context) => {
     const slug = pathname.split("/").filter(Boolean).pop() || "";
     
     // Use portfolio-data.json as primary source (has all fields for rich structured data)
+    // Try multiple sources for reliability
     const portfolioUrl = new URL("/portfolio-data.json", url.origin);
-    const portfolioRes = await fetch(portfolioUrl.toString());
+    let portfolioRes = await fetch(portfolioUrl.toString());
+    
+    // Fallback to Cloudinary if local file fails
+    if (!portfolioRes.ok) {
+      console.log("[meta-rewrite] Local portfolio-data.json failed, trying Cloudinary");
+      const cloudinaryUrl = "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json";
+      portfolioRes = await fetch(cloudinaryUrl);
+    }
     
     if (portfolioRes.ok) {
       const portfolioData: any = await portfolioRes.json();
@@ -246,20 +264,56 @@ export default async (request: Request, context: Context) => {
       
       if (pathname.startsWith("/work/") && portfolioData.projects) {
         item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found project: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
       } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
         item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
       }
+    } else {
+      console.log("[meta-rewrite] Failed to load portfolio data");
     }
 
-    // Build meta tags
-    const meta = item
-      ? {
-          title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
-          description: escapeHtml(truncate(item.description, 200)),
-          image: escapeHtml(item.heroImage || item.image || item.coverImage || (item.gallery && item.gallery[0]) || defaultOgImage),
-          type: pathname.startsWith("/journal/") ? "article" : "website"
-        }
-      : { ...DEFAULT_META, image: defaultOgImage };
+    // Build meta tags based on page type
+    let meta;
+    
+    if (item) {
+      // Individual project or post
+      meta = {
+        title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
+        description: escapeHtml(truncate(item.description || item.content || '', 200)),
+        image: escapeHtml(item.heroImage || item.imageUrl || item.image || item.coverImage || (item.gallery && item.gallery[0]) || defaultOgImage),
+        type: pathname.startsWith("/journal/") ? "article" : "website"
+      };
+    } else if (pathname === '/work') {
+      // Filmography index page
+      meta = {
+        title: escapeHtml("Filmography | GABRIEL ATHANASIOU"),
+        description: escapeHtml("Browse my collection of narrative films, commercials, music videos, and documentaries."),
+        image: defaultOgImage,
+        type: "website"
+      };
+    } else if (pathname === '/about') {
+      // About page
+      const aboutBio = portfolioData?.about?.bio || "Director based in London & Athens. Narrative, Commercial, Music Video.";
+      const aboutImage = portfolioData?.about?.picture || defaultOgImage;
+      meta = {
+        title: escapeHtml("About | GABRIEL ATHANASIOU"),
+        description: escapeHtml(truncate(aboutBio, 200)),
+        image: escapeHtml(aboutImage),
+        type: "profile"
+      };
+    } else if (pathname === '/journal') {
+      // Journal index page
+      meta = {
+        title: escapeHtml("Journal | GABRIEL ATHANASIOU"),
+        description: escapeHtml("Updates, behind-the-scenes insights, and reflections from my filmmaking journey."),
+        image: defaultOgImage,
+        type: "website"
+      };
+    } else {
+      // Home page or other
+      meta = { ...DEFAULT_META, image: defaultOgImage };
+    }
 
     const canonicalUrl = escapeHtml(url.href);
 

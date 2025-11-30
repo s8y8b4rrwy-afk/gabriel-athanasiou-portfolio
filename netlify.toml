@@ -53,21 +53,61 @@ ignore = "bash scripts/ignore-netlify-build.sh"
 targetPort = 3000
 port = 8888
 
-# Edge Functions for dynamic meta tag injection
-[[edge_functions]]
-path = "/work/*"
-function = "meta-rewrite"
-
-[[edge_functions]]
-path = "/journal/*"
-function = "meta-rewrite"
-
 # Redirect /sitemap.xml to the dynamic sitemap function
 [[redirects]]
 from = "/sitemap.xml"
 to = "/.netlify/functions/sitemap"
 status = 200
 force = true
+
+# Edge Functions for dynamic meta tag injection (must be before SPA fallback)
+[[redirects]]
+from = "/"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
+
+[[redirects]]
+from = "/work"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
+
+[[redirects]]
+from = "/work/*"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
+
+[[redirects]]
+from = "/about"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
+
+[[redirects]]
+from = "/journal"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
+
+[[redirects]]
+from = "/journal/*"
+to = "/index.html"
+status = 200
+force = true
+[redirects.edge_functions]
+"meta-rewrite" = {}
 
 # SPA fallback (must be last)
 [[redirects]]
