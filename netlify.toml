@@ -60,56 +60,7 @@ to = "/.netlify/functions/sitemap"
 status = 200
 force = true
 
-# Edge Functions for dynamic meta tag injection (must be before SPA fallback)
-[[redirects]]
-from = "/"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-[[redirects]]
-from = "/work"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-[[redirects]]
-from = "/work/*"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-[[redirects]]
-from = "/about"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-[[redirects]]
-from = "/journal"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-[[redirects]]
-from = "/journal/*"
-to = "/index.html"
-status = 200
-force = true
-[redirects.edge_functions]
-"meta-rewrite" = {}
-
-# SPA fallback (must be last)
+# SPA fallback - the edge function will intercept specific routes via its config export
 [[redirects]]
 from = "/*"
 to = "/index.html"

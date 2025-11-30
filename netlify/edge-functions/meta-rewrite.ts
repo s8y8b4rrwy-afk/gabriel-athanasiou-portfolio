@@ -2,8 +2,9 @@
 // Intercepts /work/* and /journal/* requests to inject project/post-specific OG tags
 // Uses share-meta.json manifest (generated at build time) for zero runtime Airtable calls
 
-// @ts-ignore
 import type { Context } from "https://edge.netlify.com";
+
+export const config = { path: ["/", "/work", "/work/*", "/about", "/journal", "/journal/*"] };
 
 interface ShareItem {
   id: string;
