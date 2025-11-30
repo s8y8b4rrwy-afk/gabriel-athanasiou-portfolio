@@ -244,17 +244,10 @@ export default async (request: Request, context: Context) => {
   
   const slug = pathname.split("/").filter(Boolean).pop() || "";
   
-  // Use portfolio-data.json as primary source (has all fields for rich structured data)
-  // Try multiple sources for reliability
-  const portfolioUrl = new URL("/portfolio-data.json", url.origin);
-  let portfolioRes = await fetch(portfolioUrl.toString());
-  
-  // Fallback to Cloudinary if local file fails
-  if (!portfolioRes.ok) {
-    console.log("[meta-rewrite] Local portfolio-data.json failed, trying Cloudinary");
-    const cloudinaryUrl = "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json";
-    portfolioRes = await fetch(cloudinaryUrl);
-  }
+  // Fetch portfolio data directly from Cloudinary (primary source)
+  // As per architecture: static files are hosted on Cloudinary, not locally
+  const cloudinaryUrl = "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json";
+  let portfolioRes = await fetch(cloudinaryUrl);
   
   if (portfolioRes.ok) {
     portfolioData = await portfolioRes.json();
@@ -272,7 +265,7 @@ export default async (request: Request, context: Context) => {
       console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
     }
   } else {
-    console.log("[meta-rewrite] Failed to load portfolio data, trying share-meta.json");
+    console.log("[meta-rewrite] Failed to load portfolio data from Cloudinary, trying share-meta.json fallback");
     
     // Fallback to share-meta.json for basic OG data
     const shareMetaUrl = new URL("/share-meta.json", url.origin);
