@@ -230,8 +230,8 @@ export default async (request: Request, context: Context) => {
     const response = await context.next();
     let html = await response.text();
 
-  // Load manifest (cached by edge runtime per instance)
-  // Try share-meta.json first, fall back to portfolio-data.json if empty/unavailable
+  // Load manifest from Cloudinary (primary source of truth)
+  // portfolio-data.json has complete data, share-meta.json is lightweight fallback
   let item: any = undefined; // Full item with all fields for structured data
   const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
   let defaultOgImage = ULTIMATE_FALLBACK;
