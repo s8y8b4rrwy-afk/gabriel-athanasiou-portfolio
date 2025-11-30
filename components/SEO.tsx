@@ -83,6 +83,10 @@ export const SEO: React.FC<SEOProps> = ({
       const isNarrative = project.type === 'Narrative';
       const isCommercial = project.type === 'Commercial';
       
+      // Use most accurate date available: releaseDate > workDate > year
+      const dateString = project.releaseDate || project.workDate || (project.year ? `${project.year}-01-01` : null);
+      const isoDate = dateString ? `${dateString}T00:00:00Z` : undefined;
+      
       schemaData = {
         "@context": "https://schema.org",
         "@type": isNarrative ? "Movie" : "VideoObject",
@@ -90,7 +94,10 @@ export const SEO: React.FC<SEOProps> = ({
         "description": project.description,
         "image": image, // Use optimized image URL passed as prop
         "url": siteUrl,
-        ...(project.year && { "dateCreated": `${project.year}-01-01` }),
+        ...(isoDate && { "dateCreated": isoDate }),
+        
+        // REQUIRED: thumbnailUrl for VideoObject (Google requirement)
+        ...(image && { "thumbnailUrl": image }),
         
         // Director information
         "director": {
@@ -141,11 +148,11 @@ export const SEO: React.FC<SEOProps> = ({
           "award": project.awards
         }),
         
-        // Video content
+        // Video content with proper ISO 8601 date format
         ...(project.videoUrl && {
           "contentUrl": project.videoUrl,
           "embedUrl": project.videoUrl,
-          "uploadDate": project.year ? `${project.year}-01-01` : undefined
+          "uploadDate": isoDate
         }),
         
         // Gallery images
@@ -158,13 +165,18 @@ export const SEO: React.FC<SEOProps> = ({
       };
     } else if (post) {
       // ENHANCED: Rich Article schema for blog posts
+      // Convert date to ISO 8601 format with timezone if needed
+      const publishDate = post.date 
+        ? (post.date.includes('T') ? post.date : `${post.date}T00:00:00Z`)
+        : undefined;
+      
       schemaData = {
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": post.title,
         "description": post.content.substring(0, 200),
         "image": post.imageUrl || image,
-        "datePublished": post.date,
+        "datePublished": publishDate,
         "author": {
           "@type": "Person",
           "name": "Gabriel Athanasiou",
