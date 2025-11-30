@@ -52,6 +52,164 @@ function truncate(text: string, maxLength: number = 200): string {
   return clean.length > maxLength ? clean.slice(0, maxLength) + "..." : clean;
 }
 
+// Generate structured data (JSON-LD) for SEO
+function generateStructuredData(item: any, pathname: string, canonicalUrl: string): string {
+  const siteOrigin = new URL(canonicalUrl).origin;
+  
+  if (pathname.startsWith("/work/")) {
+    // Project: Movie or VideoObject schema
+    const isNarrative = item.type === 'Narrative';
+    const isCommercial = item.type === 'Commercial';
+    
+    // Use most accurate date available
+    const dateString = item.releaseDate || item.workDate || (item.year ? `${item.year}-01-01` : null);
+    const isoDate = dateString ? `${dateString}T00:00:00Z` : undefined;
+    
+    const schema: any = {
+      "@context": "https://schema.org",
+      "@type": isNarrative ? "Movie" : "VideoObject",
+      "name": item.title,
+      "description": item.description || item.description,
+      "image": item.image || item.heroImage,
+      "url": canonicalUrl,
+    };
+    
+    if (isoDate) {
+      schema.dateCreated = isoDate;
+    }
+    
+    // Thumbnail (required for VideoObject)
+    if (item.image || item.heroImage) {
+      schema.thumbnailUrl = item.image || item.heroImage;
+    }
+    
+    // Director information
+    schema.director = {
+      "@type": "Person",
+      "name": "Gabriel Athanasiou",
+      "jobTitle": "Director",
+      "url": siteOrigin,
+      "sameAs": [
+        "https://twitter.com/gab_ath",
+        "https://www.instagram.com/gab.ath",
+        "https://www.linkedin.com/in/gabathanasiou/",
+        "https://www.imdb.com/name/nm7048843/"
+      ]
+    };
+    
+    // Credits
+    if (item.credits && item.credits.length > 0) {
+      schema.credits = item.credits.map((credit: any) => ({
+        "@type": "Role",
+        "roleName": credit.role,
+        "name": credit.name
+      }));
+    }
+    
+    // Production company
+    if (item.productionCompany) {
+      schema.productionCompany = {
+        "@type": "Organization",
+        "name": item.productionCompany
+      };
+    }
+    
+    // Client/sponsor for commercials
+    if (isCommercial && item.client) {
+      schema.sponsor = {
+        "@type": "Organization",
+        "name": item.client
+      };
+    }
+    
+    // Genre
+    if (item.genre && item.genre.length > 0) {
+      schema.genre = item.genre;
+    }
+    
+    // Awards
+    if (item.awards && item.awards.length > 0) {
+      schema.award = item.awards;
+    }
+    
+    // Video content
+    if (item.videoUrl) {
+      schema.contentUrl = item.videoUrl;
+      schema.embedUrl = item.videoUrl;
+      if (isoDate) {
+        schema.uploadDate = isoDate;
+      }
+    }
+    
+    // Gallery images
+    if (item.gallery && item.gallery.length > 0) {
+      schema.thumbnail = item.gallery.map((img: string) => ({
+        "@type": "ImageObject",
+        "url": img
+      }));
+    }
+    
+    return JSON.stringify(schema);
+    
+  } else if (pathname.startsWith("/journal/")) {
+    // Blog Post: Article schema
+    const publishDate = item.date 
+      ? (item.date.includes('T') ? item.date : `${item.date}T00:00:00Z`)
+      : undefined;
+    
+    const schema: any = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": item.title,
+      "description": truncate(item.content || item.description || '', 200),
+      "image": item.coverImage || item.image,
+      "url": canonicalUrl,
+      "author": {
+        "@type": "Person",
+        "name": "Gabriel Athanasiou",
+        "jobTitle": "Director",
+        "url": siteOrigin,
+        "sameAs": [
+          "https://twitter.com/gab_ath",
+          "https://www.instagram.com/gab.ath",
+          "https://www.linkedin.com/in/gabathanasiou/",
+          "https://www.imdb.com/name/nm7048843/"
+        ]
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Gabriel Athanasiou"
+      }
+    };
+    
+    if (publishDate) {
+      schema.datePublished = publishDate;
+    }
+    
+    if (item.tags && item.tags.length > 0) {
+      schema.keywords = item.tags.join(', ');
+    }
+    
+    return JSON.stringify(schema);
+  }
+  
+  // Default Person schema for homepage or other pages
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Gabriel Athanasiou",
+    "url": canonicalUrl,
+    "jobTitle": "Director",
+    "areaServed": ["London", "Athens"],
+    "sameAs": [
+      "https://twitter.com/gab_ath",
+      "https://www.instagram.com/gab.ath",
+      "https://www.linkedin.com/in/gabathanasiou/",
+      "https://www.imdb.com/name/nm7048843/"
+    ]
+  });
+}
+
 export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
   const pathname = url.pathname;
@@ -68,71 +226,28 @@ export default async (request: Request, context: Context) => {
 
     // Load manifest (cached by edge runtime per instance)
     // Try share-meta.json first, fall back to portfolio-data.json if empty/unavailable
-    let item: ShareItem | undefined;
+    let item: any = undefined; // Full item with all fields for structured data
     const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
     let defaultOgImage = ULTIMATE_FALLBACK;
     
     const slug = pathname.split("/").filter(Boolean).pop() || "";
     
-    // Try share-meta.json first
-    const manifestUrl = new URL("/share-meta.json", url.origin);
-    const manifestRes = await fetch(manifestUrl.toString());
+    // Use portfolio-data.json as primary source (has all fields for rich structured data)
+    const portfolioUrl = new URL("/portfolio-data.json", url.origin);
+    const portfolioRes = await fetch(portfolioUrl.toString());
     
-    if (manifestRes.ok) {
-      const manifest: ShareManifest & { config?: ManifestConfig } = await manifestRes.json();
+    if (portfolioRes.ok) {
+      const portfolioData: any = await portfolioRes.json();
       
-      // Check if manifest has data
-      const hasData = manifest.projects.length > 0 || manifest.posts.length > 0;
-      
-      if (hasData) {
-        // Use custom default OG image from Settings if available
-        if (manifest.config?.defaultOgImage) {
-          defaultOgImage = manifest.config.defaultOgImage;
-        }
-        
-        if (pathname.startsWith("/work/")) {
-          item = manifest.projects.find((p) => p.slug === slug || p.id === slug);
-        } else if (pathname.startsWith("/journal/")) {
-          item = manifest.posts.find((p) => p.slug === slug || p.id === slug);
-        }
+      // Get default OG image from config
+      if (portfolioData.config?.defaultOgImage) {
+        defaultOgImage = portfolioData.config.defaultOgImage;
       }
-    }
-    
-    // Fallback to portfolio-data.json if no item found
-    if (!item) {
-      const portfolioUrl = new URL("/portfolio-data.json", url.origin);
-      const portfolioRes = await fetch(portfolioUrl.toString());
       
-      if (portfolioRes.ok) {
-        const portfolioData: any = await portfolioRes.json();
-        
-        if (pathname.startsWith("/work/") && portfolioData.projects) {
-          const project = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
-          if (project) {
-            item = {
-              id: project.id,
-              slug: project.slug,
-              title: project.title,
-              description: project.description || '',
-              image: project.heroImage || (project.gallery && project.gallery[0]) || '',
-              type: 'website',
-              year: project.year
-            };
-          }
-        } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
-          const post = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
-          if (post) {
-            item = {
-              id: post.id,
-              slug: post.slug,
-              title: post.title,
-              description: post.excerpt || post.content || '',
-              image: post.coverImage || '',
-              type: 'article',
-              date: post.date
-            };
-          }
-        }
+      if (pathname.startsWith("/work/") && portfolioData.projects) {
+        item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
+      } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
+        item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
       }
     }
 
@@ -141,14 +256,19 @@ export default async (request: Request, context: Context) => {
       ? {
           title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
           description: escapeHtml(truncate(item.description, 200)),
-          image: escapeHtml(item.image || defaultOgImage),
-          type: item.type === "article" ? "article" : "website"
+          image: escapeHtml(item.heroImage || item.image || item.coverImage || (item.gallery && item.gallery[0]) || defaultOgImage),
+          type: pathname.startsWith("/journal/") ? "article" : "website"
         }
       : { ...DEFAULT_META, image: defaultOgImage };
 
     const canonicalUrl = escapeHtml(url.href);
 
-    // Generate complete meta block
+    // Generate structured data (JSON-LD) for SEO
+    const structuredData = item 
+      ? generateStructuredData(item, pathname, canonicalUrl)
+      : generateStructuredData(null, pathname, canonicalUrl);
+
+    // Generate complete meta block with structured data
     const metaBlock = `
     <title>${meta.title}</title>
     <meta name="description" content="${meta.description}">
@@ -162,7 +282,8 @@ export default async (request: Request, context: Context) => {
     <meta name="twitter:description" content="${meta.description}">
     <meta name="twitter:image" content="${meta.image}">
     <meta name="twitter:creator" content="@gabrielcine">
-    <link rel="canonical" href="${canonicalUrl}">`;
+    <link rel="canonical" href="${canonicalUrl}">
+    <script type="application/ld+json">${structuredData}</script>`;
 
     // Replace existing meta section (from <title> through last twitter meta before </head>)
     // Strategy: Replace from first <title> to just before </head>, preserving other head content

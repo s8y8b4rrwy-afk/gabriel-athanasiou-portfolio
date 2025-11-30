@@ -33,6 +33,82 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 30 2025 - Server-Side SEO Structured Data (Edge Function Enhancement)
+**What Changed:** Moved structured data (JSON-LD) generation from client-side to server-side for better SEO.
+
+**The Problem:**
+- ❌ `SEO.tsx` component generated structured data client-side using `useEffect`
+- ❌ Search engine crawlers received HTML without structured data
+- ❌ Structured data appeared only after JavaScript execution
+- ❌ Google/Bing couldn't see rich schema markup during crawling
+- ✅ Meta tags (OG, Twitter) were already handled by edge function
+- ❌ But JSON-LD was client-side only
+
+**The Solution:**
+1. **Enhanced Edge Function** (`netlify/edge-functions/meta-rewrite.ts`):
+   - Added `generateStructuredData()` function
+   - Changed to use `portfolio-data.json` as primary source (has all fields vs lightweight `share-meta.json`)
+   - Generates rich **Movie** schema for narrative projects:
+     - Director info with social links
+     - Full credits array (cast/crew)
+     - Production company
+     - Client/sponsor (for commercials)
+     - Genre, awards, video URLs
+     - Gallery images
+     - Proper ISO 8601 dates (releaseDate/workDate/year fallback)
+   - Generates **VideoObject** schema for non-narrative projects
+   - Generates **Article** schema for blog posts with author info
+   - Generates **Person** schema for homepage
+   - Injects `<script type="application/ld+json">` directly into HTML
+
+2. **Simplified SEO Component** (`components/SEO.tsx`):
+   - Removed 150+ lines of client-side structured data generation
+   - Kept meta tag updates for SPA navigation (title, OG tags, canonical)
+   - Added comment explaining edge function handles structured data
+   - Reduced from 243 lines to ~93 lines
+
+**Benefits:**
+- ✅ Search engines see structured data immediately (no JavaScript required)
+- ✅ Better SEO scores - crawlers get complete data on first request
+- ✅ Faster page loads - less client-side processing
+- ✅ Still 100% static - uses pre-generated `portfolio-data.json` from Cloudinary
+- ✅ No breaking changes - sync process unchanged
+- ✅ More maintainable - single source of truth for structured data
+
+**Data Flow:**
+```
+User/Crawler visits /work/project-slug
+  ↓
+Netlify Edge Function intercepts request
+  ↓
+Fetches portfolio-data.json (from Cloudinary CDN)
+  ↓
+Generates structured data + meta tags
+  ↓
+Injects into HTML <head>
+  ↓
+Browser/Crawler receives complete HTML
+  ↓
+✅ Search engine indexes rich structured data
+  ↓
+React loads → SEO.tsx updates meta for SPA navigation
+```
+
+**Files Changed:**
+- `netlify/edge-functions/meta-rewrite.ts` - Added 150+ lines for structured data generation
+- `components/SEO.tsx` - Removed 150+ lines of client-side generation
+
+**Testing:**
+```bash
+# Test structured data in production
+curl https://your-site.com/work/project-slug | grep -A 100 "application/ld+json"
+
+# Validate with Google Rich Results Test
+https://search.google.com/test/rich-results
+```
+
+---
+
 ### Nov 29 2025 - Code Consolidation & Shared Library Pattern
 **What Changed:** Eliminated ~2000 lines of duplicate code by creating shared helper library.
 
@@ -3213,16 +3289,37 @@ npm run test:images
 
 ---
 
-### 5. SEO System (`components/SEO.tsx`)
+### 5. SEO System (`components/SEO.tsx` + Edge Function)
 
-**Purpose:** Dynamic meta tags for social sharing and search engines.
+**Purpose:** Dynamic meta tags and structured data for social sharing and search engines.
+
+**Architecture (Server + Client):**
+
+**Server-Side (Edge Function):**
+- `netlify/edge-functions/meta-rewrite.ts` intercepts `/work/*` and `/journal/*` requests
+- Fetches data from `portfolio-data.json` (has all fields)
+- Generates and injects into HTML before it reaches browser:
+  - Meta tags (title, OG, Twitter Card)
+  - Canonical URLs
+  - Structured data (JSON-LD):
+    - **Movie** schema for narrative projects
+    - **VideoObject** schema for commercials/music videos
+    - **Article** schema for blog posts
+    - **Person** schema for homepage
+- Search engines see complete SEO data on first request (no JavaScript needed)
+
+**Client-Side (React Component):**
+- `components/SEO.tsx` updates meta tags during SPA navigation
+- Handles title, OG tags, canonical URL changes
+- Does NOT generate structured data (handled by edge function)
+- Keeps social previews working during client-side routing
 
 **Features:**
-- Updates `<title>`, Open Graph tags, Twitter Card tags
-- Canonical URLs
-- Schema.org structured data (Person/NewsArticle)
+- Rich structured data with director info, credits, awards, genres
+- Proper ISO 8601 date formatting (releaseDate > workDate > year)
+- Uses optimized WebP images for social sharing previews
 - Per-route customization
-- **Uses optimized WebP images** for social sharing previews
+- 100% static - no runtime API calls
 
 **Usage:**
 ```tsx
@@ -3231,14 +3328,20 @@ npm run test:images
   description="Project description..."
   image={getOptimizedImageUrl(project.id, project.heroImage, 'project', 0)}
   type="article"
+  project={project} // Optional: for rich metadata
 />
 ```
 
 **Important:** Always pass optimized image URLs to the `image` prop using `getOptimizedImageUrl()`. This ensures social media previews (Facebook, Twitter, LinkedIn) use smaller WebP files instead of large Airtable JPEGs.
 
-**Meta Generation Files:**
-- `scripts/generate-share-meta.mjs` - Legacy script (now integrated into scheduled-sync.mjs)
-- `netlify/edge-functions/meta-rewrite.ts` - Injects meta tags for dynamic routes (SSR-like)
+**Testing:**
+```bash
+# Test structured data in HTML
+curl https://your-site.com/work/project-slug | grep -A 100 "application/ld+json"
+
+# Validate with Google Rich Results Test
+https://search.google.com/test/rich-results
+```
 
 ---
 
@@ -3961,7 +4064,8 @@ fi
 
 3. Edge Functions
    ├─ Deploy meta-rewrite.ts to Netlify Edge
-   └─ SSR-like dynamic meta tags
+   ├─ SSR-like dynamic meta tags (OG, Twitter)
+   └─ Server-side structured data (JSON-LD) generation
 
 4. CDN Distribution
    ├─ Upload dist/ to Netlify CDN
