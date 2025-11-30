@@ -119,10 +119,11 @@ export const handler = async (event) => {
 **Option 1: GitHub Actions (Manual)**
 ```
 Actions → Sync Data & Static Files → Run workflow
-→ Syncs everything and uploads to Cloudinary
+→ Syncs data and uploads to Cloudinary
+→ Site updates immediately (no deployment needed)
 
 Actions → Deploy to Netlify → Run workflow  
-→ Triggers deployment only
+→ Deploys code changes only (NOT needed for content)
 ```
 
 **Option 2: Netlify Function (Webhook)**
@@ -153,7 +154,8 @@ npm run build:data    # Uses shared sync-core
 - ✅ Massively reduced code duplication
 - ✅ Consistent sync behavior everywhere
 - ✅ Easier debugging and maintenance
-- ✅ Clear separation: sync vs deploy
+- ✅ Clear separation: content sync vs code deployment
+- ✅ No deployment needed for content updates (fetches from Cloudinary at runtime)
 
 ---
 
@@ -4413,10 +4415,12 @@ Optional: Check "Force Cloudinary upload" box
 - After updating about page content
 - When you want to refresh cached Cloudinary files
 
+**Important:** The site fetches data from Cloudinary at runtime, so **no deployment is needed** to see updated content! Users will see new data on their next page load (or refresh).
+
 ---
 
 #### 2. Deploy to Netlify (`.github/workflows/manual-deploy.yml`)
-**Purpose:** Trigger a Netlify deployment without syncing data.
+**Purpose:** Trigger a Netlify deployment for code changes only.
 
 **What It Does:**
 1. Creates an empty commit with `[deploy]` marker
@@ -4433,12 +4437,12 @@ Optional: Add deployment reason
 ```
 
 **When to Use:**
-- After syncing data (to deploy with new content)
-- After code changes
+- After code changes (components, styling, features)
 - To rebuild with latest dependencies
+- To fix build issues
 - Emergency deployments
 
-**Note:** This does NOT sync data from Airtable - run "Sync Data & Static Files" first if you need updated content.
+**Note:** Deployment is NOT needed for content updates - the site fetches data from Cloudinary CDN at runtime. Only deploy for code/build changes.
 
 ---
 
@@ -4474,13 +4478,15 @@ curl -X POST "https://your-site.netlify.app/.netlify/functions/sync-now?force=tr
 - Uses same shared `sync-core.mjs` logic as GitHub Actions
 - Fetches from Airtable
 - Generates static files
-- Updates site data
+- Uploads to Cloudinary CDN
+- Site updates immediately (no deployment needed)
 - Returns JSON response with sync stats
 
 **Benefits:**
 - Automatic sync when you publish in Airtable
 - No need to manually trigger GitHub Actions
-- Faster workflow (sync happens immediately)
+- Instant content updates (site fetches from Cloudinary)
+- No deployment required for content changes
 
 ---
 
@@ -4506,15 +4512,16 @@ npm run build:full
 
 ---
 
-**Deployment Flow Comparison:**
+**Content Update Flow:**
 
-**Option A: GitHub Actions (Your Current Setup)**
+**Option A: GitHub Actions (Manual)**
 ```
 1. Update content in Airtable
 2. Go to GitHub → Actions → "Sync Data & Static Files" → Run
-3. Wait for sync to complete
-4. Go to Actions → "Deploy to Netlify" → Run
-5. Site deploys with new content
+3. Wait for sync to complete (~30 seconds)
+4. ✅ Done! Site shows new content (fetches from Cloudinary)
+   - No deployment needed
+   - Users see updates on next page load/refresh
 ```
 
 **Option B: Webhook (Automated)**
@@ -4522,17 +4529,28 @@ npm run build:full
 1. Update content in Airtable
 2. Set status to "Published"
 3. Airtable automation triggers webhook
-4. Sync happens automatically
-5. Manually trigger deployment when ready (or set up deploy webhook too)
+4. Sync uploads to Cloudinary (~30 seconds)
+5. ✅ Done! Site shows new content immediately
+   - No deployment needed
+   - No manual GitHub Actions trigger
 ```
 
 **Option C: Local Development**
 ```bash
 1. Update content in Airtable
 2. Run: npm run build:data && npm run sync:static
-3. Commit: git add public/*.json && git commit -m "Update content"
-4. Push: git push
-5. Manually trigger deployment
+3. ✅ Done! Site shows new content
+   - No deployment needed
+   - Optional: Commit to GitHub for version control
+```
+
+**Code Deployment Flow (Separate):**
+```
+1. Make code changes (components, styles, etc.)
+2. Commit and push to GitHub
+3. Go to Actions → "Deploy to Netlify" → Run
+4. Wait for build and deployment
+5. ✅ Code changes live
 ```
 
 ---
