@@ -67,6 +67,11 @@ const FILES_TO_UPLOAD = [
     localPath: path.join(PUBLIC_DIR, 'sitemap.xml'),
     publicId: 'portfolio-static/sitemap',
     description: 'XML sitemap for SEO'
+  },
+  {
+    localPath: path.join(PUBLIC_DIR, 'robots.txt'),
+    publicId: 'portfolio-static/robots',
+    description: 'Robots.txt for search engines'
   }
 ];
 
