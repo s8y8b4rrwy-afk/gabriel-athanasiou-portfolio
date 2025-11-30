@@ -3,9 +3,22 @@
 // Uses shared sync-core for consistency with Netlify functions
 
 import path from 'path';
+import fs from 'fs';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { syncAllData } from './lib/sync-core.mjs';
+import { 
+  fetchAirtableTable, 
+  buildLookupMaps, 
+  makeSlug, 
+  parseCreditsText,
+  parseExternalLinks,
+  normalizeProjectType,
+  resolveAwards,
+  resolveProductionCompany
+} from './lib/airtable-helpers.mjs';
+import { normalizeTitle, calculateReadingTime } from '../utils/textHelpers.mjs';
+import { getVideoThumbnail } from '../utils/videoHelpers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +35,9 @@ if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
 }
 
 const OUTPUT_DIR = path.resolve('public');
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'portfolio-data.json');
+const SHARE_META_FILE = path.join(OUTPUT_DIR, 'share-meta.json');
+const CLOUDINARY_MAPPING_FILE = path.join(OUTPUT_DIR, 'cloudinary-mapping.json');
 
 console.log('[sync-data] 🔄 Starting data sync...');
 

@@ -6,6 +6,8 @@
  */
 
 import { getVideoId } from '../../utils/videoHelpers.mjs';
+import { parseCreditsText as parseCreditsTextShared } from '../../utils/textHelpers.mjs';
+import { slugify } from '../../utils/slugify.mjs';
 
 /**
  * Fetch all records from an Airtable table with pagination support
@@ -116,15 +118,14 @@ export function parseExternalLinks(rawText) {
 
 /**
  * Generate URL-safe slug from text
+ * Uses shared slugify utility with proper unicode handling
  * @param {string} base - Text to slugify
  * @returns {string} URL-safe slug
  */
 export function makeSlug(base) {
-  return base
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'item';
+  const slug = slugify(base);
+  // Limit to 80 chars for backward compatibility
+  return slug.slice(0, 80) || 'item';
 }
 
 /**
@@ -143,30 +144,15 @@ export function normalizeProjectType(rawType) {
 }
 
 /**
+/**
  * Parse credits text into structured role-name pairs
+ * Uses shared textHelpers utility for consistent parsing
  * @param {string} rawCreditsText - Raw credits text (format: "Role: Name")
  * @returns {Array<{role: string, name: string}>} Parsed credits
  */
 export function parseCreditsText(rawCreditsText) {
-  if (!rawCreditsText) return [];
-  
-  return rawCreditsText
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line => {
-      const colonIndex = line.indexOf(':');
-      if (colonIndex > 0) {
-        return {
-          role: line.substring(0, colonIndex).trim(),
-          name: line.substring(colonIndex + 1).trim()
-        };
-      }
-      return null;
-    })
-    .filter(Boolean);
+  return parseCreditsTextShared(rawCreditsText);
 }
-
 /**
  * Process production company field (can be array of IDs or single value)
  * @param {*} productionCompanyField - Raw field from Airtable
