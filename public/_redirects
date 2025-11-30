@@ -1,1 +1,6 @@
+# Serve static files from Cloudinary
+/sitemap.xml https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/sitemap.xml 200
+/robots.txt https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/robots.txt 200
+
+# SPA fallback
 /* /index.html 200
