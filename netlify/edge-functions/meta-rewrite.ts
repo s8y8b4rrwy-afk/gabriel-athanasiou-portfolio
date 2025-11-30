@@ -2,7 +2,7 @@
 // Intercepts /work/* and /journal/* requests to inject project/post-specific OG tags
 // Uses share-meta.json manifest (generated at build time) for zero runtime Airtable calls
 
-import type { Context } from "https://edge.netlify.com";
+// import type { Context } from "https://edge.netlify.com";
 
 interface ShareItem {
   id: string;
@@ -210,7 +210,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
   });
 }
 
-export default async (request: Request, context: Context) => {
+export default async (request: Request, context: any) => {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
@@ -234,46 +234,63 @@ export default async (request: Request, context: Context) => {
     const response = await context.next();
     let html = await response.text();
 
-    // Load manifest (cached by edge runtime per instance)
-    // Try share-meta.json first, fall back to portfolio-data.json if empty/unavailable
-    let item: any = undefined; // Full item with all fields for structured data
-    const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
-    let defaultOgImage = ULTIMATE_FALLBACK;
+  // Load manifest (cached by edge runtime per instance)
+  // Try share-meta.json first, fall back to portfolio-data.json if empty/unavailable
+  let item: any = undefined; // Full item with all fields for structured data
+  const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
+  let defaultOgImage = ULTIMATE_FALLBACK;
+  let portfolioData: any = null;
+  
+  const slug = pathname.split("/").filter(Boolean).pop() || "";
+  
+  // Use portfolio-data.json as primary source (has all fields for rich structured data)
+  // Try multiple sources for reliability
+  const portfolioUrl = new URL("/portfolio-data.json", url.origin);
+  let portfolioRes = await fetch(portfolioUrl.toString());
+  
+  // Fallback to Cloudinary if local file fails
+  if (!portfolioRes.ok) {
+    console.log("[meta-rewrite] Local portfolio-data.json failed, trying Cloudinary");
+    const cloudinaryUrl = "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json";
+    portfolioRes = await fetch(cloudinaryUrl);
+  }
+  
+  if (portfolioRes.ok) {
+    portfolioData = await portfolioRes.json();
     
-    const slug = pathname.split("/").filter(Boolean).pop() || "";
-    
-    // Use portfolio-data.json as primary source (has all fields for rich structured data)
-    // Try multiple sources for reliability
-    const portfolioUrl = new URL("/portfolio-data.json", url.origin);
-    let portfolioRes = await fetch(portfolioUrl.toString());
-    
-    // Fallback to Cloudinary if local file fails
-    if (!portfolioRes.ok) {
-      console.log("[meta-rewrite] Local portfolio-data.json failed, trying Cloudinary");
-      const cloudinaryUrl = "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json";
-      portfolioRes = await fetch(cloudinaryUrl);
+    // Get default OG image from config
+    if (portfolioData.config?.defaultOgImage) {
+      defaultOgImage = portfolioData.config.defaultOgImage;
     }
     
-    if (portfolioRes.ok) {
-      const portfolioData: any = await portfolioRes.json();
+    if (pathname.startsWith("/work/") && portfolioData.projects) {
+      item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
+      console.log(`[meta-rewrite] Found project: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+    } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
+      item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
+      console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+    }
+  } else {
+    console.log("[meta-rewrite] Failed to load portfolio data, trying share-meta.json");
+    
+    // Fallback to share-meta.json for basic OG data
+    const shareMetaUrl = new URL("/share-meta.json", url.origin);
+    const shareMetaRes = await fetch(shareMetaUrl.toString());
+    
+    if (shareMetaRes.ok) {
+      const shareMeta: ShareManifest = await shareMetaRes.json();
       
-      // Get default OG image from config
-      if (portfolioData.config?.defaultOgImage) {
-        defaultOgImage = portfolioData.config.defaultOgImage;
-      }
-      
-      if (pathname.startsWith("/work/") && portfolioData.projects) {
-        item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
-        console.log(`[meta-rewrite] Found project: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
-      } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
-        item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
-        console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+      if (pathname.startsWith("/work/") && shareMeta.projects) {
+        item = shareMeta.projects.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found project in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+      } else if (pathname.startsWith("/journal/") && shareMeta.posts) {
+        item = shareMeta.posts.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found post in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
       }
     } else {
-      console.log("[meta-rewrite] Failed to load portfolio data");
+      console.log("[meta-rewrite] Failed to load share-meta.json");
     }
-
-    // Build meta tags based on page type
+  }    // Build meta tags based on page type
     let meta;
     
     if (item) {
