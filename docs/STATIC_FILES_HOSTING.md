@@ -42,8 +42,8 @@ This document describes the static files hosting system that separates versionin
 │                         Portfolio Website                            │
 │  ┌────────────────────────────────────────────────────────────────┐ │
 │  │  Dynamic Fetching                                               │ │
-│  │  • Fetches static files from Cloudinary                         │ │
-│  │  • Falls back to local files if Cloudinary unavailable          │ │
+│  │  • Fetches static files directly from Cloudinary                │ │
+│  │  • No local fallbacks - Cloudinary is the source of truth       │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -151,22 +151,16 @@ Static files are accessible at these URLs:
 
 Replace `{cloud_name}` with your actual Cloudinary cloud name (e.g., `date24ay6`).
 
-## Environment Variables
+## Architecture Notes
 
-Add these to your `.env.local` or Netlify environment:
+**Important:** Static files are fetched **directly from Cloudinary** in production. There are no local fallbacks. Cloudinary serves as the single source of truth for static content delivery.
 
-```bash
-# Required for static file sync
-CLOUDINARY_CLOUD_NAME=date24ay6
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+- **Development:** Local files in `public/` are used for development
+- **Production:** Files are synced to Cloudinary and served from there
+- **Edge Functions:** Fetch directly from Cloudinary URLs
+- **Client-side:** Uses Cloudinary URLs for optimal performance
 
-# Feature flag (optional)
-USE_CLOUDINARY_STATIC=false  # Set to 'true' to fetch from Cloudinary
-
-# Custom folder (optional, defaults to 'portfolio-static')
-CLOUDINARY_STATIC_FOLDER=portfolio-static
-```
+This ensures consistent content delivery and leverages Cloudinary's global CDN.
 
 ## Rollback Procedure
 
