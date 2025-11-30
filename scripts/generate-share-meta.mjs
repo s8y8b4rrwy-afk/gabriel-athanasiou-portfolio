@@ -6,16 +6,26 @@
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { config as dotenvConfig } from 'dotenv';
 import { getVideoThumbnail } from '../utils/videoHelpers.mjs';
 import { normalizeTitle } from '../utils/textHelpers.mjs';
 import { fetchAirtableTable, makeSlug, normalizeProjectType } from './lib/airtable-helpers.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables
+dotenvConfig({ path: path.resolve(__dirname, '../.env.local') });
+dotenvConfig({ path: path.resolve(__dirname, '../.env') });
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
 
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
-  console.error('[share-meta] Missing Airtable credentials. Skipping manifest generation.');
-  process.exit(0); // Non-fatal: leave existing file.
+  console.warn('[share-meta] ⚠️  Missing Airtable credentials. Preserving existing file.');
+  console.log('[share-meta] ℹ️  To regenerate, ensure AIRTABLE_TOKEN and AIRTABLE_BASE_ID are set.');
+  process.exit(0); // Non-fatal: leave existing file intact
 }
 
 const OUTPUT_DIR = path.resolve('public');
@@ -171,7 +181,15 @@ async function main() {
     console.log(`[share-meta] Wrote manifest with ${projects.length} featured projects and ${posts.length} public posts.`);
     console.log(`[share-meta] Hash: ${hash} (featured projects + public journal entries)`);
   } catch (e) {
-    console.error('[share-meta] Generation failed:', e);
+    console.error('[share-meta] ❌ Generation failed:', e.message);
+    if (e.isRateLimit) {
+      console.warn('[share-meta] ⚠️  Airtable rate limit hit. Preserving existing file.');
+      process.exit(0); // Don't fail the build, keep existing data
+    }
+    if (fs.existsSync(OUTPUT_JSON)) {
+      console.warn('[share-meta] ⚠️  Keeping existing share-meta.json intact.');
+      process.exit(0); // Keep existing file
+    }
     process.exit(1);
   }
 }

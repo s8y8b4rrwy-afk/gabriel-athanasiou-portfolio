@@ -2,6 +2,7 @@
 // Build-time data generator - creates static portfolio-data.json
 // Uses shared sync-core for consistency with Netlify functions
 
+import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
@@ -17,8 +18,15 @@ const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_T
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
 
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
-  console.error('[sync-data] ❌ Missing Airtable credentials');
-  process.exit(1);
+  const portfolioDataPath = path.resolve(OUTPUT_DIR, 'portfolio-data.json');
+  if (fs.existsSync(portfolioDataPath)) {
+    console.warn('[sync-data] ⚠️  Missing Airtable credentials. Preserving existing portfolio-data.json');
+    console.log('[sync-data] ℹ️  To sync, ensure AIRTABLE_TOKEN and AIRTABLE_BASE_ID are set.');
+    process.exit(0); // Don't fail build, keep existing data
+  } else {
+    console.error('[sync-data] ❌ Missing Airtable credentials and no existing data found');
+    process.exit(1);
+  }
 }
 
 const OUTPUT_DIR = path.resolve('public');
@@ -41,7 +49,18 @@ console.log('[sync-data] 🔄 Starting data sync...');
     console.log(`[sync-data]    - Generated at: ${results.timestamp}`);
     process.exit(0);
   } catch (error) {
-    console.error('[sync-data] ❌ Sync failed:', error);
+    console.error('[sync-data] ❌ Sync failed:', error.message);
+    
+    // Preserve existing data on rate limit or other recoverable errors
+    if (error.isRateLimit || error.message?.includes('Rate limit')) {
+      console.warn('[sync-data] ⚠️  Airtable rate limit hit. Preserving existing data.');
+      const portfolioDataPath = path.resolve(OUTPUT_DIR, 'portfolio-data.json');
+      if (fs.existsSync(portfolioDataPath)) {
+        console.log('[sync-data] ℹ️  Existing portfolio-data.json preserved.');
+        process.exit(0); // Don't fail build
+      }
+    }
+    
     process.exit(1);
   }
 })();

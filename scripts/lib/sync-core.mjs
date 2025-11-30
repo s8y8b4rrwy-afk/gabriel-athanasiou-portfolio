@@ -118,7 +118,13 @@ export async function syncAllData(config) {
 
   } catch (error) {
     results.errors.push(error.message);
-    console.error('[sync-core] ❌ Sync failed:', error);
+    console.error('[sync-core] ❌ Sync failed:', error.message);
+    
+    // Mark rate limit errors for special handling
+    if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+      error.isRateLimit = true;
+    }
+    
     throw error;
   }
 }
