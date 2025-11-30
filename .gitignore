@@ -29,5 +29,8 @@ dist-ssr
 # Optimized images (regenerated on each build)
 public/images/portfolio/
 
+# Test temporary files
+__test_temp__/
+
 # Keep cloudinary-mapping.json in git for persistence across deployments
 # This enables incremental syncs (only upload changed images)

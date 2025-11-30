@@ -33,6 +33,37 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Dec 1 2024 - OG Meta Tags Fix & Cloudinary-First Architecture
+**What Changed:** Fixed OG meta tags for social sharing by updating Edge Function to fetch data directly from Cloudinary instead of trying local files first.
+
+**The Problem:**
+- OG meta tags not working for social media sharing
+- Edge Function `meta-rewrite.ts` was trying to fetch `portfolio-data.json` from local filesystem first
+- Local files don't exist in Netlify Edge Functions environment
+- Fallback to Cloudinary was not implemented correctly
+
+**The Solution:**
+
+1. **Updated Edge Function Architecture:**
+   - Modified `netlify/edge-functions/meta-rewrite.ts` to fetch directly from Cloudinary
+   - Removed local file fetch attempts that were failing
+   - Now uses `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json` as primary source
+
+2. **Updated Documentation:**
+   - `docs/STATIC_FILES_HOSTING.md`: Removed references to local fallbacks, clarified Cloudinary-only architecture
+   - `AI_AGENT_GUIDE.md`: Updated data sources, request flow, and data flow diagram to reflect direct Cloudinary fetching
+
+**Architecture Impact:**
+- ✅ OG meta tags now work properly for social media sharing
+- ✅ Consistent Cloudinary-first approach across all server-side functions
+- ✅ Client-side code retains local fallbacks for resilience
+- ✅ Documentation accurately reflects current architecture
+
+**Files Changed:**
+- **Updated:** `netlify/edge-functions/meta-rewrite.ts` - Now fetches directly from Cloudinary URL
+- **Updated:** `docs/STATIC_FILES_HOSTING.md` - Removed local fallback references
+- **Updated:** `AI_AGENT_GUIDE.md` - Updated data flow and CMS service sections
+
 ### Nov 30 2025 - GitHub Actions Cleanup & Shared Sync Core Refactor
 **What Changed:** Consolidated duplicate sync logic and simplified GitHub Actions to 2 manual-only workflows.
 
@@ -3117,17 +3148,16 @@ Airtable (Original) → Scheduled Sync → Cloudinary Upload (q:auto:best)
                     │   └─► Optimized WebP Images
                     │
                     ├─► Netlify Functions (get-data.js)
-                    │   └─► Airtable API (Projects, Journal, Settings)
+                    │   └─► Cloudinary CDN (portfolio-data.json)
                     │
                     └─► Fallback Hierarchy:
-                        1. share-meta.json (build-time manifest)
-                        2. staticData.ts (emergency fallback)
+                        1. staticData.ts (emergency fallback)
 ```
 
 ### Request Flow
 
 1. **Initial Load:** Browser requests `index.html` → React hydrates → `App.tsx` calls `cmsService.fetchAll()`
-2. **CMS Service:** Tries manifest → Airtable API → Static fallback
+2. **CMS Service:** Fetches data directly from Cloudinary CDN → Falls back to static data if Cloudinary unavailable
 3. **Routing:** `react-router-dom` handles navigation (SPA mode, no page reloads)
 4. **Analytics:** `analyticsService` tracks page views and events
 5. **SEO:** `<SEO>` component updates meta tags dynamically per route
@@ -3174,9 +3204,10 @@ Airtable (Original) → Scheduled Sync → Cloudinary Upload (q:auto:best)
 - `getHomeConfig()` → Returns just config
 
 **Data Sources (in order of priority):**
-1. **share-meta.json** - Lightweight manifest generated at build time (fastest, no API calls)
-2. **Airtable API** - Live data if manifest unavailable
-3. **staticData.ts** - Hardcoded fallback if API fails
+1. **Cloudinary CDN** - Primary source for all static data (portfolio-data.json, share-meta.json)
+2. **staticData.ts** - Hardcoded fallback if Cloudinary fails
+
+**Architecture:** The site fetches all data directly from Cloudinary CDN. There are no local file fallbacks in production. Cloudinary serves as the single source of truth for static content delivery.
 
 **Key Features:**
 - Resolves YouTube/Vimeo URLs (handles vanity URLs, hashes, embeds)
