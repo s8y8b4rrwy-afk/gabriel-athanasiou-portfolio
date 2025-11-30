@@ -87,7 +87,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             </h1>
                         </div>
                     </div>
-                ) : null}
+                ) : (
+                    <div className={`absolute inset-0 flex items-center justify-center z-10`}>
+                        <h1 className={`${THEME.typography.h1} text-white mix-blend-difference`}>GABRIEL ATHANASIOU</h1>
+                    </div>
+                )}
             </div>
 
             {/* FILMSTRIP SECTION */}
