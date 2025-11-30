@@ -141,7 +141,7 @@ Location: `https://directedbygabriel.com/robots.txt`
 
 ### 1. Google Search Console
 - Add your site: https://search.google.com/search-console
-- Submit sitemap: `https://gabrielathanasiou.com/sitemap.xml`
+- Submit sitemap: `https://directedbygabriel.com/sitemap.xml`
 - Monitor indexing status
 
 ### 2. Rich Results Test

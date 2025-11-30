@@ -63,26 +63,23 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
     const isNarrative = item.type === 'Narrative';
     const isCommercial = item.type === 'Commercial';
     
-    // Use most accurate date available
+    // Use most accurate date available (portfolio-data.json has releaseDate, workDate, year)
     const dateString = item.releaseDate || item.workDate || (item.year ? `${item.year}-01-01` : null);
-    const isoDate = dateString ? `${dateString}T00:00:00Z` : undefined;
+    const isoDate = dateString ? (dateString.includes('T') ? dateString : `${dateString}T00:00:00Z`) : undefined;
     
     const schema: any = {
       "@context": "https://schema.org",
       "@type": isNarrative ? "Movie" : "VideoObject",
       "name": item.title,
-      "description": item.description || item.description,
-      "image": item.image || item.heroImage,
+      "description": item.description,
+      "thumbnailUrl": item.heroImage || item.image,
+      "image": item.heroImage || item.image,
       "url": canonicalUrl,
     };
     
     if (isoDate) {
       schema.dateCreated = isoDate;
-    }
-    
-    // Thumbnail (required for VideoObject)
-    if (item.image || item.heroImage) {
-      schema.thumbnailUrl = item.image || item.heroImage;
+      schema.uploadDate = isoDate;
     }
     
     // Director information
@@ -138,9 +135,6 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
     if (item.videoUrl) {
       schema.contentUrl = item.videoUrl;
       schema.embedUrl = item.videoUrl;
-      if (isoDate) {
-        schema.uploadDate = isoDate;
-      }
     }
     
     // Gallery images
@@ -290,11 +284,20 @@ export default async (request: Request, context: Context) => {
     
     if (item) {
       // Individual project or post
+      let ogType = "website";
+      if (pathname.startsWith("/journal/")) {
+        ogType = "article";
+      } else if (pathname.startsWith("/work/")) {
+        // Differentiate between narrative films and other video content
+        const projectType = (item as any).type || '';
+        ogType = projectType === 'Narrative' ? "video.movie" : "video.other";
+      }
+      
       meta = {
         title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
         description: escapeHtml(truncate(item.description || item.content || '', 200)),
         image: escapeHtml(item.heroImage || item.imageUrl || item.image || item.coverImage || (item.gallery && item.gallery[0]) || defaultOgImage),
-        type: pathname.startsWith("/journal/") ? "article" : "website"
+        type: ogType
       };
     } else if (pathname === '/work') {
       // Filmography index page
@@ -312,7 +315,7 @@ export default async (request: Request, context: Context) => {
         title: escapeHtml("About | GABRIEL ATHANASIOU"),
         description: escapeHtml(truncate(aboutBio, 200)),
         image: escapeHtml(aboutImage),
-        type: "profile"
+        type: "website"
       };
     } else if (pathname === '/journal') {
       // Journal index page
@@ -335,14 +338,62 @@ export default async (request: Request, context: Context) => {
       : generateStructuredData(null, pathname, canonicalUrl);
 
     // Generate complete meta block with structured data
-    const metaBlock = `
+    let metaBlock = `
     <title>${meta.title}</title>
     <meta name="description" content="${meta.description}">
     <meta property="og:title" content="${meta.title}">
     <meta property="og:description" content="${meta.description}">
     <meta property="og:type" content="${meta.type}">
     <meta property="og:image" content="${meta.image}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="${escapeHtml(meta.title)}">
     <meta property="og:url" content="${canonicalUrl}">
+    <meta property="og:site_name" content="Gabriel Athanasiou">`;
+    
+    // Add type-specific OpenGraph tags
+    if (meta.type === 'article' && item) {
+      // Article-specific tags
+      const publishDate = (item as any).date || '';
+      if (publishDate) {
+        const isoDate = publishDate.includes('T') ? publishDate : `${publishDate}T00:00:00Z`;
+        metaBlock += `
+    <meta property="article:published_time" content="${escapeHtml(isoDate)}">`;
+      }
+      metaBlock += `
+    <meta property="article:author" content="Gabriel Athanasiou">`;
+      if ((item as any).tags && (item as any).tags.length > 0) {
+        (item as any).tags.forEach((tag: string) => {
+          metaBlock += `
+    <meta property="article:tag" content="${escapeHtml(tag)}">`;
+        });
+      }
+    } else if ((meta.type === 'video.movie' || meta.type === 'video.other') && item) {
+      // Video-specific tags
+      const releaseYear = (item as any).year || '';
+      if (releaseYear) {
+        metaBlock += `
+    <meta property="video:release_date" content="${escapeHtml(releaseYear)}-01-01">`;
+      }
+      metaBlock += `
+    <meta property="video:director" content="Gabriel Athanasiou">`;
+      
+      // Add video URL if available
+      if ((item as any).videoUrl) {
+        metaBlock += `
+    <meta property="og:video" content="${escapeHtml((item as any).videoUrl)}">`;
+      }
+      
+      // Add video tags (project type)
+      const projectType = (item as any).type || '';
+      if (projectType) {
+        metaBlock += `
+    <meta property="video:tag" content="${escapeHtml(projectType)}">`;
+      }
+    }
+    
+    // Continue with Twitter and other meta tags
+    metaBlock += `
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${meta.title}">
     <meta name="twitter:description" content="${meta.description}">
