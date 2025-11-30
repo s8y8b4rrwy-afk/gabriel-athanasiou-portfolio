@@ -1,8 +1,8 @@
 name: Deploy to Netlify
 
 # Manual deployment workflow
-# Separate from data sync - only deploys the site
-# Does NOT sync data from Airtable
+# Triggers Netlify to build and deploy the site
+# Does NOT sync data from Airtable - use "Sync Data & Static Files" workflow first
 
 on:
   workflow_dispatch:
@@ -25,19 +25,21 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add deploy marker commit
+      - name: Trigger Netlify deployment
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          # Only create an empty commit if latest commit lacks marker
+          
+          # Create deploy marker commit if needed
           if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
-            git commit --allow-empty -m "chore: manual deployment [deploy]
+            git commit --allow-empty -m "chore: trigger deployment [deploy]
             
             Reason: ${{ github.event.inputs.reason }}"
-            git push origin HEAD:main
-            echo "✅ Deploy marker added - Netlify will build and deploy"
+            git push origin main
+            echo "✅ Deploy marker committed - Netlify will build and deploy"
           else
-            echo "ℹ️ Latest commit already has deploy marker - Netlify will deploy automatically"
+            echo "ℹ️ Latest commit already has deploy marker"
+            echo "✅ Netlify will deploy automatically"
           fi
 
       - name: Summary
@@ -45,11 +47,10 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🚀 Deployment Triggered"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ Deploy marker committed to main branch"
-          echo "✅ Netlify will automatically build and deploy"
+          echo "✅ Netlify deployment initiated"
           echo ""
-          echo "⏳ Check Netlify dashboard for build progress:"
+          echo "⏳ Check build progress at:"
           echo "   https://app.netlify.com"
           echo ""
-          echo "⚠️ NOTE: This does NOT sync data from Airtable"
-          echo "   To sync data first, run 'Sync Data' workflow"
+          echo "ℹ️ This workflow does NOT sync data from Airtable"
+          echo "   Run 'Sync Data & Static Files' first if you need to update content"

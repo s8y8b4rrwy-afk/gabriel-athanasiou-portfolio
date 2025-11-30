@@ -1,23 +1,11 @@
 #!/usr/bin/env node
 // Build-time data generator - creates static portfolio-data.json
-// This runs during build to fetch and cache all Airtable data
+// Uses shared sync-core for consistency with Netlify functions
 
-import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
-import { getVideoThumbnail } from '../utils/videoHelpers.mjs';
-import { normalizeTitle, calculateReadingTime } from '../utils/textHelpers.mjs';
-import {
-  fetchAirtableTable,
-  buildLookupMaps,
-  parseExternalLinks,
-  makeSlug,
-  normalizeProjectType,
-  parseCreditsText,
-  resolveProductionCompany,
-  resolveAwards
-} from './lib/airtable-helpers.mjs';
+import { syncAllData } from './lib/sync-core.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,16 +17,34 @@ const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_T
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
 
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
-  console.error('[sync-data] ❌ Missing Airtable credentials (AIRTABLE_TOKEN or AIRTABLE_BASE_ID)');
+  console.error('[sync-data] ❌ Missing Airtable credentials');
   process.exit(1);
 }
 
 const OUTPUT_DIR = path.resolve('public');
-const OUTPUT_FILE = path.join(OUTPUT_DIR, 'portfolio-data.json');
-const SHARE_META_FILE = path.join(OUTPUT_DIR, 'share-meta.json');
-const CLOUDINARY_MAPPING_FILE = path.join(OUTPUT_DIR, 'cloudinary-mapping.json');
 
 console.log('[sync-data] 🔄 Starting data sync...');
+
+// Run the sync using shared core logic
+(async () => {
+  try {
+    const results = await syncAllData({
+      airtableToken: AIRTABLE_TOKEN,
+      airtableBaseId: AIRTABLE_BASE_ID,
+      outputDir: OUTPUT_DIR,
+      verbose: true
+    });
+
+    console.log('[sync-data] ✅ Sync complete!');
+    console.log(`[sync-data]    - ${results.projects.length} projects`);
+    console.log(`[sync-data]    - ${results.journal.length} journal posts`);
+    console.log(`[sync-data]    - Generated at: ${results.timestamp}`);
+    process.exit(0);
+  } catch (error) {
+    console.error('[sync-data] ❌ Sync failed:', error);
+    process.exit(1);
+  }
+})();
 
 // Load Cloudinary mapping for image URLs
 function loadCloudinaryMapping() {

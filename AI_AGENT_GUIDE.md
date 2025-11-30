@@ -33,6 +33,130 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Nov 30 2025 - GitHub Actions Cleanup & Shared Sync Core Refactor
+**What Changed:** Consolidated duplicate sync logic and simplified GitHub Actions to 2 manual-only workflows.
+
+**The Problem:**
+- 3 GitHub Action workflows with overlapping purposes
+- `sync-static-files.yml` triggered automatically on file changes
+- `sync-data.yml` and Netlify function `airtable-sync.mjs` had 1384 lines of duplicate code
+- Maintaining sync logic in multiple places (scripts, Netlify functions, workflows)
+- No unified approach to data syncing
+
+**The Solution:**
+
+1. **Created Shared Sync Core** (`scripts/lib/sync-core.mjs`):
+   - `syncAllData()` - Main orchestration function
+   - `buildProjects()` - Project data processing
+   - `buildJournal()` - Journal post processing
+   - `buildAbout()` - About page processing
+   - Single source of truth used by ALL sync methods
+
+2. **Refactored Scripts to Use Shared Core:**
+   - `scripts/sync-data.mjs` (408 lines → 47 lines) - Now a thin wrapper
+   - `netlify/functions/sync-now.mjs` - Updated to use sync-core
+   - Eliminated ~1300 lines of duplicate code
+
+3. **Simplified GitHub Actions to 2 Manual Workflows:**
+   - **`sync-data.yml`** - "Sync Data & Static Files"
+     - Fetches from Airtable
+     - Generates all static files
+     - Uploads to Cloudinary
+     - Commits to GitHub
+     - Manual trigger only (no automatic runs)
+     - Optional force upload parameter
+   
+   - **`manual-deploy.yml`** - "Deploy to Netlify"
+     - Creates deploy marker commit
+     - Triggers Netlify build
+     - Manual trigger only
+     - Separate from data sync
+   
+   - **Removed:** `sync-static-files.yml` (automatic workflow)
+
+**GitHub Actions Architecture:**
+```yaml
+# .github/workflows/sync-data.yml
+name: Sync Data & Static Files
+on: workflow_dispatch  # Manual only
+jobs:
+  - Fetch from Airtable (npm run build:data, build:content, build:sitemap)
+  - Upload to Cloudinary (node scripts/sync-static-to-cloudinary.mjs)
+  - Commit changes with [ci skip]
+  
+# .github/workflows/manual-deploy.yml  
+name: Deploy to Netlify
+on: workflow_dispatch  # Manual only
+jobs:
+  - Create [deploy] marker commit
+  - Push to trigger Netlify
+```
+
+**Netlify Function Architecture:**
+```javascript
+// netlify/functions/sync-now.mjs
+import { syncAllData } from '../../scripts/lib/sync-core.mjs';
+
+export const handler = async (event) => {
+  // Optional Bearer token auth
+  // Calls shared sync-core logic
+  // Returns JSON response
+};
+
+// Webhook endpoint: /.netlify/functions/sync-now
+// Can be triggered from Airtable automation
+```
+
+**Shared Core Benefits:**
+- ✅ Single source of truth for all sync logic
+- ✅ Consistent behavior across GitHub Actions, Netlify functions, and local scripts
+- ✅ ~1300 lines of duplicate code eliminated
+- ✅ Bug fixes apply everywhere automatically
+- ✅ Easier to maintain and test
+
+**Usage Options:**
+
+**Option 1: GitHub Actions (Manual)**
+```
+Actions → Sync Data & Static Files → Run workflow
+→ Syncs everything and uploads to Cloudinary
+
+Actions → Deploy to Netlify → Run workflow  
+→ Triggers deployment only
+```
+
+**Option 2: Netlify Function (Webhook)**
+```bash
+curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now \
+  -H "Authorization: Bearer YOUR_SYNC_TOKEN"
+```
+Perfect for Airtable automations after content updates!
+
+**Option 3: Local Development**
+```bash
+npm run build:data    # Uses shared sync-core
+```
+
+**Files Changed:**
+- **Created:** `scripts/lib/sync-core.mjs` (300 lines) - Shared sync orchestration
+- **Created:** `scripts/lib/README.md` - Documentation for shared library
+- **Updated:** `scripts/sync-data.mjs` (408 → 47 lines) - Now uses sync-core
+- **Updated:** `netlify/functions/sync-now.mjs` - Now uses sync-core
+- **Updated:** `.github/workflows/sync-data.yml` - Manual only, comprehensive
+- **Updated:** `.github/workflows/manual-deploy.yml` - Simplified
+- **Removed:** `.github/workflows/sync-static-files.yml` - Automatic workflow deleted
+- **Archived:** `netlify/functions/airtable-sync.mjs` → `functions-backup/` (1384 lines)
+
+**Benefits:**
+- ✅ Complete manual control - No automatic triggers
+- ✅ Webhook support for Airtable automations
+- ✅ Massively reduced code duplication
+- ✅ Consistent sync behavior everywhere
+- ✅ Easier debugging and maintenance
+- ✅ Clear separation: sync vs deploy
+
+---
+
 ### Nov 30 2025 - Server-Side SEO Structured Data (Edge Function Enhancement)
 **What Changed:** Moved structured data (JSON-LD) generation from client-side to server-side for better SEO.
 
@@ -3636,20 +3760,32 @@ gabriel-athanasiou-portfolio--TEST/
 │   └── staticData.ts          # Emergency fallback data
 │
 ├── scripts/
-│   ├── optimize-images.mjs    # Image optimization (build-time)
-│   ├── test-image-fetch.mjs   # Test Airtable images
-│   ├── generate-share-meta.mjs # Legacy: Generate manifest (now in scheduled-sync)
-│   ├── generate-sitemap.mjs   # Legacy: Generate sitemap (now in scheduled-sync)
-│   └── ignore-netlify-build.sh # Selective deployment
+│   ├── lib/
+│   │   ├── sync-core.mjs      # 🆕 Shared sync orchestration logic
+│   │   ├── airtable-helpers.mjs # 🆕 Shared Airtable utilities
+│   │   └── README.md          # 🆕 Documentation for shared library
+│   ├── sync-data.mjs          # Sync from Airtable (uses sync-core)
+│   ├── generate-share-meta.mjs # Generate share metadata
+│   ├── generate-sitemap.mjs   # Generate sitemap
+│   ├── sync-static-to-cloudinary.mjs # Upload static files to Cloudinary
+│   ├── fix-cloudinary-preset.mjs # Cloudinary preset fix utility
+│   ├── fix-cloudinary-urls.mjs # Cloudinary URL fix utility
+│   └── ignore-netlify-build.sh # Selective deployment logic
+│
+├── .github/
+│   └── workflows/
+│       ├── sync-data.yml      # 🔄 Manual: Sync data & upload to Cloudinary
+│       └── manual-deploy.yml  # 🔄 Manual: Trigger Netlify deployment
 │
 ├── netlify/
 │   ├── functions/
-│   │   ├── get-data.js        # Airtable API proxy (with caching)
-│   │   │                      # 🔄 Now imports from utils/*.mjs
-│   │   └── sitemap.js         # Dynamic sitemap
-│   │                          # 🔄 Now imports from utils/*.mjs
+│   │   ├── sync-now.mjs       # 🔄 Webhook endpoint (uses sync-core)
+│   │   ├── get-data.js        # Serves static portfolio data
+│   │   └── sitemap.js         # Dynamic sitemap generation
+│   ├── functions-backup/
+│   │   └── airtable-sync.mjs.old # 🗃️ Archived (replaced by sync-core)
 │   └── edge-functions/
-│       └── meta-rewrite.ts    # Dynamic meta tag injection
+│       └── meta-rewrite.ts    # SEO meta tags + structured data injection
 │
 ├── public/
 │   ├── _redirects            # Netlify redirects
@@ -4247,57 +4383,166 @@ ignore = "bash scripts/ignore-netlify-build.sh"  # Only build on [deploy] commit
 
 ### Deployment Triggers
 
-**Automatic Deployments:**
-1. **Push to `main`** with `[deploy]` or `[force-deploy]` in commit message
-2. **Scheduled Content Updates** (daily at 2 AM UTC) - checks for Airtable content changes
-3. **Scheduled Code + Content** (weekly Sunday 3 AM UTC) - checks for code and content changes
-
-**Manual Deployments:**
-- **GitHub Actions:** Go to Actions → "Manual Deploy to Netlify" → Run workflow
-- **Netlify Dashboard:** Trigger deploy button (not recommended, bypasses smart build logic)
+**Manual-Only Workflows:**
+All deployments and syncs are now manual-trigger only for complete control.
 
 **GitHub Actions Workflows:**
 
-#### 1. Manual Deploy (`.github/workflows/manual-deploy.yml`)
-**Purpose:** Manually trigger a deployment when needed.
+#### 1. Sync Data & Static Files (`.github/workflows/sync-data.yml`)
+**Purpose:** Fetch data from Airtable and upload to Cloudinary CDN.
 
-**How It Works:**
-1. Creates a `[deploy]` marker commit (with optional reason)
-2. Pushes to `main` branch
-3. Netlify detects the marker via `ignore-netlify-build.sh` and builds automatically
+**What It Does:**
+1. Fetches data from Airtable (Projects, Journal, About)
+2. Generates static files (portfolio-data.json, share-meta.json, sitemap.xml)
+3. Uploads all files to Cloudinary CDN
+4. Commits changes to GitHub with `[ci skip]` (prevents deployment loop)
+
+**Triggers:**
+- Manual only via GitHub Actions UI
+- Optional "force upload" parameter to re-upload all Cloudinary files
 
 **Usage:**
 ```
-Actions → Manual Deploy to Netlify → Run workflow
-Optional: Add reason (e.g., "Fixed broken video link")
+Actions → Sync Data & Static Files → Run workflow
+Optional: Check "Force Cloudinary upload" box
 ```
 
-**Permissions:** Requires `permissions: contents: write` to push commits
+**When to Use:**
+- After updating projects in Airtable
+- After publishing new journal posts
+- After updating about page content
+- When you want to refresh cached Cloudinary files
 
-**Note:** Only creates ONE deploy (fixed Nov 2025 - previously created duplicate deploys)
+---
 
-#### 2. Smart Scheduled Deploy (`.github/workflows/scheduled-deploy.yml`)
-**Purpose:** Automatically check for content/code changes and deploy if needed.
+#### 2. Deploy to Netlify (`.github/workflows/manual-deploy.yml`)
+**Purpose:** Trigger a Netlify deployment without syncing data.
 
-**Schedule:**
-- **Daily (2 AM UTC):** Content-only check (Airtable updates)
-- **Weekly (Sunday 3 AM UTC):** Full check (code + content)
+**What It Does:**
+1. Creates an empty commit with `[deploy]` marker
+2. Pushes to main branch
+3. Netlify detects marker and builds/deploys the site
 
-**How It Works:**
-1. Generates `share-meta.json` from Airtable
-2. Compares with previous version (hash-based)
-3. If changed: Commits manifest with `[deploy]` marker → Netlify builds
-4. If unchanged: Skips deploy (saves build minutes)
+**Triggers:**
+- Manual only via GitHub Actions UI
 
-**Smart Features:**
-- Detects content changes via manifest diff
-- Detects code changes (excludes `[ci skip]` commits)
-- Only deploys when necessary
-- Commits user-friendly messages
+**Usage:**
+```
+Actions → Deploy to Netlify → Run workflow
+Optional: Add deployment reason
+```
 
-**Selective Deployment Logic:**
-- `scripts/ignore-netlify-build.sh` checks last commit message for deploy markers
-- Only builds if `[deploy]` or `[force-deploy]` present
+**When to Use:**
+- After syncing data (to deploy with new content)
+- After code changes
+- To rebuild with latest dependencies
+- Emergency deployments
+
+**Note:** This does NOT sync data from Airtable - run "Sync Data & Static Files" first if you need updated content.
+
+---
+
+**Netlify Function Webhook (Alternative to GitHub Actions):**
+
+#### 3. Sync via Webhook (`netlify/functions/sync-now.mjs`)
+**Purpose:** API endpoint to trigger sync from external services (like Airtable automations).
+
+**Endpoint:** `https://your-site.netlify.app/.netlify/functions/sync-now`
+
+**Authentication:** Optional Bearer token via `SYNC_TOKEN` environment variable
+
+**Usage:**
+```bash
+# Basic sync
+curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now \
+  -H "Authorization: Bearer YOUR_SYNC_TOKEN"
+
+# Force full sync
+curl -X POST "https://your-site.netlify.app/.netlify/functions/sync-now?force=true" \
+  -H "Authorization: Bearer YOUR_SYNC_TOKEN"
+```
+
+**Airtable Automation Setup:**
+1. Go to Airtable Automations
+2. Trigger: "When record matches conditions" (Status = Published)
+3. Action: "Send webhook"
+4. URL: Your function endpoint
+5. Method: POST
+6. Headers: `Authorization: Bearer YOUR_TOKEN`
+
+**What It Does:**
+- Uses same shared `sync-core.mjs` logic as GitHub Actions
+- Fetches from Airtable
+- Generates static files
+- Updates site data
+- Returns JSON response with sync stats
+
+**Benefits:**
+- Automatic sync when you publish in Airtable
+- No need to manually trigger GitHub Actions
+- Faster workflow (sync happens immediately)
+
+---
+
+**Local Development:**
+
+#### 4. Manual Scripts
+```bash
+# Sync data from Airtable
+npm run build:data
+
+# Generate share metadata
+npm run build:content
+
+# Generate sitemap
+npm run build:sitemap
+
+# Upload to Cloudinary
+npm run sync:static
+
+# Full build (includes all of the above + Vite build)
+npm run build:full
+```
+
+---
+
+**Deployment Flow Comparison:**
+
+**Option A: GitHub Actions (Your Current Setup)**
+```
+1. Update content in Airtable
+2. Go to GitHub → Actions → "Sync Data & Static Files" → Run
+3. Wait for sync to complete
+4. Go to Actions → "Deploy to Netlify" → Run
+5. Site deploys with new content
+```
+
+**Option B: Webhook (Automated)**
+```
+1. Update content in Airtable
+2. Set status to "Published"
+3. Airtable automation triggers webhook
+4. Sync happens automatically
+5. Manually trigger deployment when ready (or set up deploy webhook too)
+```
+
+**Option C: Local Development**
+```bash
+1. Update content in Airtable
+2. Run: npm run build:data && npm run sync:static
+3. Commit: git add public/*.json && git commit -m "Update content"
+4. Push: git push
+5. Manually trigger deployment
+```
+
+---
+
+**Smart Build Detection:**
+Netlify only builds when it sees the `[deploy]` marker in commits:
+- `scripts/ignore-netlify-build.sh` checks last commit message
+- Commits with `[ci skip]` are ignored (like data sync commits)
+- Commits with `[deploy]` or `[force-deploy]` trigger builds
+- Prevents unnecessary builds and saves build minutes
 - Prevents unnecessary builds (e.g., README updates)
 
 ### Build Process

@@ -1,4 +1,4 @@
-import { syncAirtableData } from './airtable-sync.mjs';
+import { syncAllData } from '../../scripts/lib/sync-core.mjs';
 
 /**
  * Manual trigger endpoint for the sync function
@@ -7,8 +7,9 @@ import { syncAirtableData } from './airtable-sync.mjs';
  * Force full sync: /.netlify/functions/sync-now?force=true
  * 
  * Useful for:
+ * - Triggering sync via webhook after Airtable updates
  * - Testing the sync process
- * - Forcing an immediate sync after Airtable changes
+ * - Forcing an immediate sync
  * - Initial data population
  */
 export const handler = async (event, context) => {
@@ -25,7 +26,15 @@ export const handler = async (event, context) => {
   }
 
   try {
-    console.log('Manual sync triggered');
+    console.log('📊 Manual sync triggered via Netlify function');
+    
+    // Get environment variables
+    const airtableToken = process.env.VITE_AIRTABLE_TOKEN || process.env.AIRTABLE_TOKEN;
+    const airtableBaseId = process.env.VITE_AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE_ID;
+    
+    if (!airtableToken || !airtableBaseId) {
+      throw new Error('Missing Airtable credentials');
+    }
     
     // Check for force parameter
     const forceFullSync = event.queryStringParameters?.force === 'true';
@@ -34,10 +43,28 @@ export const handler = async (event, context) => {
       console.log('⚡ Force full sync requested');
     }
     
-    const result = await syncAirtableData({ forceFullSync });
-    return result;
+    // Use shared sync core logic
+    const results = await syncAllData({
+      airtableToken,
+      airtableBaseId,
+      outputDir: 'public',
+      verbose: true
+    });
+    
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        message: 'Sync completed successfully',
+        stats: {
+          projects: results.projects.length,
+          journal: results.journal.length,
+          timestamp: results.timestamp
+        }
+      })
+    };
   } catch (error) {
-    console.error('Manual sync failed:', error);
+    console.error('❌ Manual sync failed:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({
@@ -48,4 +75,5 @@ export const handler = async (event, context) => {
       })
     };
   }
+};
 };

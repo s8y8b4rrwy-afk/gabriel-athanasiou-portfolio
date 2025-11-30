@@ -1,8 +1,11 @@
-name: Sync Data (Airtable → GitHub + Cloudinary)
+name: Sync Data & Static Files
 
-# Manual-only data sync workflow
-# NO automatic schedules - syncs only when you trigger it
-# Does NOT trigger deployments - deployment is separate
+# Manual-only workflow - syncs everything in one go:
+# 1. Fetches data from Airtable
+# 2. Generates static files (portfolio-data.json, share-meta.json, sitemap.xml)
+# 3. Uploads everything to Cloudinary CDN
+# 4. Commits changes to GitHub
+# Does NOT trigger Netlify deployment - use "Deploy to Netlify" workflow for that
 
 on:
   workflow_dispatch:
@@ -11,6 +14,11 @@ on:
         description: 'Reason for sync (optional)'
         required: false
         default: 'Manual content sync'
+      force_cloudinary_upload:
+        description: 'Force re-upload all files to Cloudinary'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -19,22 +27,17 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Log sync trigger
-        run: |
-          echo "📊 Manual data sync triggered"
-          echo "Reason: ${{ github.event.inputs.reason }}"
-          echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -50,60 +53,60 @@ jobs:
           npm run build:data
           npm run build:content
           npm run build:sitemap
-          echo "✅ Data sync complete"
+          echo "✅ Static files generated"
+
+      - name: Upload to Cloudinary
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          echo "☁️ Uploading static files to Cloudinary..."
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_cloudinary_upload }}" == "true" ]; then
+            FORCE_FLAG="--force"
+            echo "🔄 Force upload enabled"
+          fi
+          node scripts/sync-static-to-cloudinary.mjs $FORCE_FLAG
+          echo "✅ Cloudinary upload complete"
 
       - name: Check for changes
         id: check_changes
         run: |
-          if git diff --quiet -- public/portfolio-data.json public/share-meta.json public/sitemap.xml; then
+          git add -A
+          if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No data changes detected"
+            echo "ℹ️ No changes detected"
           else
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "✅ Data changes detected"
+            echo "✅ Changes detected"
           fi
 
-      - name: Commit to GitHub
+      - name: Commit changes
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add public/portfolio-data.json public/share-meta.json public/share-meta.hash public/sitemap.xml
-          git commit -m "chore: sync data from Airtable [ci skip]
+          git commit -m "chore: sync data and static files [ci skip]
           
           Reason: ${{ github.event.inputs.reason }}
           Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push origin main
           echo "✅ Changes committed to GitHub"
 
-      - name: Upload to Cloudinary
-        if: steps.check_changes.outputs.changed == 'true'
-        env:
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        run: |
-          echo "☁️ Uploading to Cloudinary CDN..."
-          npm run sync:static
-          echo "✅ Upload complete"
-
       - name: Summary
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📊 Sync Summary"
+          echo "📊 Sync Complete"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           if [ "${{ steps.check_changes.outputs.changed }}" = "true" ]; then
-            echo "✅ Data synced successfully"
-            echo "✅ Changes committed to GitHub"
+            echo "✅ Data synced from Airtable"
+            echo "✅ Static files generated"
             echo "✅ Files uploaded to Cloudinary CDN"
+            echo "✅ Changes committed to GitHub"
             echo ""
-            echo "📂 Updated files:"
-            echo "  • public/portfolio-data.json"
-            echo "  • public/share-meta.json"
-            echo "  • public/sitemap.xml"
-            echo ""
-            echo "⚠️ NOTE: Deployment NOT triggered automatically"
-            echo "To deploy changes, run 'Manual Deploy' workflow"
+            echo "⚠️ To deploy changes to production:"
+            echo "   Run the 'Deploy to Netlify' workflow"
           else
-            echo "ℹ️ No changes detected - no action taken"
+            echo "ℹ️ No changes detected"
           fi
