@@ -213,7 +213,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const showClient = THEME.projectDetail.showBrand && !isNarrative && project.client;
     const showProductionCompany = THEME.projectDetail.showClient && !!project.productionCompany;
 
-    const visibleCredits = creditsExpanded ? project.credits : project.credits.slice(0, THEME.projectDetail.credits.initialVisibleCount);
+    const hasCredits = project.credits && Array.isArray(project.credits) && project.credits.length > 0;
+    const visibleCredits = hasCredits 
+        ? (creditsExpanded ? project.credits : project.credits.slice(0, THEME.projectDetail.credits.initialVisibleCount))
+        : [];
 
     return (
         <div className={`bg-bg-main pb-0 transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
@@ -471,27 +474,29 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         />
                     </div>
 
-                    <div className="border-t border-white/10 pt-8">
-                        <div className="grid grid-cols-2 md:grid-cols-1 gap-6">
-                            {visibleCredits.map((c, i) => (
-                                <div key={i} className="animate-fade-in-up">
-                                    <span className={`block ${THEME.typography.meta} text-gray-500 mb-1`}>{c.role}</span>
-                                    <span className="text-sm font-medium">{c.name}</span>
-                                </div>
-                            ))}
+                    {hasCredits && (
+                        <div className="border-t border-white/10 pt-8">
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-6">
+                                {visibleCredits.map((c, i) => (
+                                    <div key={i} className="animate-fade-in-up">
+                                        <span className={`block ${THEME.typography.meta} text-gray-500 mb-1`}>{c.role}</span>
+                                        <span className="text-sm font-medium">{c.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            {THEME.projectDetail.credits.enableExpand && project.credits.length > THEME.projectDetail.credits.initialVisibleCount && (
+                                <button 
+                                    onClick={() => setCreditsExpanded(!creditsExpanded)}
+                                    className={`mt-6 ${THEME.typography.meta} text-text-muted hover:text-white transition flex items-center gap-2`}
+                                >
+                                    {creditsExpanded ? 'See Less' : 'See More'}
+                                    <svg width="8" height="8" viewBox="0 0 10 10" className={`transition-transform ${THEME.animation.fast} ${creditsExpanded ? 'rotate-180' : ''}`}>
+                                        <path d="M1 3L5 7L9 3" stroke="currentColor" fill="none"/>
+                                    </svg>
+                                </button>
+                            )}
                         </div>
-                        {THEME.projectDetail.credits.enableExpand && project.credits.length > THEME.projectDetail.credits.initialVisibleCount && (
-                            <button 
-                                onClick={() => setCreditsExpanded(!creditsExpanded)}
-                                className={`mt-6 ${THEME.typography.meta} text-text-muted hover:text-white transition flex items-center gap-2`}
-                            >
-                                {creditsExpanded ? 'See Less' : 'See More'}
-                                <svg width="8" height="8" viewBox="0 0 10 10" className={`transition-transform ${THEME.animation.fast} ${creditsExpanded ? 'rotate-180' : ''}`}>
-                                    <path d="M1 3L5 7L9 3" stroke="currentColor" fill="none"/>
-                                </svg>
-                            </button>
-                        )}
-                    </div>
+                    )}
                 </div>
                 
                 {/* Main Body */}

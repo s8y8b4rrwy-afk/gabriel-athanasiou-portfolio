@@ -47,7 +47,6 @@ export async function syncAllData(config) {
     success: false,
     projects: [],
     journal: [],
-    about: null,
     config: null,
     errors: [],
     timestamp: new Date().toISOString()
@@ -63,13 +62,22 @@ export async function syncAllData(config) {
     // Load Cloudinary mapping if exists
     const cloudinaryMapping = loadCloudinaryMapping(outputDir);
 
-    // Sync projects
+    // Sync config/settings data FIRST - we need it for owner credits
+    results.config = await buildConfig(
+      airtableToken,
+      airtableBaseId,
+      verbose
+    );
+    if (verbose) console.log('[sync-core] ✅ Synced config/settings data');
+
+    // Sync projects (pass owner info for credits)
     results.projects = await buildProjects(
       festivalsMap,
       clientsMap,
       cloudinaryMapping,
       airtableToken,
       airtableBaseId,
+      results.config,
       verbose
     );
     if (verbose) console.log(`[sync-core] ✅ Synced ${results.projects.length} projects`);
@@ -82,27 +90,10 @@ export async function syncAllData(config) {
     );
     if (verbose) console.log(`[sync-core] ✅ Synced ${results.journal.length} journal posts`);
 
-    // Sync about page data
-    results.about = await buildAbout(
-      airtableToken,
-      airtableBaseId,
-      verbose
-    );
-    if (verbose) console.log('[sync-core] ✅ Synced about page data');
-
-    // Sync config/settings data
-    results.config = await buildConfig(
-      airtableToken,
-      airtableBaseId,
-      verbose
-    );
-    if (verbose) console.log('[sync-core] ✅ Synced config/settings data');
-
     // Save portfolio data
     const portfolioData = {
       projects: results.projects,
       posts: results.journal, // Use 'posts' for consistency with frontend
-      about: results.about,
       config: results.config,
       generatedAt: results.timestamp
     };
@@ -132,10 +123,14 @@ export async function syncAllData(config) {
 /**
  * Build projects from Airtable
  */
-async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping, token, baseId, verbose) {
+async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping, token, baseId, config, verbose) {
   if (verbose) console.log('[sync-core] 📦 Building projects...');
   const records = await fetchAirtableTable('Projects', 'Release Date', token, baseId);
   const projects = [];
+  
+  // Extract owner info from config
+  const ownerName = config?.portfolioOwnerName || '';
+  const allowedRoles = config?.allowedRoles || [];
   
   // Build cloudinary lookup map
   const cloudinaryMap = {};
@@ -157,12 +152,37 @@ async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping, token,
     const releaseDate = f['Release Date'] || '';
     const workDate = f['Work Date'] || releaseDate;
     const description = f['Description'] || '';
-    const role = f['Role'] || '';
+    const roleField = f['Role'] || null;  // Keep raw role field (might be string or array)
     const category = normalizeProjectType(f['Project Type'] || '');
     
-    // Parse credits
+    // Parse credits from Credits field
     const rawCredits = f['Credits (new)'] || f['Credits'] || '';
-    const credits = parseCreditsText(rawCredits);
+    const extraCredits = parseCreditsText(rawCredits);
+    
+    // Prepend owner's credits based on Role field and allowed roles
+    const ownerCredits = [];
+    if (ownerName && allowedRoles.length > 0 && roleField) {
+      // Role field might be a string or array (depends on Airtable field type)
+      const projectRoles = Array.isArray(roleField) ? roleField : [roleField];
+      
+      // Filter to only allowed roles
+      const matchingRoles = projectRoles.filter(r => allowedRoles.includes(r));
+      
+      // Create credit entry for each matching role
+      matchingRoles.forEach(r => {
+        ownerCredits.push({
+          role: r,
+          name: ownerName
+        });
+      });
+      
+      if (verbose && matchingRoles.length > 0) {
+        console.log(`[sync-core] ✨ Added ${matchingRoles.length} owner credit(s) to "${title}"`);
+      }
+    }
+    
+    // Combine owner credits first, then additional credits
+    const credits = [...ownerCredits, ...extraCredits];
     
     // Parse external links
     const rawLinks = f['External Links'] || '';
@@ -202,7 +222,7 @@ async function buildProjects(festivalsMap, clientsMap, cloudinaryMapping, token,
       releaseDate,
       workDate,
       description,
-      role,
+      role: roleField,
       category,
       credits,
       images,
@@ -264,30 +284,6 @@ async function buildJournal(token, baseId, verbose) {
 }
 
 /**
- * Build about page data from Airtable
- */
-async function buildAbout(token, baseId, verbose) {
-  if (verbose) console.log('[sync-core] 👤 Building about page...');
-  const records = await fetchAirtableTable('About', null, token, baseId);
-  
-  if (records.length === 0) {
-    return { bio: '', picture: null };
-  }
-
-  const f = records[0].fields || {};
-  const bio = f['Bio'] || '';
-  const pictureAttachments = f['Picture'] || [];
-  const picture = pictureAttachments[0] ? {
-    url: pictureAttachments[0].url,
-    thumbnails: pictureAttachments[0].thumbnails,
-    width: pictureAttachments[0].width,
-    height: pictureAttachments[0].height
-  } : null;
-
-  return { bio, picture };
-}
-
-/**
  * Build config/settings data from Airtable
  */
 async function buildConfig(token, baseId, verbose) {
@@ -296,18 +292,100 @@ async function buildConfig(token, baseId, verbose) {
     const records = await fetchAirtableTable('Settings', null, token, baseId);
     
     if (records.length === 0) {
-      return { defaultOgImage: '' };
+      return getDefaultSettings();
     }
 
     const f = records[0].fields || {};
+    
+    // Extract showreel fields
+    const showreelEnabled = f['Showreel Enabled'] || false;
+    const showreelUrl = f['Showreel URL'] || '';
+    const showreelPlaceholderAttachments = f['Showreel Placeholder'] || [];
+    const showreelPlaceholderImage = showreelPlaceholderAttachments[0] ? showreelPlaceholderAttachments[0].url : '';
+    
+    // Extract contact fields
+    const contactEmail = f['Contact Email'] || '';
+    const contactPhone = f['Contact Phone'] || '';
+    const repUK = f['Rep UK'] || '';
+    const repUSA = f['Rep USA'] || '';
+    const instagramUrl = f['Instagram URL'] || '';
+    const vimeoUrl = f['Vimeo URL'] || '';
+    const linkedinUrl = f['Linkedin URL'] || ''; 
+    
+    // Extract about fields
+    const bio = f['Bio'] || '';
+    const aboutImageAttachments = f['About Image'] || [];
+    const aboutProfileImage = aboutImageAttachments[0] ? aboutImageAttachments[0].url : '';
+    
+    // Extract other settings
+    const name = f['Name'] || '';
+    const allowedRolesRaw = f['Allowed Roles'] || '';
+    const allowedRoles = allowedRolesRaw ? allowedRolesRaw.split(',').map(r => r.trim()).filter(r => r) : [];
+    
     const defaultOgImageAttachments = f['Default OG Image'] || [];
     const defaultOgImage = defaultOgImageAttachments[0] ? defaultOgImageAttachments[0].url : '';
+    
+    const lastModified = f['Last Modified'] || '';
 
-    return { defaultOgImage };
+    // Return in the nested structure expected by HomeConfig interface
+    return {
+      showreel: {
+        enabled: showreelEnabled,
+        videoUrl: showreelUrl,
+        placeholderImage: showreelPlaceholderImage
+      },
+      contact: {
+        email: contactEmail,
+        phone: contactPhone,
+        repUK: repUK,
+        repUSA: repUSA,
+        instagram: instagramUrl,
+        vimeo: vimeoUrl,
+        linkedin: linkedinUrl
+      },
+      about: {
+        bio: bio,
+        profileImage: aboutProfileImage
+      },
+      allowedRoles: allowedRoles,
+      defaultOgImage: defaultOgImage,
+      portfolioOwnerName: name,
+      lastModified: lastModified
+    };
   } catch (error) {
     console.warn('[sync-core] ⚠️ Could not fetch Settings table:', error.message);
-    return { defaultOgImage: '' };
+    return getDefaultSettings();
   }
+}
+
+/**
+ * Get default settings structure when Settings table is unavailable
+ */
+function getDefaultSettings() {
+  return {
+    showreel: {
+      enabled: false,
+      videoUrl: '',
+      placeholderImage: ''
+    },
+    contact: {
+      email: '',
+      phone: '',
+      repUK: '',
+      repUSA: '',
+      instagram: '',
+      vimeo: '',
+      linkedin: ''
+    },
+    about: {
+      bio: '',
+      profileImage: ''
+    },
+    allowedRoles: [],
+    defaultOgImage: '',
+    portfolioOwnerName: '',
+    lastModified: ''
+  };
 }
 
 /**

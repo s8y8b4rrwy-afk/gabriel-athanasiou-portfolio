@@ -214,9 +214,15 @@ describe('networkHelpers', () => {
       const fn = vi.fn().mockRejectedValue(error);
       
       const promise = retryWithBackoff(fn, 3, 100);
+      
+      // Catch the promise to prevent unhandled rejection
+      const resultPromise = promise.catch(err => err);
+      
       await vi.runAllTimersAsync();
       
-      await expect(promise).rejects.toThrow('persistent failure');
+      const result = await resultPromise;
+      expect(result).toBeInstanceOf(Error);
+      expect(result.message).toBe('persistent failure');
       expect(fn).toHaveBeenCalledTimes(3);
     });
   });

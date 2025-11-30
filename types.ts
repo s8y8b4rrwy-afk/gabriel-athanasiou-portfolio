@@ -99,6 +99,8 @@ export interface HomeConfig {
   };
   allowedRoles?: string[];
   defaultOgImage?: string;
+  portfolioOwnerName?: string;
+  lastModified?: string;
 }
 
 export enum ViewState {

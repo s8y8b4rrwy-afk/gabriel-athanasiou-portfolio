@@ -18,18 +18,33 @@ export function normalizeTitle(title) {
 
 /**
  * Parse credits text
+ * Supports formats:
+ * - Multi-line: "Role: Name\nRole: Name"
+ * - Comma-separated: "Role: Name, Role: Name"
+ * - Mixed: "Role: Name\nRole: Name, Role: Name"
  */
 export function parseCreditsText(text) {
   if (!text) return [];
   
-  const items = text.split(/[,|\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+  // Split on newlines first, then commas, handling both formats
+  // Use (?:\r?\n) for newlines and ,(?=\s*\w+:) for commas followed by a role
+  const items = text
+    .split(/\r?\n/)  // Split on newlines first
+    .flatMap(line => {
+      // For each line, split on commas but only if followed by "Role:"
+      // This prevents splitting names like "John, Jr." or addresses
+      const parts = line.split(/,\s*(?=[A-Z][^:]*:)/);
+      return parts;
+    })
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
   
   return items.map(item => {
-    const parts = item.split(':');
-    if (parts.length >= 2) {
+    const colonIndex = item.indexOf(':');
+    if (colonIndex > 0) {
       return {
-        role: parts[0].trim(),
-        name: parts.slice(1).join(':').trim()
+        role: item.substring(0, colonIndex).trim(),
+        name: item.substring(colonIndex + 1).trim()
       };
     }
     return { role: 'Credit', name: item };
