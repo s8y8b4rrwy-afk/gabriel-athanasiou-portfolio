@@ -35,6 +35,7 @@ import {
  * @param {string} config.outputDir - Directory for output files (default: 'public')
  * @param {boolean} config.verbose - Enable verbose logging
  * @param {boolean} config.forceFullSync - Force full sync, bypassing incremental checks
+ * @param {boolean} config.skipFileWrites - Skip writing files to disk (for serverless environments)
  * @returns {Promise<Object>} Sync results with success status and generated data
  */
 export async function syncAllData(config) {
@@ -43,7 +44,8 @@ export async function syncAllData(config) {
     airtableBaseId,
     outputDir = 'public',
     verbose = false,
-    forceFullSync = false
+    forceFullSync = false,
+    skipFileWrites = false
   } = config;
 
   if (!airtableToken || !airtableBaseId) {
@@ -250,10 +252,12 @@ export async function syncAllData(config) {
         changedJournalIds
       );
       
-      // Save updated Cloudinary mapping
-      if (updatedMapping) {
+      // Save updated Cloudinary mapping (skip in serverless environments)
+      if (updatedMapping && !skipFileWrites) {
         saveCloudinaryMapping(outputDir, updatedMapping);
         if (verbose) console.log(`[sync-core] ✅ Saved Cloudinary mapping`);
+      } else if (updatedMapping && skipFileWrites && verbose) {
+        console.log(`[sync-core] ⏭️ Skipped saving Cloudinary mapping (serverless mode)`);
       }
       
       // Build new timestamp map for next sync
@@ -265,7 +269,7 @@ export async function syncAllData(config) {
         });
       }
       
-      // Save portfolio data with metadata
+      // Save portfolio data with metadata (skip in serverless environments)
       const portfolioData = {
         projects: cleanProcessedData(results.projects),
         posts: cleanProcessedData(results.journal),
@@ -280,10 +284,13 @@ export async function syncAllData(config) {
         }
       };
       
-      fs.mkdirSync(outputDir, { recursive: true });
-      fs.writeFileSync(outputFile, JSON.stringify(portfolioData, null, 2));
-      
-      if (verbose) console.log(`[sync-core] ✅ Wrote ${outputFile} (incremental mode)`);
+      if (!skipFileWrites) {
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(outputFile, JSON.stringify(portfolioData, null, 2));
+        if (verbose) console.log(`[sync-core] ✅ Wrote ${outputFile} (incremental mode)`);
+      } else if (verbose) {
+        console.log(`[sync-core] ⏭️ Skipped writing ${outputFile} (serverless mode)`);
+      }
       
     } else {
       // FULL SYNC MODE
@@ -348,10 +355,12 @@ export async function syncAllData(config) {
         verbose
       );
       
-      // Save updated Cloudinary mapping
-      if (updatedMapping) {
+      // Save updated Cloudinary mapping (skip in serverless environments)
+      if (updatedMapping && !skipFileWrites) {
         saveCloudinaryMapping(outputDir, updatedMapping);
         if (verbose) console.log(`[sync-core] ✅ Saved Cloudinary mapping`);
+      } else if (updatedMapping && skipFileWrites && verbose) {
+        console.log(`[sync-core] ⏭️ Skipped saving Cloudinary mapping (serverless mode)`);
       }
       
       // Fetch timestamps for next incremental sync
@@ -379,7 +388,7 @@ export async function syncAllData(config) {
       clientsTimestamps.forEach(({ id, lastModified }) => { timestampMap['Client Book'][id] = lastModified; });
       settingsTimestamps.forEach(({ id, lastModified }) => { timestampMap.Settings[id] = lastModified; });
 
-      // Save portfolio data with metadata
+      // Save portfolio data with metadata (skip in serverless environments)
       const portfolioData = {
         projects: cleanProcessedData(results.projects),
         posts: cleanProcessedData(results.journal),
@@ -394,10 +403,13 @@ export async function syncAllData(config) {
         }
       };
 
-      fs.mkdirSync(outputDir, { recursive: true });
-      fs.writeFileSync(outputFile, JSON.stringify(portfolioData, null, 2));
-      
-      if (verbose) console.log(`[sync-core] ✅ Wrote ${outputFile} (full mode)`);
+      if (!skipFileWrites) {
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(outputFile, JSON.stringify(portfolioData, null, 2));
+        if (verbose) console.log(`[sync-core] ✅ Wrote ${outputFile} (full mode)`);
+      } else if (verbose) {
+        console.log(`[sync-core] ⏭️ Skipped writing ${outputFile} (serverless mode)`);
+      }
     }
 
     results.success = true;

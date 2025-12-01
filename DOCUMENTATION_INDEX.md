@@ -66,6 +66,7 @@ These guides provide additional context but **all critical information is in AI_
 - `SYNC_DEPLOY_GUIDE.md` - Manual sync workflow
 - `STATIC_BUILD_ARCHITECTURE.md` - Build-time data architecture
 - `docs/COMPRESSION_COMPARISON.md` - Image compression analysis
+- **`docs/NETLIFY_SYNC_FUNCTION.md`** - Netlify serverless function limitations ⭐ **NEW**
 
 ---
 

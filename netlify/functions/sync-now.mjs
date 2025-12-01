@@ -1,16 +1,27 @@
 import { syncAllData } from '../../scripts/lib/sync-core.mjs';
+import os from 'os';
+import path from 'path';
 
 /**
  * Manual trigger endpoint for the sync function
  * 
+ * IMPORTANT: Netlify Functions run in a read-only serverless environment.
+ * The only writable directory is /tmp. This function uses /tmp for any
+ * file operations during sync. Note that /tmp is ephemeral and cleared
+ * between invocations.
+ * 
+ * For persistent data sync that updates your repository files, use:
+ * - GitHub Actions workflow (sync-data.yml) - recommended for production
+ * - Local npm run build:data - for development
+ * 
+ * This function is useful for:
+ * - Testing the sync process without committing changes
+ * - Triggering webhooks to validate Airtable connectivity
+ * - Checking what data would be synced
+ * - Debugging sync issues
+ * 
  * Call this via: /.netlify/functions/sync-now
  * Force full sync: /.netlify/functions/sync-now?force=true
- * 
- * Useful for:
- * - Triggering sync via webhook after Airtable updates
- * - Testing the sync process
- * - Forcing an immediate sync
- * - Initial data population
  */
 export const handler = async (event, context) => {
   // Optional: Add authentication to prevent abuse
@@ -43,13 +54,19 @@ export const handler = async (event, context) => {
       console.log('⚡ Force full sync requested');
     }
     
-    // Use shared sync core logic
+    // Use /tmp directory for Netlify Functions (serverless environment)
+    // The 'public' directory doesn't exist and can't be created in Netlify Functions
+    const tmpOutputDir = path.join(os.tmpdir(), 'sync-output');
+    console.log(`📁 Using temporary output directory: ${tmpOutputDir}`);
+    
+    // Use shared sync core logic with serverless-compatible settings
     const results = await syncAllData({
       airtableToken,
       airtableBaseId,
-      outputDir: 'public',
+      outputDir: tmpOutputDir,
       verbose: true,
-      forceFullSync
+      forceFullSync,
+      skipFileWrites: true  // Don't write files in serverless - just return data
     });
     
     return {
