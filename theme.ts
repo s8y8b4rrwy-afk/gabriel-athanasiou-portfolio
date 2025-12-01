@@ -248,9 +248,9 @@ export const THEME = {
       
       // --- Next Project Preview ---
       nextProject: {
-        height: "h-[25vh]",
-        overlayOpacity: 0.2, // Decreased from 0.3 for brightness
-        hoverOverlayOpacity: 0.0,
+        height: "h-[20vh] md:h-[25vh]",
+        overlayOpacity: 0.5, // Increased for better text readability
+        hoverOverlayOpacity: 0.3,
       }
     },
   

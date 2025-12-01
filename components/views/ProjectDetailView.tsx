@@ -285,8 +285,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
 
             {/* --- HERO SECTION --- */}
             <div className={`w-full ${THEME.projectDetail.heroHeight} relative bg-black overflow-hidden`}>
-                {/* Updated Gradient: Fades only at the very bottom (25%) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
+                {/* Subtle gradient at bottom - barely noticeable */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent via-15% to-transparent z-10 pointer-events-none"></div>
                 {/* Animated overlay for procedural hero */}
                 {shouldUseProcedural && <div className="hero-anim-gradient z-[5]"></div>}
                 
@@ -323,53 +323,69 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 ))}
                 
                 {/* Hero content container - constrained to match main content width on large screens */}
-                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX}`}>
-                    <div className="absolute inset-0 flex items-center justify-center md:inset-auto md:flex-none md:block md:bottom-24 md:right-0 md:top-auto md:left-auto z-30">
-                        {hasHeroVideo ? (
+                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} flex flex-col justify-end pb-12`}>
+                    <div className="flex flex-row items-end justify-between z-30">
+                        <div className={`animate-fade-in-up pointer-events-none mix-blend-difference text-white ${THEME.hero.textMaxWidth}`}>
+                            <h1 className={`${THEME.typography.h1} mb-3 leading-tight break-words`}>{project.title}</h1>
+                            <p className="text-[10px] uppercase tracking-[0.25em] text-gray-300/80 ml-0.5">
+                                {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')}
+                                <span className="mx-2">·</span>
+                                {project.year}
+                            </p>
+                        </div>
+                        
+                        <div className="hidden md:block">
+                            {hasHeroVideo ? (
+                                <button 
+                                    onClick={handleWatchClick}
+                                    className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
+                                >
+                                    <span className={`${THEME.typography.meta} text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${THEME.animation.medium} ${THEME.animation.ease}`}>Watch Film</span>
+                                    <div className={`w-16 h-16 md:w-20 md:h-20 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
+                                        <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="text-white ml-1"><path d="M11.5 7L0.5 13.5L0.5 0.5L11.5 7Z"/></svg>
+                                    </div>
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => {
+                                        analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
+                                        navigate('/about');
+                                    }}
+                                    className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                                    aria-label="Contact to request viewing link"
+                                >
+                                    <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
+                                    >
+                                        <span className={`${THEME.typography.meta} tracking-[0.25em]`}>CONTACT TO REQUEST VIEWING LINK</span>
+                                    </div>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Mobile play button - centered */}
+                    <div className="md:hidden absolute inset-0 flex items-center justify-center z-20">
+                        {hasHeroVideo && (
                             <button 
                                 onClick={handleWatchClick}
                                 className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
                             >
-                                <span className={`${THEME.typography.meta} text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${THEME.animation.medium} ${THEME.animation.ease} hidden md:block`}>Watch Film</span>
-                                <div className={`w-16 h-16 md:w-20 md:h-20 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
+                                <div className={`w-16 h-16 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
                                     <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="text-white ml-1"><path d="M11.5 7L0.5 13.5L0.5 0.5L11.5 7Z"/></svg>
                                 </div>
                             </button>
-                        ) : (
-                            <button 
-                                onClick={() => {
-                                    analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
-                                    navigate('/about');
-                                }}
-                                className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
-                                aria-label="Contact to request viewing link"
-                            >
-                                <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
-                                >
-                                    <span className={`${THEME.typography.meta} tracking-[0.25em]`}>CONTACT TO REQUEST VIEWING LINK</span>
-                                </div>
-                            </button>
                         )}
-                    </div>
-                    
-                    <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white bottom-12 left-0 ${THEME.hero.textMaxWidth}`}>
-                        <h1 className={`${THEME.typography.h1} mb-3 leading-tight break-words`}>{project.title}</h1>
-                        <p className="text-[10px] uppercase tracking-[0.25em] text-gray-300/80 ml-0.5">
-                            {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')}
-                            <span className="mx-2">·</span>
-                            {project.year}
-                        </p>
                     </div>
                 </div>
             </div>
 
             {/* --- CONTENT --- */}
-            <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} py-24 grid grid-cols-1 md:grid-cols-12 ${THEME.projectDetail.gridGap}`}>
+            <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} py-8 md:py-16 grid grid-cols-1 md:grid-cols-12 ${THEME.projectDetail.gridGap}`}>
                 
                 {/* Sidebar Column - stretches to fill row, inner content is sticky */}
                 <div className="md:col-span-4 pr-2">
                     <div 
-                        className={`md:sticky ${THEME.projectDetail.sidebarStickyTop} animate-fade-in-up`} 
+                        className={`md:sticky ${THEME.projectDetail.sidebarStickyTop} animate-fade-in-up md:max-w-[280px]`} 
                         style={{ animationDelay: '100ms' }}
                     >
                     
@@ -448,7 +464,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                 onClick={() => navigate(`/journal/${relatedPost.slug || relatedPost.id}`, { state: { from: location.pathname + location.search } })}
                                 className="text-left group w-full"
                             >
-                                <span className={`block ${THEME.typography.h3} text-white group-hover:opacity-70 transition`}>{relatedPost.title} &rarr;</span>
+                                <span className="block text-lg md:text-xl font-serif italic text-white group-hover:opacity-70 transition">{relatedPost.title} &rarr;</span>
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wider mt-1 block">Read Article</span>
                             </button>
                         </div>
@@ -554,19 +570,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     }}
                     onMouseEnter={() => setIsNextHovered(true)}
                     onMouseLeave={() => setIsNextHovered(false)}
-                    className={`w-full ${THEME.projectDetail.nextProject.height} relative group cursor-pointer overflow-hidden border-t border-white/10`}
+                    className={`w-full ${THEME.projectDetail.nextProject.height} relative group cursor-pointer overflow-hidden mt-16 md:mt-24`}
                 >
-                    <div 
-                        className={`absolute inset-0 bg-black z-10 transition-opacity ${THEME.animation.medium}`} 
-                        style={{ 
-                            opacity: isNextHovered 
-                                ? THEME.projectDetail.nextProject.hoverOverlayOpacity 
-                                : THEME.projectDetail.nextProject.overlayOpacity 
-                        }}
-                    ></div>
                     {(() => {
                         const hasHero = !!nextProject.heroImage;
-                        const shouldProcedural = !hasHero && (!nextProject.gallery || nextProject.gallery.length === 0) && !nextProject.videoUrl;
+                        const nextIsLowRes = !nextProject.gallery || nextProject.gallery.length === 0;
+                        const shouldProcedural = !hasHero && nextIsLowRes && !nextProject.videoUrl;
                         let src;
                         if (hasHero && nextProject.heroImage) {
                             const imageUrls = getOptimizedImageUrl(nextProject.id, nextProject.heroImage, 'project', 0, 1, getSessionPreset());
@@ -582,17 +591,43 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                               showMetadata: false
                             });
                         }
+                        
+                        // Apply gradient blur effect for low-res thumbnails (from video URLs)
+                        if (hasHero && nextIsLowRes) {
+                            return (
+                                <>
+                                    <img 
+                                        src={src}
+                                        onError={(e) => { e.currentTarget.src = nextProject.heroImage; }}
+                                        className="w-full h-full object-cover animate-slow-spin blur-[60px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125" 
+                                        alt={nextProject.title}
+                                    />
+                                </>
+                            );
+                        }
+                        
                         return (
-                          <img 
-                            src={src}
-                            onError={(e) => { if (hasHero) e.currentTarget.src = nextProject.heroImage; }}
-                            className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform ${!hasHero ? 'saturate-[1.2] brightness-110 contrast-110' : ''}`} 
-                          />
+                            <>
+                                <div 
+                                    className={`absolute inset-0 bg-black z-10 transition-opacity ${THEME.animation.medium}`} 
+                                    style={{ 
+                                        opacity: isNextHovered 
+                                            ? THEME.projectDetail.nextProject.hoverOverlayOpacity 
+                                            : THEME.projectDetail.nextProject.overlayOpacity 
+                                    }}
+                                ></div>
+                                <img 
+                                    src={src}
+                                    onError={(e) => { if (hasHero) e.currentTarget.src = nextProject.heroImage; }}
+                                    className={`w-full h-full object-cover transform scale-100 group-hover:scale-[1.02] transition ${THEME.animation.superSlow} ${THEME.animation.ease} will-change-transform ${!hasHero ? 'saturate-[1.2] brightness-110 contrast-110' : ''}`} 
+                                    alt={nextProject.title}
+                                />
+                            </>
                         );
                     })()}
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-8 mix-blend-difference text-white">
-                        <span className={`${THEME.typography.meta} mb-3 opacity-60`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
-                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif italic group-hover:scale-105 transition duration-1000 ease-out max-w-3xl">{nextProject.title}</h2>
+                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif italic group-hover:scale-105 transition duration-1000 ease-out max-w-3xl">{nextProject.title}</h2>
                     </div>
                 </div>
             )}

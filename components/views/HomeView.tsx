@@ -70,16 +70,26 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                              <h1 className={THEME.typography.h1}>{THEME.hero.showreel.title}</h1>
                         </div>
                      </div>
-                ) : heroProject ? (
+                ) : heroProject ? (() => {
+                    const heroIsLowRes = !heroProject.gallery || heroProject.gallery.length === 0;
+                    return (
                     <div onClick={() => {
                         navigate(`/work/${heroProject.slug || heroProject.id}`, { state: { from: location.pathname + location.search } });
                     }} className="w-full h-full relative">
-                        <div 
-                            className={`absolute inset-0 bg-black z-10 transition ${THEME.animation.medium}`}
-                            style={{ opacity: THEME.hero.overlayOpacity }}
-                        ></div>
-                        {/* Hover Clear Overlay */}
-                        <div className={`absolute inset-0 bg-black z-10 group-hover:opacity-0 transition ${THEME.animation.medium}`} style={{ opacity: THEME.hero.overlayOpacity }}></div>
+                        {/* Gradient fade at bottom for low-res hero */}
+                        {heroIsLowRes && (
+                            <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
+                        )}
+                        {!heroIsLowRes && (
+                            <>
+                                <div 
+                                    className={`absolute inset-0 bg-black z-10 transition ${THEME.animation.medium}`}
+                                    style={{ opacity: THEME.hero.overlayOpacity }}
+                                ></div>
+                                {/* Hover Clear Overlay */}
+                                <div className={`absolute inset-0 bg-black z-10 group-hover:opacity-0 transition ${THEME.animation.medium}`} style={{ opacity: THEME.hero.overlayOpacity }}></div>
+                            </>
+                        )}
                         
                         <OptimizedImage
                             recordId={heroProject.id}
@@ -91,7 +101,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             loading="eager"
                             preset={upgradePreset(getSessionPreset())}
                             skipDowngrade={true}
-                            className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
+                            className={`w-full h-full object-cover ${
+                                heroIsLowRes
+                                    ? 'animate-slow-spin blur-[60px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125'
+                                    : 'transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out'
+                            }`}
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
                             <span className={`block ${THEME.typography.meta} mb-4 opacity-0 animate-fade-in-up`} style={{ animationDelay: '200ms' }}>Featured Work</span>
@@ -100,7 +114,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             </h1>
                         </div>
                     </div>
-                ) : (
+                    );
+                })() : (
                     <div className={`absolute inset-0 flex items-center justify-center z-10`}>
                         <h1 className={`${THEME.typography.h1} text-white mix-blend-difference`}>GABRIEL ATHANASIOU</h1>
                     </div>
@@ -109,14 +124,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
 
             {/* FILMSTRIP SECTION */}
             <div className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
-                <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto`}>
+                <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-end mb-16 border-b border-white/10 pb-4">
                     <span className={`${THEME.typography.meta} text-text-muted`}>Featured Work</span>
                     {yearRangeText && <span className={`${THEME.typography.meta} text-text-muted hidden md:inline-block`}>{yearRangeText}</span>}
                 </div>
 
                 <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY} mb-40`}>
-                    {gridProjects.map((p, i) => (
+                    {gridProjects.map((p, i) => {
+                        const isLowRes = !p.gallery || p.gallery.length === 0;
+                        return (
                         <div 
                             key={p.id} 
                             onClick={() => {
@@ -134,7 +151,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     totalImages={p.gallery?.length || 0}
                                     alt={p.title}
                                     loading="lazy"
-                                    className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                    className={`w-full h-full object-cover ${
+                                        isLowRes 
+                                            ? 'animate-slow-spin blur-[40px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125' 
+                                            : 'transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out'
+                                    }`}
                                 />
                             </div>
                             <div className="flex justify-between items-baseline text-white">
@@ -142,7 +163,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                 <span className="text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition shrink-0 ml-4">{p.type === 'Uncategorized' ? '' : p.type}</span>
                             </div>
                         </div>
-                    ))}
+                    );})}
                 </div>
 
                 {/* FEATURED JOURNAL */}
@@ -192,15 +213,44 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     </div>
                 )}
                 
-                <div className="pt-16 border-t border-white/10 flex flex-col items-center">
-                    <button 
-                        onClick={() => {
-                            navigate('/about');
-                        }} 
-                        className="text-xl md:text-2xl font-serif italic text-white hover:text-white/60 transition duration-500 ease-out"
-                    >
-                        Get in Touch
-                    </button>
+                {/* CTA Section with Aurora Background */}
+                <div className="relative py-12 md:py-20 lg:py-28 -mx-4 md:-mx-8 lg:-mx-12 overflow-hidden">
+                    {/* Animated Aurora Background */}
+                    <div className="absolute inset-0 cta-aurora">
+                        <div className="absolute inset-0 cta-gradient-1"></div>
+                        <div className="absolute inset-0 cta-gradient-2"></div>
+                        <div className="absolute inset-0 cta-gradient-3"></div>
+                    </div>
+                    
+                    {/* Subtle grain overlay */}
+                    <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}></div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
+                        <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/40 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                            Let's Create Something Beautiful
+                        </p>
+                        <button 
+                            onClick={() => {
+                                navigate('/about');
+                            }} 
+                            className="group relative text-3xl md:text-5xl lg:text-6xl font-serif italic text-white cta-button-glow"
+                        >
+                            <span className="relative z-10 inline-block transition-transform duration-700 ease-out group-hover:scale-105">
+                                Get in Touch
+                            </span>
+                            <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></span>
+                            <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-700"></span>
+                        </button>
+                        <p className="text-sm md:text-base text-white/30 mt-8 font-light animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                            Available for select projects
+                        </p>
+                    </div>
+                    
+                    {/* Top and bottom fade edges */}
+                    <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg-main to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-main to-transparent pointer-events-none"></div>
+                </div>
                 </div>
             </div>
         </section>

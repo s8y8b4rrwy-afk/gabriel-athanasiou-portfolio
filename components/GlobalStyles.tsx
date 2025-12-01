@@ -194,6 +194,53 @@ export const GlobalStyles: React.FC = () => {
           opacity: 1;
         }
       }
+      
+      /* CTA Aurora Animation */
+      .cta-aurora {
+        background: var(--color-bg-main);
+      }
+      
+      .cta-gradient-1 {
+        background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(120, 119, 198, 0.15), transparent 60%);
+        animation: aurora1 12s ease-in-out infinite;
+      }
+      
+      .cta-gradient-2 {
+        background: radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 255, 255, 0.08), transparent 50%);
+        animation: aurora2 15s ease-in-out infinite;
+      }
+      
+      .cta-gradient-3 {
+        background: radial-gradient(ellipse 90% 60% at 50% 50%, rgba(180, 180, 220, 0.06), transparent 55%);
+        animation: aurora3 18s ease-in-out infinite;
+      }
+      
+      @keyframes aurora1 {
+        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+        33% { transform: translate(5%, -3%) scale(1.1); opacity: 0.8; }
+        66% { transform: translate(-3%, 5%) scale(0.95); opacity: 0.5; }
+      }
+      
+      @keyframes aurora2 {
+        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+        50% { transform: translate(-8%, 4%) scale(1.15); opacity: 0.7; }
+      }
+      
+      @keyframes aurora3 {
+        0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.4; }
+        25% { transform: translate(3%, -2%) rotate(1deg) scale(1.05); opacity: 0.6; }
+        50% { transform: translate(-2%, 3%) rotate(-1deg) scale(1.1); opacity: 0.5; }
+        75% { transform: translate(4%, 2%) rotate(0.5deg) scale(1.02); opacity: 0.7; }
+      }
+      
+      .cta-button-glow {
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        transition: text-shadow 0.7s ease-out;
+      }
+      
+      .cta-button-glow:hover {
+        text-shadow: 0 0 60px rgba(255, 255, 255, 0.25), 0 0 100px rgba(255, 255, 255, 0.15);
+      }
     `;
     document.head.appendChild(style);
 

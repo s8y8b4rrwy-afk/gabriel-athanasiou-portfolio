@@ -107,7 +107,8 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
             }} />
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 z-10"></div>
+                {/* Subtle gradient - only at the very bottom for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent via-25% to-transparent z-10"></div>
                 {post.imageUrl && (
                     <OptimizedImage
                         recordId={post.id}
@@ -118,8 +119,8 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                         className="w-full h-full object-cover animate-reveal will-change-transform"
                     />
                 )}
-                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX}`}>
-                    <div className="absolute bottom-12 left-0 z-20 max-w-3xl">
+                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} flex flex-col justify-end pb-12`}>
+                    <div className="z-20 max-w-3xl">
                          <div className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/70 mb-4`}>
                              <span>{post.date}</span>
                              {post.readingTime && (
@@ -135,7 +136,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 </div>
             </div>
 
-            <div className={`${THEME.blog.post.contentWidth} mx-auto px-6 py-20`}>
+            <div className={`${THEME.blog.post.contentWidth} mx-auto px-6 py-10 md:py-20`}>
                 <div className="blog-content text-sm md:text-base leading-relaxed text-gray-400 font-light space-y-5 [&>p]:mb-5 [&>h1]:text-2xl [&>h1]:font-serif [&>h1]:italic [&>h1]:mt-10 [&>h1]:mb-5 [&>h1]:text-white [&>h2]:text-xl [&>h2]:font-serif [&>h2]:italic [&>h2]:mt-8 [&>h2]:mb-4 [&>h2]:text-white [&>h3]:text-lg [&>h3]:font-medium [&>h3]:mt-6 [&>h3]:mb-3 [&>h3]:text-white [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:space-y-2 [&>blockquote]:border-l-2 [&>blockquote]:border-white/20 [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-gray-500">
                     <div dangerouslySetInnerHTML={{ __html: parseMarkdown(post.content) }} />
                 </div>
