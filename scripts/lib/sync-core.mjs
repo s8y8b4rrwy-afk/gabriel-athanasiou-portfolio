@@ -1049,7 +1049,8 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
   const repUSA = f['Rep USA'] || '';
   const instagramUrl = f['Instagram URL'] || '';
   const vimeoUrl = f['Vimeo URL'] || '';
-  const linkedinUrl = f['LinkedIn URL'] || f['Linkedin URL'] || ''; 
+  const linkedinUrl = f['LinkedIn URL'] || f['Linkedin URL'] || '';
+  const imdbUrl = f['IMDb URL'] || f['IMDB URL'] || ''; 
   
   // Extract about fields
   const bio = f['Bio'] || '';
@@ -1102,7 +1103,8 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
       repUSA: repUSA,
       instagram: instagramUrl,
       vimeo: vimeoUrl,
-      linkedin: linkedinUrl
+      linkedin: linkedinUrl,
+      imdb: imdbUrl
     },
     about: {
       bio: bio,

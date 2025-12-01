@@ -92,6 +92,7 @@ export interface HomeConfig {
     instagram?: string;
     vimeo?: string;
     linkedin?: string;
+    imdb?: string;
   };
   about?: {
     bio?: string;

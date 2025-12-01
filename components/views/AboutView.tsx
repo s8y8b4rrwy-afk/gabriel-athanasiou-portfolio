@@ -69,6 +69,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
                                     {config.contact?.instagram && <a href={config.contact.instagram} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>Instagram</a>}
                                     {config.contact?.vimeo && <a href={config.contact.vimeo} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>Vimeo</a>}
                                     {config.contact?.linkedin && <a href={config.contact.linkedin} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>LinkedIn</a>}
+                                    {config.contact?.imdb && <a href={config.contact.imdb} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>IMDb</a>}
                                 </div>
                             </div>
                             <div>
