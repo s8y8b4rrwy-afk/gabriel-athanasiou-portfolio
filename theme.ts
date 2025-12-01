@@ -225,7 +225,7 @@ export const THEME = {
       
       // --- Layout ---
       // Max width of the content container
-      contentMaxWidth: "max-w-7xl",
+      contentMaxWidth: "max-w-[1700px]",
       
       // Gap between Sidebar and Main Content
       gridGap: "gap-12 md:gap-16",

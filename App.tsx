@@ -90,7 +90,7 @@ export default function App() {
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
       <Navigation showLinks={true} />
       
-      <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-hidden transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+      <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-clip transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
         <main>
         <Suspense fallback={
           <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">

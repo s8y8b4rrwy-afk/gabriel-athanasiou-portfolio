@@ -46,6 +46,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     
     const featuredPost = posts[0];
 
+    // Calculate year range from featured projects
+    const featuredYears = featuredProjects
+        .map(p => parseInt(p.year, 10))
+        .filter(y => !isNaN(y));
+    const minYear = featuredYears.length > 0 ? Math.min(...featuredYears) : null;
+    const maxYear = featuredYears.length > 0 ? Math.max(...featuredYears) : null;
+    const yearRangeText = minYear && maxYear 
+        ? (minYear === maxYear ? `${minYear}` : `${minYear} — ${maxYear}`)
+        : '';
+
     return (
         <section className={`w-full transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             {/* HERO SECTION */}
@@ -99,9 +109,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
 
             {/* FILMSTRIP SECTION */}
             <div className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
+                <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto`}>
                 <div className="flex justify-between items-end mb-16 border-b border-white/10 pb-4">
                     <span className={`${THEME.typography.meta} text-text-muted`}>Featured Work</span>
-                    <span className={`${THEME.typography.meta} text-text-muted hidden md:inline-block`}>2021 — 2024</span>
+                    {yearRangeText && <span className={`${THEME.typography.meta} text-text-muted hidden md:inline-block`}>{yearRangeText}</span>}
                 </div>
 
                 <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY} mb-40`}>
@@ -111,10 +122,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             onClick={() => {
                                 navigate(`/work/${p.slug || p.id}`, { state: { from: location.pathname + location.search } });
                             }}
-                            className="group block cursor-pointer"
-                            style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
+                            className="group cursor-pointer flex flex-col animate-fade-in-up opacity-0"
+                            style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms`, animationFillMode: 'forwards' }}
                         >
-                            <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-4 relative`}>
+                            <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
                                 <OptimizedImage
                                     recordId={p.id}
                                     fallbackUrl={p.heroImage}

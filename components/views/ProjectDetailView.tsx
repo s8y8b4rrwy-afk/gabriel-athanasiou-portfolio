@@ -322,52 +322,56 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     </div>
                 ))}
                 
-                <div className="absolute inset-0 flex items-center justify-center md:inset-auto md:flex-none md:block md:bottom-24 md:right-12 md:top-auto md:left-auto z-30">
-                    {hasHeroVideo ? (
-                        <button 
-                            onClick={handleWatchClick}
-                            className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
-                        >
-                            <span className={`${THEME.typography.meta} text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${THEME.animation.medium} ${THEME.animation.ease} hidden md:block`}>Watch Film</span>
-                            <div className={`w-16 h-16 md:w-20 md:h-20 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
-                                <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="text-white ml-1"><path d="M11.5 7L0.5 13.5L0.5 0.5L11.5 7Z"/></svg>
-                            </div>
-                        </button>
-                    ) : (
-                        <button 
-                            onClick={() => {
-                                analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
-                                navigate('/about');
-                            }}
-                            className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
-                            aria-label="Contact to request viewing link"
-                        >
-                            <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
+                {/* Hero content container - constrained to match main content width on large screens */}
+                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX}`}>
+                    <div className="absolute inset-0 flex items-center justify-center md:inset-auto md:flex-none md:block md:bottom-24 md:right-0 md:top-auto md:left-auto z-30">
+                        {hasHeroVideo ? (
+                            <button 
+                                onClick={handleWatchClick}
+                                className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
                             >
-                                <span className={`${THEME.typography.meta} tracking-[0.25em]`}>CONTACT TO REQUEST VIEWING LINK</span>
-                            </div>
-                        </button>
-                    )}
-                </div>
-                
-                <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textMaxWidth}`}>
-                    <h1 className={`${THEME.typography.h1} mb-3 leading-tight break-words`}>{project.title}</h1>
-                    <p className="text-[10px] uppercase tracking-[0.25em] text-gray-300/80 ml-0.5">
-                        {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')}
-                        <span className="mx-2">·</span>
-                        {project.year}
-                    </p>
+                                <span className={`${THEME.typography.meta} text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${THEME.animation.medium} ${THEME.animation.ease} hidden md:block`}>Watch Film</span>
+                                <div className={`w-16 h-16 md:w-20 md:h-20 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
+                                    <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="text-white ml-1"><path d="M11.5 7L0.5 13.5L0.5 0.5L11.5 7Z"/></svg>
+                                </div>
+                            </button>
+                        ) : (
+                            <button 
+                                onClick={() => {
+                                    analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
+                                    navigate('/about');
+                                }}
+                                className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                                aria-label="Contact to request viewing link"
+                            >
+                                <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
+                                >
+                                    <span className={`${THEME.typography.meta} tracking-[0.25em]`}>CONTACT TO REQUEST VIEWING LINK</span>
+                                </div>
+                            </button>
+                        )}
+                    </div>
+                    
+                    <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white bottom-12 left-0 ${THEME.hero.textMaxWidth}`}>
+                        <h1 className={`${THEME.typography.h1} mb-3 leading-tight break-words`}>{project.title}</h1>
+                        <p className="text-[10px] uppercase tracking-[0.25em] text-gray-300/80 ml-0.5">
+                            {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')}
+                            <span className="mx-2">·</span>
+                            {project.year}
+                        </p>
+                    </div>
                 </div>
             </div>
 
             {/* --- CONTENT --- */}
             <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} py-24 grid grid-cols-1 md:grid-cols-12 ${THEME.projectDetail.gridGap}`}>
                 
-                {/* Sidebar - Unified Scrolling */}
-                <div 
-                    className={`md:col-span-4 self-start md:sticky ${THEME.projectDetail.sidebarStickyTop} animate-fade-in-up pr-2`} 
-                    style={{ animationDelay: '100ms' }}
-                >
+                {/* Sidebar Column - stretches to fill row, inner content is sticky */}
+                <div className="md:col-span-4 pr-2">
+                    <div 
+                        className={`md:sticky ${THEME.projectDetail.sidebarStickyTop} animate-fade-in-up`} 
+                        style={{ animationDelay: '100ms' }}
+                    >
                     
                     {/* Client / Production Company Logic */}
                     <div className="mb-8 border-b border-white/10">
@@ -499,19 +503,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             )}
                         </div>
                     )}
+                    </div>
                 </div>
                 
                 {/* Main Body */}
                 <div className="md:col-span-8 space-y-24 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     
                     {project.videoUrl && (
-                         <div className="w-full aspect-video bg-black shadow-lg">
+                         <div className="w-full aspect-video bg-black shadow-lg relative">
                             <VideoEmbed url={project.videoUrl} autoplay={false} />
                         </div>
                     )}
 
                     {project.additionalVideos && project.additionalVideos.map((videoUrl, i) => (
-                        <div key={`extra-video-${i}`} className="w-full aspect-video bg-black shadow-lg">
+                        <div key={`extra-video-${i}`} className="w-full aspect-video bg-black shadow-lg relative">
                             <VideoEmbed url={videoUrl} autoplay={false} />
                         </div>
                     ))}

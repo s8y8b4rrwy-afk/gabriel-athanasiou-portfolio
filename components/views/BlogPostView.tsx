@@ -118,18 +118,20 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                         className="w-full h-full object-cover animate-reveal will-change-transform"
                     />
                 )}
-                <div className={`absolute bottom-12 left-6 md:left-12 z-20 max-w-3xl`}>
-                     <div className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/70 mb-4`}>
-                         <span>{post.date}</span>
-                         {post.readingTime && (
-                            <>
-                                <span className="text-white/40">·</span>
-                                <span>{post.readingTime}</span>
-                            </>
-                         )}
-                         {isInstagram && <span className="text-white font-bold bg-white/20 px-2 py-0.5 rounded-sm backdrop-blur-md ml-2">INSTAGRAM</span>}
-                     </div>
-                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic leading-tight text-white">{post.title}</h1>
+                <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX}`}>
+                    <div className="absolute bottom-12 left-0 z-20 max-w-3xl">
+                         <div className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/70 mb-4`}>
+                             <span>{post.date}</span>
+                             {post.readingTime && (
+                                <>
+                                    <span className="text-white/40">·</span>
+                                    <span>{post.readingTime}</span>
+                                </>
+                             )}
+                             {isInstagram && <span className="text-white font-bold bg-white/20 px-2 py-0.5 rounded-sm backdrop-blur-md ml-2">INSTAGRAM</span>}
+                         </div>
+                         <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic leading-tight text-white">{post.title}</h1>
+                    </div>
                 </div>
             </div>
 
