@@ -7,6 +7,7 @@
     "dev": "netlify dev",
     "dev:vite": "vite",
     "sync:static": "node scripts/sync-static-to-cloudinary.mjs",
+    "upload:config-images": "node scripts/upload-config-images.mjs",
     "build:content": "node scripts/generate-share-meta.mjs",
     "build:data": "node scripts/sync-data.mjs",
     "build:sitemap": "node scripts/generate-sitemap.mjs",

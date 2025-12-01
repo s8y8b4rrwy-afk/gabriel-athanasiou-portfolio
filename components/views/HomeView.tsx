@@ -48,7 +48,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     return (
         <section className={`w-full transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             {/* HERO SECTION */}
-            <div className={`relative w-full h-[70vh] md:h-[80vh] lg:${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
+            <div className={`relative w-full ${THEME.hero.height} cursor-pointer group overflow-hidden bg-bg-main`}>
                 {showShowreel ? (
                      <div className="w-full h-full relative">
                         <div className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.8 }}>
@@ -78,6 +78,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             totalImages={heroProject.gallery?.length || 0}
                             alt={heroProject.title}
                             loading="eager"
+                            preset={THEME.hero.imagePreset}
                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
                         />
                         <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>

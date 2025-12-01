@@ -91,7 +91,16 @@ export const THEME = {
     hero: {
       // Height of the hero section on Home and Project pages
       // Options: "h-screen", "h-[80vh]", "min-h-[600px]"
+      // Note: Homepage uses full screen on all devices for maximum impact
       height: "h-screen",
+      
+      // Cloudinary image preset for homepage hero
+      // Options: 'hero' (3000px, q90), 'ultra' (1600px, q90), 'fine' (1000px, q80)
+      imagePreset: "hero" as const,
+      
+      // Mobile breakpoint for downgrading hero preset (in pixels)
+      // Hero preset auto-downgrades to 'ultra' below this width to save bandwidth
+      mobileBreakpoint: 768,
       
       // Opacity of the black overlay on top of hero images (0.0 to 1.0)
       overlayOpacity: 0.1,
@@ -114,6 +123,31 @@ export const THEME = {
         muted: true,
         loop: true,
       }
+    },
+  
+    // --------------------------------------------------------------------------
+    // 4B. CLOUDINARY IMAGE PRESETS
+    // --------------------------------------------------------------------------
+    // Control image quality and sizes across the site
+    // These presets determine how images are delivered from Cloudinary CDN
+    cloudinary: {
+      presets: {
+        fine: {
+          quality: 80,   // Quality level (0-100, higher = better quality, larger file)
+          width: 1000    // Max width in pixels
+        },
+        ultra: {
+          quality: 90,
+          width: 1600
+        },
+        hero: {
+          quality: 100,
+          width: 2400    // For full-screen homepage hero on 4K displays
+        }
+      },
+      format: 'webp',      // Output format (webp recommended for best compression)
+      crop: 'limit',       // Crop mode: 'limit' prevents upscaling
+      dprs: [1.0, 2.0]     // Device pixel ratios to support (retina displays)
     },
   
     // --------------------------------------------------------------------------
@@ -212,7 +246,23 @@ export const THEME = {
     },
   
     // --------------------------------------------------------------------------
-    // 7. BLOG / JOURNAL
+    // 7. ABOUT / BIO PAGE
+    // --------------------------------------------------------------------------
+    about: {
+      // Cloudinary preset for profile image (desktop)
+      // Options: 'ultra' (1600px, q90), 'fine' (1000px, q80), 'hero' (3000px, q90)
+      profileImagePreset: "ultra" as const,
+      
+      // Mobile breakpoint (pixels) - below this width, use mobilePreset
+      mobileBreakpoint: 768,
+      
+      // Cloudinary preset for mobile devices (saves bandwidth)
+      // Options: 'ultra' (1600px, q90), 'fine' (1000px, q80)
+      mobilePreset: "fine" as const,
+    },
+  
+    // --------------------------------------------------------------------------
+    // 8. BLOG / JOURNAL
     // --------------------------------------------------------------------------
     blog: {
       grid: {

@@ -33,7 +33,7 @@ export const isCloudinaryEnabled = (): boolean => {
   return cloudinaryConfig.enabled;
 };
 
-export type CloudinaryPreset = 'ultra' | 'fine';
+export type CloudinaryPreset = 'ultra' | 'fine' | 'hero';
 
 export interface ResponsiveImageProps {
   src: string;
@@ -55,7 +55,7 @@ export interface CloudinaryOptions {
  * Detect optimal preset based on device capabilities and network conditions
  * 
  * Decision logic:
- * - Slow connection (saveData or 2G) → fine
+ * - Slow connection (saveData, 2G, slow-2g, 3G, or slow 4G <1.5 Mbps) → fine
  * - Large viewport × DPR (≥1024px effective) → ultra
  * - Default → fine
  * 
@@ -67,8 +67,13 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
   // Check network conditions
   const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
   if (connection) {
-    if (connection.saveData || connection.effectiveType === '2g') {
-      if (DEBUG) console.log('🌐 Network: Slow connection detected, using fine preset');
+    // Use fine preset for slow connections: 2G, 3G, slow-2g, or saveData mode
+    const slowConnections = ['slow-2g', '2g', '3g'];
+    const isSlow4G = connection.effectiveType === '4g' && connection.downlink && connection.downlink < 1.5;
+    
+    if (connection.saveData || slowConnections.includes(connection.effectiveType) || isSlow4G) {
+      const reason = connection.saveData ? 'saveData' : isSlow4G ? `slow 4G (${connection.downlink}Mbps)` : connection.effectiveType;
+      if (DEBUG) console.log(`🌐 Network: Slow connection detected (${reason}), using fine preset`);
       return 'fine';
     }
   }
@@ -156,7 +161,10 @@ export const buildCloudinaryUrl = (
   let widthValue: number = CLOUDINARY_PRESETS.fine.width;
   
   if (options.preset) {
-    if (options.preset === 'ultra') {
+    if (options.preset === 'hero') {
+      qualityValue = CLOUDINARY_PRESETS.hero.quality;
+      widthValue = CLOUDINARY_PRESETS.hero.width;
+    } else if (options.preset === 'ultra') {
       qualityValue = CLOUDINARY_PRESETS.ultra.quality;
       widthValue = CLOUDINARY_PRESETS.ultra.width;
     } else {

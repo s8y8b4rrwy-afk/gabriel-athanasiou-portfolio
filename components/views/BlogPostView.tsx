@@ -38,7 +38,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
     // Redirect to journal index if post is not published
     useEffect(() => {
-        if (post && post.status && post.status !== 'Public') {
+        if (post && post.status && post.status !== 'Published' && post.status !== 'Public') {
             navigate('/journal', { replace: true });
         }
     }, [post, navigate]);
@@ -50,16 +50,16 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
     // Track blog post view on load
     useEffect(() => {
-        if (post && (post.status === 'Public' || !post.status)) {
+        if (post && (post.status === 'Published' || post.status === 'Public' || !post.status)) {
             analyticsService.trackBlogPostView(post.id, post.title);
         }
     }, [post]);
 
     if (!post) return null; // Or 404
-    if (post.status && post.status !== 'Public') return null; // Don't render unpublished posts
+    if (post.status && post.status !== 'Published' && post.status !== 'Public') return null; // Don't render unpublished posts
 
     // Filter to only published posts for navigation
-    const publishedPosts = allPosts.filter(p => p.status === 'Public' || !p.status);
+    const publishedPosts = allPosts.filter(p => p.status === 'Published' || p.status === 'Public' || !p.status);
     const currentIndex = publishedPosts.findIndex(p => p.id === post.id);
     const prevPost = currentIndex > 0 ? publishedPosts[currentIndex - 1] : null;
     const nextPost = currentIndex < publishedPosts.length - 1 ? publishedPosts[currentIndex + 1] : null;

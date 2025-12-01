@@ -2425,15 +2425,21 @@ cloudinary.config({
 - `CLOUDINARY_API_SECRET` - API secret from Cloudinary dashboard
 
 **Upload Settings:**
-- Format: WebP (automatic conversion)
-- Quality: `auto:best` (90-100% quality)
+- Format: **Original** (no transformation, stores source format)
+- Quality: **Original** (no compression during upload)
+- Resolution: **Original** (no resize during upload)
 - Invalidate: `true` (clear CDN cache on re-upload)
 - Overwrite: `true` (replace existing images)
 
-**Delivery URLs:**
+**Delivery Transformations (on-demand via URL):**
 - Base: `res.cloudinary.com/date24ay6/image/upload/`
-- Transformations: `f_auto,q_auto:best,c_limit,dpr_auto,w_1600/`
+- Fine preset: `f_webp,q_80,w_1000,c_limit/` (thumbnails, lists)
+- Ultra preset: `f_webp,q_90,w_1600,c_limit/` (galleries)
+- Hero preset: `f_webp,q_90,w_3000,c_limit/` (full-screen homepage, 4K displays)
 - Public ID: `portfolio-projects-{recordId}-{index}` or `portfolio-journal-{recordId}`
+
+**Why No Upload Transformations?**
+Storing originals prevents double-compression. Images are transformed once (at delivery) instead of twice (upload + delivery).
 
 **Scheduled Sync:**
 - **Daily at midnight UTC**: Incremental sync (only uploads changed images)

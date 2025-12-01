@@ -37,8 +37,8 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
 
     const [filter, setFilter] = useState<string>("All");
     
-    // Filter to only show Public posts (exclude Scheduled/Draft)
-    const publicPosts = posts.filter(p => p.status === 'Public' || !p.status); // Default to showing if no status field
+    // Filter to only show Published/Public posts (exclude Scheduled/Draft)
+    const publicPosts = posts.filter(p => p.status === 'Published' || p.status === 'Public' || !p.status); // Default to showing if no status field
     
     // Sort "Instagram" to the end of the tags list if present, but keep "All" first
     const rawTags = Array.from(new Set(publicPosts.flatMap(p => p.tags)));

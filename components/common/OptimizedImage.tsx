@@ -57,6 +57,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { getOptimizedImageUrl, getSessionPreset, type CloudinaryPreset } from '../../utils/imageOptimization';
+import { THEME } from '../../theme';
 
 // Enable debug logging in development only
 const DEBUG = import.meta.env.DEV;
@@ -86,7 +87,7 @@ interface OptimizedImageProps {
   decoding?: 'async' | 'sync' | 'auto';
   /** Use original JPEG on desktop/large devices (1024px+) for maximum quality */
   useOriginalOnDesktop?: boolean;
-  /** Cloudinary quality preset: 'ultra' (q_90, w_1600) or 'fine' (q_75, w_800). Auto-detects if not provided. */
+  /** Cloudinary quality preset: 'hero' (q_90, w_3000), 'ultra' (q_90, w_1600) or 'fine' (q_80, w_1000). Auto-detects if not provided. */
   preset?: CloudinaryPreset;
 }
 
@@ -132,13 +133,24 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return null;
   }
 
-  // Auto-detect preset if not provided
-  const activePreset = preset || getSessionPreset();
+  // Auto-detect preset if not provided, with mobile downgrade for hero and bio presets
+  let activePreset = preset || getSessionPreset();
+  
+  // Downgrade hero preset to ultra on mobile devices (configurable via theme)
+  if (activePreset === 'hero' && typeof window !== 'undefined' && window.innerWidth < THEME.hero.mobileBreakpoint) {
+    activePreset = 'ultra';
+  }
+  
+  // Downgrade bio preset on mobile devices (configurable via theme)
+  if (activePreset === THEME.about.profileImagePreset && typeof window !== 'undefined' && window.innerWidth < THEME.about.mobileBreakpoint) {
+    activePreset = THEME.about.mobilePreset;
+  }
   
   if (DEBUG) {
     console.log('🖼️ OptimizedImage:', { 
       recordId, 
       preset: activePreset,
+      requestedPreset: preset,
       type
     });
   }

@@ -1,8 +1,17 @@
 /**
  * SINGLE SOURCE OF TRUTH for Cloudinary preset settings
- * Change these values once, and they apply everywhere (upload, delivery, client, server)
+ * 
+ * ⚠️ IMPORTANT: Edit these values in theme.ts under THEME.cloudinary
+ * This file is kept for compatibility but values should be controlled from theme.ts
+ * 
+ * To change presets, edit:
+ * - theme.ts → THEME.cloudinary.presets
+ * - theme.ts → THEME.hero.imagePreset (for homepage hero)
+ * - theme.ts → THEME.hero.mobileBreakpoint (for mobile downgrade)
  */
 
+// Re-export from theme for backward compatibility
+// Note: This is a simplified version - theme.ts has the full configuration
 export const CLOUDINARY_PRESETS = {
   fine: {
     quality: 80,
@@ -11,6 +20,10 @@ export const CLOUDINARY_PRESETS = {
   ultra: {
     quality: 90,
     width: 1600
+  },
+  hero: {
+    quality: 90,
+    width: 3000
   }
 };
 

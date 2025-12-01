@@ -6,12 +6,12 @@
 
 ## Overview
 
-Cloudinary integration provides cloud-based automatic image optimization with highest quality settings. Images are automatically uploaded to Cloudinary during each sync (scheduled or manual) and served with automatic format optimization (WebP/AVIF), smart quality compression (`auto:best`), and responsive transformations.
+Cloudinary integration provides cloud-based automatic image optimization with highest quality settings. Images are uploaded to Cloudinary at **original quality** (no upload transformations), then optimized on-demand during delivery with format conversion (WebP/AVIF) and responsive transformations.
 
 **Key Features:**
-- Automatic uploads from Airtable (highest resolution originals)
+- Uploads at original quality (no pre-compression)
 - Smart change detection (only uploads new/changed images)
-- Highest quality with intelligent compression
+- On-demand transformations at delivery time
 - Auto-format selection (WebP/AVIF based on browser)
 - Retina display support (up to 2400px)
 - Global CDN delivery
@@ -21,9 +21,9 @@ Cloudinary integration provides cloud-based automatic image optimization with hi
 ### Image Flow
 
 ```
-Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Cloudinary CDN → Browser
-                                   ↓
-                            Smart Caching (Only new/changed images)
+Airtable (JPEG/PNG) → Auto Sync → Cloudinary (Original Quality) → Delivery Transform (WebP Q80/Q90) → Browser
+                               ↓
+                        Smart Caching (Only new/changed images)
 ```
 
 ### Fallback Chain (Three-Tier)
@@ -66,6 +66,7 @@ Airtable (Highest Res) → Auto Sync → Cloudinary Upload (q:auto:best) → Clo
 **Manual Triggers:**
 - `sync-now.mjs` - Trigger incremental sync manually
 - `sync-now-realtime.mjs` - Trigger realtime sync manually
+- `force-reupload-cloudinary.mjs` - Force re-upload ALL images (use when changing upload quality settings)
 
 **Common Features:**
 - **Smart change detection** - Both methods check mapping file before uploading
@@ -196,34 +197,56 @@ portfolio-journal-recDXQQWqEqLnstIx
 
 ### Cloudinary Transformations
 
-**Upload Settings (highest quality for source):**
-- Quality: `100` (lossless upload)
-- Eager Transformations: 8 variants generated on upload
-  - Widths: `800px`, `1600px`
-  - Qualities: `q_75` (fine), `q_90` (ultra)
-  - DPRs: `1.0`, `2.0` (standard and retina)
-  - Format: `webp` (explicit, no auto)
+**Upload Settings (original quality storage):**
+- Quality: **No transformation** (stores originals)
+- Format: **No transformation** (preserves source format)
+- Resolution: **Original** (no resize during upload)
+- Overwrite: `true` (updates existing images)
+- Invalidate: `true` (clears CDN cache on re-upload)
 
-**Delivery Settings:**
-- Format: `f_webp` (explicit WebP)
-- Quality: `q_75` (fine preset, default) or `q_90` (ultra preset, high quality)
-- Width: `w_1600` (responsive delivery)
+**Why No Upload Transformations?**
+Storing originals prevents double-compression and quality loss. All transformations happen on-demand at delivery time, giving maximum flexibility.
+
+**Delivery Settings (on-demand transformations):**
+- Format: `f_webp` (explicit WebP conversion)
+- Quality: `q_80` (fine), `q_90` (ultra/hero)
+- Width: `w_1000` (fine), `w_1600` (ultra), or `w_3000` (hero)
 - Crop: `c_limit` (preserve aspect ratio, no distortion)
-- DPR: `dpr_1.0` (explicit, no auto detection)
 
-**Example Production URL (Fine Preset):**
+**Example Production URL (Hero Preset):**
 ```
 https://res.cloudinary.com/date24ay6/image/upload/
-  q_75,w_1600,c_limit,f_webp,dpr_1.0/
+  f_webp,w_3000,c_limit,q_90/
   portfolio-projects-recNNKSzQAsbchpCi-0
 ```
 
 **Quality Presets:**
-- `q_75` - **Fine** (default, balanced quality/size)
-- `q_90` - **Ultra** (high quality, larger file)
-- `q_100` - **Lossless** (upload only, not for delivery)
+- `q_80, w_1000` - **Fine** (thumbnails, list views)
+- `q_90, w_1600` - **Ultra** (project detail galleries, mobile homepage hero)
+- `q_90, w_3000` - **Hero** (full-screen homepage on desktop, covers 4K+ displays)
 
-⚠️ **Note:** Auto quality (`q_auto`), auto format (`f_auto`), and auto DPR (`dpr_auto`) are NOT used to ensure consistent, predictable delivery.
+**Automatic Preset Selection:**
+
+The system intelligently selects presets based on network conditions and device capabilities:
+
+**Network-Based Detection (via Network Information API):**
+- **Slow connections** → `fine` preset
+  - `saveData` mode enabled
+  - Connection type: `slow-2g`, `2g`, or `3g`
+  - `4g` connection with downlink speed < 1.5 Mbps
+- **Fast connections** → Eligible for `ultra` preset (if viewport ≥1024px)
+  - `4g` with downlink ≥ 1.5 Mbps
+  - Any faster connection type
+
+**Device-Based Optimization:**
+- Large viewport (≥1024px effective width × DPR) → `ultra` preset
+- Mobile devices → `fine` preset (default)
+- Hero preset auto-downgrades to `ultra` on mobile (< 768px width)
+
+**Session Caching:**
+The preset detection runs once per session and caches the result in `sessionStorage` for optimal performance.
+
+⚠️ **Important:** Images are uploaded at original quality. Transformations (WebP conversion, resizing, quality compression) happen ONLY during delivery via URL parameters.
 
 ### Change Detection
 

@@ -37,6 +37,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
                             totalImages={1}
                             alt="Profile"
                             loading="lazy"
+                            preset={THEME.about.profileImagePreset}
                             className="w-full h-full object-cover"
                         />
                     </div>

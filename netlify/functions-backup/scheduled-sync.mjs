@@ -78,17 +78,18 @@ const saveCloudinaryMapping = async (mapping) => {
   }
 };
 
-// Upload image to Cloudinary at original resolution as WebP
-// Stores full-resolution originals, transformations applied only at delivery
+// Upload image to Cloudinary at original quality
+// Stores uncompressed originals, transformations applied only at delivery
 const uploadToCloudinary = async (imageUrl, publicId, title = '') => {
   try {
     const result = await cloudinary.uploader.upload(imageUrl, {
       public_id: publicId,
       folder: '', // Already in public_id
       resource_type: 'image',
-      format: 'webp', // Convert to WebP, keep original resolution
-      quality: 75, // Fine preset quality
-      // NO transformation array - stores at original resolution
+      overwrite: true,
+      invalidate: true // Clear CDN cache on re-upload
+      // NO format, quality, or transformations - store originals
+      // All transformations happen at delivery time via URL parameters
     });
     
     return {

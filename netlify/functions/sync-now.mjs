@@ -48,11 +48,16 @@ export const handler = async (event, context) => {
       airtableToken,
       airtableBaseId,
       outputDir: 'public',
-      verbose: true
+      verbose: true,
+      forceFullSync
     });
     
     return {
       statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Sync-Mode': results.syncStats.mode
+      },
       body: JSON.stringify({
         success: true,
         message: 'Sync completed successfully',
@@ -60,7 +65,8 @@ export const handler = async (event, context) => {
           projects: results.projects.length,
           journal: results.journal.length,
           timestamp: results.timestamp
-        }
+        },
+        syncStats: results.syncStats
       })
     };
   } catch (error) {

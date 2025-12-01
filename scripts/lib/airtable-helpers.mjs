@@ -50,6 +50,127 @@ export async function fetchAirtableTable(tableName, sortField, token, baseId) {
 }
 
 /**
+ * Fetch only record IDs and Last Modified timestamps (lightweight check)
+ * Used for incremental sync change detection
+ * @param {string} tableName - Name of the Airtable table
+ * @param {string} token - Airtable API token
+ * @param {string} baseId - Airtable base ID
+ * @returns {Promise<Array<{id: string, lastModified: string}>>}
+ */
+export async function fetchTimestamps(tableName, token, baseId) {
+  let allRecords = [];
+  let offset = null;
+
+  do {
+    const offsetParam = offset ? `&offset=${offset}` : '';
+    const fieldsParam = '&fields%5B%5D=Last+Modified';
+    const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?${fieldsParam}${offsetParam}`;
+    
+    const res = await fetch(url, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch timestamps for ${tableName}: ${res.status}`);
+    }
+
+    const data = await res.json();
+    allRecords = allRecords.concat(data.records || []);
+    offset = data.offset;
+  } while (offset);
+
+  return allRecords.map(r => ({
+    id: r.id,
+    lastModified: r.fields['Last Modified'] || null
+  }));
+}
+
+/**
+ * Compare timestamps to detect changes
+ * @param {Object} previousMetadata - Previous sync metadata
+ * @param {Object} currentTimestamps - Current timestamps by table
+ * @returns {Object} Changes detected: { changed, new, deleted } per table
+ */
+export function checkForChanges(previousMetadata, currentTimestamps) {
+  const changes = {};
+  const tableNames = Object.keys(currentTimestamps);
+
+  for (const tableName of tableNames) {
+    const prevTimestamps = previousMetadata?.timestamps?.[tableName] || {};
+    const currTimestamps = currentTimestamps[tableName];
+
+    const changed = [];
+    const newRecords = [];
+    const deleted = [];
+
+    // Find changed and new records
+    for (const { id, lastModified } of currTimestamps) {
+      if (!prevTimestamps[id]) {
+        newRecords.push(id);
+      } else if (prevTimestamps[id] !== lastModified) {
+        changed.push(id);
+      }
+    }
+
+    // Find deleted records
+    const currentIds = new Set(currTimestamps.map(r => r.id));
+    for (const prevId of Object.keys(prevTimestamps)) {
+      if (!currentIds.has(prevId)) {
+        deleted.push(prevId);
+      }
+    }
+
+    changes[tableName] = { changed, new: newRecords, deleted };
+  }
+
+  return changes;
+}
+
+/**
+ * Fetch only specific records by ID using filterByFormula
+ * @param {string} tableName - Name of the Airtable table
+ * @param {Array<string>} recordIds - Array of record IDs to fetch
+ * @param {string} sortField - Field to sort by (optional)
+ * @param {string} token - Airtable API token
+ * @param {string} baseId - Airtable base ID
+ * @returns {Promise<Array>} Array of Airtable records
+ */
+export async function fetchChangedRecords(tableName, recordIds, sortField, token, baseId) {
+  if (!recordIds || recordIds.length === 0) return [];
+
+  // Build OR formula: OR(RECORD_ID()='rec1', RECORD_ID()='rec2', ...)
+  const idConditions = recordIds.map(id => `RECORD_ID()='${id}'`).join(',');
+  const filterFormula = `OR(${idConditions})`;
+  
+  const sortParam = sortField 
+    ? `&sort%5B0%5D%5Bfield%5D=${encodeURIComponent(sortField)}&sort%5B0%5D%5Bdirection%5D=desc` 
+    : '';
+  
+  let allRecords = [];
+  let offset = null;
+
+  do {
+    const offsetParam = offset ? `&offset=${offset}` : '';
+    const filterParam = `&filterByFormula=${encodeURIComponent(filterFormula)}`;
+    const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?${filterParam}${sortParam}${offsetParam}`;
+    
+    const res = await fetch(url, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch changed records from ${tableName}: ${res.status}`);
+    }
+
+    const data = await res.json();
+    allRecords = allRecords.concat(data.records || []);
+    offset = data.offset;
+  } while (offset);
+
+  return allRecords;
+}
+
+/**
  * Fetch lookup tables (Festivals and Client Book) and create ID-to-name maps
  * @param {string} token - Airtable API token
  * @param {string} baseId - Airtable base ID

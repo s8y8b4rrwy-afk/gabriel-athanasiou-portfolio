@@ -16,6 +16,7 @@ config({ path: path.resolve(__dirname, '../.env') });
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
+const FORCE_FULL_SYNC = process.env.FORCE_FULL_SYNC === 'true';
 
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
   const portfolioDataPath = path.resolve(OUTPUT_DIR, 'portfolio-data.json');
@@ -40,13 +41,23 @@ console.log('[sync-data] 🔄 Starting data sync...');
       airtableToken: AIRTABLE_TOKEN,
       airtableBaseId: AIRTABLE_BASE_ID,
       outputDir: OUTPUT_DIR,
-      verbose: true
+      verbose: true,
+      forceFullSync: FORCE_FULL_SYNC
     });
 
     console.log('[sync-data] ✅ Sync complete!');
     console.log(`[sync-data]    - ${results.projects.length} projects`);
     console.log(`[sync-data]    - ${results.journal.length} journal posts`);
     console.log(`[sync-data]    - Generated at: ${results.timestamp}`);
+    
+    if (results.syncStats) {
+      console.log(`[sync-data]    - Sync mode: ${results.syncStats.mode}`);
+      console.log(`[sync-data]    - API calls: ${results.syncStats.apiCalls}`);
+      if (results.syncStats.mode !== 'full') {
+        console.log(`[sync-data]    - API calls saved: ${results.syncStats.apiCallsSaved}`);
+      }
+    }
+    
     process.exit(0);
   } catch (error) {
     console.error('[sync-data] ❌ Sync failed:', error.message);
