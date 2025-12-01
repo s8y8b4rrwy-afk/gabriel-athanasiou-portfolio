@@ -191,14 +191,13 @@ export const cmsService = {
         if (!cachedData) return false;
 
         try {
-            const response = await fetch('/.netlify/functions/get-data', {
+            const response = await fetch(CLOUDINARY_DATA_URL, {
                 headers: { 'Accept': 'application/json' }
             });
 
             if (!response.ok) return false;
 
             const newData = await response.json();
-            const lastUpdatedHeader = response.headers.get('X-Last-Updated');
             
             // Simple check: compare data lengths
             const hasUpdates = 
@@ -206,7 +205,7 @@ export const cmsService = {
                 newData.posts?.length !== cachedData.posts.length;
 
             if (hasUpdates) {
-                console.log('[cmsService] Updates detected');
+                console.log('[cmsService] Updates detected from Cloudinary');
             }
 
             return hasUpdates;
