@@ -439,6 +439,47 @@ If you're upgrading from the old full-sync approach:
 
 ---
 
+## Cloudinary Image Sync Integration
+
+The incremental sync also optimizes Cloudinary API usage by only checking images for records that actually changed.
+
+### How It Works
+
+1. **Airtable change detection runs first** (5 API calls)
+2. **For unchanged records:** Cloudinary checks are completely skipped
+3. **For changed records:** Images are verified against Cloudinary API
+4. **Cloudinary existence check:** Uses `cloudinary.api.resource(publicId)` to verify image exists
+5. **Only missing images are uploaded**
+
+### API Savings
+
+| Scenario | Airtable API | Cloudinary API |
+|----------|--------------|----------------|
+| No changes | 5 | **0** |
+| 1 project changed | 7 | 1-3 (only that project's images) |
+| Force full sync | 50+ | 50+ (all images) |
+
+### Why Direct Cloudinary Check?
+
+The system checks Cloudinary directly instead of relying on local mapping files:
+
+- **Works across environments:** CI/CD, Netlify Functions, local dev
+- **No local state dependency:** Doesn't need `cloudinary-mapping.json` in sync
+- **Handles edge cases:** Works if mapping file is deleted/corrupted
+- **Airtable URLs are temporary:** Can't compare URLs, must check Cloudinary
+
+### Deterministic Image Naming
+
+Images use deterministic public IDs that never change:
+```
+Projects: portfolio-projects-{recordId}-{index}
+Journal:  portfolio-journal-{recordId}
+```
+
+This allows reliable existence checks without any local state.
+
+---
+
 ## Future Enhancements
 
 Potential optimizations for future consideration:

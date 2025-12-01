@@ -223,7 +223,7 @@ https://res.cloudinary.com/date24ay6/image/upload/
 **Quality Presets:**
 - `q_80, w_1000` - **Fine** (thumbnails, list views)
 - `q_90, w_1600` - **Ultra** (project detail galleries, mobile homepage hero)
-- `q_90, w_3000` - **Hero** (full-screen homepage on desktop, covers 4K+ displays)
+- `q_100, w_2400` - **Hero** (full-screen homepage on desktop, covers 4K+ displays)
 
 **Automatic Preset Selection:**
 
@@ -250,38 +250,70 @@ The preset detection runs once per session and caches the result in `sessionStor
 
 ### Change Detection
 
-The sync functions use **Airtable attachment ID-based change detection** to avoid unnecessary re-uploads:
+The sync functions use a **two-level change detection strategy** to minimize both Airtable and Cloudinary API calls:
 
-**How It Works:**
-1. Each Airtable attachment has a stable `id` field (e.g., `attXYZ123...`)
-2. Sync function extracts full attachment object: `{id, url, filename, size, type}`
-3. Compares `attachment.id` against `cloudinary-mapping.json`
-4. Only uploads if:
-   - Image is new (ID not in mapping)
-   - Attachment ID changed (different file uploaded to same field)
+#### Level 1: Airtable Change Detection (Incremental Sync)
 
-**Why ID instead of URL?**
-- Airtable regenerates attachment URLs frequently (expiring tokens)
-- URL comparison causes false positives → unnecessary re-uploads
-- Attachment ID remains stable even when URL changes
+Uses lightweight timestamp queries to detect which Airtable records changed:
 
-**Mapping Structure:**
+1. Fetches `Last Modified` timestamps from each table (5 API calls)
+2. Compares with cached timestamps from previous sync
+3. Only fetches full data for changed/new records
+4. **Cloudinary checks are skipped entirely for unchanged records**
+
+**Result:** For unchanged data, no Cloudinary API calls are made at all.
+
+#### Level 2: Cloudinary Existence Check (For Changed Records)
+
+For records that changed in Airtable, verifies images exist in Cloudinary:
+
+1. Uses deterministic `public_id` pattern: `portfolio-projects-{recordId}-{index}`
+2. Calls Cloudinary's `resource()` API to check if image exists
+3. Only uploads if image is truly missing from Cloudinary
+
+**Why Direct Cloudinary Check?**
+- **Reliable across environments** - Works in CI/CD, Netlify, or local dev
+- **No dependency on local files** - Doesn't need `cloudinary-mapping.json` to be in sync
+- **Handles edge cases** - Works even if mapping file is deleted or corrupted
+- **Airtable URLs expire** - Can't compare URLs, must check Cloudinary directly
+
+**Image Naming Convention (Deterministic):**
+```
+Projects: portfolio-projects-{recordId}-{index}
+Journal:  portfolio-journal-{recordId}
+```
+
+Since public_id is deterministic based on record ID, the system can reliably check if an image exists without any local state.
+
+#### Sync Scenarios
+
+| Scenario | Airtable API Calls | Cloudinary API Calls |
+|----------|-------------------|---------------------|
+| No changes | 5 (timestamps only) | 0 |
+| 1 project changed | ~7 | Only for that project's images |
+| 5 records changed | ~10 | Only for changed records' images |
+| Force full sync | ~50 | All images checked |
+
+**Mapping Structure (still maintained for URL lookups):**
 ```json
 {
+  "generatedAt": "2024-01-15T10:30:00.000Z",
   "projects": [{
     "recordId": "rec123",
+    "title": "Project Name",
     "images": [{
-      "airtableId": "attXYZ789",
-      "airtableUrl": "https://dl.airtable.com/...",
+      "index": 0,
+      "publicId": "portfolio-projects-rec123-0",
       "cloudinaryUrl": "https://res.cloudinary.com/...",
-      "filename": "image.jpg",
+      "airtableId": "attXYZ789",
+      "format": "jpg",
       "size": 2048576
     }]
   }]
 }
 ```
 
-Prevents unnecessary uploads and bandwidth usage.
+The mapping file is still saved after each sync to provide URL lookups for the frontend, but **it's not used for change detection**.
 
 ## Monitoring & Usage
 

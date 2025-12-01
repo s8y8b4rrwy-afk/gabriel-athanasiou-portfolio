@@ -184,6 +184,26 @@ export const getSessionPreset = (): CloudinaryPreset => {
 };
 
 /**
+ * Upgrade a preset to the next higher quality level
+ * Preset hierarchy: micro → fine → ultra → hero
+ * 
+ * @param preset - Current preset
+ * @returns CloudinaryPreset - One level higher, or same if already at 'hero'
+ */
+export const upgradePreset = (preset: CloudinaryPreset): CloudinaryPreset => {
+  const hierarchy: CloudinaryPreset[] = ['micro', 'fine', 'ultra', 'hero'];
+  const currentIndex = hierarchy.indexOf(preset);
+  const nextIndex = Math.min(currentIndex + 1, hierarchy.length - 1);
+  const upgraded = hierarchy[nextIndex];
+  
+  if (DEBUG && upgraded !== preset) {
+    console.log(`⬆️ Preset upgraded: ${preset} → ${upgraded}`);
+  }
+  
+  return upgraded;
+};
+
+/**
  * Build Cloudinary URL with preset-based quality optimization
  * 
  * @param recordId - Airtable record ID

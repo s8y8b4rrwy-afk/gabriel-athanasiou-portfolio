@@ -94,12 +94,17 @@ export const THEME = {
       // Note: Homepage uses full screen on all devices for maximum impact
       height: "h-screen",
       
-      // Cloudinary image preset for homepage hero
-      // Options: 'hero' (3000px, q90), 'ultra' (1600px, q90), 'fine' (1000px, q80)
+      // Cloudinary image preset for homepage hero (NOT USED - see note below)
+      // The homepage hero now uses upgradePreset(getSessionPreset()) which:
+      // - Detects the optimal preset based on device/network
+      // - Upgrades it by one level (micro→fine, fine→ultra, ultra→hero)
+      // - Ignores viewport/connection downgrades (skipDowngrade=true)
+      // This ensures the hero always gets the best quality for the user's conditions
       imagePreset: "hero" as const,
       
       // Mobile breakpoint for downgrading hero preset (in pixels)
-      // Hero preset auto-downgrades to 'ultra' below this width to save bandwidth
+      // NOTE: This is now IGNORED for the homepage hero (skipDowngrade=true)
+      // Still applies to other hero images (project pages, etc.)
       mobileBreakpoint: 768,
       
       // Opacity of the black overlay on top of hero images (0.0 to 1.0)
@@ -145,8 +150,8 @@ export const THEME = {
           width: 1600
         },
         hero: {
-          quality: 90,
-          width: 3000    // For full-screen homepage hero on 4K displays
+          quality: 100,
+          width: 2400    // For full-screen homepage hero on 4K displays
         }
       },
       format: 'webp',      // Output format (webp recommended for best compression)

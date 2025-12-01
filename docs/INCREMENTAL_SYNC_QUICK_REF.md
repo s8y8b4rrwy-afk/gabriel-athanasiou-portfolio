@@ -33,12 +33,25 @@ curl -X POST "https://your-site.netlify.app/.netlify/functions/sync-now?force=tr
 
 ## API Savings
 
-| Scenario | API Calls | Savings |
-|----------|-----------|---------|
-| No changes | 5 | 90% |
-| 1 record changed | 6 | 88% |
-| 5 records changed | 10 | 80% |
-| Force full sync | 50+ | 0% |
+| Scenario | Airtable API | Cloudinary API | Total Savings |
+|----------|--------------|----------------|---------------|
+| No changes | 5 | 0 | ~95% |
+| 1 record changed | 6 | 1-3 images | ~90% |
+| 5 records changed | 10 | 5-15 images | ~80% |
+| Force full sync | 50+ | 50+ images | 0% |
+
+## Cloudinary Integration
+
+**How it works:**
+- Cloudinary checks only run for changed Airtable records
+- Uses `cloudinary.api.resource(publicId)` to verify image exists
+- Only uploads images that are truly missing
+- Deterministic naming: `portfolio-projects-{recordId}-{index}`
+
+**Benefits:**
+- No local mapping file dependency
+- Works across all environments (CI/CD, Netlify, local)
+- Handles corrupted/missing cache gracefully
 
 ## Response Example
 

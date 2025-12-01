@@ -117,16 +117,20 @@ curl -s "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfo
 
 ## Recent Fixes Applied
 
-### Owner Credits Fix (Nov 30, 2025)
+### Owner Credits Fix (Dec 1, 2025)
 **Issue**: Your name with allowed roles wasn't appearing as first credit(s) in project pages.
 
 **Solution**: Modified `scripts/lib/sync-core.mjs` to:
-1. Fetch Settings FIRST (before projects) so owner info is available
-2. Automatically prepend your name with matching roles to each project's credits
-3. Properly handle both string and array types from Airtable's Role field
+1. Automatically prepend your name with matching roles to each project's credits
+2. Properly handle both string and array types from Airtable's Role field
+3. Extract owner name from Bio field if no dedicated "Owner Name" field exists
 
 **How it works**:
 - Reads `portfolioOwnerName` and `allowedRoles` from Settings table
+- Portfolio owner name is extracted from:
+  1. `Owner Name` or `Portfolio Owner` field in Settings (if exists)
+  2. First name from the Bio field (auto-extracted)
+  3. Default fallback: "Gabriel Athanasiou"
 - For each project, checks the `Role` field in Airtable
 - Filters project roles against your allowed roles (e.g., "Director")
 - Creates credit entries with your name for matching roles
@@ -137,6 +141,18 @@ curl -s "https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfo
 - Projects with multiple matching roles: Your name appears multiple times (once per role)
 - Projects without matching roles: No owner credit added
 - Projects with no Role field: No owner credit added
+
+**Example output**:
+```json
+{
+  "title": "Astoria",
+  "credits": [
+    { "role": "Director", "name": "Gabriel Athanasiou" },
+    { "role": "DOP", "name": "Theologos" },
+    { "role": "Sound", "name": "Koutanis" }
+  ]
+}
+```
 
 ## Common Issues & Troubleshooting
 ```

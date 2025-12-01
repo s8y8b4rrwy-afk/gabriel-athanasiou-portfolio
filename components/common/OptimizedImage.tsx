@@ -89,6 +89,8 @@ interface OptimizedImageProps {
   useOriginalOnDesktop?: boolean;
   /** Cloudinary quality preset: 'hero' (q_90, w_3000), 'ultra' (q_90, w_1600) or 'fine' (q_80, w_1000). Auto-detects if not provided. */
   preset?: CloudinaryPreset;
+  /** Skip automatic preset downgrades based on viewport/connection. Use for hero images that should always stay at the requested preset. */
+  skipDowngrade?: boolean;
 }
 
 /**
@@ -125,7 +127,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async',
   useOriginalOnDesktop = false,
-  preset
+  preset,
+  skipDowngrade = false
 }) => {
   // If no fallback URL provided, don't render anything
   if (!fallbackUrl) {
@@ -136,24 +139,27 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Auto-detect preset if not provided, with downgrades for slow connections and mobile devices
   let activePreset = preset || getSessionPreset();
   
-  // Downgrade hero preset on ultra-slow connections (highest priority)
-  if (activePreset === 'hero' && isUltraSlowConnection()) {
-    activePreset = 'micro';
-  }
-  
-  // Downgrade hero preset on slow connections (prioritize performance over quality)
-  if (activePreset === 'hero' && isSlowConnection()) {
-    activePreset = 'fine';
-  }
-  
-  // Downgrade hero preset to ultra on mobile devices (configurable via theme)
-  if (activePreset === 'hero' && typeof window !== 'undefined' && window.innerWidth < THEME.hero.mobileBreakpoint) {
-    activePreset = 'ultra';
-  }
-  
-  // Downgrade bio preset on mobile devices (configurable via theme)
-  if (activePreset === THEME.about.profileImagePreset && typeof window !== 'undefined' && window.innerWidth < THEME.about.mobileBreakpoint) {
-    activePreset = THEME.about.mobilePreset;
+  // Skip all automatic downgrades if skipDowngrade is true (used for homepage hero)
+  if (!skipDowngrade) {
+    // Downgrade hero preset on ultra-slow connections (highest priority)
+    if (activePreset === 'hero' && isUltraSlowConnection()) {
+      activePreset = 'micro';
+    }
+    
+    // Downgrade hero preset on slow connections (prioritize performance over quality)
+    if (activePreset === 'hero' && isSlowConnection()) {
+      activePreset = 'fine';
+    }
+    
+    // Downgrade hero preset to ultra on mobile devices (configurable via theme)
+    if (activePreset === 'hero' && typeof window !== 'undefined' && window.innerWidth < THEME.hero.mobileBreakpoint) {
+      activePreset = 'ultra';
+    }
+    
+    // Downgrade bio preset on mobile devices (configurable via theme)
+    if (activePreset === THEME.about.profileImagePreset && typeof window !== 'undefined' && window.innerWidth < THEME.about.mobileBreakpoint) {
+      activePreset = THEME.about.mobilePreset;
+    }
   }
   
   if (DEBUG) {

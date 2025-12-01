@@ -94,6 +94,34 @@ export const uploadToCloudinary = async (cloudinary, imageUrl, publicId, options
 };
 
 /**
+ * Check if an image already exists in Cloudinary by public_id
+ * 
+ * @param {Object} cloudinary - Configured Cloudinary instance
+ * @param {string} publicId - Public ID to check
+ * @returns {Promise<Object|null>} Resource info if exists, null if not
+ */
+export const checkImageExists = async (cloudinary, publicId) => {
+  try {
+    const result = await cloudinary.api.resource(publicId, { resource_type: 'image' });
+    return {
+      exists: true,
+      publicId: result.public_id,
+      cloudinaryUrl: result.secure_url,
+      format: result.format,
+      size: result.bytes
+    };
+  } catch (error) {
+    // 404 means image doesn't exist - that's expected
+    if (error.error?.http_code === 404 || error.http_code === 404) {
+      return null;
+    }
+    // Log other errors but don't throw - treat as "doesn't exist"
+    console.warn(`[cloudinary] Warning checking ${publicId}:`, error.message);
+    return null;
+  }
+};
+
+/**
  * Configure Cloudinary instance with environment credentials
  * 
  * @param {Object} cloudinary - Cloudinary SDK instance

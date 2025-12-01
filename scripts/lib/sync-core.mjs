@@ -13,7 +13,7 @@ import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { getVideoThumbnail } from '../../utils/videoHelpers.mjs';
 import { normalizeTitle, calculateReadingTime, parseCreditsText } from '../../utils/textHelpers.mjs';
-import { uploadToCloudinary as uploadToCloudinaryHelper } from '../../utils/cloudinaryHelpers.mjs';
+import { uploadToCloudinary as uploadToCloudinaryHelper, checkImageExists } from '../../utils/cloudinaryHelpers.mjs';
 import {
   fetchAirtableTable,
   fetchTimestamps,
@@ -230,12 +230,24 @@ export async function syncAllData(config) {
       results.journal = processJournalRecords(rawRecords.Journal || [], cloudinaryMapping, verbose);
       if (verbose) console.log(`[sync-core] ✅ Processed ${results.journal.length} journal posts`);
       
-      // Upload images to Cloudinary (incremental detection by attachment ID)
+      // Build sets of changed record IDs for incremental Cloudinary sync
+      const changedProjectIds = new Set([
+        ...changes.Projects.new,
+        ...changes.Projects.changed
+      ]);
+      const changedJournalIds = new Set([
+        ...changes.Journal.new,
+        ...changes.Journal.changed
+      ]);
+      
+      // Upload images to Cloudinary (only for changed records)
       const updatedMapping = await syncImagesToCloudinary(
         results.projects,
         results.journal,
         cloudinaryMapping,
-        verbose
+        verbose,
+        changedProjectIds,
+        changedJournalIds
       );
       
       // Save updated Cloudinary mapping
@@ -506,9 +518,17 @@ function configureCloudinary() {
 
 /**
  * Upload images to Cloudinary with incremental detection
- * Uses Airtable attachment IDs (not URLs) for change detection
+ * Checks Cloudinary directly to see if images already exist (by public_id)
+ * Only checks changed records to minimize API calls
+ * 
+ * @param {Array} projects - All projects
+ * @param {Array} journal - All journal posts  
+ * @param {Object} existingMapping - Existing cloudinary mapping
+ * @param {boolean} verbose - Enable verbose logging
+ * @param {Set} changedProjectIds - Set of project record IDs that changed (optional)
+ * @param {Set} changedJournalIds - Set of journal record IDs that changed (optional)
  */
-async function syncImagesToCloudinary(projects, journal, existingMapping, verbose) {
+async function syncImagesToCloudinary(projects, journal, existingMapping, verbose, changedProjectIds = null, changedJournalIds = null) {
   const cloudinaryConfig = configureCloudinary();
   
   if (!cloudinaryConfig.enabled) {
@@ -516,7 +536,37 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
     return existingMapping;
   }
   
-  if (verbose) console.log(`[sync-core] 🔄 Checking for new/changed images to upload to Cloudinary...`);
+  // Build lookup for existing mapping
+  const existingProjectsMap = new Map(
+    (existingMapping.projects || []).map(p => [p.recordId, p])
+  );
+  const existingJournalMap = new Map(
+    (existingMapping.journal || []).map(j => [j.recordId, j])
+  );
+  
+  // Determine which records need checking
+  const isFullSync = changedProjectIds === null && changedJournalIds === null;
+  const projectsToCheck = isFullSync 
+    ? new Set(projects.map(p => p.id))
+    : changedProjectIds || new Set();
+  const journalToCheck = isFullSync
+    ? new Set(journal.map(j => j.id))
+    : changedJournalIds || new Set();
+  
+  const totalToCheck = projectsToCheck.size + journalToCheck.size;
+  
+  if (totalToCheck === 0) {
+    if (verbose) console.log('[sync-core] ⏭️  No changed records - skipping Cloudinary checks');
+    return existingMapping;
+  }
+  
+  if (verbose) {
+    if (isFullSync) {
+      console.log(`[sync-core] 🔄 Full sync: checking Cloudinary for all ${totalToCheck} records...`);
+    } else {
+      console.log(`[sync-core] 🔄 Incremental sync: checking Cloudinary for ${totalToCheck} changed records...`);
+    }
+  }
   
   const newMapping = {
     generatedAt: new Date().toISOString(),
@@ -528,34 +578,51 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
   let uploadCount = 0;
   let skipCount = 0;
   let failCount = 0;
+  let reuseCount = 0;
   
   // Process project images
   for (const project of projects) {
+    // Check if this project needs checking or can reuse existing mapping
+    if (!projectsToCheck.has(project.id)) {
+      // Project unchanged - reuse existing mapping if available
+      const existingProject = existingProjectsMap.get(project.id);
+      if (existingProject) {
+        newMapping.projects.push(existingProject);
+        reuseCount += existingProject.images?.length || 0;
+        continue;
+      }
+    }
+    
     const projectData = {
       recordId: project.id,
       title: project.title,
       images: []
     };
     
-    // Get gallery attachments from raw Airtable data (includes attachment IDs)
+    // Get gallery attachments from raw Airtable data
     const galleryAttachments = project._rawGallery || [];
     
     for (let i = 0; i < galleryAttachments.length; i++) {
       const attachment = galleryAttachments[i];
       const publicId = `portfolio-projects-${project.id}-${i}`;
       
-      // Check if image already uploaded (by attachment ID, not URL)
-      const existingProject = existingMapping.projects.find(p => p.recordId === project.id);
-      const existingImage = existingProject?.images?.find(img => 
-        img.airtableId === attachment.id || img.index === i
-      );
+      // Check if image already exists in Cloudinary by public_id
+      const existingImage = await checkImageExists(cloudinary, publicId);
       
-      if (existingImage && existingImage.airtableId === attachment.id) {
-        // Image unchanged (same attachment ID)
-        projectData.images.push(existingImage);
+      if (existingImage) {
+        // Image already exists in Cloudinary - skip upload
+        if (verbose) console.log(`[sync-core]    ⏭️  Exists: ${project.title} [${i}]`);
+        projectData.images.push({
+          index: i,
+          publicId: existingImage.publicId,
+          cloudinaryUrl: existingImage.cloudinaryUrl,
+          airtableId: attachment.id,
+          format: existingImage.format,
+          size: existingImage.size
+        });
         skipCount++;
       } else {
-        // New or changed image - upload
+        // Image doesn't exist - upload it
         if (verbose) console.log(`[sync-core]    📤 Uploading: ${project.title} [${i}]`);
         
         const result = await uploadToCloudinaryHelper(
@@ -570,7 +637,6 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
             index: i,
             publicId: result.publicId,
             cloudinaryUrl: result.cloudinaryUrl,
-            originalUrl: attachment.url,
             airtableId: attachment.id,
             format: result.format,
             size: result.size
@@ -581,7 +647,6 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
             index: i,
             publicId: publicId,
             cloudinaryUrl: '',
-            originalUrl: attachment.url,
             airtableId: attachment.id,
             error: result.error
           });
@@ -595,6 +660,17 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
   
   // Process journal images
   for (const post of journal) {
+    // Check if this post needs checking or can reuse existing mapping
+    if (!journalToCheck.has(post.id)) {
+      // Post unchanged - reuse existing mapping if available
+      const existingPost = existingJournalMap.get(post.id);
+      if (existingPost) {
+        newMapping.journal.push(existingPost);
+        reuseCount += existingPost.images?.length || 0;
+        continue;
+      }
+    }
+    
     const postData = {
       recordId: post.id,
       title: post.title,
@@ -607,16 +683,23 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
     if (coverAttachment) {
       const publicId = `portfolio-journal-${post.id}`;
       
-      // Check if already uploaded (by attachment ID)
-      const existingPost = existingMapping.journal.find(p => p.recordId === post.id);
-      const existingImage = existingPost?.images?.[0];
+      // Check if image already exists in Cloudinary
+      const existingImage = await checkImageExists(cloudinary, publicId);
       
-      if (existingImage && existingImage.airtableId === coverAttachment.id) {
-        // Image unchanged
-        postData.images.push(existingImage);
+      if (existingImage) {
+        // Image already exists - skip upload
+        if (verbose) console.log(`[sync-core]    ⏭️  Exists: ${post.title}`);
+        postData.images.push({
+          index: 0,
+          publicId: existingImage.publicId,
+          cloudinaryUrl: existingImage.cloudinaryUrl,
+          airtableId: coverAttachment.id,
+          format: existingImage.format,
+          size: existingImage.size
+        });
         skipCount++;
       } else {
-        // New or changed image
+        // Image doesn't exist - upload it
         if (verbose) console.log(`[sync-core]    📤 Uploading: ${post.title}`);
         
         const result = await uploadToCloudinaryHelper(
@@ -631,7 +714,6 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
             index: 0,
             publicId: result.publicId,
             cloudinaryUrl: result.cloudinaryUrl,
-            originalUrl: coverAttachment.url,
             airtableId: coverAttachment.id,
             format: result.format,
             size: result.size
@@ -642,7 +724,6 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
             index: 0,
             publicId: publicId,
             cloudinaryUrl: '',
-            originalUrl: coverAttachment.url,
             airtableId: coverAttachment.id,
             error: result.error
           });
@@ -655,7 +736,9 @@ async function syncImagesToCloudinary(projects, journal, existingMapping, verbos
   }
   
   if (verbose) {
-    console.log(`[sync-core] ✅ Cloudinary sync complete: ${uploadCount} uploaded, ${skipCount} unchanged, ${failCount} failed`);
+    const stats = [`${uploadCount} uploaded`, `${skipCount} already exist`, `${failCount} failed`];
+    if (reuseCount > 0) stats.push(`${reuseCount} reused from cache`);
+    console.log(`[sync-core] ✅ Cloudinary sync complete: ${stats.join(', ')}`);
   }
   
   return newMapping;
@@ -731,7 +814,33 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
     
     // Parse credits from Credits field
     const rawCredits = f['Credits (new)'] || f['Credits'] || '';
-    const credits = parseCreditsText(rawCredits);
+    const extraCredits = parseCreditsText(rawCredits);
+    
+    // Prepend owner's credits based on Role field and allowed roles
+    const ownerCredits = [];
+    const roleField = f['Role'] || null;
+    if (ownerName && allowedRoles.length > 0 && roleField) {
+      // Role field might be a string or array (depends on Airtable field type)
+      const projectRoles = Array.isArray(roleField) ? roleField : [roleField];
+      
+      // Filter to only allowed roles
+      const matchingRoles = projectRoles.filter(r => allowedRoles.includes(r));
+      
+      // Create credit entry for each matching role
+      matchingRoles.forEach(r => {
+        ownerCredits.push({
+          role: r,
+          name: ownerName
+        });
+      });
+      
+      if (verbose && matchingRoles.length > 0) {
+        console.log(`[sync-core] ✨ Added ${matchingRoles.length} owner credit(s) to "${title}"`);
+      }
+    }
+    
+    // Combine owner credits first, then additional credits
+    const credits = [...ownerCredits, ...extraCredits];
     
     // Get video URL directly from Video URL field
     const videoUrl = f['Video URL'] || '';
@@ -938,6 +1047,20 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
   
   // Extract other settings
   const name = f['Name'] || '';
+  // Portfolio owner name: check 'Owner Name' field first, then extract from Bio if available
+  let portfolioOwnerName = f['Owner Name'] || f['Portfolio Owner'] || '';
+  if (!portfolioOwnerName && bio) {
+    // Extract name from beginning of Bio (assumes format "Name (..."  or "Name is...")
+    const bioMatch = bio.match(/^([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+)*)/);
+    if (bioMatch) {
+      portfolioOwnerName = bioMatch[1].trim();
+    }
+  }
+  // Default fallback
+  if (!portfolioOwnerName) {
+    portfolioOwnerName = 'Gabriel Athanasiou';
+  }
+  
   const allowedRolesRaw = f['Allowed Roles'] || '';
   
   // Handle Allowed Roles - might be string or array
@@ -975,7 +1098,7 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
     },
     allowedRoles: allowedRoles,
     defaultOgImage: defaultOgImage,
-    portfolioOwnerName: name,
+    portfolioOwnerName: portfolioOwnerName,
     lastModified: lastModified
   };
 }
