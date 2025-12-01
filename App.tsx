@@ -11,6 +11,7 @@ import { GlobalStyles } from './components/GlobalStyles';
 import { SEO } from './components/SEO';
 import { PageTransition } from './components/PageTransition';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
+import { Footer } from './components/Footer';
 import { THEME } from './theme';
 // import { saveScrollPosition, restoreScrollPosition } from './utils/scrollRestoration';
 
@@ -191,6 +192,8 @@ export default function App() {
           </PageTransition>
         </Suspense>
         </main>
+        {/* Footer - hidden on About page to avoid duplication */}
+        {location.pathname !== '/about' && <Footer config={data.config} />}
       </div>
     </>
   );

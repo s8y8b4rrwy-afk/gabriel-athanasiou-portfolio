@@ -114,7 +114,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             className="group block cursor-pointer"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
-                            <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-6 relative`}>
+                            <div className={`w-full ${THEME.filmography.grid.aspectRatio} bg-[#111] overflow-hidden mb-4 relative`}>
                                 <OptimizedImage
                                     recordId={p.id}
                                     fallbackUrl={p.heroImage}
@@ -123,12 +123,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     totalImages={p.gallery?.length || 0}
                                     alt={p.title}
                                     loading="lazy"
-                                    className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                    className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                 />
                             </div>
-                            <div className="flex justify-between items-baseline pt-2 mix-blend-difference text-white">
-                                <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition`}>{p.title}</h2>
-                                <span className={`${THEME.typography.meta} opacity-60 group-hover:opacity-100 transition`}>{p.type}</span>
+                            <div className="flex justify-between items-baseline text-white">
+                                <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition tracking-tight`}>{p.title}</h2>
+                                <span className="text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition shrink-0 ml-4">{p.type === 'Uncategorized' ? '' : p.type}</span>
                             </div>
                         </div>
                     ))}
@@ -181,14 +181,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     </div>
                 )}
                 
-                <div className="pt-12 border-t border-white/10 flex flex-col items-center">
+                <div className="pt-16 border-t border-white/10 flex flex-col items-center">
                     <button 
                         onClick={() => {
                             navigate('/about');
                         }} 
-                        className={`${THEME.typography.h2} hover:text-text-muted transition duration-500 ${THEME.animation.ease} mix-blend-difference text-white`}
+                        className="text-xl md:text-2xl font-serif italic text-white hover:text-white/60 transition duration-500 ease-out"
                     >
-                        About & Contact
+                        Get in Touch
                     </button>
                 </div>
             </div>

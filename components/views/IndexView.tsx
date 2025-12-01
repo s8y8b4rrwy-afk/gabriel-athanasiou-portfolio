@@ -275,18 +275,18 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     )}
                                 </div>
                                 {/* ...existing code... */}
-                                <div className="flex justify-between items-start text-white">
+                                <div className="flex justify-between items-baseline text-white">
                                     <div>
-                                        <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1 tracking-tight`}>{p.title}</h2>
-                                        <div className="text-[10px] font-medium tracking-widest uppercase opacity-70">
+                                        <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1.5 tracking-tight`}>{p.title}</h2>
+                                        <div className="text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition">
                                             {p.client ? p.client : p.productionCompany}
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right shrink-0 ml-4">
                                         {THEME.filmography.grid.showYear ? (
-                                             <span className="block text-[9px] tracking-[0.2em] uppercase opacity-60 mb-1">{p.year}</span>
+                                             <span className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition">{p.year}</span>
                                         ) : (
-                                             <span className="block text-[9px] tracking-[0.2em] uppercase opacity-60 mb-1">{p.type === 'Uncategorized' ? '' : p.type}</span>
+                                             <span className="block text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition">{p.type === 'Uncategorized' ? '' : p.type}</span>
                                         )}
                                     </div>
                                 </div>

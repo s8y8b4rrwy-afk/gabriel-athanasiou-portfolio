@@ -56,10 +56,10 @@ export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, m
   if (!embedUrl) return null;
 
   return (
-    <div className="w-full h-full bg-black">
+    <div className="w-full h-full bg-black absolute inset-0">
       <iframe 
         src={embedUrl}
-        className="w-full h-full"
+        className="w-full h-full absolute inset-0"
         frameBorder="0" 
         referrerPolicy="strict-origin-when-cross-origin"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

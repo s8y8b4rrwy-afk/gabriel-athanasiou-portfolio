@@ -255,8 +255,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     </button>
 
                     {/* Video Container */}
-                    <div className="w-full h-full p-0 md:p-12 md:pb-20 flex items-center justify-center">
-                        <div className="w-full h-full max-w-7xl aspect-video relative shadow-2xl bg-black">
+                    <div className="w-full h-full p-4 md:p-12 md:pb-20 flex items-center justify-center">
+                        <div className="w-full max-w-7xl aspect-video relative shadow-2xl bg-black">
                              <VideoEmbed url={project.videoUrl!} autoplay={true} muted={false} />
                         </div>
                     </div>
@@ -351,9 +351,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 </div>
                 
                 <div className={`absolute z-20 animate-fade-in-up pointer-events-none mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textMaxWidth}`}>
-                    <h1 className={`${THEME.typography.h1} mb-2 leading-tight break-words`}>{project.title}</h1>
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-300 mt-2 ml-1">
-                        {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')} — {project.year}
+                    <h1 className={`${THEME.typography.h1} mb-3 leading-tight break-words`}>{project.title}</h1>
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-gray-300/80 ml-0.5">
+                        {project.kinds && project.kinds.length > 0 ? project.kinds.join(' / ') : (project.type !== 'Uncategorized' ? project.type : 'Project')}
+                        <span className="mx-2">·</span>
+                        {project.year}
                     </p>
                 </div>
             </div>
@@ -384,7 +386,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         )}
                     </div>
 
-                    <div className="text-lg text-gray-300 font-light mb-8 space-y-6">
+                    <div className="text-sm md:text-base text-gray-400 font-light mb-10 space-y-5 leading-relaxed">
                         {formatDescription(project.description).map((paragraph, i) => (
                              <p key={i}>{paragraph}</p>
                         ))}
@@ -583,9 +585,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                           />
                         );
                     })()}
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 mix-blend-difference text-white">
-                        <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
-                        <h2 className={`${THEME.typography.h1} group-hover:scale-105 transition duration-1000 ${THEME.animation.ease}`}>{nextProject.title}</h2>
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-8 mix-blend-difference text-white">
+                        <span className={`${THEME.typography.meta} mb-3 opacity-60`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
+                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif italic group-hover:scale-105 transition duration-1000 ease-out max-w-3xl">{nextProject.title}</h2>
                     </div>
                 </div>
             )}

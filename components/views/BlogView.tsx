@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { BlogPost } from '../../types';
 import { THEME } from '../../theme';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { parseMarkdown } from '../../utils/markdown';
+
+export const POSTS_PER_PAGE = 10;
 
 interface BlogViewProps { 
     posts: BlogPost[]; 
@@ -35,7 +37,25 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
         }
     }, []);
 
+    const [searchParams, setSearchParams] = useSearchParams();
     const [filter, setFilter] = useState<string>("All");
+    
+    // Initialize page from URL or default to 1
+    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    const [currentPage, setCurrentPage] = useState(pageFromUrl);
+    
+    // Sync URL when page changes
+    useEffect(() => {
+        if (currentPage === 1) {
+            // Remove page param if on page 1
+            if (searchParams.has('page')) {
+                searchParams.delete('page');
+                setSearchParams(searchParams, { replace: true });
+            }
+        } else {
+            setSearchParams({ page: currentPage.toString() }, { replace: true });
+        }
+    }, [currentPage, searchParams, setSearchParams]);
     
     // Filter to only show Published/Public posts (exclude Scheduled/Draft)
     const publicPosts = posts.filter(p => p.status === 'Published' || p.status === 'Public' || !p.status); // Default to showing if no status field
@@ -49,7 +69,22 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
     });
     const allTags = ["All", ...sortedTags];
 
-    const displayPosts = filter === "All" ? publicPosts : publicPosts.filter(p => p.tags.includes(filter));
+    const filteredPosts = filter === "All" ? publicPosts : publicPosts.filter(p => p.tags.includes(filter));
+    
+    // Pagination
+    const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    const displayPosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+    
+    // Reset to page 1 when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
+    
+    // Scroll to top when page changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentPage]);
 
     return (
         <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
@@ -74,21 +109,23 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                         <article 
                             key={post.id} 
                             onClick={() => {
-                                navigate(`/journal/${post.slug || post.id}`);
+                                navigate(`/journal/${post.slug || post.id}`, { 
+                                    state: { from: '/journal', page: currentPage, filter } 
+                                });
                             }}
                             className="group cursor-pointer border-b border-white/10 pb-16"
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms` }}
                         >
-                             <div className="flex flex-col md:flex-row gap-12 items-start">
+                             <div className={`grid grid-cols-1 ${THEME.blog.grid.columns} ${THEME.blog.grid.gap} items-center`}>
                                  {post.imageUrl && (
-                                     <div className={`w-full md:w-5/12 ${post.source === 'instagram' ? 'aspect-[4/5]' : 'aspect-[3/2]'} overflow-hidden bg-gray-900 relative`}>
+                                     <div className={`w-full ${post.source === 'instagram' ? 'aspect-[4/5]' : 'aspect-[3/2]'} overflow-hidden bg-gray-900 relative`}>
                                          <OptimizedImage
                                              recordId={post.id}
                                              fallbackUrl={post.imageUrl}
                                              type="journal"
                                              alt={post.title}
                                              loading="lazy"
-                                             className="w-full h-full object-cover transform-gpu scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                             className="w-full h-full object-cover transform-gpu grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700 ease-out"
                                         />
                                          {post.source === 'instagram' && (
                                              <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1.5 rounded-full">
@@ -99,12 +136,12 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                          )}
                                      </div>
                                  )}
-                                 <div className="flex-1 pt-4">
+                                 <div>
                                      <div className={`flex gap-4 ${THEME.typography.meta} text-text-muted mb-6 mix-blend-difference text-white items-center`}>
                                          <span>{post.date}</span>
                                          {post.readingTime && (
                                             <>
-                                                <span className="opacity-50">•</span>
+                                                <span>—</span>
                                                 <span>{post.readingTime}</span>
                                             </>
                                          )}
@@ -113,15 +150,52 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                          )}
                                      </div>
                                      <h2 className={`${THEME.typography.h2} mb-6 group-hover:text-white/80 transition mix-blend-difference text-white`}>{post.title}</h2>
-                                     <p className="text-gray-400 font-light leading-loose text-sm md:text-base line-clamp-3 mb-8">
+                                     <p className="text-gray-400 font-light leading-relaxed text-sm line-clamp-2 mb-8">
                                         {parseMarkdown(post.content).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}
                                      </p>
-                                     <div className={`${THEME.typography.meta} underline underline-offset-4 decoration-white/30 group-hover:decoration-white transition`}>Read</div>
+                                     <span className={`${THEME.typography.meta} underline underline-offset-4 decoration-white/30 group-hover:decoration-white transition`}>Read Article</span>
                                  </div>
                              </div>
                         </article>
                     ))}
                 </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-6 mt-20 pt-12 border-t border-white/10">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`${THEME.typography.meta} transition ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-60 hover:opacity-100'}`}
+                        >
+                            ← Previous
+                        </button>
+                        
+                        <div className="flex items-center gap-2">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`w-8 h-8 text-xs transition ${
+                                        currentPage === page 
+                                            ? 'text-white border-b border-white' 
+                                            : 'text-gray-500 hover:text-white'
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`${THEME.typography.meta} transition ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : 'opacity-60 hover:opacity-100'}`}
+                        >
+                            Next →
+                        </button>
+                    </div>
+                )}
             </div>
         </section>
     );
