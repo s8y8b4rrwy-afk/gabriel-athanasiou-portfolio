@@ -1049,7 +1049,7 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
   const repUSA = f['Rep USA'] || '';
   const instagramUrl = f['Instagram URL'] || '';
   const vimeoUrl = f['Vimeo URL'] || '';
-  const linkedinUrl = f['Linkedin URL'] || ''; 
+  const linkedinUrl = f['LinkedIn URL'] || f['Linkedin URL'] || ''; 
   
   // Extract about fields
   const bio = f['Bio'] || '';

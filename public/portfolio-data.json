@@ -1442,7 +1442,7 @@
       "repUSA": "FilmLemon",
       "instagram": "https://www.instagram.com/gab.ath/",
       "vimeo": "",
-      "linkedin": ""
+      "linkedin": "https://www.linkedin.com/in/gabathanasiou/"
     },
     "about": {
       "bio": "Gabriel Athanasiou (ελ: Γαβριήλ Αθανασίου) is a director based in London whose work uncovers the subtleties of human psychology and the echoes of generational trauma. \n\nHe studied Film Directing at the Aristotle University of Thessaloniki and the New York Film Academy.\n\nHis film Astoria earned a Greek Film Academy Award nomination in 2022, and he joined Berlinale Talents in 2023.\nWhether in film or commercial work, Gabriel brings an intimate, emotionally charged approach to every project.",
@@ -1453,9 +1453,9 @@
     ],
     "defaultOgImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
     "portfolioOwnerName": "Gabriel Athanasiou",
-    "lastModified": "2025-11-29T14:47:13.000Z"
+    "lastModified": "2025-12-01T17:39:44.000Z"
   },
-  "lastUpdated": "2025-12-01T17:01:22.587Z",
+  "lastUpdated": "2025-12-01T17:39:52.857Z",
   "version": "1.0",
   "source": "build-time-sync",
   "_rawRecords": {
@@ -15018,13 +15018,13 @@
             }
           ],
           "Use Cloudinary": true,
-          "Last Modified": "2025-11-29T14:47:13.000Z"
+          "Last Modified": "2025-12-01T17:39:44.000Z"
         }
       }
     ]
   },
   "syncMetadata": {
-    "lastSync": "2025-12-01T17:01:22.587Z",
+    "lastSync": "2025-12-01T17:39:52.857Z",
     "timestamps": {
       "Projects": {
         "rec01thlhC4hHGRlS": "2025-10-28T16:07:14.000Z",
@@ -15344,7 +15344,7 @@
         "reczTmtfNDxCNqlZC": "2025-10-21T17:56:34.000Z"
       },
       "Settings": {
-        "recIDUlHJGDSZYo2N": "2025-11-29T14:47:13.000Z"
+        "recIDUlHJGDSZYo2N": "2025-12-01T17:39:44.000Z"
       }
     }
   }
