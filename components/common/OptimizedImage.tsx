@@ -56,11 +56,11 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { getOptimizedImageUrl, getSessionPreset, type CloudinaryPreset } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getSessionPreset, isSlowConnection, isUltraSlowConnection, type CloudinaryPreset } from '../../utils/imageOptimization';
 import { THEME } from '../../theme';
 
 // Enable debug logging in development only
-const DEBUG = import.meta.env.DEV;
+const DEBUG = true; // Force enable for testing
 
 interface OptimizedImageProps {
   /** Airtable record ID */
@@ -133,8 +133,18 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return null;
   }
 
-  // Auto-detect preset if not provided, with mobile downgrade for hero and bio presets
+  // Auto-detect preset if not provided, with downgrades for slow connections and mobile devices
   let activePreset = preset || getSessionPreset();
+  
+  // Downgrade hero preset on ultra-slow connections (highest priority)
+  if (activePreset === 'hero' && isUltraSlowConnection()) {
+    activePreset = 'micro';
+  }
+  
+  // Downgrade hero preset on slow connections (prioritize performance over quality)
+  if (activePreset === 'hero' && isSlowConnection()) {
+    activePreset = 'fine';
+  }
   
   // Downgrade hero preset to ultra on mobile devices (configurable via theme)
   if (activePreset === 'hero' && typeof window !== 'undefined' && window.innerWidth < THEME.hero.mobileBreakpoint) {

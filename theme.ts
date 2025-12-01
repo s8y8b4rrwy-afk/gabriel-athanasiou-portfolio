@@ -132,6 +132,10 @@ export const THEME = {
     // These presets determine how images are delivered from Cloudinary CDN
     cloudinary: {
       presets: {
+        micro: {
+          quality: 70,   // Ultra-low quality for 2G/slow-2g connections
+          width: 600     // Small size for extreme bandwidth constraints
+        },
         fine: {
           quality: 80,   // Quality level (0-100, higher = better quality, larger file)
           width: 1000    // Max width in pixels
@@ -141,8 +145,8 @@ export const THEME = {
           width: 1600
         },
         hero: {
-          quality: 100,
-          width: 2400    // For full-screen homepage hero on 4K displays
+          quality: 90,
+          width: 3000    // For full-screen homepage hero on 4K displays
         }
       },
       format: 'webp',      // Output format (webp recommended for best compression)

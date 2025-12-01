@@ -4,10 +4,13 @@
  * Now includes Cloudinary CDN with local WebP and Airtable fallbacks
  */
 
-import { CLOUDINARY_PRESETS } from './cloudinaryConfig.mjs';
+import { THEME } from '../theme';
 
 // Enable debug logging in development only
-const DEBUG = import.meta.env.DEV;
+const DEBUG = true; // Force enable for testing
+
+// Use THEME as the single source of truth for presets
+const CLOUDINARY_PRESETS = THEME.cloudinary.presets;
 
 /**
  * Cloudinary configuration
@@ -33,7 +36,7 @@ export const isCloudinaryEnabled = (): boolean => {
   return cloudinaryConfig.enabled;
 };
 
-export type CloudinaryPreset = 'ultra' | 'fine' | 'hero';
+export type CloudinaryPreset = 'micro' | 'fine' | 'ultra' | 'hero';
 
 export interface ResponsiveImageProps {
   src: string;
@@ -52,30 +55,65 @@ export interface CloudinaryOptions {
 }
 
 /**
+ * Check if user is on an ultra-slow connection
+ * 
+ * @returns boolean - true if connection is ultra-slow (slow-2g or 2g)
+ */
+export const isUltraSlowConnection = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  if (!connection) return false;
+
+  const ultraSlowConnections = ['slow-2g', '2g'];
+  return ultraSlowConnections.includes(connection.effectiveType);
+};
+
+/**
+ * Check if user is on a slow connection
+ * 
+ * @returns boolean - true if connection is slow (saveData, 2G, 3G, or slow 4G)
+ */
+export const isSlowConnection = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  if (!connection) return false;
+
+  const slowConnections = ['slow-2g', '2g', '3g'];
+  const isSlow4G = connection.effectiveType === '4g' && connection.downlink && connection.downlink < 1.5;
+  
+  return connection.saveData || slowConnections.includes(connection.effectiveType) || isSlow4G;
+};
+
+/**
  * Detect optimal preset based on device capabilities and network conditions
  * 
  * Decision logic:
- * - Slow connection (saveData, 2G, slow-2g, 3G, or slow 4G <1.5 Mbps) → fine
+ * - Ultra-slow connection (slow-2g, 2g) → micro
+ * - Slow connection (saveData, 3G, or slow 4G <1.5 Mbps) → fine
  * - Large viewport × DPR (≥1024px effective) → ultra
  * - Default → fine
  * 
- * @returns CloudinaryPreset ('ultra' or 'fine')
+ * @returns CloudinaryPreset ('micro', 'fine', 'ultra', or 'hero')
  */
 export const detectOptimalPreset = (): CloudinaryPreset => {
   if (typeof window === 'undefined') return 'fine';
 
-  // Check network conditions
-  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-  if (connection) {
-    // Use fine preset for slow connections: 2G, 3G, slow-2g, or saveData mode
-    const slowConnections = ['slow-2g', '2g', '3g'];
-    const isSlow4G = connection.effectiveType === '4g' && connection.downlink && connection.downlink < 1.5;
-    
-    if (connection.saveData || slowConnections.includes(connection.effectiveType) || isSlow4G) {
-      const reason = connection.saveData ? 'saveData' : isSlow4G ? `slow 4G (${connection.downlink}Mbps)` : connection.effectiveType;
-      if (DEBUG) console.log(`🌐 Network: Slow connection detected (${reason}), using fine preset`);
-      return 'fine';
-    }
+  // Check for ultra-slow connections first (2G/slow-2g)
+  if (isUltraSlowConnection()) {
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    if (DEBUG) console.log(`🐌 Network: Ultra-slow connection detected (${connection?.effectiveType}), using micro preset`);
+    return 'micro';
+  }
+
+  // Check for slow connections (3G, slow 4G, saveData)
+  if (isSlowConnection()) {
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    const isSlow4G = connection?.effectiveType === '4g' && connection?.downlink && connection.downlink < 1.5;
+    const reason = connection?.saveData ? 'saveData' : isSlow4G ? `slow 4G (${connection.downlink}Mbps)` : connection?.effectiveType;
+    if (DEBUG) console.log(`🌐 Network: Slow connection detected (${reason}), using fine preset`);
+    return 'fine';
   }
 
   // Check viewport size and DPR
@@ -93,7 +131,30 @@ export const detectOptimalPreset = (): CloudinaryPreset => {
 };
 
 /**
- * Get session-cached preset (detects once per session)
+ * Update cached preset when network conditions change
+ */
+const updatePresetOnConnectionChange = () => {
+  if (typeof window === 'undefined') return;
+
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  
+  if (connection && !connection._listenerAdded) {
+    connection.addEventListener('change', () => {
+      const newPreset = detectOptimalPreset();
+      const STORAGE_KEY = 'cloudinary_preset';
+      const oldPreset = sessionStorage.getItem(STORAGE_KEY);
+      
+      if (oldPreset !== newPreset) {
+        sessionStorage.setItem(STORAGE_KEY, newPreset);
+        if (DEBUG) console.log(`🔄 Connection changed from ${connection.effectiveType}, updated preset: ${oldPreset} → ${newPreset}`);
+      }
+    });
+    connection._listenerAdded = true;
+  }
+};
+
+/**
+ * Get session-cached preset (detects once per session, updates on connection change)
  * 
  * @returns CloudinaryPreset ('ultra' or 'fine')
  */
@@ -104,10 +165,13 @@ export const getSessionPreset = (): CloudinaryPreset => {
 
   const STORAGE_KEY = 'cloudinary_preset';
   
+  // Set up connection change listener (only once)
+  updatePresetOnConnectionChange();
+  
   // Check session storage
   const cached = sessionStorage.getItem(STORAGE_KEY);
   
-  if (cached === 'ultra' || cached === 'fine') {
+  if (cached === 'micro' || cached === 'fine' || cached === 'ultra' || cached === 'hero') {
     if (DEBUG) console.log(`✅ Using cached preset: ${cached}`);
     return cached as CloudinaryPreset;
   }
@@ -167,6 +231,9 @@ export const buildCloudinaryUrl = (
     } else if (options.preset === 'ultra') {
       qualityValue = CLOUDINARY_PRESETS.ultra.quality;
       widthValue = CLOUDINARY_PRESETS.ultra.width;
+    } else if (options.preset === 'micro') {
+      qualityValue = CLOUDINARY_PRESETS.micro.quality;
+      widthValue = CLOUDINARY_PRESETS.micro.width;
     } else {
       qualityValue = CLOUDINARY_PRESETS.fine.quality;
       widthValue = CLOUDINARY_PRESETS.fine.width;

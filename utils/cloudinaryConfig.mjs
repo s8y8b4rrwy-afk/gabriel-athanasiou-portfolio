@@ -13,6 +13,10 @@
 // Re-export from theme for backward compatibility
 // Note: This is a simplified version - theme.ts has the full configuration
 export const CLOUDINARY_PRESETS = {
+  micro: {
+    quality: 70,
+    width: 600
+  },
   fine: {
     quality: 80,
     width: 1000
