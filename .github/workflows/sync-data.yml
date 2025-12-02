@@ -42,14 +42,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Sync from Airtable
+      - name: Sync from Airtable & Upload Images to Cloudinary
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           VITE_AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
           VITE_AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          # Cloudinary credentials for image uploads during sync
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          USE_CLOUDINARY: 'true'
         run: |
           echo "📥 Fetching data from Airtable..."
+          echo "☁️ Uploading new images to Cloudinary..."
           npm run build:data
           npm run build:content
           npm run build:sitemap

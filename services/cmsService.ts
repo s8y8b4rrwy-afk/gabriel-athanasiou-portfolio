@@ -31,6 +31,13 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
 const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data.json`;
 
+// Generate cache-busting URL with timestamp
+const getCacheBustedUrl = (baseUrl: string): string => {
+    const timestamp = Date.now();
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}_t=${timestamp}`;
+};
+
 const fetchCachedData = async (): Promise<ApiResponse> => {
     // Check if cache is still valid
     if (cachedData && cacheTimestamp && Date.now() - cacheTimestamp < CACHE_DURATION) {
@@ -40,12 +47,17 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
 
     // Try Cloudinary CDN first (primary source)
     try {
-        console.log('[cmsService] Fetching from Cloudinary CDN');
+        // Add timestamp to bypass CDN cache and get fresh data
+        const freshUrl = getCacheBustedUrl(CLOUDINARY_DATA_URL);
+        console.log('[cmsService] Fetching fresh data from Cloudinary CDN');
         
-        const response = await fetch(CLOUDINARY_DATA_URL, {
+        const response = await fetch(freshUrl, {
             headers: {
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            },
+            cache: 'no-store' // Bypass browser cache
         });
 
         if (!response.ok) {
@@ -68,12 +80,16 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
     } catch (cloudinaryError) {
         console.warn('[cmsService] ⚠️ Cloudinary fetch failed, trying local fallback:', cloudinaryError);
         
-        // Fallback to local static file
+        // Fallback to local static file with cache-busting
         try {
-            const response = await fetch('/portfolio-data.json', {
+            const localUrl = getCacheBustedUrl('/portfolio-data.json');
+            const response = await fetch(localUrl, {
                 headers: {
-                    'Accept': 'application/json'
-                }
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                },
+                cache: 'no-store'
             });
 
             if (!response.ok) {

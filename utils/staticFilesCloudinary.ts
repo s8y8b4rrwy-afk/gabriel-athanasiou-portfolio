@@ -136,12 +136,23 @@ export async function fetchStaticFile<T = string>(
     folder?: string;
     parseJson?: boolean;
     cache?: RequestCache;
+    bustCache?: boolean;
   } = {}
 ): Promise<T> {
-  const url = getStaticFileUrl(fileId, options);
+  let url = getStaticFileUrl(fileId, options);
+  
+  // Add cache-busting timestamp if requested (default: true for fresh data)
+  if (options.bustCache !== false) {
+    const timestamp = Date.now();
+    url = `${url}?_t=${timestamp}`;
+  }
   
   const response = await fetch(url, {
-    cache: options.cache || 'default'
+    cache: options.cache || 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    }
   });
 
   if (!response.ok) {
