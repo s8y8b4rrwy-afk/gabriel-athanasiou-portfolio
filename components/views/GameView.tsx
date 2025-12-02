@@ -16,6 +16,7 @@
  * - Confetti animation on correct answers
  * - Trading card with 3D hover effect and holographic shimmer
  * - Responsive layout (mobile-first, side-by-side on desktop)
+ * - Cloudinary preset-based image optimization (auto-detects fine/ultra)
  * 
  * ## Game Flow
  * 1. PAGE LOAD → Filter projects with gallery images (min 3 required)
@@ -35,9 +36,15 @@
  * - Tracks used images to avoid repetition
  * - Resets used images set when all have been shown
  * 
+ * ## Image Optimization
+ * - Detects session preset (fine/ultra) based on network/device
+ * - Applies Cloudinary transformations for optimized delivery
+ * - Non-Cloudinary URLs are used as-is
+ * 
  * @see GAME_IMPLEMENTATION_PLAN.md for detailed architecture
  * @see TradingCard.tsx for the card component
  * @see utils/gameSounds.ts for sound effects
+ * @see utils/imageOptimization.ts for preset detection
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -47,6 +54,7 @@ import { THEME } from '../../theme';
 import { TradingCard } from '../TradingCard';
 import { gameSounds } from '../../utils/gameSounds';
 import { analyticsService } from '../../services/analyticsService';
+import { getSessionPreset, buildCloudinaryUrl, isCloudinaryEnabled } from '../../utils/imageOptimization';
 
 /**
  * Props for the GameView component
@@ -99,13 +107,6 @@ const shuffle = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0
  * @returns Random project
  */
 const pickRandomProject = (array: Project[]): Project => array[Math.floor(Math.random() * array.length)];
-
-/**
- * Pick a random image URL from an array (type-safe version)
- * @param array - Array of image URLs
- * @returns Random image URL
- */
-const pickRandomImage = (array: string[]): string => array[Math.floor(Math.random() * array.length)];
 
 // ============================================================================
 // Main Component
@@ -307,8 +308,9 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             console.log('  Used images so far:', currentUsedImages.size, Array.from(currentUsedImages));
             
             // Get projects that still have unused images
+            // We track by "projectId-index" format
             let projectsWithUnusedImages = eligibleProjects.filter(p => 
-                p.gallery.some(img => !currentUsedImages.has(img))
+                p.gallery.some((_, idx) => !currentUsedImages.has(`${p.id}-${idx}`))
             );
             
             console.log('  Projects with unused images:', projectsWithUnusedImages.length);
@@ -325,7 +327,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             // are more likely to be selected, ensuring we cycle through all images fairly
             const weightedProjects: Project[] = [];
             projectsWithUnusedImages.forEach(p => {
-                const unusedCount = p.gallery.filter(img => !usedImagesRef.current.has(img)).length;
+                const unusedCount = p.gallery.filter((_, idx) => !usedImagesRef.current.has(`${p.id}-${idx}`)).length;
                 // Add project multiple times based on unused image count
                 for (let i = 0; i < unusedCount; i++) {
                     weightedProjects.push(p);
@@ -339,22 +341,26 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             console.log('  Project gallery:', correct.gallery);
             console.log('  Gallery length:', correct.gallery.length);
             
-            // Get unused images from this project
-            let availableImages = correct.gallery.filter(img => !usedImagesRef.current.has(img));
-            console.log('  Available (unused) images:', availableImages.length, availableImages);
+            // Get unused image indices from this project
+            // We track used images by "projectId-index" to work with both Airtable and Cloudinary URLs
+            const availableIndices = correct.gallery
+                .map((_, idx) => idx)
+                .filter(idx => !usedImagesRef.current.has(`${correct.id}-${idx}`));
+            console.log('  Available (unused) indices:', availableIndices.length, availableIndices);
             
-            // If somehow empty (after reset), use all images
-            if (availableImages.length === 0) {
-                console.log('  ⚠️ No available images, using all');
-                availableImages = correct.gallery;
+            // If all images used, reset for this project
+            let selectedIndex: number;
+            if (availableIndices.length === 0) {
+                console.log('  ⚠️ No available images, picking random index');
+                selectedIndex = Math.floor(Math.random() * correct.gallery.length);
+            } else {
+                selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
             }
-            
-            // Pick a random unused image
-            const selectedImage = pickRandomImage(availableImages);
-            console.log('  Selected image:', selectedImage);
+            console.log('  Selected index:', selectedIndex);
             
             // Mark this image as used (update both ref and state)
-            usedImagesRef.current = new Set([...usedImagesRef.current, selectedImage]);
+            const usedKey = `${correct.id}-${selectedIndex}`;
+            usedImagesRef.current = new Set([...usedImagesRef.current, usedKey]);
             setUsedImages(new Set(usedImagesRef.current));
             
             console.log('  Updated used images count:', usedImagesRef.current.size);
@@ -366,7 +372,23 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             const shuffledAnswers = shuffle([correct, ...wrongOptions]);
 
             setCurrentProject(correct);
-            setCurrentImageUrl(selectedImage);
+            
+            // Build the image URL - prefer Cloudinary if enabled, fallback to gallery URL
+            const preset = getSessionPreset();
+            let optimizedImageUrl: string;
+            
+            if (isCloudinaryEnabled()) {
+                // Use Cloudinary URL with preset transformations
+                optimizedImageUrl = buildCloudinaryUrl(correct.id, 'project', selectedIndex, { preset });
+                console.log('  Using Cloudinary URL with preset:', preset);
+            } else {
+                // Fall back to original gallery URL (Airtable)
+                optimizedImageUrl = correct.gallery[selectedIndex];
+                console.log('  Using fallback gallery URL (Cloudinary disabled)');
+            }
+            console.log('  Final image URL:', optimizedImageUrl.substring(0, 80) + '...');
+            
+            setCurrentImageUrl(optimizedImageUrl);
             setAnswers(shuffledAnswers);
             setGameState('playing');
         }, 1500); // Shuffle animation duration

@@ -397,3 +397,85 @@ export const prefetchImage = (src: string): void => {
   link.href = src;
   document.head.appendChild(link);
 };
+
+/**
+ * Apply Cloudinary transformation preset to any image URL
+ * 
+ * This function takes any image URL and:
+ * - If it's a Cloudinary URL: applies the specified preset transformations
+ * - If it's a non-Cloudinary URL: returns the original URL unchanged
+ * 
+ * @param imageUrl - The source image URL (Cloudinary or other)
+ * @param preset - Quality preset ('micro', 'fine', 'ultra', 'hero')
+ * @returns Transformed Cloudinary URL or original URL
+ * 
+ * @example
+ * // Cloudinary URL gets transformed
+ * applyCloudinaryPreset(
+ *   'https://res.cloudinary.com/date24ay6/image/upload/v123/my-image.jpg',
+ *   'ultra'
+ * );
+ * // Returns: 'https://res.cloudinary.com/date24ay6/image/upload/f_webp,w_1600,c_limit,q_90/v123/my-image.jpg'
+ * 
+ * @example
+ * // Non-Cloudinary URL is returned unchanged
+ * applyCloudinaryPreset('https://example.com/image.jpg', 'ultra');
+ * // Returns: 'https://example.com/image.jpg'
+ */
+export const applyCloudinaryPreset = (
+  imageUrl: string,
+  preset: CloudinaryPreset = 'fine'
+): string => {
+  if (!imageUrl) return '';
+  
+  // Check if this is a Cloudinary URL
+  const cloudinaryMatch = imageUrl.match(
+    /^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)((?:[^/]+\/)*)?(.+)$/
+  );
+  
+  if (!cloudinaryMatch) {
+    // Not a Cloudinary URL, return as-is
+    if (DEBUG) console.log('🔗 Non-Cloudinary URL, using as-is:', imageUrl.substring(0, 50) + '...');
+    return imageUrl;
+  }
+  
+  const [, baseUrl, existingTransforms, publicIdWithVersion] = cloudinaryMatch;
+  
+  // Get preset settings
+  let qualityValue: number;
+  let widthValue: number;
+  
+  switch (preset) {
+    case 'hero':
+      qualityValue = CLOUDINARY_PRESETS.hero.quality;
+      widthValue = CLOUDINARY_PRESETS.hero.width;
+      break;
+    case 'ultra':
+      qualityValue = CLOUDINARY_PRESETS.ultra.quality;
+      widthValue = CLOUDINARY_PRESETS.ultra.width;
+      break;
+    case 'micro':
+      qualityValue = CLOUDINARY_PRESETS.micro.quality;
+      widthValue = CLOUDINARY_PRESETS.micro.width;
+      break;
+    case 'fine':
+    default:
+      qualityValue = CLOUDINARY_PRESETS.fine.quality;
+      widthValue = CLOUDINARY_PRESETS.fine.width;
+      break;
+  }
+  
+  // Build transformation string
+  const transformations = `f_webp,w_${widthValue},c_limit,q_${qualityValue}`;
+  
+  // Construct the new URL with transformations applied
+  const transformedUrl = `${baseUrl}${transformations}/${publicIdWithVersion}`;
+  
+  if (DEBUG) {
+    console.log('🎨 Applied Cloudinary preset:', { preset, width: widthValue, quality: qualityValue });
+    console.log('   Original:', imageUrl.substring(0, 60) + '...');
+    console.log('   Transformed:', transformedUrl.substring(0, 80) + '...');
+  }
+  
+  return transformedUrl;
+};
