@@ -45,7 +45,9 @@ import { Link } from 'react-router-dom';
 import { Project } from '../../types';
 import { THEME } from '../../theme';
 import { TradingCard } from '../TradingCard';
+import { SocialShare } from '../SocialShare';
 import { gameSounds } from '../../utils/gameSounds';
+import { analyticsService } from '../../services/analyticsService';
 
 /**
  * Props for the GameView component
@@ -167,6 +169,9 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
     /** Whether the current score just became a new high score */
     const [isNewHighScore, setIsNewHighScore] = useState(false);
     
+    /** Total number of rounds played in current session */
+    const [roundsPlayed, setRoundsPlayed] = useState(0);
+    
     /** Set of image URLs that have been shown (for cycling) */
     const [usedImages, setUsedImages] = useState<Set<string>>(new Set());
     
@@ -230,6 +235,17 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
     }, []);
 
     /**
+     * Track game page view on mount
+     */
+    useEffect(() => {
+        analyticsService.trackEvent('game_view', {
+            eligible_projects: eligibleProjects.length,
+            total_images: totalImages,
+            timestamp: new Date().toISOString(),
+        });
+    }, [eligibleProjects.length, totalImages]);
+
+    /**
      * High score persistence effect
      * Updates localStorage when a new high score is achieved
      */
@@ -239,13 +255,22 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             setIsNewHighScore(true);
             // Play high score celebration sound with slight delay
             setTimeout(() => gameSounds.playHighScore(), 200);
+            
+            // Track new high score event
+            analyticsService.trackEvent('game_high_score', {
+                new_high_score: score,
+                previous_high_score: highScore,
+                rounds_played: roundsPlayed,
+                timestamp: new Date().toISOString(),
+            });
+            
             try {
                 localStorage.setItem('game_highScore', score.toString());
             } catch {
                 // localStorage not available (private browsing, etc.)
             }
         }
-    }, [score, highScore]);
+    }, [score, highScore, roundsPlayed]);
 
     // ========================================================================
     // Game Logic
@@ -382,13 +407,32 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
         setSelectedAnswer(projectId);
         setGameState('revealed');
 
+        // Increment rounds played
+        setRoundsPlayed(r => r + 1);
+
         if (projectId === currentProject?.id) {
             setScore(s => s + 1);
             setShowConfetti(true);
             // Delay sound slightly to sync with visual feedback
             setTimeout(() => gameSounds.playCorrect(), 100);
+            
+            // Track correct answer
+            analyticsService.trackEvent('game_correct_answer', {
+                project_id: currentProject.id,
+                project_title: currentProject.title,
+                current_score: score + 1,
+                timestamp: new Date().toISOString(),
+            });
         } else {
             setTimeout(() => gameSounds.playWrong(), 100);
+            
+            // Track wrong answer
+            analyticsService.trackEvent('game_wrong_answer', {
+                correct_project: currentProject?.title,
+                selected_project: answers.find(a => a.id === projectId)?.title,
+                current_score: score,
+                timestamp: new Date().toISOString(),
+            });
         }
     };
 
@@ -573,8 +617,24 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                 )}
             </div>
 
+            {/* Share Section */}
+            <div className="max-w-md mx-auto mt-8 sm:mt-12">
+                <div className="text-center mb-4">
+                    <p className="text-gray-400 text-xs uppercase tracking-widest">
+                        Challenge your friends
+                    </p>
+                </div>
+                <SocialShare
+                    url="https://directedbygabriel.com/game"
+                    title={`I scored ${score} on Gabriel's filmography trivia game!`}
+                    description="Can you beat my score? Test your knowledge of Gabriel Athanasiou's filmography."
+                    layout="horizontal"
+                    className="justify-center"
+                />
+            </div>
+
             {/* Explanation Section */}
-            <div className="max-w-2xl mx-auto mt-16 text-center border-t border-white/10 pt-12">
+            <div className="max-w-2xl mx-auto mt-12 sm:mt-16 text-center border-t border-white/10 pt-12">
                 <h2 className="text-xl font-serif italic text-white mb-4">
                     What the f is this?
                 </h2>
