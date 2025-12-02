@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { THEME } from '../theme';
 import { clearScrollPosition } from '../utils/scrollRestoration';
@@ -14,11 +14,38 @@ const PAGES_WITH_HERO = ['/', '/work/', '/journal/'];
 export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
   const location = useLocation();
   const [showGradient, setShowGradient] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const navScrollRef = useRef<HTMLDivElement>(null);
   
   // Check if current page has a hero section
   const hasHero = location.pathname === '/' || 
                   location.pathname.startsWith('/work/') || 
                   location.pathname.startsWith('/journal/');
+
+  // Check scroll position to show/hide fades
+  const checkScrollPosition = useCallback(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    
+    const threshold = 5; // Small threshold to account for rounding
+    setCanScrollLeft(el.scrollLeft > threshold);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - threshold);
+  }, []);
+
+  useEffect(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    
+    checkScrollPosition();
+    el.addEventListener('scroll', checkScrollPosition, { passive: true });
+    window.addEventListener('resize', checkScrollPosition, { passive: true });
+    
+    return () => {
+      el.removeEventListener('scroll', checkScrollPosition);
+      window.removeEventListener('resize', checkScrollPosition);
+    };
+  }, [checkScrollPosition]);
   
   useEffect(() => {
     // Reset gradient state on route change
@@ -49,6 +76,30 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
     window.scrollTo(0, 0);
   };
 
+  // Build dynamic mask based on scroll position
+  const getMaskStyle = () => {
+    if (!canScrollLeft && !canScrollRight) {
+      return {}; // No mask needed
+    }
+    
+    let maskImage = 'linear-gradient(to right, ';
+    if (canScrollLeft) {
+      maskImage += 'transparent, black 24px, ';
+    } else {
+      maskImage += 'black, black, ';
+    }
+    if (canScrollRight) {
+      maskImage += 'black calc(100% - 24px), transparent)';
+    } else {
+      maskImage += 'black, black)';
+    }
+    
+    return {
+      maskImage,
+      WebkitMaskImage: maskImage
+    };
+  };
+
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 flex flex-col items-center md:flex-row ${THEME.header.gap} text-white pointer-events-auto select-none ${THEME.header.paddingY} ${THEME.header.paddingX} ${showGradient ? 'bg-gradient-to-b from-black/80 to-transparent' : 'bg-transparent'}`}>
         <Link 
@@ -60,18 +111,30 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
         </Link>
         
         {showLinks && (
-            <div className="flex gap-8">
-                <NavLink to="/" onClick={() => handleNavClick('/')} className={({ isActive }) => getBtnClass(isActive)}>
+            <div 
+                ref={navScrollRef}
+                className="flex gap-6 md:gap-8 overflow-x-auto max-w-full scrollbar-hide" 
+                style={{ 
+                    WebkitOverflowScrolling: 'touch', 
+                    scrollbarWidth: 'none', 
+                    msOverflowStyle: 'none',
+                    ...getMaskStyle()
+                }}
+            >
+                <NavLink to="/" onClick={() => handleNavClick('/')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     Featured
                 </NavLink>
-                <NavLink to="/work" onClick={() => handleNavClick('/work')} className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/work" onClick={() => handleNavClick('/work')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     Filmography
                 </NavLink>
-                <NavLink to="/journal" onClick={() => handleNavClick('/journal')} className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/journal" onClick={() => handleNavClick('/journal')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     Journal
                 </NavLink>
-                <NavLink to="/about" onClick={() => handleNavClick('/about')} className={({ isActive }) => getBtnClass(isActive)}>
+                <NavLink to="/about" onClick={() => handleNavClick('/about')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     About
+                </NavLink>
+                <NavLink to="/game" onClick={() => handleNavClick('/game')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
+                    Game
                 </NavLink>
             </div>
         )}

@@ -4,7 +4,7 @@
 
 import type { Context } from "https://edge.netlify.com";
 
-export const config = { path: ["/", "/work", "/work/*", "/about", "/journal", "/journal/*"] };
+export const config = { path: ["/", "/work", "/work/*", "/about", "/journal", "/journal/*", "/game"] };
 
 interface ShareItem {
   id: string;
@@ -216,6 +216,7 @@ export default async (request: Request, context: Context) => {
     pathname === '/work' ||
     pathname === '/about' ||
     pathname === '/journal' ||
+    pathname === '/game' ||
     pathname.startsWith('/work/') ||
     pathname.startsWith('/journal/');
 
@@ -323,6 +324,14 @@ export default async (request: Request, context: Context) => {
         title: escapeHtml("Journal | GABRIEL ATHANASIOU"),
         description: escapeHtml("Updates, behind-the-scenes insights, and reflections from my filmmaking journey."),
         image: defaultOgImage,
+        type: "website"
+      };
+    } else if (pathname === '/game') {
+      // Game page
+      meta = {
+        title: escapeHtml("Game | GABRIEL ATHANASIOU"),
+        description: escapeHtml("Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"),
+        image: "https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg",
         type: "website"
       };
     } else {

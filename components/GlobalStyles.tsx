@@ -241,6 +241,106 @@ export const GlobalStyles: React.FC = () => {
       .cta-button-glow:hover {
         text-shadow: 0 0 60px rgba(255, 255, 255, 0.25), 0 0 100px rgba(255, 255, 255, 0.15);
       }
+      
+      /* ===== GAME ANIMATIONS ===== */
+      
+      /* Card shuffle animation */
+      @keyframes cardShuffle {
+        0% { transform: rotateY(0deg) scale(1); }
+        25% { transform: rotateY(90deg) scale(0.9); }
+        50% { transform: rotateY(180deg) scale(0.85); }
+        75% { transform: rotateY(270deg) scale(0.9); }
+        100% { transform: rotateY(360deg) scale(1); }
+      }
+      
+      .animate-card-shuffle {
+        animation: cardShuffle 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+      }
+      
+      /* Holographic shimmer effect */
+      @keyframes holoShimmer {
+        0% {
+          background-position: -200% 0;
+          opacity: 0;
+        }
+        50% {
+          opacity: 0.4;
+        }
+        100% {
+          background-position: 200% 0;
+          opacity: 0;
+        }
+      }
+      
+      .animate-holo-shimmer {
+        background: linear-gradient(
+          105deg,
+          transparent 20%,
+          rgba(255, 255, 255, 0.1) 25%,
+          rgba(255, 255, 255, 0.3) 30%,
+          rgba(180, 200, 255, 0.3) 35%,
+          rgba(255, 200, 180, 0.3) 40%,
+          rgba(255, 255, 255, 0.1) 45%,
+          transparent 50%
+        );
+        background-size: 200% 100%;
+        animation: holoShimmer 1.5s ease-out forwards;
+      }
+      
+      /* Score pop animation */
+      @keyframes scorePop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+      }
+      
+      .animate-score-pop {
+        animation: scorePop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      /* High score glow animation */
+      @keyframes highScoreGlow {
+        0%, 100% { text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
+        50% { text-shadow: 0 0 25px rgba(250, 204, 21, 0.8), 0 0 40px rgba(250, 204, 21, 0.4); }
+      }
+      
+      .animate-high-score-glow {
+        animation: highScoreGlow 1.5s ease-in-out infinite;
+      }
+      
+      /* Confetti animation */
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
+      
+      .confetti-container {
+        overflow: hidden;
+      }
+      
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: -20px;
+        animation: confettiFall 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      
+      .confetti-piece:nth-child(odd) {
+        border-radius: 50%;
+      }
+      
+      .confetti-piece:nth-child(even) {
+        border-radius: 2px;
+        transform: rotate(45deg);
+      }
     `;
     document.head.appendChild(style);
 

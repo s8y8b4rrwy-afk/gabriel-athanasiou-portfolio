@@ -22,6 +22,7 @@ const ProjectDetailView = lazy(() => import('./components/views/ProjectDetailVie
 const BlogView = lazy(() => import('./components/views/BlogView').then(m => ({ default: m.BlogView })));
 const BlogPostView = lazy(() => import('./components/views/BlogPostView').then(m => ({ default: m.BlogPostView })));
 const AboutView = lazy(() => import('./components/views/AboutView').then(m => ({ default: m.AboutView })));
+const GameView = lazy(() => import('./components/views/GameView').then(m => ({ default: m.GameView })));
 
 // Helper function to get page title from pathname
 const getPageTitle = (pathname: string): string => {
@@ -173,6 +174,16 @@ export default function App() {
                    <>
                       <SEO title="About" />
                       <AboutView config={data.config} />
+                  </>
+              } />
+              <Route path="/game" element={
+                  <>
+                      <SEO 
+                          title="Game" 
+                          description="Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"
+                          image="https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg"
+                      />
+                      <GameView projects={data.projects} />
                   </>
               } />
               {/* ...existing code... */}
