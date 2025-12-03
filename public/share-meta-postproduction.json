@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-12-03T16:56:50.187Z",
+  "generatedAt": "2025-12-03T23:35:39.313Z",
   "portfolioId": "postproduction",
   "domain": "lemonpost.studio",
   "projects": [
@@ -17,7 +17,7 @@
       "slug": "dye-lon-riverside-investors-pitch",
       "title": "Dye Lon Riverside Investors Pitch",
       "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "image": "https://i.vimeocdn.com/video/2091375304-09f5bb6ff013384d9593912847051e537966fe2182febf15c86417a3125f4429-d_295x166?region=us",
       "type": "Commercial",
       "year": "2025"
     },
@@ -35,7 +35,7 @@
       "slug": "aru-london-postgrad-25",
       "title": "Aru London Postgrad 25",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/2052255531-6ff6bba2685ccc31bb8093549c522db579cb07d37b8f657532cfa78b7b286a50-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/qfByiDzryEo0UgAYdU3-SQ/bO1ds7zD-UB7VamSlBOR_3g6IlNgck60jgyKKH6euLgjDfL625CSfRJK9aeOeYMY6WaGpuCeyJhnrdXaytaxintMTBpsAzfFJXWlMtxzcjJYEH7S3K7rMeLROvP7dNjzfIjaR9mTMSVS24GY5uYDnBELSK60m-ez6jE76XEk9JMKYZGt0IC9D3jzk71c3HX8/ikLPYg9nQAwSHmq2045kfpupgaEVyHGLUrFa3Jq0PR8",
       "type": "Commercial",
       "year": "2025"
     },
@@ -62,7 +62,7 @@
       "slug": "hello-sunday",
       "title": "Hello Sunday",
       "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/UMmsrip5SjZeFEmdgr49ag/zRZJgG26Nl7yzRkt0KWC5JVe-mXS417htEUsShdcRbhLKvKDrKSGJToEg-fOym3k086WVj54nr8je4P7FbXhAgSdtWJI8QS9TIVXfgyedrJCaVGV7MOS4iNOeXAzR6yRklya0r4ct0PDVHjBbe0_Xy43uLoeAMM-iPncntqLGGhK5cxT8tsTLy5zkzxErsRw/b26wBktDPX79MKQIojhscUUuBCnO1O3Ah6Rb0VK2MbM",
       "type": "Commercial",
       "year": "2025"
     },
@@ -95,10 +95,10 @@
     },
     {
       "id": "rectyZOMbe7eQSKbA",
-      "slug": "clientearth-in-asia-coperate-video",
-      "title": "Clientearth In Asia Coperate Video",
+      "slug": "clientearth-in-asia",
+      "title": "Clientearth In Asia",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/1940195554-a3f0ea0dd6c57e67b768746e63affafacf852c1b77aaecf9d348684e317b4c36-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/oNwYXWSwk5rkDsLs6Oe66A/mRBxLSEV6PbOEzbSfgsFV-B1tm6qYnXzJEcPLGEC_pybisgxU8VVdrOLTaJf7lQRqs2PlIr_27F7IvVyaFjWdjBQw1EzG7noQ6qfJaB4hoaJJrce3IYSg3T3XUt4CRwwVHFemvPVsiATDSasEEs5rs51L2OgM1hju74f5kfcbNffT5TiDk4EF-Soz0KAJpmr/5DgAFyM302bFsr7UWmo_0Db4SkvNMkGwTCujHxBxX50",
       "type": "Commercial",
       "year": "2024"
     },
@@ -107,7 +107,7 @@
       "slug": "aru-open-day-videos",
       "title": "Aru: Open Day Videos",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/1888786362-69c40eb75a14e0b0ecd40c794ad9d7d6080887559b569dca5fa4ab74c6b21764-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/UmSOAYrqmiKuNgJDwkfYUA/H8CDD7PVtdjIgpXaJIjoXMFNuJhRuwlAzplHXXZbwFqUldgh-7IBHeT3kpsMUaPJzEJkMN8clDqwlIdNHzOAHSWTPs9SJVtLPm9ajscv9dLZ23tJQ5dbcTm_sDfXNPocmhrejnkpsD0LJol0ncR6gKsSFfZKKUQsnspmP8AXNfiE5laoUimIBGFKAq1yDeGU/nT3yxX4PybbNYI-XDOzz6bhlkrl9o4lkhA_e_UZVzsw",
       "type": "Commercial",
       "year": "2024"
     },
@@ -140,19 +140,19 @@
     },
     {
       "id": "recQ1KNF9qX94IbJm",
-      "slug": "abbey-quay",
-      "title": "Abbey Quay",
+      "slug": "abbey-quay-building",
+      "title": "Abbey Quay Building",
       "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "image": "https://i.vimeocdn.com/video/2091354368-da1237cc12db7103ab8918ace5d7bd4f42592e4bd474025bed85b06e016c0bd5-d_295x166?region=us",
       "type": "Commercial",
       "year": "2024"
     },
     {
       "id": "rec19YGt9NenvsOem",
-      "slug": "fashion-film",
-      "title": "Fashion Film",
+      "slug": "fashion-films",
+      "title": "Fashion Films",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/1791317436-2d97a6ff8d67142e3635e9832203c582c7f90ef354b81766a02c31acb21880b9-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/Ng_HXjbsddgHca-8hes55w/U9G0BL8NbY2Pg7XOQsN29IGN-d1TbHhsmqIxJJJPnpxnQvcA1t3r06zykvVEcuxhNVts9sK0jeQNQ6jPfJRorKzjaZ2EiiR1Ihvg8XueAE7Dsy7-bRrElUDlNi9cwq68MwwL0g4E5X8WyF8W0_WGwBBMnfRQ3JEE56Nj2WTfLs5NREB2cn_Ga33okoDe5ULi/MOwaxeyNMFvlBAu2jsWJemBEOqJWIpE4n-THpaBQbv4",
       "type": "Commercial",
       "year": "2024"
     },
@@ -188,7 +188,7 @@
       "slug": "uobm-aw23",
       "title": "Uobm Aw23",
       "description": "",
-      "image": "https://vumbnail.com/1021318638.jpg",
+      "image": "https://i.vimeocdn.com/video/1940198896-0a6946529be03b0095d57a419f6665178e62871f6caa4f089c35204a56a7fc74-d_295x166?region=us",
       "type": "Commercial",
       "year": "2023"
     },
@@ -212,19 +212,19 @@
     },
     {
       "id": "recg8GIk3yfhudveK",
-      "slug": "cordex-x-polymateria-agritechnica",
-      "title": "Cordex X Polymateria Agritechnica",
+      "slug": "biocord-at-agritechnica",
+      "title": "Biocord At Agritechnica",
       "description": "",
-      "image": "https://img.youtube.com/vi/nJfyS4zEa3o/maxresdefault.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/W_iMMO24aUIQKHx2mZRHyg/Qzk-zQFXJ_5wIcXB_NMOjPwiqlGglQt28tuVWqGhzyPa_Egwd0WBWV4_J2GoWJy42DnKCLk7pYgWnVOIOJPbau2K6JpDJFOXmcJUCyNPOTHvKh2G1Q4qE8WQ5NTScoa97_ponwW82HT5Pt7nO6kNA-GggJ8zYiN4nqFvucU-Y2K8lPE3SYq6tODN72NZrWM7/zkybJm5h6FIY5KsU1dcMIuhY8xjXDIPjYq0YIb5fHYM",
       "type": "Commercial",
       "year": "2023"
     },
     {
       "id": "recf9Th67D1qxRCzp",
-      "slug": "bugzy-malone-lean-official-video",
-      "title": "Bugzy Malone Lean (Official Video)",
+      "slug": "bugzy-malone-lean",
+      "title": "Bugzy Malone Lean",
       "description": "",
-      "image": "https://img.youtube.com/vi/0KbjgjBjbUE/maxresdefault.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/CbFKF3ORpwKKMBvzy8qjjw/CdbwaSe5qTsc9_PrKzgVpgUIFuBJtcUP4GFeQkHxKT-Oh8g_sdSXLfGAhGog2Nx93b91quC3Jhq4FRvJvEgLBwa2MTRudG0M8Wi_J2J75w7WbdSNW_pZZdeaBifht0Uw65lmEvojrHoMlz6tXSD7582hgcrSyMcYiPNXmqcUgTfUxW8bWUbyNB4fB4B_JgUJ/aflqcpI9X3q3829xsfcshVzJ2uMGEAKsdF90vObkAIg",
       "type": "Music Video",
       "year": "2023"
     },
@@ -241,7 +241,7 @@
       "id": "rec3po7P6S00cGYXX",
       "slug": "aru-3-words-video",
       "title": "Aru 3 Words Video",
-      "description": "This is a 3 word video and stuff.",
+      "description": "",
       "image": "https://img.youtube.com/vi/TejbwNWk5JI/maxresdefault.jpg",
       "type": "Commercial",
       "year": "2023"
@@ -266,10 +266,10 @@
     },
     {
       "id": "rectMqCkoDwqS9qks",
-      "slug": "easol-podcast-01",
-      "title": "Easol: Podcast 01",
+      "slug": "easol-podcast-creators-in-session",
+      "title": "Easol Podcast Creators In Session",
       "description": "",
-      "image": "https://vumbnail.com/1021317464.jpg",
+      "image": "https://i.vimeocdn.com/video/1940057791-75e0d36b5bb2e91773428bfc5688c1fb557cd73697159d70d6426ca33cc65535-d_200x150?region=us",
       "type": "Commercial",
       "year": "2023"
     },
@@ -278,7 +278,7 @@
       "slug": "embrace-building-wraps",
       "title": "Embrace Building Wraps",
       "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "image": "https://i.vimeocdn.com/video/2091375388-deb201f28db8b28ce302767d007c2b19491cd80afddd40125cc729758556bd31-d_295x166?region=us",
       "type": "Commercial",
       "year": "2023"
     },
@@ -314,7 +314,7 @@
       "slug": "aru-courses-23-edit",
       "title": "Aru Courses 23 Edit",
       "description": "",
-      "image": "https://vumbnail.com/871956303.jpg",
+      "image": "https://i.vimeocdn.com/video/1940227306-ef153951e6abc35f41a8c465a5085abffd185bd501c0964936d4cb61518a95c9-d_295x166?region=us",
       "type": "Commercial",
       "year": "2023"
     },
@@ -455,10 +455,10 @@
     },
     {
       "id": "recFxq0Le1WMdP2ep",
-      "slug": "ayra-pepsi",
-      "title": "Ayra Pepsi",
+      "slug": "ayra-starr-pepsi",
+      "title": "Ayra Starr Pepsi",
       "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/ur4hLtAi1iixaMahFh3Ukg/0EouWczkfLsc2BuH6TgSpd93OTNgfNmKkEXtxEObEf5PxKPp93QVtTFfOp4CekqoZEop2Yu-2reLzK8FWVub7V__aAlpYo77h4lIPls-gDbqXr4T9hPwVeGTr-KKpcPxqGIjBHauP0Rj6JU7T2ecZoqtjO6Rxhqen6dmFNTRg8m5WEJsELEP7GUBLI7R1rWxjSSu_F_9iS5z2JVBN49VAw/4hSOf50YcViSLcFrGzCd6xiv5QzGRAFqoidU8WJTOa4",
       "type": "Commercial",
       "year": "2021"
     },
@@ -485,7 +485,7 @@
       "slug": "lily-xander-james-paige-wedding-videos",
       "title": "Lily & Xander, James & Paige Wedding Videos",
       "description": "",
-      "image": "https://vumbnail.com/568909917.jpg",
+      "image": "https://i.vimeocdn.com/video/1176560753-87ed6540289fb3797e8411037e116bfc415ee962fd7a92ebc150091f89251bce-d_295x166?region=us",
       "type": "Documentary",
       "year": "2021"
     },
@@ -494,16 +494,16 @@
       "slug": "i-saw-it-first",
       "title": "I Saw It First",
       "description": "",
-      "image": "https://vumbnail.com/567485164.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/fgyJ3mdY3-2xviH0RGomYQ/s3Ic2SKE4w2C3aw3VccYzdo5pfcCc8QZRuIKuj1wCNikj3XA9KCWWTVdAwpigFN7d-IePHcQtIKqPrpuuQBZteVnVMiaK65_1XKRSPfoagMJSHWtc93b9ii_wcgjYntrBxjAcHTpGEWAd0kfpkoVBEGmMMW-LKn17mG4V2Ok6cqAA86Y-aU1QOXAb8E3QHhR/akp52LLE9OBHt7-EjRUqnTluPTX6l5RsWVj3Av8m2Fw",
       "type": "Music Video",
       "year": "2021"
     },
     {
       "id": "receJPGJko0JfrlK2",
-      "slug": "birkin",
-      "title": "Birkin",
+      "slug": "birkin-price",
+      "title": "Birkin Price",
       "description": "",
-      "image": "https://vumbnail.com/566567933.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/M-tXrlxsgDpDC5QiZzyElg/NZx2e7MGIunEQYTSLsfC_ksDmd_OJzW-M4PEq52TiVlKW_c3kceMt9UaQMpqtGXv0HGT7eRf8zDQZFmfcGgxBHsLpqGEmaxL9g1NpSCH3SiD1P7t5hmBqu6wPLfZ-Ceh6P6OvDaVtx-ne8phPrFEaEAnKWr-lzXyZGYkrIPq1PC7JRQ6NR_tAz9ccPkWVSoO/pGe5xWh_LxEw44Pi-wconZ17SMmxHvvbfSxOTfVyz7M",
       "type": "Music Video",
       "year": "2021"
     },
@@ -527,19 +527,10 @@
     },
     {
       "id": "recriTofURKR8oiTd",
-      "slug": "budica",
-      "title": "Budica",
+      "slug": "boudica",
+      "title": "Boudica",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/898860669-ac1787e668e88d4877bef4e4835b80534d2a7f783e41857cd3fd243cf061f337-d_295x166?region=us",
-      "type": "Narrative",
-      "year": "2021"
-    },
-    {
-      "id": "rec16dgn28eBuONpT",
-      "slug": "hurt-by-paradise-trailer",
-      "title": "Hurt By Paradise Trailer",
-      "description": "",
-      "image": "https://vumbnail.com/387799717.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/ocnC6H-YOTv-OXsbgVbeOQ/En2BNwy8X0_K2LFipvVkfJ78df0fwJDi7uQt9S6g-8zAy0FOEcidkrWwX9KBG9jiGh1uMz66Y8ZJVHW-56Tin3my-IWm3qnAxvnY6_Xzu6z5R4VjSshNwwx5Hkz16nObQToMgPKUnDT5ATQTJZqK5zol4CVOA82stdU89m182X0ERHJDIjMj5JR_18SRLFIX/--vbxuYQ3bCjh79tpkRR8Jp2AsGgw-uOIZVHAp2sCgs",
       "type": "Narrative",
       "year": "2021"
     },
@@ -557,7 +548,7 @@
       "slug": "choked",
       "title": "Choked",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/960373967-c06bb70ffe6f567068dc5a78360e7595c5220a322d9f651aacb1475edce1efb1-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/l_KlatMdaPOlHZrBxF7yJw/FaBxir57_oTSFokI8QIfF0-AYmjuKuMQy4sXzwno5EFAWmG6NjVrmWSjXS-rAohLlnxcOJDN5OZXj_RvCWPuSg85ym44BOe882PwFeL5KeAgezePxt858_HVLko2GmHLmDhcYNgojBwAntE9yKGQUMjSSSU2Bg3SzrJ5vqOfY1lFVmTDRn8WZZqTl-5dRITF/LNkeRDj_svkwsuJUr3uDyjIEfAbjptMO37QZ0sibL0E",
       "type": "Music Video",
       "year": "2020"
     },
@@ -575,7 +566,7 @@
       "slug": "hidden-drummers-of-india",
       "title": "Hidden Drummers Of India",
       "description": "",
-      "image": "https://img.youtube.com/vi/www.youtube/maxresdefault.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/WsAQj7w6sC0wlZpjvO75cQ/9W0uSIksm4rL3_JA0zq3obRqVqm7HjqPPQZdjfKGejh32UAcNJvNAfYilaKwjhDxwSbi1CzEwgHHrV_7zcJsRECIv_dokNBafXnlK8vVskLXxL9a4dptLx5Ci4lvBEAlWyAs-51UhljdvVX0hiKCIgePrL7DapErWeX4_vDUKK84oRe9_vNFEg5iF4iD9sYJ/dN_G3gH9uNrsfYa1tOqgGaoaL3Up4-GUffpprM6Oekk",
       "type": "Documentary",
       "year": "2020"
     },
@@ -665,7 +656,7 @@
       "slug": "blue-story-epk",
       "title": "Blue Story Epk",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/834217131-530e4482e1f99e8f3b3818290e9bb7aeb3ba7ac9296cdbc5721d10d0e1ec4f32-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/y2Nj1JAv1HXFHXD8ENA5gw/p6ywqclh0hJyQckNZ27k49FfCnw0Mu_cjuVWsmDlZNnLMt10ArzGwC0WVylTQvmdsdSg7uXZvYmAKdEbIQVSc9lQMto-CVIr8L5ed41xjkwRPSa1ieRQS_1bbH6OtLxups_xrArq-YwJ1jMT7OEcXwgApg9ukMkgE0xPLcYyAw_K7POxnkvHDij9q2qrV2f1/ZtMGKSa_tnkQGPKXlVXq5LquFLlv0NgQ7D7D2ZxtB2w",
       "type": "Documentary",
       "year": "2019"
     },
@@ -683,7 +674,7 @@
       "slug": "blinded-by-the-light-epk",
       "title": "Blinded By The Light Epk",
       "description": "",
-      "image": "https://i.vimeocdn.com/video/803239865-49883d3e1219be4d5f40817abaf382f9195801887de436082215329994534513-d_295x166?region=us",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/-3PFIPH-t4xZN4pGVoJb3w/wEWN_IcGf3zuQTPv0Q3FeybsLD-QbSAcDu1LV4oz29d532TSK-2n_X6x3Dz0vx59-NWdcRgaLiMZQNTaw9leowrzBB5k75jGU-NuHttOA4rVFei8Li7YjHc2Zke5P1xGEs4xKuiIaEeMzekNelqMNYW8gngOxzijYtqz47FlMts6Mfx6dpkoyjRHEBbNl0sQ/KBoJKwx5YBqKZn0wadxavoaWrQyzpaIPTc0Op8eYJmc",
       "type": "Documentary",
       "year": "2019"
     },
@@ -692,7 +683,7 @@
       "slug": "dona-vixen",
       "title": "Dona & Vixen",
       "description": "",
-      "image": "https://img.youtube.com/vi/C6BP7Mv1QRw/maxresdefault.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/vu61dMKYyPZMijcusDtTnw/Okjm0Y7MYNH95Ft0thVJnPxBcn4dBfb43rV0KMar_tuNGkdzeZUt0PSNBpZf3Ob29Ckk2JjkL0FnBQGUioYR8kSlW_z4EZ0eNhJFk_nw2hhCu3nryNGHPnSIgoaj5tP3RXwAsjnfpw2bYHNupjRuegzoJtBklNNau8i6Qy3V7WmTuSeEHLXDjjeY9DK86ykZ/CsjY5izJOzFZhYZlVDFwlwuqXPcV75s7nQ9y3MnPgCA",
       "type": "Narrative",
       "year": "2019"
     },
@@ -701,7 +692,7 @@
       "slug": "compartment-33",
       "title": "Compartment 33",
       "description": "",
-      "image": "https://img.youtube.com/vi/gALNILVWeaY/maxresdefault.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/O--nHho9UHzWSyxSo7lwcw/YfdaVqrr0reT5EJaWoOUrpmbwUVmJAyvX-_zJQEbe4wxtHGeyssz4rvJeE3bY9wXUqVe2GxaGma8vGvlOkYTiwMzyReEuiSCKnv1rUFsLrEqRd6TNDbyHSgPOuudqM0TM6kcurvfDzqfgkan8sRjA9dATT8_Jo4lqwp3cyKYyAPNfiCR8EgabMR_rXalxR7v/DuRUP0BNpN5MVQ-VvCDJ-P6D-gmSC-EcHm26TW75DlU",
       "type": "Narrative",
       "year": "2019"
     },
@@ -782,7 +773,7 @@
       "slug": "frosstrom-leister-videos",
       "title": "Frosstrom & Leister Videos",
       "description": "",
-      "image": "https://vumbnail.com/568473834.jpg",
+      "image": "https://v5.airtableusercontent.com/v3/u/47/47/1764813600000/ruz87v3CUkUg13etsmNiFw/yKrRbTAmphEiluHYIBQwor4BoA2y8pXAewPUICvq-efSv-Nr_8heAgwhdieqLQQTuQbB5Fi4uNbQ5NuVKQ9Rp3P81dM7AcGaS7RQqbChauw1mgU2j-Ver1tDYDQqFgsyNMHECtvtNwqR1tzlPiRe5qujBOLfW98BxlGIbQTK-in1lY9nVoLYJdR59yP7RY4f/qufHVB84aTe1eC7jwER5iVi_8hk2GwnAHqxXJ7zBhNY",
       "type": "Commercial",
       "year": "2012"
     },
