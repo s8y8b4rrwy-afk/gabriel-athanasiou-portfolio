@@ -109,9 +109,15 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
                 )}
 
                 {/* Copyright row */}
-                <div className="mt-10 pt-6 border-t border-white/5 flex justify-end">
-                    <p className="text-gray-600 text-xs">
-                        © {currentYear} Designed by {footerName}.
+                <div className="mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row md:justify-between gap-2">
+                    {/* Trading name disclosure (UK legal requirement for sole traders) */}
+                    {config.tradingNameDisclosure && (
+                        <p className="text-gray-500 text-xs">
+                            {config.tradingNameDisclosure}
+                        </p>
+                    )}
+                    <p className="text-gray-600 text-xs md:ml-auto">
+                        © {currentYear} {footerName}
                     </p>
                 </div>
             </div>

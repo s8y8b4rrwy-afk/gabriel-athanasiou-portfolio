@@ -104,6 +104,9 @@ export interface HomeConfig {
   otherPortfolioUrl?: string;
   otherPortfolioLabel?: string;
   
+  // Legal/Business
+  tradingNameDisclosure?: string; // UK sole trader requirement, e.g. "Lemon Post is a trading name of Gavriil Athanasiou"
+  
   // Layout options
   aboutLayout?: string; // 'standard' for now
   

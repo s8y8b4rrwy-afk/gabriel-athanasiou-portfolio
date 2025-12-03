@@ -854,6 +854,7 @@ function getDefaultSettings() {
     otherPortfolioLabel: '',
     aboutLayout: 'standard',
     themeMode: 'dark',
+    tradingNameDisclosure: '',
     
     // Existing fields
     showreel: {
@@ -1545,6 +1546,9 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
   const otherPortfolioLabel = f['Other Portfolio Label'] || '';
   const aboutLayout = f['About Layout'] || 'standard';
   const themeMode = f['Theme Mode'] || 'dark';
+  
+  // Legal/Business: Trading name disclosure for UK sole traders
+  const tradingNameDisclosure = f['Trading Name Disclosure'] || '';
 
   // Portfolio owner name: use 'Owner Name' field first, then Site Title, then default
   let portfolioOwnerName = f['Owner Name'] || f['Portfolio Owner'] || siteTitle || '';
@@ -1571,6 +1575,7 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
     otherPortfolioLabel,
     aboutLayout,
     themeMode,
+    tradingNameDisclosure,
     
     // Existing fields
     showreel: {
