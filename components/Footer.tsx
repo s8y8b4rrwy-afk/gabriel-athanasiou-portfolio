@@ -9,6 +9,13 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ config }) => {
     const hasContact = config.contact?.email || config.contact?.instagram || config.contact?.vimeo || config.contact?.linkedin || config.contact?.imdb;
     const hasRepresentation = config.contact?.repUK || config.contact?.repUSA;
+    const hasOtherPortfolio = config.showOtherPortfolioLink && config.otherPortfolioUrl;
+    
+    // Get dynamic values from config
+    const footerName = config.navTitle || config.portfolioOwnerName || 'Gabriel Athanasiou';
+    const footerTitle = config.portfolioId === 'postproduction' 
+        ? 'Freelance Colourist & Editor' 
+        : 'Freelance Director';
     
     if (!hasContact && !hasRepresentation) return null;
 
@@ -21,9 +28,9 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 md:gap-12">
                     {/* Left: Name & Title */}
                     <div className="flex-shrink-0">
-                        <p className={`${THEME.typography.meta} text-white mb-2`}>Gabriel Athanasiou</p>
+                        <p className={`${THEME.typography.meta} text-white mb-2`}>{footerName}</p>
                         <p className="text-gray-400 text-sm">
-                            Freelance Director
+                            {footerTitle}
                             <span className="mx-2 text-gray-600">·</span>
                             <span className="italic">London</span>
                             <span className="text-gray-500 mx-1">&</span>
@@ -88,10 +95,23 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
                     </div>
                 </div>
 
+                {/* Other Portfolio Link (for cross-portfolio navigation) */}
+                {hasOtherPortfolio && (
+                    <div className="mt-8 pt-6 border-t border-white/5">
+                        <a 
+                            href={config.otherPortfolioUrl}
+                            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition group"
+                        >
+                            <span>→</span>
+                            <span>{config.otherPortfolioLabel || 'View Other Portfolio'}</span>
+                        </a>
+                    </div>
+                )}
+
                 {/* Copyright row */}
                 <div className="mt-10 pt-6 border-t border-white/5 flex justify-end">
                     <p className="text-gray-600 text-xs">
-                        © {currentYear} Designed by Gabriel Athanasiou.
+                        © {currentYear} Designed by {footerName}.
                     </p>
                 </div>
             </div>

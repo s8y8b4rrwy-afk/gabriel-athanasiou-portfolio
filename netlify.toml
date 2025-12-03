@@ -1,5 +1,8 @@
 [build]
-command = "npm run build"
+# Build command uses custom script that reads PORTFOLIO_MODE environment variable
+# For directing site: set PORTFOLIO_MODE=directing in Netlify env vars
+# For postprod site: set PORTFOLIO_MODE=postproduction in Netlify env vars
+command = "bash scripts/netlify-build.sh"
 functions = "netlify/functions"
 publish = "dist"
 # Build optimization: Only build production branch and deploy previews

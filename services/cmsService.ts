@@ -29,7 +29,9 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 
 // Cloudinary CDN URL for static portfolio data (primary source)
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
-const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data.json`;
+const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
+const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data-${PORTFOLIO_MODE}.json`;
+const LOCAL_DATA_URL = `/portfolio-data-${PORTFOLIO_MODE}.json`;
 
 // Generate cache-busting URL with timestamp
 const getCacheBustedUrl = (baseUrl: string): string => {
@@ -82,7 +84,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         
         // Fallback to local static file with cache-busting
         try {
-            const localUrl = getCacheBustedUrl('/portfolio-data.json');
+            const localUrl = getCacheBustedUrl(LOCAL_DATA_URL);
             const response = await fetch(localUrl, {
                 headers: {
                     'Accept': 'application/json',

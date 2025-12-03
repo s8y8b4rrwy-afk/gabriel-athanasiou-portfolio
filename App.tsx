@@ -87,9 +87,9 @@ export default function App() {
 
   return (
     <>
-      <GlobalStyles />
+      <GlobalStyles config={data.config} />
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
-      <Navigation showLinks={true} />
+      <Navigation showLinks={true} config={data.config} />
       
       <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-clip transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
         <main>
@@ -128,7 +128,7 @@ export default function App() {
               {/* ...existing code... */}
               <Route path="/" element={
                   <>
-                      <SEO />
+                      <SEO config={data.config} />
                       <HomeView 
                           projects={data.projects} 
                           posts={data.posts}
@@ -139,10 +139,11 @@ export default function App() {
               {/* ...existing code... */}
               <Route path="/work" element={
                   <>
-                      <SEO title="Filmography" />
+                      <SEO title={data.config?.workSectionLabel || "Filmography"} config={data.config} />
                       <IndexView 
                           projects={data.projects} 
                           onHover={setHoveredImage}
+                          config={data.config}
                       />
                   </>
               } />
@@ -154,25 +155,28 @@ export default function App() {
                       config={data.config}
                   />
               } />
-              {/* ...existing code... */}
-              <Route path="/journal" element={
-                  <>
-                      <SEO title="Journal" />
-                      <BlogView posts={data.posts} />
-                  </>
-              } />
-              {/* ...existing code... */}
-              <Route path="/journal/:slug" element={
-                  <BlogPostView 
-                      allPosts={data.posts}
-                      allProjects={data.projects}
-                      config={data.config}
-                  />
-              } />
+              {/* Journal routes - only render if hasJournal is true */}
+              {data.config?.hasJournal !== false && (
+                  <Route path="/journal" element={
+                      <>
+                          <SEO title="Journal" config={data.config} />
+                          <BlogView posts={data.posts} />
+                      </>
+                  } />
+              )}
+              {data.config?.hasJournal !== false && (
+                  <Route path="/journal/:slug" element={
+                      <BlogPostView 
+                          allPosts={data.posts}
+                          allProjects={data.projects}
+                          config={data.config}
+                      />
+                  } />
+              )}
               {/* ...existing code... */}
               <Route path="/about" element={
                    <>
-                      <SEO title="About" />
+                      <SEO title="About" config={data.config} />
                       <AboutView config={data.config} />
                   </>
               } />
@@ -182,6 +186,7 @@ export default function App() {
                           title="Game" 
                           description="Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"
                           image="https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg"
+                          config={data.config}
                       />
                       <GameView projects={data.projects} />
                   </>
@@ -191,7 +196,7 @@ export default function App() {
               {/* Fallback to Home */}
               <Route path="*" element={
                   <>
-                      <SEO />
+                      <SEO config={data.config} />
                       <HomeView 
                           projects={data.projects} 
                           posts={data.posts}

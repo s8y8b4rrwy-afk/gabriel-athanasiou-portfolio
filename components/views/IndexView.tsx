@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
-import { Project, ProjectType } from '../../types';
+import { Project, ProjectType, HomeConfig } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
@@ -11,6 +11,7 @@ import { OptimizedImage } from '../common/OptimizedImage';
 interface IndexViewProps { 
     projects: Project[]; 
     onHover: (image: { url: string | null; fallback: string | null }) => void;
+    config?: HomeConfig;
 }
 
 /**
@@ -22,7 +23,7 @@ interface IndexViewProps {
  * 
  * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
  */
-export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
+export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -40,6 +41,55 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     // Session Storage Persistence
     const [filter, setFilter] = useState<string>(() => sessionStorage.getItem('filmographyFilter') || THEME.filmography.defaultTab);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => (sessionStorage.getItem('filmographyView') as 'list' | 'grid') || 'grid');
+    
+    // Role filter for post-production portfolio
+    const showRoleFilter = config?.showRoleFilter === true;
+    const [roleFilter, setRoleFilter] = useState<string>('All');
+    
+    // Sorting state for table columns (Excel-like: null → asc → desc → null)
+    type SortColumn = 'year' | 'title' | 'client' | 'genre' | 'type' | null;
+    type SortDirection = 'asc' | 'desc' | null;
+    const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn !== column) {
+            // New column: start with ascending
+            setSortColumn(column);
+            setSortDirection('asc');
+        } else if (sortDirection === 'asc') {
+            // Same column, was asc: go to desc
+            setSortDirection('desc');
+        } else if (sortDirection === 'desc') {
+            // Same column, was desc: clear sort
+            setSortColumn(null);
+            setSortDirection(null);
+        }
+    };
+    
+    const SortIndicator: React.FC<{ column: SortColumn }> = ({ column }) => {
+        if (sortColumn !== column) {
+            return <span className="ml-1 opacity-0 group-hover:opacity-30 transition-opacity">↕</span>;
+        }
+        return (
+            <span className="ml-1 opacity-100">
+                {sortDirection === 'asc' ? '↑' : '↓'}
+            </span>
+        );
+    };
+    
+    // Display labels for roles (role name → display label)
+    const roleDisplayLabels: Record<string, string> = {
+        'All': 'All',
+        'Colourist': 'Colour Grading',
+        'Editor': 'Editing',
+        'Beauty & VFX Work': 'Beauty & VFX',
+        'VFX': 'Visual Effects',
+        'Sound Design': 'Sound Design',
+        'Motion Graphics': 'Motion Graphics',
+    };
+    
+    const getRoleDisplayLabel = (role: string) => roleDisplayLabels[role] || role;
 
     // Adaptive stagger state
     const [staggerDelay, setStaggerDelay] = useState<number>(THEME.animation.staggerDelay || 60);
@@ -47,6 +97,22 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
     useEffect(() => {
         sessionStorage.setItem('filmographyFilter', filter);
     }, [filter]);
+    
+    // Get available roles from projects (for role filter)
+    const availableRoles = useMemo(() => {
+        if (!showRoleFilter) return [];
+        const rolesSet = new Set<string>();
+        projects.forEach(p => {
+            // Credits contain role/name pairs - extract unique roles that match allowedRoles
+            const allowedRoles = config?.allowedRoles || [];
+            p.credits?.forEach(credit => {
+                if (allowedRoles.includes(credit.role)) {
+                    rolesSet.add(credit.role);
+                }
+            });
+        });
+        return ['All', ...Array.from(rolesSet).sort()];
+    }, [projects, showRoleFilter, config?.allowedRoles]);
 
     useEffect(() => {
         sessionStorage.setItem('filmographyView', viewMode);
@@ -74,24 +140,108 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
         return projects.some(p => p.type === type);
     });
 
-    const displayProjects = filter === ProjectType.ALL 
+    // Filter projects by type first
+    const typeFilteredProjects = filter === ProjectType.ALL 
         ? projects 
         : projects.filter(p => p.type === filter);
+    
+    // Then filter by role if role filter is active and set, then apply sorting
+    const displayProjects = useMemo(() => {
+        let filtered = typeFilteredProjects;
+        
+        // Apply role filter
+        if (showRoleFilter && roleFilter !== 'All') {
+            filtered = filtered.filter(p => 
+                p.credits?.some(credit => credit.role === roleFilter)
+            );
+        }
+        
+        // Apply sorting if active
+        if (sortColumn && sortDirection) {
+            filtered = [...filtered].sort((a, b) => {
+                let aVal: string | undefined;
+                let bVal: string | undefined;
+                
+                switch (sortColumn) {
+                    case 'year':
+                        aVal = a.year || '';
+                        bVal = b.year || '';
+                        break;
+                    case 'title':
+                        aVal = a.title?.toLowerCase() || '';
+                        bVal = b.title?.toLowerCase() || '';
+                        break;
+                    case 'client':
+                        aVal = (a.type === 'Narrative' ? '' : (a.client || a.productionCompany || '')).toLowerCase();
+                        bVal = (b.type === 'Narrative' ? '' : (b.client || b.productionCompany || '')).toLowerCase();
+                        break;
+                    case 'genre':
+                        aVal = (a.genre && a.genre.length > 0 ? a.genre[0] : '').toLowerCase();
+                        bVal = (b.genre && b.genre.length > 0 ? b.genre[0] : '').toLowerCase();
+                        break;
+                    case 'type':
+                        aVal = (a.kinds && a.kinds.length > 0 ? a.kinds.join(' / ') : '').toLowerCase();
+                        bVal = (b.kinds && b.kinds.length > 0 ? b.kinds.join(' / ') : '').toLowerCase();
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                // Handle empty values - push them to the end
+                if (!aVal && bVal) return sortDirection === 'asc' ? 1 : -1;
+                if (aVal && !bVal) return sortDirection === 'asc' ? -1 : 1;
+                if (!aVal && !bVal) return 0;
+                
+                const comparison = aVal.localeCompare(bVal);
+                return sortDirection === 'asc' ? comparison : -comparison;
+            });
+        }
+        
+        return filtered;
+    }, [typeFilteredProjects, showRoleFilter, roleFilter, sortColumn, sortDirection]);
 
     const cols = THEME.filmography.list.cols;
     const showCols = THEME.filmography.list;
 
     return (
-        <section className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
+        <section className={`pt-24 md:pt-28 ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-center md:items-center mb-20 gap-8">
-                    {/* Category Filter */}
-                    <div className="relative flex-1 w-full md:w-auto">
-                        <div className={`flex gap-8 ${THEME.typography.meta} text-white overflow-x-auto pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
-                            {availableTypes.map((type) => (
-                                <button 
-                                    key={type}
-                                    onClick={() => setFilter(type)} 
+                <div className="flex flex-col gap-6 mb-20">
+                    {/* Role Filter (Post-Production Only) - Above Category Filter */}
+                    {showRoleFilter && availableRoles.length > 1 && (
+                        <>
+                            <div className="relative flex-1 w-full md:w-auto">
+                                <div className={`flex gap-8 ${THEME.typography.meta} text-white overflow-x-auto pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
+                                    {availableRoles.map((role) => (
+                                        <button 
+                                            key={role}
+                                            onClick={() => setRoleFilter(role)}
+                                            className={`transition-all ${THEME.animation.fast} whitespace-nowrap ${
+                                                roleFilter === role 
+                                                    ? 'opacity-100 border-b border-white pb-1' 
+                                                    : 'opacity-60 hover:opacity-100'
+                                            }`}
+                                        >
+                                            {getRoleDisplayLabel(role)}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-bg-main to-transparent pointer-events-none z-20 md:hidden"></div>
+                            </div>
+                            {/* Separator line between role and type filters */}
+                            <div className="w-full h-px bg-white/10 filter-separator"></div>
+                        </>
+                    )}
+
+                    {/* Filters Row */}
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-center gap-8">
+                        {/* Category Filter */}
+                        <div className="relative flex-1 w-full md:w-auto">
+                            <div className={`flex gap-8 ${THEME.typography.meta} text-white overflow-x-auto pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
+                                {availableTypes.map((type) => (
+                                    <button 
+                                        key={type}
+                                        onClick={() => setFilter(type)} 
                                     className={`transition-all ${THEME.animation.fast} whitespace-nowrap ${filter === type ? 'opacity-100 border-b border-white pb-1' : 'opacity-60 hover:opacity-100'}`}
                                 >
                                     {type}
@@ -118,24 +268,68 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                          </button>
                     </div>
                 </div>
+                </div>
 
                 {viewMode === 'list' ? (
                     // TABLE VIEW
                     <>
                         {/* Desktop Headers */}
                         <div className={`hidden md:grid grid-cols-12 border-b border-white/20 pb-4 ${THEME.typography.meta} text-text-muted mb-2 animate-fade-in-up`}>
-                            {showCols.showYear && <div className={cols.year}>Year</div>}
-                            <div className={cols.title}>Project</div>
-                            {showCols.showClient && <div className={cols.client}>Client</div>}
-                            {showCols.showGenre && <div className={cols.genre}>Genre</div>}
-                            {showCols.showType && <div className={`${cols.type} text-right`}>Type</div>}
+                            {showCols.showYear && (
+                                <button 
+                                    className={`${cols.year} group flex items-center cursor-pointer hover:text-white transition-colors text-left`}
+                                    onClick={() => handleSort('year')}
+                                >
+                                    Year<SortIndicator column="year" />
+                                </button>
+                            )}
+                            <button 
+                                className={`${cols.title} group flex items-center cursor-pointer hover:text-white transition-colors text-left`}
+                                onClick={() => handleSort('title')}
+                            >
+                                Project<SortIndicator column="title" />
+                            </button>
+                            {showCols.showClient && (
+                                <button 
+                                    className={`${cols.client} group flex items-center cursor-pointer hover:text-white transition-colors text-left`}
+                                    onClick={() => handleSort('client')}
+                                >
+                                    Client<SortIndicator column="client" />
+                                </button>
+                            )}
+                            {showCols.showGenre && (
+                                <button 
+                                    className={`${cols.genre} group flex items-center cursor-pointer hover:text-white transition-colors text-left`}
+                                    onClick={() => handleSort('genre')}
+                                >
+                                    Genre<SortIndicator column="genre" />
+                                </button>
+                            )}
+                            {showCols.showType && (
+                                <button 
+                                    className={`${cols.type} group flex items-center justify-end cursor-pointer hover:text-white transition-colors text-right`}
+                                    onClick={() => handleSort('type')}
+                                >
+                                    Type<SortIndicator column="type" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Mobile Headers */}
                          <div className={`md:hidden grid grid-cols-12 border-b border-white/20 pb-4 ${THEME.typography.meta} text-text-muted mb-2 animate-fade-in-up`}>
                             {(showCols.showThumbnailMobile || showCols.showYear) && <div className={cols.image}></div>}
-                            <div className={cols.title}>Project</div>
-                            <div className={`${cols.type} text-right`}>Type</div>
+                            <button 
+                                className={`${cols.title} group flex items-center cursor-pointer hover:text-white transition-colors text-left`}
+                                onClick={() => handleSort('title')}
+                            >
+                                Project<SortIndicator column="title" />
+                            </button>
+                            <button 
+                                className={`${cols.type} group flex items-center justify-end cursor-pointer hover:text-white transition-colors text-right`}
+                                onClick={() => handleSort('type')}
+                            >
+                                Type<SortIndicator column="type" />
+                            </button>
                         </div>
 
                         <div key={filter}>
@@ -221,7 +415,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover }) => {
                                     {/* ...existing code... */}
                                     {showCols.showType && (
                                         <div className={`${cols.type} text-right text-[9px] uppercase tracking-[0.2em] opacity-60 group-hover:opacity-100 text-white`}>
-                                            {p.type === 'Uncategorized' ? '-' : p.type}
+                                            {p.kinds && p.kinds.length > 0 ? p.kinds.join(' / ') : '-'}
                                         </div>
                                     )}
                                 </div>

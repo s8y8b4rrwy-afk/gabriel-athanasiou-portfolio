@@ -79,6 +79,35 @@ export interface BlogPost {
 }
 
 export interface HomeConfig {
+  // Portfolio identification
+  portfolioId?: string; // 'directing' or 'postproduction'
+  
+  // Branding
+  siteTitle?: string; // Browser tab title, footer text
+  navTitle?: string; // Text shown in navigation bar
+  logo?: string; // Portfolio logo image URL
+  favicon?: string; // Browser favicon URL
+  fontFamily?: string; // Google Font name (e.g., 'Space Grotesk')
+  
+  // SEO
+  seoTitle?: string; // Meta title for search engines
+  seoDescription?: string; // Meta description for search engines
+  domain?: string; // For canonical URLs
+  
+  // Feature flags
+  workSectionLabel?: string; // 'Filmography' or 'All Work'
+  hasJournal?: boolean; // Whether to show journal section
+  showRoleFilter?: boolean; // Whether to show role-based filter on work page
+  
+  // Cross-portfolio linking
+  showOtherPortfolioLink?: boolean;
+  otherPortfolioUrl?: string;
+  otherPortfolioLabel?: string;
+  
+  // Layout options
+  aboutLayout?: string; // 'standard' for now
+  
+  // Existing fields
   showreel?: {
     enabled: boolean;
     videoUrl: string;
@@ -102,6 +131,7 @@ export interface HomeConfig {
   defaultOgImage?: string;
   portfolioOwnerName?: string;
   lastModified?: string;
+  themeMode?: 'dark' | 'light';
 }
 
 export enum ViewState {

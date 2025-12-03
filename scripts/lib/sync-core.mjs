@@ -36,6 +36,7 @@ import {
  * @param {boolean} config.verbose - Enable verbose logging
  * @param {boolean} config.forceFullSync - Force full sync, bypassing incremental checks
  * @param {boolean} config.skipFileWrites - Skip writing files to disk (for serverless environments)
+ * @param {string} config.portfolioMode - Portfolio mode: 'directing' or 'postproduction' (default: 'directing')
  * @returns {Promise<Object>} Sync results with success status and generated data
  */
 export async function syncAllData(config) {
@@ -45,7 +46,8 @@ export async function syncAllData(config) {
     outputDir = 'public',
     verbose = false,
     forceFullSync = false,
-    skipFileWrites = false
+    skipFileWrites = false,
+    portfolioMode = 'directing'
   } = config;
 
   if (!airtableToken || !airtableBaseId) {
@@ -71,9 +73,12 @@ export async function syncAllData(config) {
   };
 
   try {
-    if (verbose) console.log('[sync-core] 🔄 Starting data sync...');
+    if (verbose) console.log(`[sync-core] 🔄 Starting data sync for portfolio mode: ${portfolioMode}...`);
 
-    const outputFile = path.join(outputDir, 'portfolio-data.json');
+    // Use portfolio-specific output file name
+    const outputFileName = `portfolio-data-${portfolioMode}.json`;
+    const outputFile = path.join(outputDir, outputFileName);
+    if (verbose) console.log(`[sync-core] 📁 Output file: ${outputFileName}`);
     
     // Load existing portfolio data for incremental sync
     const existingData = loadExistingData(outputFile);
@@ -216,7 +221,7 @@ export async function syncAllData(config) {
       const cloudinaryMapping = loadCloudinaryMapping(outputDir);
       
       // Process records
-      results.config = processConfigRecords(rawRecords.Settings || [], cloudinaryMapping, verbose);
+      results.config = processConfigRecords(rawRecords.Settings || [], cloudinaryMapping, verbose, portfolioMode);
       if (verbose) console.log('[sync-core] ✅ Processed config/settings data');
       
       results.projects = await processProjectRecords(
@@ -225,12 +230,19 @@ export async function syncAllData(config) {
         clientsMap,
         cloudinaryMapping,
         results.config,
-        verbose
+        verbose,
+        portfolioMode
       );
       if (verbose) console.log(`[sync-core] ✅ Processed ${results.projects.length} projects`);
       
-      results.journal = processJournalRecords(rawRecords.Journal || [], cloudinaryMapping, verbose);
-      if (verbose) console.log(`[sync-core] ✅ Processed ${results.journal.length} journal posts`);
+      // Conditionally process journal based on hasJournal flag
+      if (results.config.hasJournal) {
+        results.journal = processJournalRecords(rawRecords.Journal || [], cloudinaryMapping, verbose);
+        if (verbose) console.log(`[sync-core] ✅ Processed ${results.journal.length} journal posts`);
+      } else {
+        results.journal = [];
+        if (verbose) console.log(`[sync-core] ⏭️ Skipped journal processing (hasJournal=false)`);
+      }
       
       // Build sets of changed record IDs for incremental Cloudinary sync
       const changedProjectIds = new Set([
@@ -274,6 +286,7 @@ export async function syncAllData(config) {
         projects: cleanProcessedData(results.projects),
         posts: cleanProcessedData(results.journal),
         config: results.config,
+        portfolioMode: portfolioMode,
         lastUpdated: results.timestamp,
         version: '1.0',
         source: 'build-time-sync',
@@ -329,7 +342,7 @@ export async function syncAllData(config) {
       };
 
       // Process config/settings data FIRST
-      results.config = processConfigRecords(settingsRecords, cloudinaryMapping, verbose);
+      results.config = processConfigRecords(settingsRecords, cloudinaryMapping, verbose, portfolioMode);
       if (verbose) console.log('[sync-core] ✅ Processed config/settings data');
 
       // Process projects
@@ -339,13 +352,19 @@ export async function syncAllData(config) {
         clientsMap,
         cloudinaryMapping,
         results.config,
-        verbose
+        verbose,
+        portfolioMode
       );
       if (verbose) console.log(`[sync-core] ✅ Processed ${results.projects.length} projects`);
 
-      // Process journal posts
-      results.journal = processJournalRecords(journalRecords, cloudinaryMapping, verbose);
-      if (verbose) console.log(`[sync-core] ✅ Processed ${results.journal.length} journal posts`);
+      // Conditionally process journal based on hasJournal flag
+      if (results.config.hasJournal) {
+        results.journal = processJournalRecords(journalRecords, cloudinaryMapping, verbose);
+        if (verbose) console.log(`[sync-core] ✅ Processed ${results.journal.length} journal posts`);
+      } else {
+        results.journal = [];
+        if (verbose) console.log(`[sync-core] ⏭️ Skipped journal processing (hasJournal=false)`);
+      }
       
       // Upload images to Cloudinary (incremental detection by attachment ID)
       const updatedMapping = await syncImagesToCloudinary(
@@ -393,6 +412,7 @@ export async function syncAllData(config) {
         projects: cleanProcessedData(results.projects),
         posts: cleanProcessedData(results.journal),
         config: results.config,
+        portfolioMode: portfolioMode,
         lastUpdated: results.timestamp,
         version: '1.0',
         source: 'build-time-sync',
@@ -429,8 +449,378 @@ export async function syncAllData(config) {
 }
 
 /**
- * Clean processed data by removing internal _raw* fields
+ * Sync BOTH portfolios with a single Airtable fetch
+ * This saves ~50% of Airtable API calls by fetching once and writing two files
+ * 
+ * @param {Object} config - Configuration object (same as syncAllData, but portfolioMode is ignored)
+ * @returns {Promise<Object>} Sync results for both portfolios
  */
+export async function syncBothPortfolios(config) {
+  const {
+    airtableToken,
+    airtableBaseId,
+    outputDir = 'public',
+    verbose = false,
+    forceFullSync = false,
+    skipFileWrites = false
+  } = config;
+
+  if (!airtableToken || !airtableBaseId) {
+    throw new Error('Missing required Airtable credentials');
+  }
+
+  const portfolioModes = ['directing', 'postproduction'];
+  const combinedResults = {
+    success: false,
+    portfolios: {},
+    errors: [],
+    timestamp: new Date().toISOString(),
+    syncStats: {
+      mode: 'full',
+      apiCalls: 0,
+      apiCallsSaved: 0
+    }
+  };
+
+  try {
+    if (verbose) console.log('[sync-core] 🔄 Starting DUAL portfolio sync (fetch once, write both)...');
+
+    // Load existing data for BOTH portfolios to check for changes
+    const existingDataDirecting = loadExistingData(path.join(outputDir, 'portfolio-data-directing.json'));
+    const existingDataPostprod = loadExistingData(path.join(outputDir, 'portfolio-data-postproduction.json'));
+    
+    // Use the most recent metadata for change detection
+    const previousMetadata = existingDataDirecting?.syncMetadata || existingDataPostprod?.syncMetadata;
+    const useIncrementalSync = !forceFullSync && previousMetadata && previousMetadata.timestamps;
+
+    let rawRecords;
+    let currentTimestamps;
+    let changes = null;
+
+    if (useIncrementalSync) {
+      if (verbose) console.log('[sync-core] 🔍 Checking for changes (incremental mode)...');
+      
+      // Fetch timestamps only (lightweight check) - ONE set of API calls for both portfolios
+      const [projectsTimestamps, journalTimestamps, festivalsTimestamps, clientsTimestamps, settingsTimestamps] = await Promise.all([
+        fetchTimestamps('Projects', airtableToken, airtableBaseId),
+        fetchTimestamps('Journal', airtableToken, airtableBaseId),
+        fetchTimestamps('Festivals', airtableToken, airtableBaseId),
+        fetchTimestamps('Client Book', airtableToken, airtableBaseId),
+        fetchTimestamps('Settings', airtableToken, airtableBaseId)
+      ]);
+      
+      combinedResults.syncStats.apiCalls += 5;
+      
+      currentTimestamps = {
+        Projects: projectsTimestamps,
+        Journal: journalTimestamps,
+        Festivals: festivalsTimestamps,
+        'Client Book': clientsTimestamps,
+        Settings: settingsTimestamps
+      };
+      
+      // Check for changes
+      changes = checkForChanges(previousMetadata, currentTimestamps);
+      
+      const totalChanges = Object.values(changes).reduce((sum, table) => 
+        sum + table.changed.length + table.new.length + table.deleted.length, 0);
+      
+      if (totalChanges === 0) {
+        // No changes detected - return cached data for both portfolios
+        if (verbose) console.log('[sync-core] ✅ No changes detected, using cached data for both portfolios');
+        
+        combinedResults.success = true;
+        combinedResults.syncStats.mode = 'cached';
+        combinedResults.syncStats.apiCallsSaved = 45;
+        combinedResults.portfolios = {
+          directing: {
+            projects: existingDataDirecting?.projects || [],
+            journal: existingDataDirecting?.posts || [],
+            config: existingDataDirecting?.config || null
+          },
+          postproduction: {
+            projects: existingDataPostprod?.projects || [],
+            journal: existingDataPostprod?.posts || [],
+            config: existingDataPostprod?.config || null
+          }
+        };
+        
+        return combinedResults;
+      }
+      
+      // Changes detected
+      if (verbose) {
+        console.log(`[sync-core] 📊 Changes detected:`);
+        for (const [table, tableChanges] of Object.entries(changes)) {
+          const total = tableChanges.changed.length + tableChanges.new.length + tableChanges.deleted.length;
+          if (total > 0) {
+            console.log(`  ${table}: ${tableChanges.new.length} new, ${tableChanges.changed.length} changed, ${tableChanges.deleted.length} deleted`);
+          }
+        }
+      }
+      
+      combinedResults.syncStats.mode = 'incremental';
+      
+      // Load existing raw records to merge with changes
+      const existingRawRecords = existingDataDirecting?._rawRecords || existingDataPostprod?._rawRecords || {
+        Projects: [],
+        Journal: [],
+        Festivals: [],
+        'Client Book': [],
+        Settings: []
+      };
+      
+      // Fetch changed records for each table - ONE set of fetches for both portfolios
+      const fetchPromises = [];
+      const tableNames = ['Projects', 'Journal', 'Festivals', 'Client Book', 'Settings'];
+      const sortFields = { Projects: 'Release Date', Journal: 'Date', Festivals: null, 'Client Book': null, Settings: null };
+      
+      for (const tableName of tableNames) {
+        const tableChanges = changes[tableName];
+        const changedIds = [...tableChanges.new, ...tableChanges.changed];
+        
+        if (changedIds.length > 0) {
+          fetchPromises.push(
+            fetchChangedRecords(tableName, changedIds, sortFields[tableName], airtableToken, airtableBaseId)
+              .then(records => ({ tableName, records }))
+          );
+          combinedResults.syncStats.apiCalls++;
+        }
+      }
+      
+      const changedRecordsResults = await Promise.all(fetchPromises);
+      
+      // Merge changed records with existing records
+      rawRecords = { ...existingRawRecords };
+      
+      for (const { tableName, records } of changedRecordsResults) {
+        const existingRecords = rawRecords[tableName] || [];
+        const changedIds = new Set(records.map(r => r.id));
+        const deletedIds = new Set(changes[tableName].deleted);
+        
+        const unchangedRecords = existingRecords.filter(r => 
+          !changedIds.has(r.id) && !deletedIds.has(r.id)
+        );
+        
+        rawRecords[tableName] = [...unchangedRecords, ...records];
+      }
+      
+      // Handle tables with only deletions
+      for (const tableName of tableNames) {
+        const deletedIds = new Set(changes[tableName].deleted);
+        if (deletedIds.size > 0 && !changedRecordsResults.some(r => r.tableName === tableName)) {
+          const existingRecords = rawRecords[tableName] || [];
+          rawRecords[tableName] = existingRecords.filter(r => !deletedIds.has(r.id));
+        }
+      }
+      
+      combinedResults.syncStats.apiCallsSaved = Math.max(0, 50 - combinedResults.syncStats.apiCalls);
+      
+    } else {
+      // FULL SYNC MODE - fetch everything once
+      if (forceFullSync && verbose) {
+        console.log('[sync-core] 🔄 Force full sync requested');
+      } else if (verbose) {
+        console.log('[sync-core] 🔄 Full sync mode (no previous metadata)');
+      }
+      
+      combinedResults.syncStats.mode = 'full';
+      
+      // Fetch all records - ONE set of API calls for both portfolios
+      const [projectsRecords, journalRecords, festivalsRecords, clientsRecords, settingsRecords] = await Promise.all([
+        fetchAirtableTable('Projects', 'Release Date', airtableToken, airtableBaseId),
+        fetchAirtableTable('Journal', 'Date', airtableToken, airtableBaseId),
+        fetchAirtableTable('Festivals', null, airtableToken, airtableBaseId),
+        fetchAirtableTable('Client Book', null, airtableToken, airtableBaseId),
+        fetchAirtableTable('Settings', null, airtableToken, airtableBaseId)
+      ]);
+      combinedResults.syncStats.apiCalls += 5;
+      
+      rawRecords = {
+        Projects: projectsRecords,
+        Journal: journalRecords,
+        Festivals: festivalsRecords,
+        'Client Book': clientsRecords,
+        Settings: settingsRecords
+      };
+      
+      // Fetch timestamps for next incremental sync
+      const [projectsTimestamps, journalTimestamps, festivalsTimestamps, clientsTimestamps, settingsTimestamps] = await Promise.all([
+        fetchTimestamps('Projects', airtableToken, airtableBaseId),
+        fetchTimestamps('Journal', airtableToken, airtableBaseId),
+        fetchTimestamps('Festivals', airtableToken, airtableBaseId),
+        fetchTimestamps('Client Book', airtableToken, airtableBaseId),
+        fetchTimestamps('Settings', airtableToken, airtableBaseId)
+      ]);
+      combinedResults.syncStats.apiCalls += 5;
+      
+      currentTimestamps = {
+        Projects: projectsTimestamps,
+        Journal: journalTimestamps,
+        Festivals: festivalsTimestamps,
+        'Client Book': clientsTimestamps,
+        Settings: settingsTimestamps
+      };
+    }
+
+    // Build lookup maps (shared between both portfolios)
+    const festivalsMap = {};
+    (rawRecords.Festivals || []).forEach(r => {
+      festivalsMap[r.id] = r.fields['Display Name'] || r.fields['Name'] || r.fields['Award'] || 'Unknown Award';
+    });
+    
+    const clientsMap = {};
+    (rawRecords['Client Book'] || []).forEach(r => {
+      clientsMap[r.id] = r.fields['Company'] || r.fields['Company Name'] || r.fields['Client'] || 'Unknown';
+    });
+    
+    if (verbose) console.log('[sync-core] ✅ Built lookup maps from fetched data');
+    
+    // Load Cloudinary mapping (shared)
+    const cloudinaryMapping = loadCloudinaryMapping(outputDir);
+    
+    // Build timestamp map for metadata
+    const timestampMap = {
+      Projects: {},
+      Journal: {},
+      Festivals: {},
+      'Client Book': {},
+      Settings: {}
+    };
+    
+    if (currentTimestamps) {
+      currentTimestamps.Projects?.forEach(({ id, lastModified }) => { timestampMap.Projects[id] = lastModified; });
+      currentTimestamps.Journal?.forEach(({ id, lastModified }) => { timestampMap.Journal[id] = lastModified; });
+      currentTimestamps.Festivals?.forEach(({ id, lastModified }) => { timestampMap.Festivals[id] = lastModified; });
+      currentTimestamps['Client Book']?.forEach(({ id, lastModified }) => { timestampMap['Client Book'][id] = lastModified; });
+      currentTimestamps.Settings?.forEach(({ id, lastModified }) => { timestampMap.Settings[id] = lastModified; });
+    }
+
+    // Process and write EACH portfolio file
+    for (const portfolioMode of portfolioModes) {
+      if (verbose) console.log(`\n[sync-core] 📂 Processing portfolio: ${portfolioMode}`);
+      
+      const outputFileName = `portfolio-data-${portfolioMode}.json`;
+      const outputFile = path.join(outputDir, outputFileName);
+      
+      // Process config for this portfolio
+      const portfolioConfig = processConfigRecords(rawRecords.Settings || [], cloudinaryMapping, verbose, portfolioMode);
+      if (verbose) console.log(`[sync-core] ✅ Processed config for ${portfolioMode}`);
+      
+      // Process projects for this portfolio
+      const portfolioProjects = await processProjectRecords(
+        rawRecords.Projects || [],
+        festivalsMap,
+        clientsMap,
+        cloudinaryMapping,
+        portfolioConfig,
+        verbose,
+        portfolioMode
+      );
+      if (verbose) console.log(`[sync-core] ✅ Processed ${portfolioProjects.length} projects for ${portfolioMode}`);
+      
+      // Process journal (only for directing or if hasJournal is true)
+      let portfolioJournal = [];
+      if (portfolioConfig.hasJournal) {
+        portfolioJournal = processJournalRecords(rawRecords.Journal || [], cloudinaryMapping, verbose);
+        if (verbose) console.log(`[sync-core] ✅ Processed ${portfolioJournal.length} journal posts for ${portfolioMode}`);
+      } else {
+        if (verbose) console.log(`[sync-core] ⏭️ Skipped journal for ${portfolioMode} (hasJournal=false)`);
+      }
+      
+      // Store results
+      combinedResults.portfolios[portfolioMode] = {
+        projects: portfolioProjects,
+        journal: portfolioJournal,
+        config: portfolioConfig
+      };
+      
+      // Build portfolio data object
+      const portfolioData = {
+        projects: cleanProcessedData(portfolioProjects),
+        posts: cleanProcessedData(portfolioJournal),
+        config: portfolioConfig,
+        portfolioMode: portfolioMode,
+        lastUpdated: combinedResults.timestamp,
+        version: '1.0',
+        source: 'build-time-sync',
+        _rawRecords: rawRecords,
+        syncMetadata: {
+          lastSync: combinedResults.timestamp,
+          timestamps: timestampMap
+        }
+      };
+      
+      // Write file
+      if (!skipFileWrites) {
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(outputFile, JSON.stringify(portfolioData, null, 2));
+        if (verbose) console.log(`[sync-core] ✅ Wrote ${outputFileName}`);
+      } else if (verbose) {
+        console.log(`[sync-core] ⏭️ Skipped writing ${outputFileName} (serverless mode)`);
+      }
+    }
+
+    // Sync images to Cloudinary (once, covering all projects from both portfolios)
+    // Combine project IDs from both portfolios for Cloudinary sync
+    const allProjects = [
+      ...combinedResults.portfolios.directing.projects,
+      ...combinedResults.portfolios.postproduction.projects
+    ];
+    // Deduplicate by project ID (some projects appear in both portfolios)
+    const uniqueProjects = [];
+    const seenIds = new Set();
+    for (const project of allProjects) {
+      if (!seenIds.has(project.id)) {
+        seenIds.add(project.id);
+        uniqueProjects.push(project);
+      }
+    }
+    
+    const allJournal = combinedResults.portfolios.directing.journal; // Journal only on directing
+    
+    // Determine changed IDs for incremental Cloudinary sync
+    let changedProjectIds = null;
+    let changedJournalIds = null;
+    if (changes) {
+      changedProjectIds = new Set([...changes.Projects.new, ...changes.Projects.changed]);
+      changedJournalIds = new Set([...changes.Journal.new, ...changes.Journal.changed]);
+    }
+    
+    const updatedMapping = await syncImagesToCloudinary(
+      uniqueProjects,
+      allJournal,
+      cloudinaryMapping,
+      verbose,
+      changedProjectIds,
+      changedJournalIds
+    );
+    
+    if (updatedMapping && !skipFileWrites) {
+      saveCloudinaryMapping(outputDir, updatedMapping);
+      if (verbose) console.log(`[sync-core] ✅ Saved Cloudinary mapping`);
+    }
+
+    combinedResults.success = true;
+    if (verbose) {
+      console.log(`\n[sync-core] ✅ Dual portfolio sync complete!`);
+      console.log(`[sync-core]    - API calls: ${combinedResults.syncStats.apiCalls}`);
+      console.log(`[sync-core]    - API calls saved vs separate syncs: ~${combinedResults.syncStats.apiCalls} (50% reduction)`);
+    }
+    
+    return combinedResults;
+
+  } catch (error) {
+    combinedResults.errors.push(error.message);
+    console.error('[sync-core] ❌ Dual sync failed:', error.message);
+    
+    if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+      error.isRateLimit = true;
+    }
+    
+    throw error;
+  }
+}
 function cleanProcessedData(data) {
   return JSON.parse(JSON.stringify(data, (key, value) => {
     // Remove any keys starting with underscore (internal fields)
@@ -446,6 +836,26 @@ function cleanProcessedData(data) {
  */
 function getDefaultSettings() {
   return {
+    // Multi-portfolio fields
+    portfolioId: 'directing',
+    siteTitle: '',
+    navTitle: '',
+    seoTitle: '',
+    seoDescription: '',
+    domain: '',
+    logo: '',
+    favicon: '',
+    fontFamily: '',
+    workSectionLabel: 'Filmography',
+    hasJournal: true,
+    showRoleFilter: false,
+    showOtherPortfolioLink: false,
+    otherPortfolioUrl: '',
+    otherPortfolioLabel: '',
+    aboutLayout: 'standard',
+    themeMode: 'dark',
+    
+    // Existing fields
     showreel: {
       enabled: false,
       videoUrl: '',
@@ -781,14 +1191,19 @@ function loadExistingData(filePath) {
  * @param {Object} cloudinaryMapping - Cloudinary URL mapping
  * @param {Object} config - Settings/config data
  * @param {boolean} verbose - Enable verbose logging
+ * @param {string} portfolioMode - Portfolio mode: 'directing' or 'postproduction'
  * @returns {Promise<Array>} Processed project objects
  */
-async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloudinaryMapping, config, verbose) {
+async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloudinaryMapping, config, verbose, portfolioMode = 'directing') {
   const projects = [];
   
   // Extract owner info from config
   const ownerName = config?.portfolioOwnerName || '';
   const allowedRoles = config?.allowedRoles || [];
+  
+  // Determine which Display Status field to use based on portfolio mode
+  const displayStatusField = portfolioMode === 'postproduction' ? 'Display Status (Post)' : 'Display Status';
+  if (verbose) console.log(`[sync-core] Using display status field: ${displayStatusField}`);
   
   // Build cloudinary lookup map
   const cloudinaryMap = {};
@@ -801,9 +1216,20 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
   for (const r of rawRecords) {
     const f = r.fields || {};
     
-    // Check Display Status field
-    const displayStatus = f['Display Status'] || '';
+    // Check Display Status field (using the correct one based on portfolio mode)
+    const displayStatus = f[displayStatusField] || '';
     if (displayStatus === 'Hidden' || !displayStatus) continue;
+    
+    // Also check that the project's Role matches the portfolio's allowedRoles
+    const roleField = f['Role'] || null;
+    if (allowedRoles.length > 0 && roleField) {
+      const projectRoles = Array.isArray(roleField) ? roleField : [roleField];
+      const hasMatchingRole = projectRoles.some(r => allowedRoles.includes(r));
+      if (!hasMatchingRole) continue; // Skip projects that don't match any allowed role
+    } else if (allowedRoles.length > 0) {
+      // If allowedRoles is set but project has no Role, skip it
+      continue;
+    }
 
     const rawTitle = f['Name'] || 'Untitled';
     const title = normalizeTitle(rawTitle);
@@ -829,8 +1255,8 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
     const extraCredits = parseCreditsText(rawCredits);
     
     // Prepend owner's credits based on Role field and allowed roles
+    // (roleField was already defined above for role filtering)
     const ownerCredits = [];
-    const roleField = f['Role'] || null;
     if (ownerName && allowedRoles.length > 0 && roleField) {
       // Role field might be a string or array (depends on Airtable field type)
       const projectRoles = Array.isArray(roleField) ? roleField : [roleField];
@@ -1019,14 +1445,29 @@ function processJournalRecords(rawRecords, cloudinaryMapping, verbose) {
  * @param {Array} rawRecords - Raw Airtable settings records
  * @param {Object} cloudinaryMapping - Cloudinary URL mapping
  * @param {boolean} verbose - Enable verbose logging
+ * @param {string} portfolioMode - Portfolio mode: 'directing' or 'postproduction'
  * @returns {Object} Processed config object
  */
-function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
+function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioMode = 'directing') {
   if (rawRecords.length === 0) {
     return getDefaultSettings();
   }
 
-  const f = rawRecords[0].fields || {};
+  // Find the correct settings row based on Portfolio ID
+  let settingsRecord = rawRecords.find(r => {
+    const portfolioId = r.fields?.['Portfolio ID'] || '';
+    return portfolioId.toLowerCase() === portfolioMode.toLowerCase();
+  });
+  
+  // Fallback to first record if no matching Portfolio ID found
+  if (!settingsRecord) {
+    if (verbose) console.warn(`[sync-core] ⚠️ No settings found for portfolio mode "${portfolioMode}", using first row`);
+    settingsRecord = rawRecords[0];
+  } else if (verbose) {
+    console.log(`[sync-core] ✅ Using settings for portfolio: ${portfolioMode}`);
+  }
+
+  const f = settingsRecord.fields || {};
   
   // Build cloudinary lookup map for config images
   const cloudinaryConfigImagesArray = cloudinaryMapping?.config?.images || [];
@@ -1060,19 +1501,6 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
   
   // Extract other settings
   const name = f['Name'] || '';
-  // Portfolio owner name: check 'Owner Name' field first, then extract from Bio if available
-  let portfolioOwnerName = f['Owner Name'] || f['Portfolio Owner'] || '';
-  if (!portfolioOwnerName && bio) {
-    // Extract name from beginning of Bio (assumes format "Name (..."  or "Name is...")
-    const bioMatch = bio.match(/^([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+)*)/);
-    if (bioMatch) {
-      portfolioOwnerName = bioMatch[1].trim();
-    }
-  }
-  // Default fallback
-  if (!portfolioOwnerName) {
-    portfolioOwnerName = 'Gabriel Athanasiou';
-  }
   
   const allowedRolesRaw = f['Allowed Roles'] || '';
   
@@ -1090,7 +1518,61 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose) {
   
   const lastModified = f['Last Modified'] || '';
 
+  // New multi-portfolio fields
+  const portfolioId = f['Portfolio ID'] || 'directing';
+  const siteTitle = f['Site Title'] || '';
+  const navTitle = f['Nav Title'] || '';
+  const seoTitle = f['SEO Title'] || '';
+  const seoDescription = f['SEO Description'] || '';
+  const domain = f['Domain'] || '';
+  
+  // Logo attachment
+  const logoAttachments = f['Logo'] || [];
+  const logoAirtableUrl = logoAttachments[0] ? logoAttachments[0].url : '';
+  const logo = cloudinaryConfigImages['logo'] || logoAirtableUrl;
+  
+  // Favicon attachment
+  const faviconAttachments = f['Favicon'] || [];
+  const faviconAirtableUrl = faviconAttachments[0] ? faviconAttachments[0].url : '';
+  const favicon = cloudinaryConfigImages['favicon'] || faviconAirtableUrl;
+  
+  const fontFamily = f['Font Family'] || '';
+  const workSectionLabel = f['Work Section Label'] || 'Filmography';
+  const hasJournal = f['Has Journal'] || false;
+  const showRoleFilter = f['Show Role Filter'] || false;
+  const showOtherPortfolioLink = f['Show Other Portfolio Link'] || false;
+  const otherPortfolioUrl = f['Other Portfolio URL'] || '';
+  const otherPortfolioLabel = f['Other Portfolio Label'] || '';
+  const aboutLayout = f['About Layout'] || 'standard';
+  const themeMode = f['Theme Mode'] || 'dark';
+
+  // Portfolio owner name: use 'Owner Name' field first, then Site Title, then default
+  let portfolioOwnerName = f['Owner Name'] || f['Portfolio Owner'] || siteTitle || '';
+  if (!portfolioOwnerName) {
+    portfolioOwnerName = 'Gabriel Athanasiou';
+  }
+
   return {
+    // Multi-portfolio fields
+    portfolioId,
+    siteTitle,
+    navTitle,
+    seoTitle,
+    seoDescription,
+    domain,
+    logo,
+    favicon,
+    fontFamily,
+    workSectionLabel,
+    hasJournal,
+    showRoleFilter,
+    showOtherPortfolioLink,
+    otherPortfolioUrl,
+    otherPortfolioLabel,
+    aboutLayout,
+    themeMode,
+    
+    // Existing fields
     showreel: {
       enabled: showreelEnabled,
       videoUrl: showreelUrl,

@@ -66,7 +66,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             <VideoEmbed url={config.showreel!.videoUrl} autoplay={true} muted={THEME.hero.showreel.muted} />
                         </div>
                         <div className="absolute inset-0 z-10 bg-black/10"></div>
-                        <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
+                        <div className={`absolute z-20 mix-blend-difference text-white home-hero-text ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
                              <h1 className={THEME.typography.h1}>{THEME.hero.showreel.title}</h1>
                         </div>
                      </div>
@@ -107,7 +107,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                                     : 'transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out'
                             }`}
                         />
-                        <div className={`absolute z-20 mix-blend-difference text-white ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
+                        <div className={`absolute z-20 mix-blend-difference text-white home-hero-text ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
                             <span className={`block ${THEME.typography.meta} mb-4 opacity-0 animate-fade-in-up`} style={{ animationDelay: '200ms' }}>Featured Work</span>
                             <h1 className={`${THEME.typography.h1} opacity-0 animate-fade-in-up`} style={{ animationDelay: '300ms' }}>
                                 {heroProject.title}
@@ -117,7 +117,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     );
                 })() : (
                     <div className={`absolute inset-0 flex items-center justify-center z-10`}>
-                        <h1 className={`${THEME.typography.h1} text-white mix-blend-difference`}>GABRIEL ATHANASIOU</h1>
+                        <h1 className={`${THEME.typography.h1} text-white mix-blend-difference home-hero-text`}>GABRIEL ATHANASIOU</h1>
                     </div>
                 )}
             </div>
@@ -213,44 +213,85 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                     </div>
                 )}
                 
-                {/* CTA Section with Aurora Background */}
-                <div className="relative py-12 md:py-20 lg:py-28 -mx-4 md:-mx-8 lg:-mx-12 overflow-hidden">
-                    {/* Animated Aurora Background */}
-                    <div className="absolute inset-0 cta-aurora">
-                        <div className="absolute inset-0 cta-gradient-1"></div>
-                        <div className="absolute inset-0 cta-gradient-2"></div>
-                        <div className="absolute inset-0 cta-gradient-3"></div>
+                {/* CTA Section */}
+                {config.portfolioId === 'postproduction' ? (
+                    /* Boutique Agency Style CTA - Light Theme */
+                    <div className="relative py-16 md:py-20 lg:py-24 -mx-4 md:-mx-8 lg:-mx-12">
+                        {/* Clean background with subtle accent line */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/[0.02] to-transparent"></div>
+                        
+                        {/* Content */}
+                        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+                            {/* Decorative line */}
+                            <div className="w-12 h-px bg-black/20 mx-auto mb-8"></div>
+                            
+                            {/* Main heading */}
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-tight text-black/90 mb-5">
+                                Let's elevate your story
+                            </h2>
+                            
+                            {/* Subtext */}
+                            <p className="text-base md:text-lg text-black/50 font-light max-w-xl mx-auto mb-10 leading-relaxed">
+                                From colour grading to editing, sound design to VFX — we bring every element together to craft visuals that resonate.
+                            </p>
+                            
+                            {/* CTA Button - opens email with pre-filled subject */}
+                            <a 
+                                href={`mailto:${config.contact?.email || ''}?subject=${encodeURIComponent('Project Inquiry — Let\'s Collaborate')}`}
+                                className={`group inline-flex items-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 ${THEME.ui.button.radius} border border-black/20 hover:border-black/60 hover:bg-black hover:text-white transition-all duration-500 ease-out`}
+                            >
+                                <span className={`${THEME.typography.meta}`}>Start a Project</span>
+                                <svg 
+                                    className="w-3.5 h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-500" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </a>
+                        </div>
                     </div>
-                    
-                    {/* Subtle grain overlay */}
-                    <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}></div>
-                    
-                    {/* Content */}
-                    <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
-                        <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/40 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                            Let's Create Something Beautiful
-                        </p>
-                        <button 
-                            onClick={() => {
-                                navigate('/about');
-                            }} 
-                            className="group relative text-3xl md:text-5xl lg:text-6xl font-serif italic text-white cta-button-glow"
-                        >
-                            <span className="relative z-10 inline-block transition-transform duration-700 ease-out group-hover:scale-105">
-                                Get in Touch
-                            </span>
-                            <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></span>
-                            <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-700"></span>
-                        </button>
-                        <p className="text-sm md:text-base text-white/30 mt-8 font-light animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                            Available for select projects
-                        </p>
+                ) : (
+                    /* Original Aurora CTA - Dark Theme */
+                    <div className="relative py-12 md:py-20 lg:py-28 -mx-4 md:-mx-8 lg:-mx-12 overflow-hidden">
+                        {/* Animated Aurora Background */}
+                        <div className="absolute inset-0 cta-aurora">
+                            <div className="absolute inset-0 cta-gradient-1"></div>
+                            <div className="absolute inset-0 cta-gradient-2"></div>
+                            <div className="absolute inset-0 cta-gradient-3"></div>
+                        </div>
+                        
+                        {/* Subtle grain overlay */}
+                        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}></div>
+                        
+                        {/* Content */}
+                        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
+                            <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/40 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                                Let's Create Something Beautiful
+                            </p>
+                            <button 
+                                onClick={() => {
+                                    navigate('/about');
+                                }} 
+                                className="group relative text-3xl md:text-5xl lg:text-6xl font-serif italic text-white cta-button-glow"
+                            >
+                                <span className="relative z-10 inline-block transition-transform duration-700 ease-out group-hover:scale-105">
+                                    Get in Touch
+                                </span>
+                                <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></span>
+                                <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-700"></span>
+                            </button>
+                            <p className="text-sm md:text-base text-white/30 mt-8 font-light animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                Available for select projects
+                            </p>
+                        </div>
+                        
+                        {/* Top and bottom fade edges */}
+                        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg-main to-transparent pointer-events-none"></div>
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-main to-transparent pointer-events-none"></div>
                     </div>
-                    
-                    {/* Top and bottom fade edges */}
-                    <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg-main to-transparent pointer-events-none"></div>
-                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-main to-transparent pointer-events-none"></div>
-                </div>
+                )}
                 </div>
             </div>
         </section>

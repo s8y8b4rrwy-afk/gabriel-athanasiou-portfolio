@@ -51,27 +51,31 @@ console.log(`☁️  Cloudinary configured: ${CLOUDINARY_CLOUD_NAME}`);
 
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 
-// Files to upload as raw resources
+// Get portfolio mode from environment
+const PORTFOLIO_MODE = process.env.PORTFOLIO_MODE || 'directing';
+console.log(`📂 Portfolio mode: ${PORTFOLIO_MODE}`);
+
+// Files to upload as raw resources (portfolio-specific)
 const FILES_TO_UPLOAD = [
   {
-    localPath: path.join(PUBLIC_DIR, 'portfolio-data.json'),
-    publicId: 'portfolio-static/portfolio-data',
-    description: 'Main portfolio data file'
+    localPath: path.join(PUBLIC_DIR, `portfolio-data-${PORTFOLIO_MODE}.json`),
+    publicId: `portfolio-static/portfolio-data-${PORTFOLIO_MODE}`,
+    description: `Portfolio data file (${PORTFOLIO_MODE})`
   },
   {
-    localPath: path.join(PUBLIC_DIR, 'share-meta.json'),
-    publicId: 'portfolio-static/share-meta',
-    description: 'Social sharing metadata'
+    localPath: path.join(PUBLIC_DIR, `share-meta-${PORTFOLIO_MODE}.json`),
+    publicId: `portfolio-static/share-meta-${PORTFOLIO_MODE}`,
+    description: `Social sharing metadata (${PORTFOLIO_MODE})`
   },
   {
-    localPath: path.join(PUBLIC_DIR, 'sitemap.xml'),
-    publicId: 'portfolio-static/sitemap',
-    description: 'XML sitemap for SEO'
+    localPath: path.join(PUBLIC_DIR, `sitemap-${PORTFOLIO_MODE}.xml`),
+    publicId: `portfolio-static/sitemap-${PORTFOLIO_MODE}`,
+    description: `XML sitemap for SEO (${PORTFOLIO_MODE})`
   },
   {
-    localPath: path.join(PUBLIC_DIR, 'robots.txt'),
-    publicId: 'portfolio-static/robots',
-    description: 'Robots.txt for search engines'
+    localPath: path.join(PUBLIC_DIR, `robots-${PORTFOLIO_MODE}.txt`),
+    publicId: `portfolio-static/robots-${PORTFOLIO_MODE}`,
+    description: `Robots.txt for search engines (${PORTFOLIO_MODE})`
   }
 ];
 

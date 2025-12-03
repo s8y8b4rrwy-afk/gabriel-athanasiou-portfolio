@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Project, BlogPost } from '../types';
+import { Project, BlogPost, HomeConfig } from '../types';
 
 interface SEOProps {
   title?: string;
@@ -11,6 +11,7 @@ interface SEOProps {
   project?: Project; // Enhanced: Pass full project data for rich schema
   post?: BlogPost; // Enhanced: Pass full post data for article schema
   defaultOgImage?: string; // Custom default OG image from Airtable Settings
+  config?: HomeConfig; // Portfolio config for SEO defaults
 }
 
 // Ultimate fallback image (used if Airtable Settings defaultOgImage is not configured)
@@ -18,18 +19,25 @@ const ULTIMATE_FALLBACK_OG_IMAGE = "https://images.unsplash.com/photo-1492691527
 
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
-  description = "Director based in London & Athens. Narrative, Commercial, Music Video.",
+  description,
   image,
   type = 'website',
   url,
   project,
   post,
-  defaultOgImage
+  defaultOgImage,
+  config
 }) => {
-  // Use provided image, or fallback to config default, or ultimate fallback
-  const ogImage = image || defaultOgImage || ULTIMATE_FALLBACK_OG_IMAGE;
+  // Get portfolio-specific defaults from config
+  const defaultSiteTitle = config?.siteTitle || config?.navTitle || 'GABRIEL ATHANASIOU';
+  const defaultSeoTitle = config?.seoTitle || `${defaultSiteTitle} | Director`;
+  const defaultDescription = description || config?.seoDescription || "Director based in London & Athens. Narrative, Commercial, Music Video.";
+  const domain = config?.domain || '';
   
-  const fullTitle = title ? `${title} | GABRIEL ATHANASIOU` : "GABRIEL ATHANASIOU | Director";
+  // Use provided image, or fallback to config default, or ultimate fallback
+  const ogImage = image || defaultOgImage || config?.defaultOgImage || ULTIMATE_FALLBACK_OG_IMAGE;
+  
+  const fullTitle = title ? `${title} | ${defaultSiteTitle}` : defaultSeoTitle;
   const siteUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
 
   useEffect(() => {
@@ -48,15 +56,15 @@ export const SEO: React.FC<SEOProps> = ({
     };
 
     // Standard meta tags
-    updateMeta('description', description);
+    updateMeta('description', defaultDescription);
     updateMeta('og:title', fullTitle, 'property');
-    updateMeta('og:description', description, 'property');
+    updateMeta('og:description', defaultDescription, 'property');
     updateMeta('og:image', ogImage, 'property');
     updateMeta('og:type', type, 'property');
     updateMeta('og:url', siteUrl, 'property');
     updateMeta('twitter:card', 'summary_large_image');
     updateMeta('twitter:title', fullTitle);
-    updateMeta('twitter:description', description);
+    updateMeta('twitter:description', defaultDescription);
     updateMeta('twitter:image', ogImage);
     updateMeta('twitter:creator', '@gabrielcine');
     
@@ -66,7 +74,7 @@ export const SEO: React.FC<SEOProps> = ({
       updateMeta('og:video:type', 'text/html', 'property');
     }
     
-    // Canonical URL
+    // Canonical URL - use domain from config if available
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) {
       canonical = document.createElement('link');
@@ -80,7 +88,7 @@ export const SEO: React.FC<SEOProps> = ({
     // This ensures search engines see the structured data immediately without waiting for
     // client-side JavaScript execution.
     
-  }, [fullTitle, description, ogImage, type, siteUrl, project]);
+  }, [fullTitle, defaultDescription, ogImage, type, siteUrl, project]);
 
   return null;
 };

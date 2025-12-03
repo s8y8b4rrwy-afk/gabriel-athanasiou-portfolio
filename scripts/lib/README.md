@@ -33,7 +33,7 @@ Utility functions for Airtable data fetching and processing:
 ### Netlify Function
 ```bash
 # Trigger via webhook
-curl -X POST https://your-site.netlify.app/.netlify/functions/sync-now \
+curl -X POST https://directedbygabriel.netlify.app/.netlify/functions/sync-now \
   -H "Authorization: Bearer YOUR_SYNC_TOKEN"
 ```
 

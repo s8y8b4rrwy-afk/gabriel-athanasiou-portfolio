@@ -1,8 +1,8 @@
 name: Sync Data & Static Files
 
-# Manual-only workflow - syncs everything in one go:
-# 1. Fetches data from Airtable
-# 2. Generates static files (portfolio-data.json, share-meta.json, sitemap.xml)
+# Manual-only workflow - syncs everything for BOTH portfolios:
+# 1. Fetches data from Airtable for both directing & postproduction
+# 2. Generates static files (portfolio-data-{mode}.json, share-meta-{mode}.json, sitemap-{mode}.xml, robots-{mode}.txt)
 # 3. Uploads everything to Cloudinary CDN
 # 4. Commits changes to GitHub
 # Does NOT trigger Netlify deployment - use "Deploy to Netlify" workflow for that
@@ -42,36 +42,62 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Sync from Airtable & Upload Images to Cloudinary
+      - name: Sync BOTH portfolios from Airtable (single fetch)
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           VITE_AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
           VITE_AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-          # Cloudinary credentials for image uploads during sync
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           USE_CLOUDINARY: 'true'
         run: |
-          echo "📥 Fetching data from Airtable..."
-          echo "☁️ Uploading new images to Cloudinary..."
-          npm run build:data
-          npm run build:content
-          npm run build:sitemap
-          echo "✅ Static files generated"
+          echo "📥 Fetching BOTH portfolios from Airtable (single API fetch)..."
+          npm run sync:both
+          echo "✅ Both portfolio data files generated"
 
-      - name: Upload to Cloudinary
+      - name: Generate static files for DIRECTING
+        env:
+          PORTFOLIO_MODE: 'directing'
+        run: |
+          echo "📄 Generating static files for DIRECTING..."
+          npm run build:static
+          echo "✅ Directing static files generated"
+
+      - name: Generate static files for POSTPRODUCTION
+        env:
+          PORTFOLIO_MODE: 'postproduction'
+        run: |
+          echo "📄 Generating static files for POSTPRODUCTION..."
+          npm run build:static
+          echo "✅ Postproduction static files generated"
+
+      - name: Upload to Cloudinary (Directing)
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          PORTFOLIO_MODE: 'directing'
         run: |
-          echo "☁️ Uploading static files to Cloudinary..."
+          echo "☁️ Uploading DIRECTING static files to Cloudinary..."
           FORCE_FLAG=""
           if [ "${{ github.event.inputs.force_cloudinary_upload }}" == "true" ]; then
             FORCE_FLAG="--force"
-            echo "🔄 Force upload enabled"
+          fi
+          node scripts/sync-static-to-cloudinary.mjs $FORCE_FLAG
+
+      - name: Upload to Cloudinary (Postproduction)
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          PORTFOLIO_MODE: 'postproduction'
+        run: |
+          echo "☁️ Uploading POSTPRODUCTION static files to Cloudinary..."
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_cloudinary_upload }}" == "true" ]; then
+            FORCE_FLAG="--force"
           fi
           node scripts/sync-static-to-cloudinary.mjs $FORCE_FLAG
           echo "✅ Cloudinary upload complete"
@@ -93,9 +119,10 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git commit -m "chore: sync data and static files [ci skip]
+          git commit -m "chore: sync data and static files for both portfolios [ci skip]
           
           Reason: ${{ github.event.inputs.reason }}
+          Portfolios: directing, postproduction
           Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push origin main
           echo "✅ Changes committed to GitHub"
@@ -103,16 +130,17 @@ jobs:
       - name: Summary
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📊 Sync Complete"
+          echo "📊 Sync Complete for BOTH Portfolios"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "💰 Used optimized single-fetch sync (50% API savings)"
           if [ "${{ steps.check_changes.outputs.changed }}" = "true" ]; then
-            echo "✅ Data synced from Airtable"
-            echo "✅ Static files generated"
+            echo "✅ DIRECTING: portfolio-data-directing.json, sitemap-directing.xml, share-meta-directing.json, robots-directing.txt"
+            echo "✅ POSTPRODUCTION: portfolio-data-postproduction.json, sitemap-postproduction.xml, share-meta-postproduction.json, robots-postproduction.txt"
             echo "✅ Files uploaded to Cloudinary CDN"
             echo "✅ Changes committed to GitHub"
             echo ""
             echo "⚠️ To deploy changes to production:"
-            echo "   Run the 'Deploy to Netlify' workflow"
+            echo "   Run the 'Deploy to Netlify' workflow for each site"
           else
             echo "ℹ️ No changes detected"
           fi

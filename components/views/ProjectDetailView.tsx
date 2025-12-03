@@ -271,7 +271,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 document.body
             )}
 
-            {!isPlaying && <CloseButton onClick={() => {
+            {!isPlaying && <CloseButton 
+                isLightTheme={config.portfolioId === 'postproduction'}
+                onClick={() => {
                 // Save current page scroll position before navigating back
                 saveScrollPosition(location.pathname);
                 
@@ -625,7 +627,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             </>
                         );
                     })()}
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-8 mix-blend-difference text-white">
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-8 mix-blend-difference text-white next-project-text">
                         <span className={`${THEME.typography.meta} mb-4 opacity-80`}>Next {nextProject.kinds && nextProject.kinds.length > 0 ? nextProject.kinds.join(' / ') : (nextProject.type !== 'Uncategorized' ? nextProject.type : 'Project')}</span>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif italic group-hover:scale-105 transition duration-1000 ease-out max-w-3xl">{nextProject.title}</h2>
                     </div>

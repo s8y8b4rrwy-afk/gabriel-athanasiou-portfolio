@@ -91,7 +91,9 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 post={post}
                 defaultOgImage={config.defaultOgImage}
             />
-            <CloseButton onClick={() => {
+            <CloseButton 
+                isLightTheme={config.portfolioId === 'postproduction'}
+                onClick={() => {
                 // Save current page scroll position before navigating back
                 saveScrollPosition(location.pathname);
                 

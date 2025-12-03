@@ -3,15 +3,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { THEME } from '../theme';
 import { clearScrollPosition } from '../utils/scrollRestoration';
+import { HomeConfig } from '../types';
 
 interface NavigationProps {
   showLinks?: boolean;
+  config?: HomeConfig;
 }
 
 // Pages that have hero sections at the top
 const PAGES_WITH_HERO = ['/', '/work/', '/journal/'];
 
-export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
+export const Navigation: React.FC<NavigationProps> = ({ showLinks = true, config }) => {
   const location = useLocation();
   const [showGradient, setShowGradient] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -100,20 +102,30 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
     };
   };
 
+  // Get dynamic values from config with fallbacks
+  const navTitle = config?.navTitle || config?.portfolioOwnerName || 'Gabriel Athanasiou';
+  const workSectionLabel = config?.workSectionLabel || 'Filmography';
+  const hasJournal = config?.hasJournal !== false; // Default to true if not specified
+
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 flex flex-col items-center md:flex-row ${THEME.header.gap} text-white pointer-events-auto select-none ${THEME.header.paddingY} ${THEME.header.paddingX} ${showGradient ? 'bg-gradient-to-b from-black/80 to-transparent' : 'bg-transparent'}`}>
+    <nav className={`fixed top-0 left-0 w-full z-50 flex flex-col items-center md:flex-row ${THEME.header.gap} text-white pointer-events-auto select-none ${THEME.header.paddingY} ${THEME.header.paddingX} transition-all duration-500 ease-out ${showGradient ? 'nav-scrolled' : ''}`}>
+        {/* Gradient overlay with transition */}
+        <div 
+          className={`absolute inset-0 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-500 ease-out pointer-events-none ${showGradient ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
         <Link 
             to="/"
             onClick={() => handleNavClick('/')}
-            className={`${THEME.header.logoText} opacity-100 hover:opacity-70 transition-opacity duration-500 mb-6 md:mb-0 text-center`}
+            className={`${THEME.header.logoText} opacity-100 hover:opacity-70 transition-opacity duration-500 mb-6 md:mb-0 text-center relative z-10`}
         >
-            Gabriel Athanasiou
+            {navTitle}
         </Link>
         
         {showLinks && (
             <div 
                 ref={navScrollRef}
-                className="flex gap-6 md:gap-8 overflow-x-auto max-w-full scrollbar-hide" 
+                className="flex gap-6 md:gap-8 overflow-x-auto max-w-full scrollbar-hide relative z-10" 
                 style={{ 
                     WebkitOverflowScrolling: 'touch', 
                     scrollbarWidth: 'none', 
@@ -125,17 +137,21 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true }) => {
                     Featured
                 </NavLink>
                 <NavLink to="/work" onClick={() => handleNavClick('/work')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
-                    Filmography
+                    {workSectionLabel}
                 </NavLink>
-                <NavLink to="/journal" onClick={() => handleNavClick('/journal')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
-                    Journal
-                </NavLink>
+                {hasJournal && (
+                    <NavLink to="/journal" onClick={() => handleNavClick('/journal')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
+                        Journal
+                    </NavLink>
+                )}
                 <NavLink to="/about" onClick={() => handleNavClick('/about')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     About
                 </NavLink>
-                <NavLink to="/game" onClick={() => handleNavClick('/game')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
-                    Game
-                </NavLink>
+                {config?.portfolioId !== 'postproduction' && (
+                    <NavLink to="/game" onClick={() => handleNavClick('/game')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
+                        Game
+                    </NavLink>
+                )}
             </div>
         )}
     </nav>

@@ -17,6 +17,9 @@ config({ path: path.resolve(__dirname, '../.env') });
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN || '';
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID || '';
 const FORCE_FULL_SYNC = process.env.FORCE_FULL_SYNC === 'true';
+const PORTFOLIO_MODE = process.env.PORTFOLIO_MODE || 'directing';
+
+const OUTPUT_DIR = path.resolve('public');
 
 if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
   const portfolioDataPath = path.resolve(OUTPUT_DIR, 'portfolio-data.json');
@@ -30,9 +33,7 @@ if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
   }
 }
 
-const OUTPUT_DIR = path.resolve('public');
-
-console.log('[sync-data] 🔄 Starting data sync...');
+console.log(`[sync-data] 🔄 Starting data sync for portfolio mode: ${PORTFOLIO_MODE}...`);
 
 // Run the sync using shared core logic
 (async () => {
@@ -42,10 +43,12 @@ console.log('[sync-data] 🔄 Starting data sync...');
       airtableBaseId: AIRTABLE_BASE_ID,
       outputDir: OUTPUT_DIR,
       verbose: true,
-      forceFullSync: FORCE_FULL_SYNC
+      forceFullSync: FORCE_FULL_SYNC,
+      portfolioMode: PORTFOLIO_MODE
     });
 
     console.log('[sync-data] ✅ Sync complete!');
+    console.log(`[sync-data]    - Portfolio mode: ${PORTFOLIO_MODE}`);
     console.log(`[sync-data]    - ${results.projects.length} projects`);
     console.log(`[sync-data]    - ${results.journal.length} journal posts`);
     console.log(`[sync-data]    - Generated at: ${results.timestamp}`);

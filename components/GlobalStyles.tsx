@@ -1,35 +1,466 @@
 
 import React, { useEffect } from 'react';
 import { THEME } from '../theme';
+import { HomeConfig } from '../types';
+
+interface GlobalStylesProps {
+  config?: HomeConfig;
+}
 
 /**
  * Applies the settings from theme.ts as CSS Custom Properties (Variables).
  * This allows Tailwind in index.html to read these values dynamically.
+ * Also handles dynamic font loading based on portfolio config.
  */
-export const GlobalStyles: React.FC = () => {
+export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
+  // Load custom fonts based on portfolio type
+  useEffect(() => {
+    const isPostProduction = config?.portfolioId === 'postproduction';
+    
+    if (isPostProduction) {
+      // Premium font pairing for Lemon Post Studio:
+      // Outfit - Modern, geometric, refined sans-serif for headings
+      // DM Sans - Clean, geometric sans-serif for body text
+      const fontsToLoad = [
+        { name: 'Outfit', weights: '300;400;500;600;700' },
+        { name: 'DM Sans', weights: '300;400;500;600;700' }
+      ];
+      
+      fontsToLoad.forEach(font => {
+        const fontQuery = font.name.replace(/ /g, '+');
+        const existingLink = document.querySelector(`link[href*="${fontQuery}"]`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = `https://fonts.googleapis.com/css2?family=${fontQuery}:wght@${font.weights}&display=swap`;
+          document.head.appendChild(link);
+        }
+      });
+      
+      // Apply the premium post-production fonts (both sans-serif for modern tech feel)
+      document.documentElement.style.setProperty('--font-sans', '"DM Sans", system-ui, sans-serif');
+      document.documentElement.style.setProperty('--font-serif', '"Outfit", system-ui, sans-serif');
+      document.documentElement.style.setProperty('--font-portfolio', '"DM Sans"');
+    } else {
+      // Custom font from config for other portfolios
+      const customFont = config?.fontFamily;
+      if (customFont && customFont !== 'Inter') {
+        const existingLink = document.querySelector(`link[href*="${customFont.replace(' ', '+')}"]`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = `https://fonts.googleapis.com/css2?family=${customFont.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
+          document.head.appendChild(link);
+        }
+        
+        document.documentElement.style.setProperty('--font-sans', `"${customFont}", system-ui, sans-serif`);
+        document.documentElement.style.setProperty('--font-portfolio', `"${customFont}"`);
+      }
+    }
+  }, [config?.fontFamily, config?.portfolioId]);
+
+  // Apply theme mode (light/dark) - postproduction uses light theme
   useEffect(() => {
     const root = document.documentElement;
-
-    // Apply Colors
-    root.style.setProperty('--color-bg-main', THEME.colors.background);
-    root.style.setProperty('--color-text-main', THEME.colors.textMain);
-    root.style.setProperty('--color-text-muted', THEME.colors.textMuted);
-
-    // Apply Fonts
-    root.style.setProperty('--font-sans', THEME.fonts.sans);
-    root.style.setProperty('--font-serif', THEME.fonts.serif);
+    const isLight = config?.portfolioId === 'postproduction';
     
-    // Apply Selection Color
-    root.style.setProperty('--color-selection', THEME.colors.selectionBg);
+    if (isLight) {
+      // Light theme colors
+      root.style.setProperty('--color-bg-main', '#ffffff');
+      root.style.setProperty('--color-text-main', '#1a1a1a');
+      root.style.setProperty('--color-text-muted', '#666666');
+      root.style.setProperty('--color-selection', 'rgba(0, 0, 0, 0.15)');
+      root.classList.add('light-theme');
+      root.classList.remove('dark-theme');
+    } else {
+      // Dark theme colors (default - directing)
+      root.style.setProperty('--color-bg-main', THEME.colors.background);
+      root.style.setProperty('--color-text-main', THEME.colors.textMain);
+      root.style.setProperty('--color-text-muted', THEME.colors.textMuted);
+      root.style.setProperty('--color-selection', THEME.colors.selectionBg);
+      root.classList.add('dark-theme');
+      root.classList.remove('light-theme');
+    }
+  }, [config?.portfolioId]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const isPostProduction = config?.portfolioId === 'postproduction';
+
+    // Apply Fonts - use custom fonts for post-production, theme defaults for others
+    if (!isPostProduction) {
+      root.style.setProperty('--font-sans', THEME.fonts.sans);
+      root.style.setProperty('--font-serif', THEME.fonts.serif);
+    }
+    // Note: Post-production fonts are set in the earlier useEffect
 
     // Inject dynamic selection style
+    const isLight = config?.portfolioId === 'postproduction';
     const style = document.createElement('style');
+    style.id = 'theme-styles';
+    
+    // Remove previous theme styles if they exist
+    const existingStyle = document.getElementById('theme-styles');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
     style.innerHTML = `
       ::selection {
-        background: ${THEME.colors.selectionBg};
-        color: ${THEME.colors.textMain};
+        background: ${isLight ? 'rgba(0, 0, 0, 0.15)' : THEME.colors.selectionBg};
+        color: ${isLight ? '#1a1a1a' : THEME.colors.textMain};
       }
       
+      /* Light theme overrides */
+      .light-theme {
+        --tw-bg-opacity: 1;
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+      }
+      
+      /* Remove italic from headings in light theme (post-production) */
+      .light-theme .italic,
+      .light-theme .font-serif.italic,
+      .light-theme h1.italic,
+      .light-theme h2.italic,
+      .light-theme h3.italic {
+        font-style: normal !important;
+      }
+      
+      .light-theme .text-white {
+        color: #1a1a1a !important;
+      }
+      
+      .light-theme .text-text-muted {
+        color: #888888 !important;
+      }
+      
+      .light-theme .bg-bg-main {
+        background-color: #ffffff !important;
+      }
+      
+      /* Keep bg-black for hero image containers - don't convert to white */
+      /* Only convert bg-black to white when it's used for page backgrounds, not image overlays */
+      
+      .light-theme .border-white\\/10,
+      .light-theme .border-white\\/20,
+      .light-theme .border-white\\/30 {
+        border-color: rgba(0, 0, 0, 0.12) !important;
+      }
+      
+      /* Filter separator line */
+      .light-theme .filter-separator,
+      .light-theme .bg-white\\/10.filter-separator {
+        background-color: rgba(0, 0, 0, 0.1) !important;
+      }
+      
+      /* Keep white borders for buttons over images */
+      .light-theme button .border-white\\/40,
+      .light-theme button.text-white .border-white\\/40,
+      .light-theme .bg-black .border-white\\/40,
+      .light-theme [class*="bg-black"] .border-white\\/40 {
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+      
+      /* Keep white borders for buttons inside hero sections */
+      .light-theme button .rounded-full.border,
+      .light-theme .bg-black button .rounded-full.border {
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+      
+      .light-theme .bg-white\\/5 {
+        background-color: rgba(0, 0, 0, 0.04) !important;
+      }
+      
+      .light-theme .bg-white\\/10 {
+        background-color: rgba(0, 0, 0, 0.06) !important;
+      }
+      
+      .light-theme .text-white\\/20 {
+        color: rgba(0, 0, 0, 0.25) !important;
+      }
+      
+      .light-theme .text-white\\/60,
+      .light-theme .text-white\\/70,
+      .light-theme .text-white\\/80 {
+        color: rgba(0, 0, 0, 0.65) !important;
+      }
+      
+      /* Bullet points in awards list */
+      .light-theme .before\\:text-white\\/20::before {
+        color: rgba(0, 0, 0, 0.25) !important;
+      }
+      
+      .light-theme .opacity-60 {
+        opacity: 0.5 !important;
+      }
+      
+      .light-theme .from-bg-main {
+        --tw-gradient-from: #ffffff !important;
+      }
+      
+      .light-theme .to-transparent {
+        --tw-gradient-to: transparent !important;
+      }
+      
+      .light-theme .bg-gradient-to-t {
+        background-image: linear-gradient(to top, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+      }
+      
+      .light-theme .bg-gradient-to-l {
+        background-image: linear-gradient(to left, #ffffff, transparent) !important;
+      }
+      
+      .light-theme .hover\\:text-white:hover {
+        color: #000000 !important;
+      }
+      
+      .light-theme .hover\\:opacity-100:hover {
+        opacity: 1 !important;
+      }
+      
+      /* Navigation - transparent on hero pages, subtle on scroll */
+      .light-theme nav {
+        background-color: transparent !important;
+        background-image: none !important;
+      }
+      
+      /* Nav gradient overlay - change to light gradient in light theme */
+      .light-theme nav > div.bg-gradient-to-b {
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent) !important;
+      }
+      
+      /* Nav on hero (not scrolled) - keep white text */
+      .light-theme nav:not(.nav-scrolled) {
+        color: white !important;
+      }
+      
+      .light-theme nav:not(.nav-scrolled) a,
+      .light-theme nav:not(.nav-scrolled) .text-white {
+        color: white !important;
+      }
+      
+      /* Nav scrolled - dark text */
+      .light-theme nav.nav-scrolled {
+        color: #1a1a1a !important;
+      }
+      
+      .light-theme nav.nav-scrolled a,
+      .light-theme nav.nav-scrolled .text-white {
+        color: #1a1a1a !important;
+      }
+      
+      /* Smooth text color transition for nav */
+      .light-theme nav a,
+      .light-theme nav .text-white {
+        transition: color 0.5s ease-out !important;
+      }
+      
+      .light-theme footer {
+        background-color: #f8f8f8 !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+      }
+      
+      /* View toggle pill */
+      .light-theme .rounded-full.border {
+        border-color: rgba(0, 0, 0, 0.15) !important;
+        background-color: rgba(0, 0, 0, 0.02) !important;
+      }
+      
+      /* Active filter underline */
+      .light-theme .border-b.border-white {
+        border-color: #1a1a1a !important;
+      }
+      
+      /* Project cards - type labels */
+      .light-theme .text-right.text-text-muted {
+        color: #999999 !important;
+      }
+      
+      /* Project card hover states */
+      .light-theme .group:hover .text-white {
+        color: #000000 !important;
+      }
+      
+      /* Remove dark gradient overlays on images */
+      .light-theme .bg-gradient-to-t.from-black,
+      .light-theme .bg-gradient-to-b.from-black,
+      .light-theme [class*="from-black"],
+      .light-theme .from-bg-main {
+        background-image: none !important;
+        background: transparent !important;
+      }
+      
+      /* Hero section - remove dark overlays */
+      .light-theme .bg-black\\/10,
+      .light-theme .bg-black\\/20,
+      .light-theme .bg-black\\/30 {
+        background-color: transparent !important;
+      }
+      
+      /* Hero image overlay - remove for light theme */
+      .light-theme .bg-black[style*="opacity"] {
+        background-color: transparent !important;
+      }
+      
+      /* Loading skeleton - light theme */
+      .light-theme .bg-white\\/5,
+      .light-theme .bg-white\\/\\[0\\.02\\] {
+        background-color: rgba(0, 0, 0, 0.05) !important;
+      }
+      
+      .light-theme .bg-white\\/\\[0\\.02\\] {
+        background-color: rgba(0, 0, 0, 0.02) !important;
+      }
+      
+      /* Hero text on homepage - ensure readability on light bg */
+      /* Only apply to elements NOT inside buttons or image containers */
+      .light-theme .mix-blend-difference:not(button):not(button *):not([class*="bg-black"] .mix-blend-difference):not(.home-hero-text):not(.home-hero-text *):not(.next-project-text):not(.next-project-text *) {
+        mix-blend-mode: normal !important;
+        color: #1a1a1a !important;
+      }
+      
+      /* Home hero text - keep white over dark hero images */
+      .light-theme .home-hero-text,
+      .light-theme .home-hero-text * {
+        color: white !important;
+      }
+      
+      /* Next project preview text - keep white over hero images */
+      .light-theme .next-project-text,
+      .light-theme .next-project-text * {
+        color: white !important;
+      }
+      
+      /* Project detail hero text - keep white text with blend mode for images */
+      .light-theme .bg-black .mix-blend-difference,
+      .light-theme [class*="bg-black"] .mix-blend-difference {
+        mix-blend-mode: difference !important;
+        color: white !important;
+      }
+      
+      /* Buttons over images - disable mix-blend-difference and use solid white */
+      .light-theme button.mix-blend-difference {
+        mix-blend-mode: normal !important;
+      }
+      
+      .light-theme button.mix-blend-difference span,
+      .light-theme button.mix-blend-difference span.text-white,
+      .light-theme button.text-white span {
+        color: white !important;
+      }
+      
+      /* Watch Film button text - keep white on hover */
+      .light-theme button.group.mix-blend-difference:hover span.text-white,
+      .light-theme button.group.mix-blend-difference .text-white {
+        color: white !important;
+      }
+      
+      /* Close button - light state (on hero, white icon) */
+      .light-theme button.close-btn-light,
+      .light-theme button.close-btn-light svg,
+      .light-theme button.close-btn-light svg path {
+        color: white !important;
+        stroke: white !important;
+      }
+      
+      .light-theme button.close-btn-light .border-white\\/40 {
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+      
+      /* Close button - dark state (scrolled, black icon) */
+      .light-theme button.close-btn-dark,
+      .light-theme button.close-btn-dark svg,
+      .light-theme button.close-btn-dark svg path {
+        color: #1a1a1a !important;
+        stroke: #1a1a1a !important;
+      }
+      
+      .light-theme button.close-btn-dark .border-black\\/30 {
+        border-color: rgba(0, 0, 0, 0.3) !important;
+      }
+      
+      /* Close button hover states */
+      .light-theme button.close-btn-light:hover .group-hover\\:bg-white {
+        background-color: white !important;
+      }
+      
+      .light-theme button.close-btn-light.group:hover svg,
+      .light-theme button.close-btn-light.group:hover svg path {
+        stroke: black !important;
+        color: black !important;
+      }
+      
+      .light-theme button.close-btn-dark:hover .group-hover\\:bg-black {
+        background-color: black !important;
+      }
+      
+      .light-theme button.close-btn-dark.group:hover svg,
+      .light-theme button.close-btn-dark.group:hover svg path {
+        stroke: white !important;
+        color: white !important;
+      }
+      
+      /* Keep white border on play button circles */
+      .light-theme button .border-white\\/40,
+      .light-theme .border-white\\/40 {
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+      
+      /* Play button icon fill */
+      .light-theme .bg-black svg[fill="currentColor"],
+      .light-theme [class*="bg-black"] svg[fill="currentColor"] {
+        fill: white !important;
+        color: white !important;
+      }
+      
+      .light-theme .bg-black svg[fill="currentColor"] path,
+      .light-theme [class*="bg-black"] svg[fill="currentColor"] path {
+        fill: white !important;
+      }
+      
+      /* Links */
+      .light-theme a:hover {
+        color: #000000 !important;
+      }
+      
+      /* Scrollbar for light theme */
+      .light-theme ::-webkit-scrollbar-track {
+        background: #f0f0f0;
+      }
+      
+      .light-theme ::-webkit-scrollbar-thumb {
+        background: #cccccc;
+      }
+      
+      .light-theme ::-webkit-scrollbar-thumb:hover {
+        background: #aaaaaa;
+      }
+      
+      /* About page specific overrides for light theme */
+      .light-theme .bg-gray-100 {
+        background-color: #f5f5f5 !important;
+      }
+      
+      .light-theme .bg-gray-900 {
+        background-color: #f5f5f5 !important;
+      }
+
+      /* Loading screen gradient - light theme override */
+      .light-theme [style*="loadingShimmer"] {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.01) 0%,
+          rgba(0, 0, 0, 0.03) 16.7%,
+          rgba(0, 0, 0, 0.06) 33.3%,
+          rgba(0, 0, 0, 0.08) 50%,
+          rgba(0, 0, 0, 0.06) 66.7%,
+          rgba(0, 0, 0, 0.03) 83.3%,
+          rgba(0, 0, 0, 0.01) 100%
+        ) !important;
+        background-size: 200% 100% !important;
+      }
+
       /* Loading screen gradient animation */
       @keyframes loadingShimmer {
         0% { background-position: -200% 0; }

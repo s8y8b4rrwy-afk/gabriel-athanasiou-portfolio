@@ -33,6 +33,71 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Dec 3 2025 - Multi-Portfolio Static Files Architecture
+**What Changed:** Complete rewrite of static file generation to support two portfolio sites (directing & post-production) from a single codebase.
+
+**The Problem:**
+- Static files (`sitemap.xml`, `robots.txt`, `share-meta.json`) were hardcoded to directing domain
+- Both portfolios would overwrite each other's files on Cloudinary
+- Edge function and sitemap function weren't portfolio-aware
+
+**The Solution:**
+
+1. **Portfolio-Suffixed Static Files:**
+   - All static files now generated with portfolio suffix: `sitemap-directing.xml`, `sitemap-postproduction.xml`
+   - Each portfolio has its own set of files versioned in Git
+   - `scripts/prepare-build.mjs` copies portfolio-specific files to standard names at build time
+
+2. **New/Updated Scripts:**
+   - `scripts/generate-sitemap.mjs` - Rewritten to read from `portfolio-data-{mode}.json`, uses correct domain from config
+   - `scripts/generate-share-meta.mjs` - Rewritten to filter by `allowedRoles` from portfolio config
+   - `scripts/generate-robots.mjs` - NEW script for portfolio-specific robots.txt
+   - `scripts/prepare-build.mjs` - NEW script to copy portfolio files before vite build
+   - `scripts/sync-static-to-cloudinary.mjs` - Updated to use portfolio-specific public IDs
+
+3. **Updated Netlify Functions:**
+   - `netlify/edge-functions/meta-rewrite.ts` - Now reads `PORTFOLIO_MODE` env var, fetches correct files
+   - `netlify/functions/sitemap.js` - Rewritten to fetch from Cloudinary instead of Airtable
+
+4. **Cloudinary File Structure:**
+   ```
+   portfolio-static/
+   ├── portfolio-data-directing.json
+   ├── portfolio-data-postproduction.json
+   ├── sitemap-directing.xml
+   ├── sitemap-postproduction.xml
+   ├── share-meta-directing.json
+   ├── share-meta-postproduction.json
+   ├── robots-directing.txt
+   └── robots-postproduction.txt
+   ```
+
+5. **New npm Scripts:**
+   ```json
+   "build:static": "node scripts/generate-sitemap.mjs && node scripts/generate-share-meta.mjs && node scripts/generate-robots.mjs",
+   "build:static:all": "PORTFOLIO_MODE=directing npm run build:static && PORTFOLIO_MODE=postproduction npm run build:static",
+   "prepare:build": "node scripts/prepare-build.mjs"
+   ```
+
+**Portfolio Domains:**
+- Directing: `directedbygabriel.com`
+- Post-Production: `lemonpost.studio`
+
+**Environment Variable:** `PORTFOLIO_MODE=directing|postproduction`
+
+**Files Changed:**
+- `scripts/generate-sitemap.mjs` - Complete rewrite
+- `scripts/generate-share-meta.mjs` - Complete rewrite
+- `scripts/generate-robots.mjs` - NEW
+- `scripts/prepare-build.mjs` - NEW
+- `scripts/sync-static-to-cloudinary.mjs` - Updated for portfolio-specific uploads
+- `netlify/edge-functions/meta-rewrite.ts` - Portfolio-aware
+- `netlify/functions/sitemap.js` - Cloudinary-first, portfolio-aware
+- `package.json` - New scripts
+- `.github/workflows/sync-data.yml` - Syncs both portfolios
+
+---
+
 ### Dec 1 2024 - OG Meta Tags Fix & Cloudinary-First Architecture
 **What Changed:** Fixed OG meta tags for social sharing by updating Edge Function to fetch data directly from Cloudinary instead of trying local files first.
 
@@ -47,7 +112,7 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 1. **Updated Edge Function Architecture:**
    - Modified `netlify/edge-functions/meta-rewrite.ts` to fetch directly from Cloudinary
    - Removed local file fetch attempts that were failing
-   - Now uses `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json` as primary source
+   - Now uses `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-{mode}.json` as primary source
 
 2. **Updated Documentation:**
    - `docs/STATIC_FILES_HOSTING.md`: Removed references to local fallbacks, clarified Cloudinary-only architecture
@@ -740,13 +805,19 @@ if (!response.ok) {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Cloudinary Static File URLs:**
-- Portfolio Data: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data.json`
-- Share Meta: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/share-meta.json`
-- Sitemap: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/sitemap.xml`
+**Cloudinary Static File URLs (Portfolio-Aware):**
+- Portfolio Data: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-{mode}.json`
+- Share Meta: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/share-meta-{mode}.json`
+- Sitemap: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/sitemap-{mode}.xml`
+- Robots: `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/robots-{mode}.txt`
 
-**GitHub Version Control:**
-- All static files committed to git: `public/portfolio-data.json`, `public/share-meta.json`, `public/sitemap.xml`
+Where `{mode}` is `directing` or `postproduction`.
+
+**GitHub Version Control (Portfolio-Suffixed Files):**
+- `public/portfolio-data-directing.json`, `public/portfolio-data-postproduction.json`
+- `public/share-meta-directing.json`, `public/share-meta-postproduction.json`  
+- `public/sitemap-directing.xml`, `public/sitemap-postproduction.xml`
+- `public/robots-directing.txt`, `public/robots-postproduction.txt`
 - Full version history available via git
 - Can rollback to any previous version
 - Easy to see what changed between versions
