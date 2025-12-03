@@ -101,6 +101,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const [currentSlide, setCurrentSlide] = useState(0);
     const [creditsExpanded, setCreditsExpanded] = useState(false);
     const [isNextHovered, setIsNextHovered] = useState(false);
+    const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+    const [isVideoTransitioning, setIsVideoTransitioning] = useState(false);
     
     // Track project view on load
     useEffect(() => {
@@ -110,6 +112,33 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     }, [project]);
     
     if (!project) return null; // Or return a Not Found component
+
+    // Parse comma-separated video URLs into an array
+    const videoUrls = project.videoUrl 
+        ? project.videoUrl.split(',').map(url => url.trim()).filter(url => url.length > 0)
+        : [];
+    const hasMultipleVideos = videoUrls.length > 1;
+
+    // Navigate to next/previous video with animation
+    const handleNextVideo = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isVideoTransitioning || videoUrls.length <= 1) return;
+        setIsVideoTransitioning(true);
+        setTimeout(() => {
+            setCurrentVideoIndex(prev => (prev + 1) % videoUrls.length);
+            setTimeout(() => setIsVideoTransitioning(false), 50);
+        }, 300);
+    };
+
+    const handlePrevVideo = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isVideoTransitioning || videoUrls.length <= 1) return;
+        setIsVideoTransitioning(true);
+        setTimeout(() => {
+            setCurrentVideoIndex(prev => (prev - 1 + videoUrls.length) % videoUrls.length);
+            setTimeout(() => setIsVideoTransitioning(false), 50);
+        }, 300);
+    };
 
     // Prevent default anchor behavior and event bubbling
     const handleWatchClick = (e: React.MouseEvent) => {
@@ -180,6 +209,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
         setCurrentSlide(0);
         setCreditsExpanded(false);
         setIsNextHovered(false);
+        setCurrentVideoIndex(0);
+        setIsVideoTransitioning(false);
         window.scrollTo(0, 0);
     }, [slug]);
 
@@ -254,17 +285,39 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         </div>
                     </button>
 
-                    {/* Video Container */}
+                    {/* Video Container with fade transition */}
                     <div className="w-full h-full p-4 md:p-12 md:pb-20 flex items-center justify-center">
-                        <div className="w-full max-w-7xl aspect-video relative shadow-2xl bg-black">
-                             <VideoEmbed url={project.videoUrl!} autoplay={true} muted={false} />
+                        <div className={`w-full max-w-7xl aspect-video relative shadow-2xl bg-black transition-opacity duration-300 ${isVideoTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                             <VideoEmbed url={videoUrls[currentVideoIndex] || project.videoUrl!} autoplay={true} muted={false} />
                         </div>
                     </div>
 
-                    {/* Footer Title */}
-                    <div className="absolute bottom-6 left-6 md:bottom-10 md:left-12 z-[1000] mix-blend-difference text-white pointer-events-none">
+                    {/* Footer Title with video navigation */}
+                    <div className="absolute bottom-6 left-6 md:bottom-10 md:left-12 z-[1000] mix-blend-difference text-white">
                         <h2 className={THEME.typography.h3}>{project.title}</h2>
-                        <p className={`${THEME.typography.meta} mt-2 opacity-60`}>Now Playing</p>
+                        <div className="flex items-center gap-4 mt-2">
+                            {hasMultipleVideos ? (
+                                <>
+                                    <button 
+                                        onClick={handlePrevVideo}
+                                        className={`${THEME.typography.meta} opacity-60 hover:opacity-100 transition-opacity cursor-pointer`}
+                                    >
+                                        ← Prev
+                                    </button>
+                                    <span className={`${THEME.typography.meta} opacity-60`}>
+                                        {currentVideoIndex + 1} / {videoUrls.length}
+                                    </span>
+                                    <button 
+                                        onClick={handleNextVideo}
+                                        className={`${THEME.typography.meta} opacity-60 hover:opacity-100 transition-opacity cursor-pointer`}
+                                    >
+                                        Next →
+                                    </button>
+                                </>
+                            ) : (
+                                <p className={`${THEME.typography.meta} opacity-60`}>Now Playing</p>
+                            )}
+                        </div>
                     </div>
 
                 </div>,
@@ -395,7 +448,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     <div className="mb-8 border-b border-white/10">
                         {showClient && (
                             <div className="mb-8">
-                                <p className={`${THEME.typography.meta} text-text-muted mb-2`}>Client</p>
+                                <p className={`${THEME.typography.meta} text-text-muted mb-2`}>{project.type === 'Music Video' ? 'Artist' : 'Client'}</p>
                                 <p className={THEME.typography.h3}>{project.client}</p>
                             </div>
                         )}
@@ -527,15 +580,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 {/* Main Body */}
                 <div className="md:col-span-8 space-y-24 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     
-                    {project.videoUrl && (
-                         <div className="w-full aspect-video bg-black shadow-lg relative">
-                            <VideoEmbed url={project.videoUrl} autoplay={false} />
-                        </div>
-                    )}
-
-                    {project.additionalVideos && project.additionalVideos.map((videoUrl, i) => (
-                        <div key={`extra-video-${i}`} className="w-full aspect-video bg-black shadow-lg relative">
-                            <VideoEmbed url={videoUrl} autoplay={false} />
+                    {/* Display all videos from comma-separated videoUrl */}
+                    {videoUrls.length > 0 && videoUrls.map((url, i) => (
+                        <div key={`video-${i}`} className="w-full aspect-video bg-black shadow-lg relative">
+                            <VideoEmbed url={url} autoplay={false} />
                         </div>
                     ))}
 

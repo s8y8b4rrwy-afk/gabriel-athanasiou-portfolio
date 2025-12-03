@@ -74,6 +74,11 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true, config
   const handleNavClick = (path: string) => {
     // Clear saved scroll position for this page when navigating via menu
     clearScrollPosition(path);
+    // Reset filmography filters to "All" when clicking on work page
+    if (path === '/work') {
+      sessionStorage.removeItem('filmographyFilter');
+      sessionStorage.removeItem('filmographyRoleFilter');
+    }
     // Scroll to top immediately
     window.scrollTo(0, 0);
   };

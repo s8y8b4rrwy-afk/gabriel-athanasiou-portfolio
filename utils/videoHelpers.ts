@@ -1,18 +1,18 @@
 /**
  * Shared Video Utilities
  * Used across frontend and backend for consistent video handling
- * Supports YouTube and Vimeo with vanity URL resolution
+ * Supports YouTube, Vimeo, and Facebook with vanity URL resolution
  */
 
 export interface VideoIdResult {
-  type: 'youtube' | 'vimeo' | null;
+  type: 'youtube' | 'vimeo' | 'facebook' | null;
   id: string | null;
   hash?: string | null;
 }
 
 /**
  * Extract video ID and type from various URL formats
- * Supports YouTube (watch, embed, youtu.be, shorts, live) and Vimeo (with hash support)
+ * Supports YouTube (watch, embed, youtu.be, shorts, live), Vimeo (with hash support), and Facebook
  */
 export const getVideoId = (url: string): VideoIdResult => {
   if (!url) return { type: null, id: null };
@@ -23,6 +23,14 @@ export const getVideoId = (url: string): VideoIdResult => {
   const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
   if (ytMatch && ytMatch[1]) {
     return { type: 'youtube', id: ytMatch[1] };
+  }
+
+  // Facebook Video Regex
+  // Covers: facebook.com/*/videos/*, fb.watch/*, facebook.com/watch?v=*, facebook.com/video.php?v=*
+  // For Facebook, we always store the full URL since their embed requires it
+  if (cleanUrl.includes('facebook.com/') || cleanUrl.includes('fb.watch/')) {
+    // Return the full URL as ID since Facebook embeds need the full URL
+    return { type: 'facebook', id: cleanUrl };
   }
 
   // Vimeo Regex
@@ -136,6 +144,23 @@ export const getEmbedUrl = (url: string, autoplay: boolean = false, muted: boole
     return `https://player.vimeo.com/video/${id}?${params.toString()}`;
   }
 
+  if (type === 'facebook') {
+    // Facebook uses a plugin iframe with the full video URL
+    // The ID here is the full URL for Facebook videos
+    const videoUrl = id.startsWith('http') ? id : `https://${id}`;
+    const fbParams = new URLSearchParams();
+    fbParams.set('href', videoUrl);
+    fbParams.set('show_text', 'false');
+    fbParams.set('allowfullscreen', 'true');
+    if (autoplay) {
+      fbParams.set('autoplay', 'true');
+    }
+    if (muted) {
+      fbParams.set('mute', 'true');
+    }
+    return `https://www.facebook.com/plugins/video.php?${fbParams.toString()}`;
+  }
+
   return null;
 };
 
@@ -169,6 +194,21 @@ export const fetchVideoThumbnail = async (url: string): Promise<string> => {
     const isNumericId = /^\d+$/.test(id);
     if (isNumericId) {
       return `https://vumbnail.com/${id}.jpg`;
+    }
+  }
+
+  if (type === 'facebook') {
+    // Facebook doesn't provide easy thumbnail access without Graph API
+    // We'll try the oEmbed endpoint which works for public videos
+    try {
+      const videoUrl = id.startsWith('http') ? id : `https://${id}`;
+      const response = await fetch(`https://www.facebook.com/plugins/video/oembed.json/?url=${encodeURIComponent(videoUrl)}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.thumbnail_url || '';
+      }
+    } catch (e) {
+      console.warn(`Facebook OEmbed thumbnail failed for ${url}`);
     }
   }
   

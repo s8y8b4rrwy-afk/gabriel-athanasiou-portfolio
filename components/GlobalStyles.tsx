@@ -282,6 +282,14 @@ export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
         color: #000000 !important;
       }
       
+      /* List view project title hover - ensure black color and full opacity */
+      .light-theme .group:hover .text-white span,
+      .light-theme .group:hover span.text-white,
+      .light-theme .group:hover div.text-white {
+        color: #000000 !important;
+        opacity: 1 !important;
+      }
+      
       /* Remove dark gradient overlays on images */
       .light-theme .bg-gradient-to-t.from-black,
       .light-theme .bg-gradient-to-b.from-black,

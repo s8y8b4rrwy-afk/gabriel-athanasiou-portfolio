@@ -1285,9 +1285,9 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
     // Get video URL directly from Video URL field
     const videoUrl = f['Video URL'] || '';
     
-    // Parse external links (fallback if Video URL is not set)
+    // Parse external links to get additional videos
     const rawLinks = f['External Links'] || '';
-    const { links, videos } = parseExternalLinks(rawLinks);
+    const { links, videos: externalVideos } = parseExternalLinks(rawLinks);
     
     // Build image URLs (prefer Cloudinary if available)
     const galleryAttachments = f['Gallery'] || f['Gallery (Image)'] || [];
@@ -1296,8 +1296,14 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
       return cloudinaryImg?.cloudinaryUrl || att.url;
     });
     
-    // Use Video URL field first, fallback to parsed videos from External Links
-    const finalVideoUrl = videoUrl || videos.join(', ');
+    // Combine Video URL field with any additional videos from External Links
+    // Video URL may already contain comma-separated URLs
+    const primaryVideos = videoUrl ? videoUrl.split(',').map(v => v.trim()).filter(v => v.length > 0) : [];
+    // Filter out any external videos that are already in the primary list
+    const additionalExternalVideos = externalVideos.filter(v => !primaryVideos.includes(v));
+    // Combine all videos into one array, then join back to comma-separated string
+    const allVideos = [...primaryVideos, ...additionalExternalVideos];
+    const finalVideoUrl = allVideos.join(', ');
     
     // Set heroImage to first gallery image, or video thumbnail if no gallery
     let heroImage = gallery[0] || '';

@@ -50,7 +50,7 @@ export const THEME = {
       h2: "text-2xl md:text-4xl font-serif italic",
       
       // Subheaders
-      h3: "text-xl md:text-2xl font-serif italic",
+      h3: "text-lg md:text-xl font-serif italic",
       
       // Standard Body Text
       body: "text-sm md:text-base font-sans leading-relaxed",
@@ -194,7 +194,7 @@ export const THEME = {
         rowPadding: "py-5",
         
         // Font sizes
-        projectTitleSize: "text-lg md:text-xl",
+        projectTitleSize: "text-sm md:text-base",
         
         // Toggle Columns (true = visible, false = hidden)
         showThumbnailMobile: false,

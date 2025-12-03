@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { THEME } from '../../theme';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { ProceduralThumbnail } from '../ProceduralThumbnail';
 import { getSessionPreset, upgradePreset } from '../../utils/imageOptimization';
 
 interface HomeViewProps { 
@@ -41,8 +42,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
     const showShowreel = config.showreel?.enabled && config.showreel.videoUrl;
     const featuredProjects = projects.filter(p => p.isFeatured);
     
-    const heroProject = showShowreel ? null : featuredProjects[0];
-    const gridProjects = showShowreel ? featuredProjects : featuredProjects.slice(1);
+    // Get hero projects (projects marked as isHero), fallback to first featured if none
+    const heroProjects = featuredProjects.filter(p => p.isHero);
+    const hasMultipleHeroes = heroProjects.length > 1;
+    
+    // Hero slideshow state
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const SLIDESHOW_INTERVAL = 20000; // 20 seconds per slide
+    
+    // Auto-advance slideshow
+    useEffect(() => {
+        if (!hasMultipleHeroes || showShowreel) return;
+        
+        const timer = setInterval(() => {
+            setCurrentHeroIndex(prev => (prev + 1) % heroProjects.length);
+        }, SLIDESHOW_INTERVAL);
+        
+        return () => clearInterval(timer);
+    }, [hasMultipleHeroes, heroProjects.length, showShowreel]);
+    
+    // Current hero project (for slideshow or single hero)
+    const heroProject = showShowreel ? null : (heroProjects.length > 0 ? heroProjects[currentHeroIndex] : featuredProjects[0]);
+    
+    // Grid projects exclude ALL hero projects (not just the current one)
+    const gridProjects = showShowreel 
+        ? featuredProjects 
+        : featuredProjects.filter(p => !p.isHero);
     
     const featuredPost = posts[0];
 
@@ -71,16 +96,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                         </div>
                      </div>
                 ) : heroProject ? (() => {
-                    const heroIsLowRes = !heroProject.gallery || heroProject.gallery.length === 0;
+                    // Has real images if gallery exists OR if we have a video with heroImage (video thumbnail)
+                    const heroHasRealImage = (heroProject.gallery && heroProject.gallery.length > 0) || (heroProject.videoUrl && heroProject.heroImage);
                     return (
                     <div onClick={() => {
                         navigate(`/work/${heroProject.slug || heroProject.id}`, { state: { from: location.pathname + location.search } });
                     }} className="w-full h-full relative">
                         {/* Gradient fade at bottom for low-res hero */}
-                        {heroIsLowRes && (
+                        {!heroHasRealImage && (
                             <div className="absolute inset-0 bg-gradient-to-t from-bg-main via-transparent via-25% to-transparent z-10 pointer-events-none"></div>
                         )}
-                        {!heroIsLowRes && (
+                        {heroHasRealImage && (
                             <>
                                 <div 
                                     className={`absolute inset-0 bg-black z-10 transition ${THEME.animation.medium}`}
@@ -91,28 +117,73 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             </>
                         )}
                         
-                        <OptimizedImage
-                            recordId={heroProject.id}
-                            fallbackUrl={heroProject.heroImage}
-                            type="project"
-                            index={0}
-                            totalImages={heroProject.gallery?.length || 0}
-                            alt={heroProject.title}
-                            loading="eager"
-                            preset={upgradePreset(getSessionPreset())}
-                            skipDowngrade={true}
-                            className={`w-full h-full object-cover ${
-                                heroIsLowRes
-                                    ? 'animate-slow-spin blur-[60px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125'
-                                    : 'transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out'
-                            }`}
-                        />
+                        {/* Slideshow: render all hero images, fade between them */}
+                        {hasMultipleHeroes ? (
+                            heroProjects.map((hp, idx) => (
+                                <div 
+                                    key={hp.id} 
+                                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentHeroIndex ? 'opacity-100' : 'opacity-0'}`}
+                                >
+                                    <OptimizedImage
+                                        recordId={hp.id}
+                                        fallbackUrl={hp.heroImage}
+                                        type="project"
+                                        index={0}
+                                        totalImages={hp.gallery?.length || 0}
+                                        alt={hp.title}
+                                        loading={idx === 0 ? "eager" : "lazy"}
+                                        preset={upgradePreset(getSessionPreset())}
+                                        skipDowngrade={true}
+                                        className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
+                                    />
+                                </div>
+                            ))
+                        ) : (
+                            <OptimizedImage
+                                recordId={heroProject.id}
+                                fallbackUrl={heroProject.heroImage}
+                                type="project"
+                                index={0}
+                                totalImages={heroProject.gallery?.length || 0}
+                                alt={heroProject.title}
+                                loading="eager"
+                                preset={upgradePreset(getSessionPreset())}
+                                skipDowngrade={true}
+                                className={`w-full h-full object-cover ${
+                                    heroHasRealImage
+                                        ? 'transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out'
+                                        : 'animate-slow-spin blur-[60px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125'
+                                }`}
+                            />
+                        )}
+                        
                         <div className={`absolute z-20 mix-blend-difference text-white home-hero-text ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
                             <span className={`block ${THEME.typography.meta} mb-4 opacity-0 animate-fade-in-up`} style={{ animationDelay: '200ms' }}>Featured Work</span>
-                            <h1 className={`${THEME.typography.h1} opacity-0 animate-fade-in-up`} style={{ animationDelay: '300ms' }}>
+                            <h1 className={`${THEME.typography.h1} opacity-0 animate-fade-in-up`} style={{ animationDelay: '300ms' }} key={heroProject.id}>
                                 {heroProject.title}
                             </h1>
                         </div>
+                        
+                        {/* Slideshow indicators */}
+                        {hasMultipleHeroes && (
+                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+                                {heroProjects.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentHeroIndex(idx);
+                                        }}
+                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                            idx === currentHeroIndex 
+                                                ? 'bg-white w-6' 
+                                                : 'bg-white/40 hover:bg-white/60'
+                                        }`}
+                                        aria-label={`Go to slide ${idx + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                     );
                 })() : (
@@ -132,7 +203,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
 
                 <div className={`grid grid-cols-1 ${THEME.filmography.grid.columns} ${THEME.filmography.grid.gapX} ${THEME.filmography.grid.gapY} mb-40`}>
                     {gridProjects.map((p, i) => {
-                        const isLowRes = !p.gallery || p.gallery.length === 0;
+                        // Has real images if gallery exists OR if we have a video with heroImage (video thumbnail)
+                        const hasRealImage = (p.gallery && p.gallery.length > 0) || (p.videoUrl && p.heroImage);
                         return (
                         <div 
                             key={p.id} 
@@ -143,20 +215,26 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                             style={{ animationDelay: `${i * THEME.animation.staggerDelay}ms`, animationFillMode: 'forwards' }}
                         >
                             <div className={`w-full ${THEME.filmography.grid.aspectRatio} overflow-hidden relative bg-[#111] mb-4`}>
-                                <OptimizedImage
-                                    recordId={p.id}
-                                    fallbackUrl={p.heroImage}
-                                    type="project"
-                                    index={0}
-                                    totalImages={p.gallery?.length || 0}
-                                    alt={p.title}
-                                    loading="lazy"
-                                    className={`w-full h-full object-cover ${
-                                        isLowRes 
-                                            ? 'animate-slow-spin blur-[40px] opacity-100 saturate-[2.0] brightness-[3.25] contrast-125' 
-                                            : 'transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out'
-                                    }`}
-                                />
+                                {hasRealImage ? (
+                                    <OptimizedImage
+                                        recordId={p.id}
+                                        fallbackUrl={p.heroImage}
+                                        type="project"
+                                        index={0}
+                                        totalImages={p.gallery?.length || 0}
+                                        alt={p.title}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                    />
+                                ) : (
+                                    <ProceduralThumbnail
+                                        title={p.title}
+                                        year={p.year}
+                                        type={p.type}
+                                        className="w-full h-full object-cover transform-gpu scale-100 opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700 ease-out"
+                                        loading="lazy"
+                                    />
+                                )}
                             </div>
                             <div className="flex justify-between items-baseline text-white">
                                 <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition tracking-tight`}>{p.title}</h2>
