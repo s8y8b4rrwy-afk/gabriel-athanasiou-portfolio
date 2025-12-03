@@ -23,11 +23,11 @@ interface ShareManifest {
   posts: ShareItem[];
 }
 
-// Default fallback meta (will be enhanced from manifest if available)
-// Note: DEFAULT_META.image is a placeholder - actual default comes from manifest.config.defaultOgImage
+// Default fallback meta (will be enhanced from portfolio config)
+// Note: These are overridden by portfolio-specific config at runtime
 const DEFAULT_META = {
-  title: "GABRIEL ATHANASIOU | Director",
-  description: "Director based in London & Athens. Narrative, Commercial, Music Video.",
+  title: "Portfolio",
+  description: "Creative portfolio",
   image: "", // Populated from manifest.config.defaultOgImage or ultimate fallback
   type: "website"
 };
@@ -55,8 +55,20 @@ function truncate(text: string, maxLength: number = 200): string {
 }
 
 // Generate structured data (JSON-LD) for SEO
-function generateStructuredData(item: any, pathname: string, canonicalUrl: string): string {
+function generateStructuredData(item: any, pathname: string, canonicalUrl: string, portfolioConfig?: any): string {
   const siteOrigin = new URL(canonicalUrl).origin;
+  
+  // Get portfolio-specific owner info
+  const ownerName = portfolioConfig?.navTitle || portfolioConfig?.siteTitle || "Portfolio Owner";
+  const jobTitle = portfolioConfig?.portfolioId === 'postproduction' ? "Colorist & Editor" : "Director";
+  const socialLinks = portfolioConfig?.portfolioId === 'postproduction' 
+    ? [] // Post-production portfolio may have different/no social links
+    : [
+        "https://twitter.com/gab_ath",
+        "https://www.instagram.com/gab.ath",
+        "https://www.linkedin.com/in/gabathanasiou/",
+        "https://www.imdb.com/name/nm7048843/"
+      ];
   
   if (pathname.startsWith("/work/")) {
     // Project: Movie or VideoObject schema
@@ -82,19 +94,30 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
       schema.uploadDate = isoDate;
     }
     
-    // Director information
-    schema.director = {
-      "@type": "Person",
-      "name": "Gabriel Athanasiou",
-      "jobTitle": "Director",
-      "url": siteOrigin,
-      "sameAs": [
-        "https://twitter.com/gab_ath",
-        "https://www.instagram.com/gab.ath",
-        "https://www.linkedin.com/in/gabathanasiou/",
-        "https://www.imdb.com/name/nm7048843/"
-      ]
-    };
+    // Creator/Director information based on portfolio type
+    if (portfolioConfig?.portfolioId === 'postproduction') {
+      // For post-production, list as creator/contributor
+      schema.contributor = {
+        "@type": "Person",
+        "name": ownerName,
+        "jobTitle": jobTitle,
+        "url": siteOrigin
+      };
+      if (socialLinks.length > 0) {
+        schema.contributor.sameAs = socialLinks;
+      }
+    } else {
+      // For directing portfolio, list as director
+      schema.director = {
+        "@type": "Person",
+        "name": ownerName,
+        "jobTitle": jobTitle,
+        "url": siteOrigin
+      };
+      if (socialLinks.length > 0) {
+        schema.director.sameAs = socialLinks;
+      }
+    }
     
     // Credits
     if (item.credits && item.credits.length > 0) {
@@ -153,6 +176,16 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
       ? (item.date.includes('T') ? item.date : `${item.date}T00:00:00Z`)
       : undefined;
     
+    const authorSchema: any = {
+      "@type": "Person",
+      "name": ownerName,
+      "jobTitle": jobTitle,
+      "url": siteOrigin
+    };
+    if (socialLinks.length > 0) {
+      authorSchema.sameAs = socialLinks;
+    }
+    
     const schema: any = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -160,21 +193,10 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
       "description": truncate(item.content || item.description || '', 200),
       "image": item.imageUrl || item.coverImage || item.image,
       "url": canonicalUrl,
-      "author": {
-        "@type": "Person",
-        "name": "Gabriel Athanasiou",
-        "jobTitle": "Director",
-        "url": siteOrigin,
-        "sameAs": [
-          "https://twitter.com/gab_ath",
-          "https://www.instagram.com/gab.ath",
-          "https://www.linkedin.com/in/gabathanasiou/",
-          "https://www.imdb.com/name/nm7048843/"
-        ]
-      },
+      "author": authorSchema,
       "publisher": {
         "@type": "Person",
-        "name": "Gabriel Athanasiou"
+        "name": ownerName
       }
     };
     
@@ -189,21 +211,26 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
     return JSON.stringify(schema);
   }
   
-  // Default Person schema for homepage or other pages
-  return JSON.stringify({
+  // Default Person/Organization schema for homepage or other pages
+  const personSchema: any = {
     "@context": "https://schema.org",
     "@type": "Person",
-    "name": "Gabriel Athanasiou",
+    "name": ownerName,
     "url": canonicalUrl,
-    "jobTitle": "Director",
-    "areaServed": ["London", "Athens"],
-    "sameAs": [
-      "https://twitter.com/gab_ath",
-      "https://www.instagram.com/gab.ath",
-      "https://www.linkedin.com/in/gabathanasiou/",
-      "https://www.imdb.com/name/nm7048843/"
-    ]
-  });
+    "jobTitle": jobTitle
+  };
+  
+  if (portfolioConfig?.portfolioId === 'postproduction') {
+    personSchema.areaServed = portfolioConfig?.location || [];
+  } else {
+    personSchema.areaServed = ["London", "Athens"];
+  }
+  
+  if (socialLinks.length > 0) {
+    personSchema.sameAs = socialLinks;
+  }
+  
+  return JSON.stringify(personSchema);
 }
 
 export default async (request: Request, context: Context) => {
@@ -238,6 +265,13 @@ export default async (request: Request, context: Context) => {
   let defaultOgImage = ULTIMATE_FALLBACK;
   let portfolioData: any = null;
   
+  // Portfolio-specific branding (will be populated from config)
+  let siteName = "Portfolio";
+  let siteTitle = "Portfolio";
+  let siteDescription = "Creative portfolio";
+  let ownerName = "";
+  let twitterHandle = "";
+  
   const slug = pathname.split("/").filter(Boolean).pop() || "";
   
   // Get portfolio mode from environment (set per Netlify site)
@@ -253,9 +287,17 @@ export default async (request: Request, context: Context) => {
   if (portfolioRes.ok) {
     portfolioData = await portfolioRes.json();
     
+    // Get portfolio-specific config for OG tags
+    const config = portfolioData.config || {};
+    siteName = config.navTitle || config.siteTitle || siteName;
+    siteTitle = config.seoTitle || `${siteName} | ${config.portfolioId === 'postproduction' ? 'Post-Production' : 'Director'}`;
+    siteDescription = config.seoDescription || siteDescription;
+    ownerName = config.navTitle || siteName;
+    twitterHandle = config.twitterHandle || (config.portfolioId === 'postproduction' ? '' : '@gabrielcine');
+    
     // Get default OG image from config
-    if (portfolioData.config?.defaultOgImage) {
-      defaultOgImage = portfolioData.config.defaultOgImage;
+    if (config.defaultOgImage) {
+      defaultOgImage = config.defaultOgImage;
     }
     
     if (pathname.startsWith("/work/") && portfolioData.projects) {
@@ -306,33 +348,36 @@ export default async (request: Request, context: Context) => {
       }
       
       meta = {
-        title: escapeHtml(`${item.title} | GABRIEL ATHANASIOU`),
+        title: escapeHtml(`${item.title} | ${siteName}`),
         description: escapeHtml(truncate(item.description || item.content || '', 200)),
         image: escapeHtml(item.heroImage || item.imageUrl || item.image || item.coverImage || (item.gallery && item.gallery[0]) || defaultOgImage),
         type: ogType
       };
     } else if (pathname === '/work') {
-      // Filmography index page
+      // Work index page - use portfolio-specific label
+      const workLabel = portfolioData?.config?.workSectionLabel || 'Work';
       meta = {
-        title: escapeHtml("Filmography | GABRIEL ATHANASIOU"),
-        description: escapeHtml("Browse my collection of narrative films, commercials, music videos, and documentaries."),
+        title: escapeHtml(`${workLabel} | ${siteName}`),
+        description: escapeHtml(portfolioData?.config?.portfolioId === 'postproduction' 
+          ? "Professional color grading, editing, and post-production services."
+          : "Browse my collection of narrative films, commercials, music videos, and documentaries."),
         image: defaultOgImage,
         type: "website"
       };
     } else if (pathname === '/about') {
       // About page
-      const aboutBio = portfolioData?.about?.bio || "Director based in London & Athens. Narrative, Commercial, Music Video.";
+      const aboutBio = portfolioData?.about?.bio || siteDescription;
       const aboutImage = portfolioData?.about?.picture || defaultOgImage;
       meta = {
-        title: escapeHtml("About | GABRIEL ATHANASIOU"),
+        title: escapeHtml(`About | ${siteName}`),
         description: escapeHtml(truncate(aboutBio, 200)),
         image: escapeHtml(aboutImage),
         type: "website"
       };
     } else if (pathname === '/journal') {
-      // Journal index page
+      // Journal index page (only on directing portfolio)
       meta = {
-        title: escapeHtml("Journal | GABRIEL ATHANASIOU"),
+        title: escapeHtml(`Journal | ${siteName}`),
         description: escapeHtml("Updates, behind-the-scenes insights, and reflections from my filmmaking journey."),
         image: defaultOgImage,
         type: "website"
@@ -340,22 +385,28 @@ export default async (request: Request, context: Context) => {
     } else if (pathname === '/game') {
       // Game page
       meta = {
-        title: escapeHtml("Game | GABRIEL ATHANASIOU"),
-        description: escapeHtml("Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"),
+        title: escapeHtml(`Game | ${siteName}`),
+        description: escapeHtml(`Test your knowledge of ${ownerName}'s work in this interactive trivia game. Can you guess the project from a single frame?`),
         image: "https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg",
         type: "website"
       };
     } else {
-      // Home page or other
-      meta = { ...DEFAULT_META, image: defaultOgImage };
+      // Home page or other - use portfolio-specific defaults
+      meta = {
+        title: escapeHtml(siteTitle),
+        description: escapeHtml(siteDescription),
+        image: defaultOgImage,
+        type: "website"
+      };
     }
 
     const canonicalUrl = escapeHtml(url.href);
 
-    // Generate structured data (JSON-LD) for SEO
+    // Generate structured data (JSON-LD) for SEO - pass portfolio config for proper branding
+    const portfolioConfig = portfolioData?.config;
     const structuredData = item 
-      ? generateStructuredData(item, pathname, canonicalUrl)
-      : generateStructuredData(null, pathname, canonicalUrl);
+      ? generateStructuredData(item, pathname, canonicalUrl, portfolioConfig)
+      : generateStructuredData(null, pathname, canonicalUrl, portfolioConfig);
 
     // Generate complete meta block with structured data
     let metaBlock = `
@@ -370,7 +421,7 @@ export default async (request: Request, context: Context) => {
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="${escapeHtml(meta.title)}">
     <meta property="og:url" content="${canonicalUrl}">
-    <meta property="og:site_name" content="Gabriel Athanasiou">`;
+    <meta property="og:site_name" content="${escapeHtml(siteName)}">`;
     
     // Add type-specific OpenGraph tags
     if (meta.type === 'article' && item) {
@@ -382,7 +433,7 @@ export default async (request: Request, context: Context) => {
     <meta property="article:published_time" content="${escapeHtml(isoDate)}">`;
       }
       metaBlock += `
-    <meta property="article:author" content="Gabriel Athanasiou">`;
+    <meta property="article:author" content="${escapeHtml(ownerName)}">`;
       if ((item as any).tags && (item as any).tags.length > 0) {
         (item as any).tags.forEach((tag: string) => {
           metaBlock += `
@@ -397,7 +448,7 @@ export default async (request: Request, context: Context) => {
     <meta property="video:release_date" content="${escapeHtml(releaseYear)}-01-01">`;
       }
       metaBlock += `
-    <meta property="video:director" content="Gabriel Athanasiou">`;
+    <meta property="video:director" content="${escapeHtml(ownerName)}">`;
       
       // Add video URL if available
       if ((item as any).videoUrl) {
@@ -418,8 +469,8 @@ export default async (request: Request, context: Context) => {
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${meta.title}">
     <meta name="twitter:description" content="${meta.description}">
-    <meta name="twitter:image" content="${meta.image}">
-    <meta name="twitter:creator" content="@gabrielcine">
+    <meta name="twitter:image" content="${meta.image}">${twitterHandle ? `
+    <meta name="twitter:creator" content="${escapeHtml(twitterHandle)}">` : ''}
     <link rel="canonical" href="${canonicalUrl}">
     <script type="application/ld+json">${structuredData}</script>`;
 

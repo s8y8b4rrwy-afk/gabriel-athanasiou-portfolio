@@ -34,3 +34,6 @@ __test_temp__/
 
 # Keep cloudinary-mapping.json in git for persistence across deployments
 # This enables incremental syncs (only upload changed images)
+
+# Netlify env files with secrets
+.env.netlify-*
