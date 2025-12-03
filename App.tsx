@@ -54,6 +54,11 @@ export default function App() {
         const result = await cmsService.fetchAll();
         setData(result);
         setLoading(false);
+        
+        // Initialize Google Analytics if measurement ID is configured
+        if (result.config?.gaMeasurementId) {
+          analyticsService.init(result.config.gaMeasurementId);
+        }
       } catch (error) {
         console.error('Failed to initialize app:', error);
         setLoading(false);

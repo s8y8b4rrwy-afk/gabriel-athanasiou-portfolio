@@ -107,6 +107,9 @@ export interface HomeConfig {
   // Legal/Business
   tradingNameDisclosure?: string; // UK sole trader requirement, e.g. "Lemon Post is a trading name of Gavriil Athanasiou"
   
+  // Analytics
+  gaMeasurementId?: string; // Google Analytics 4 Measurement ID (e.g., 'G-XXXXXXXXXX')
+  
   // Layout options
   aboutLayout?: string; // 'standard' for now
   

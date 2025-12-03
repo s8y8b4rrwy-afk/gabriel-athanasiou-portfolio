@@ -855,6 +855,7 @@ function getDefaultSettings() {
     aboutLayout: 'standard',
     themeMode: 'dark',
     tradingNameDisclosure: '',
+    gaMeasurementId: '',
     
     // Existing fields
     showreel: {
@@ -1549,6 +1550,9 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
   
   // Legal/Business: Trading name disclosure for UK sole traders
   const tradingNameDisclosure = f['Trading Name Disclosure'] || '';
+  
+  // Analytics: Google Analytics 4 Measurement ID
+  const gaMeasurementId = f['GA Measurement ID'] || '';
 
   // Portfolio owner name: use 'Owner Name' field first, then Site Title, then default
   let portfolioOwnerName = f['Owner Name'] || f['Portfolio Owner'] || siteTitle || '';
@@ -1576,6 +1580,7 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
     aboutLayout,
     themeMode,
     tradingNameDisclosure,
+    gaMeasurementId,
     
     // Existing fields
     showreel: {
