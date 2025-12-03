@@ -1236,20 +1236,21 @@
     "portfolioId": "postproduction",
     "siteTitle": "Lemon Post",
     "navTitle": "Lemon Post",
-    "seoTitle": "LEMON POST PRODUCTION",
-    "seoDescription": "A Post Production site.",
-    "domain": "lemonpost.com",
+    "seoTitle": "LEMON POST | Freelance Colorist & Editor | London",
+    "seoDescription": "Fresh post-production services. Specializing in DaVinci Resolve Colour Grading and Creative Editing. Elevate your footage with Lemon Post. Watch the portfolio.",
+    "domain": "lemonpost.studio",
     "logo": "",
     "favicon": "",
     "fontFamily": "",
-    "workSectionLabel": "Work",
+    "workSectionLabel": "All Work",
     "hasJournal": false,
     "showRoleFilter": true,
     "showOtherPortfolioLink": true,
     "otherPortfolioUrl": "https://directedbygabriel.com",
-    "otherPortfolioLabel": "Directing Work",
+    "otherPortfolioLabel": "Psst... I also Direct",
     "aboutLayout": "standard",
     "themeMode": "dark",
+    "tradingNameDisclosure": "Lemon Post is a trading name of Gavriil Athanasiou.",
     "showreel": {
       "enabled": false,
       "videoUrl": "",
@@ -1266,7 +1267,7 @@
       "imdb": ""
     },
     "about": {
-      "bio": "This is my post production website. We offer quality services. Thank you.",
+      "bio": "The creative alias of freelance Colorist and Editor, Gavriil Athanasiou.\n\nI help filmmakers, agencies, and brands cross the finish line. With a specialized focus on Color Grading, I take flat log footage and turn it into a vibrant, finished product that tells a story.\n\nI started Lemon Post to offer a dedicated space for high-quality finishing services without the overhead (or bureaucracy) of a large agency. This means you get studio-level color science and editing precision, but with direct communication and flexible scheduling.\n\nMy specialties?\n\nColor Grading: Look development, skin tone retention, shot matching.\n\nEditing: Narrative storytelling and pacing.\n\nFinishing: Denoising, grain, and final export delivery.",
       "profileImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603235/portfolio-config-aboutImage.jpg"
     },
     "allowedRoles": [
@@ -1276,10 +1277,10 @@
     ],
     "defaultOgImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
     "portfolioOwnerName": "Lemon Post",
-    "lastModified": "2025-12-03T12:20:41.000Z"
+    "lastModified": "2025-12-03T15:36:24.000Z"
   },
   "portfolioMode": "postproduction",
-  "lastUpdated": "2025-12-03T12:40:34.859Z",
+  "lastUpdated": "2025-12-03T15:36:45.488Z",
   "version": "1.0",
   "source": "build-time-sync",
   "_rawRecords": {
@@ -17295,30 +17296,31 @@
           "Contact Phone": "+44(0)7517586413",
           "Rep UK": "FilmLemon",
           "Rep USA": "FilmLemon",
-          "Bio": "This is my post production website. We offer quality services. Thank you.",
+          "Bio": "The creative alias of freelance Colorist and Editor, Gavriil Athanasiou.\n\nI help filmmakers, agencies, and brands cross the finish line. With a specialized focus on Color Grading, I take flat log footage and turn it into a vibrant, finished product that tells a story.\n\nI started Lemon Post to offer a dedicated space for high-quality finishing services without the overhead (or bureaucracy) of a large agency. This means you get studio-level color science and editing precision, but with direct communication and flexible scheduling.\n\nMy specialties?\n\nColor Grading: Look development, skin tone retention, shot matching.\n\nEditing: Narrative storytelling and pacing.\n\nFinishing: Denoising, grain, and final export delivery.",
           "Allowed Roles": [
             "Colourist",
             "Editor",
             "Beauty & VFX Work"
           ],
           "Use Cloudinary": true,
-          "Last Modified": "2025-12-03T12:20:41.000Z",
+          "Last Modified": "2025-12-03T15:36:24.000Z",
           "Site Title": "Lemon Post",
           "Nav Title": "Lemon Post",
-          "SEO Title": "LEMON POST PRODUCTION",
-          "SEO Description": "A Post Production site.",
-          "Domain": "lemonpost.com",
-          "Work Section Label": "Work",
+          "SEO Title": "LEMON POST | Freelance Colorist & Editor | London",
+          "SEO Description": "Fresh post-production services. Specializing in DaVinci Resolve Colour Grading and Creative Editing. Elevate your footage with Lemon Post. Watch the portfolio.",
+          "Domain": "lemonpost.studio",
+          "Work Section Label": "All Work",
           "Show Other Portfolio Link": true,
           "Other Portfolio URL": "https://directedbygabriel.com",
-          "Other Portfolio Label": "Directing Work",
-          "Show Role Filter": true
+          "Other Portfolio Label": "Psst... I also Direct",
+          "Show Role Filter": true,
+          "Trading Name Disclosure": "Lemon Post is a trading name of Gavriil Athanasiou."
         }
       }
     ]
   },
   "syncMetadata": {
-    "lastSync": "2025-12-03T12:40:34.859Z",
+    "lastSync": "2025-12-03T15:36:45.488Z",
     "timestamps": {
       "Projects": {
         "rec01thlhC4hHGRlS": "2025-10-28T16:07:14.000Z",
@@ -17642,7 +17644,7 @@
       },
       "Settings": {
         "recIDUlHJGDSZYo2N": "2025-12-03T11:56:26.000Z",
-        "recRWZkSNY33LxFIU": "2025-12-03T12:20:41.000Z"
+        "recRWZkSNY33LxFIU": "2025-12-03T15:36:24.000Z"
       }
     }
   }

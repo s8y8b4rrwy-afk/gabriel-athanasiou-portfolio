@@ -147,6 +147,14 @@ export const Navigation: React.FC<NavigationProps> = ({ showLinks = true, config
                 <NavLink to="/about" onClick={() => handleNavClick('/about')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                     About
                 </NavLink>
+                {config?.portfolioId === 'postproduction' && config?.contact?.email && (
+                    <a 
+                        href={`mailto:${config.contact.email}?subject=${encodeURIComponent('Project Inquiry — Let\'s Collaborate')}`}
+                        className={`${THEME.typography.nav} cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-500 whitespace-nowrap`}
+                    >
+                        Start a Project
+                    </a>
+                )}
                 {config?.portfolioId !== 'postproduction' && (
                     <NavLink to="/game" onClick={() => handleNavClick('/game')} className={({ isActive }) => `${getBtnClass(isActive)} whitespace-nowrap`}>
                         Game

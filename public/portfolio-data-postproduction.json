@@ -1250,6 +1250,7 @@
     "otherPortfolioLabel": "Psst... I also Direct",
     "aboutLayout": "standard",
     "themeMode": "dark",
+    "tradingNameDisclosure": "Lemon Post is a trading name of Gavriil Athanasiou.",
     "showreel": {
       "enabled": false,
       "videoUrl": "",
@@ -1276,10 +1277,10 @@
     ],
     "defaultOgImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
     "portfolioOwnerName": "Lemon Post",
-    "lastModified": "2025-12-03T14:53:12.000Z"
+    "lastModified": "2025-12-03T15:36:24.000Z"
   },
   "portfolioMode": "postproduction",
-  "lastUpdated": "2025-12-03T15:13:35.867Z",
+  "lastUpdated": "2025-12-03T15:36:45.488Z",
   "version": "1.0",
   "source": "build-time-sync",
   "_rawRecords": {
@@ -17302,7 +17303,7 @@
             "Beauty & VFX Work"
           ],
           "Use Cloudinary": true,
-          "Last Modified": "2025-12-03T14:53:12.000Z",
+          "Last Modified": "2025-12-03T15:36:24.000Z",
           "Site Title": "Lemon Post",
           "Nav Title": "Lemon Post",
           "SEO Title": "LEMON POST | Freelance Colorist & Editor | London",
@@ -17312,13 +17313,14 @@
           "Show Other Portfolio Link": true,
           "Other Portfolio URL": "https://directedbygabriel.com",
           "Other Portfolio Label": "Psst... I also Direct",
-          "Show Role Filter": true
+          "Show Role Filter": true,
+          "Trading Name Disclosure": "Lemon Post is a trading name of Gavriil Athanasiou."
         }
       }
     ]
   },
   "syncMetadata": {
-    "lastSync": "2025-12-03T15:13:35.867Z",
+    "lastSync": "2025-12-03T15:36:45.488Z",
     "timestamps": {
       "Projects": {
         "rec01thlhC4hHGRlS": "2025-10-28T16:07:14.000Z",
@@ -17642,7 +17644,7 @@
       },
       "Settings": {
         "recIDUlHJGDSZYo2N": "2025-12-03T11:56:26.000Z",
-        "recRWZkSNY33LxFIU": "2025-12-03T14:53:12.000Z"
+        "recRWZkSNY33LxFIU": "2025-12-03T15:36:24.000Z"
       }
     }
   }

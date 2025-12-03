@@ -3,7 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /.env
 
-Sitemap: https://lemonpost.com/sitemap.xml
+Sitemap: https://lemonpost.studio/sitemap.xml
 
 # Specific rules for social media crawlers
 User-agent: facebookexternalhit

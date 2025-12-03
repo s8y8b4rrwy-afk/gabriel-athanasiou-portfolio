@@ -10,6 +10,7 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
     const hasContact = config.contact?.email || config.contact?.instagram || config.contact?.vimeo || config.contact?.linkedin || config.contact?.imdb;
     const hasRepresentation = config.contact?.repUK || config.contact?.repUSA;
     const hasOtherPortfolio = config.showOtherPortfolioLink && config.otherPortfolioUrl;
+    const hasSocialLinks = config.contact?.instagram || config.contact?.vimeo || config.contact?.linkedin || config.contact?.imdb;
     
     // Get dynamic values from config
     const footerName = config.navTitle || config.portfolioOwnerName || 'Gabriel Athanasiou';
@@ -22,103 +23,120 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className={`${THEME.header.paddingX} py-12 md:py-16 border-t border-white/10 bg-bg-main`}>
+        <footer className={`${THEME.header.paddingX} py-16 md:py-20 border-t border-white/10 bg-bg-main`}>
             <div className="max-w-7xl mx-auto">
-                {/* Main info row */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 md:gap-12">
-                    {/* Left: Name & Title */}
-                    <div className="flex-shrink-0">
-                        <p className={`${THEME.typography.meta} text-white mb-2`}>{footerName}</p>
-                        <p className="text-gray-400 text-sm">
+                
+                {/* Mobile: Stacked layout / Desktop: Grid layout */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+                    
+                    {/* Column 1: Name, Title & Email */}
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-medium tracking-wider uppercase text-white">
+                            {footerName}
+                        </h3>
+                        <p className="text-sm text-gray-400">
                             {footerTitle}
-                            <span className="mx-2 text-gray-600">·</span>
+                        </p>
+                        <p className="text-sm text-gray-500">
                             <span className="italic">London</span>
-                            <span className="text-gray-500 mx-1">&</span>
+                            <span className="mx-1.5 text-gray-600">&</span>
                             <span className="italic">Worldwide</span>
                         </p>
                         {config.contact?.email && (
                             <a 
                                 href={`mailto:${config.contact.email}`}
-                                className="text-gray-400 text-sm hover:text-white transition mt-2 block"
+                                className="text-sm text-gray-400 hover:text-white transition-colors inline-block pt-1"
                             >
                                 {config.contact.email}
                             </a>
                         )}
                     </div>
 
-                    {/* Middle: Representation */}
+                    {/* Column 2: Representation */}
                     {hasRepresentation && (
-                        <div>
-                            <p className={`${THEME.typography.meta} text-text-muted mb-3`}>Rep'd by</p>
-                            <div className="flex gap-8 md:gap-12">
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-medium tracking-wider uppercase text-gray-500">
+                                Representation
+                            </h3>
+                            <div className="grid grid-cols-2 gap-6">
                                 {config.contact?.repUK && (
-                                    <div>
-                                        <p className="text-xs font-bold text-white uppercase tracking-wider mb-1">UK / Europe</p>
-                                        <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{config.contact.repUK}</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-xs font-medium text-white uppercase tracking-wide">UK / Europe</p>
+                                        <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{config.contact.repUK}</p>
                                     </div>
                                 )}
                                 {config.contact?.repUSA && (
-                                    <div>
-                                        <p className="text-xs font-bold text-white uppercase tracking-wider mb-1">USA</p>
-                                        <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{config.contact.repUSA}</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-xs font-medium text-white uppercase tracking-wide">USA</p>
+                                        <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{config.contact.repUSA}</p>
                                     </div>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {/* Right: Social Links */}
-                    <div>
-                        <p className={`${THEME.typography.meta} text-text-muted mb-3`}>Find me on</p>
-                        <div className="flex gap-4 md:gap-6">
-                            {config.contact?.instagram && (
-                                <a href={config.contact.instagram} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>
-                                    Instagram
-                                </a>
-                            )}
-                            {config.contact?.vimeo && (
-                                <a href={config.contact.vimeo} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>
-                                    Vimeo
-                                </a>
-                            )}
-                            {config.contact?.linkedin && (
-                                <a href={config.contact.linkedin} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>
-                                    LinkedIn
-                                </a>
-                            )}
-                            {config.contact?.imdb && (
-                                <a href={config.contact.imdb} target="_blank" rel="noopener noreferrer" className={`${THEME.typography.meta} text-text-muted hover:text-white transition`}>
-                                    IMDb
-                                </a>
-                            )}
+                    {/* Column 3: Social Links */}
+                    {hasSocialLinks && (
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-medium tracking-wider uppercase text-gray-500">
+                                Connect
+                            </h3>
+                            <div className="flex flex-wrap gap-x-5 gap-y-2">
+                                {config.contact?.instagram && (
+                                    <a href={config.contact.instagram} target="_blank" rel="noopener noreferrer" 
+                                       className="text-sm text-gray-400 hover:text-white transition-colors">
+                                        Instagram
+                                    </a>
+                                )}
+                                {config.contact?.vimeo && (
+                                    <a href={config.contact.vimeo} target="_blank" rel="noopener noreferrer" 
+                                       className="text-sm text-gray-400 hover:text-white transition-colors">
+                                        Vimeo
+                                    </a>
+                                )}
+                                {config.contact?.linkedin && (
+                                    <a href={config.contact.linkedin} target="_blank" rel="noopener noreferrer" 
+                                       className="text-sm text-gray-400 hover:text-white transition-colors">
+                                        LinkedIn
+                                    </a>
+                                )}
+                                {config.contact?.imdb && (
+                                    <a href={config.contact.imdb} target="_blank" rel="noopener noreferrer" 
+                                       className="text-sm text-gray-400 hover:text-white transition-colors">
+                                        IMDb
+                                    </a>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Other Portfolio Link (for cross-portfolio navigation) */}
                 {hasOtherPortfolio && (
-                    <div className="mt-8 pt-6 border-t border-white/5">
+                    <div className="mt-10 pt-8 border-t border-white/5">
                         <a 
                             href={config.otherPortfolioUrl}
-                            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition group"
+                            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
                         >
-                            <span>→</span>
+                            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
                             <span>{config.otherPortfolioLabel || 'View Other Portfolio'}</span>
                         </a>
                     </div>
                 )}
 
-                {/* Copyright row */}
-                <div className="mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row md:justify-between gap-2">
-                    {/* Trading name disclosure (UK legal requirement for sole traders) */}
-                    {config.tradingNameDisclosure && (
-                        <p className="text-gray-500 text-xs">
-                            {config.tradingNameDisclosure}
+                {/* Bottom row: Trading name & Copyright */}
+                <div className="mt-12 pt-6 border-t border-white/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        {/* Trading name disclosure (UK legal requirement for sole traders) */}
+                        {config.tradingNameDisclosure && (
+                            <p className="text-xs text-gray-500 order-2 sm:order-1">
+                                {config.tradingNameDisclosure}
+                            </p>
+                        )}
+                        <p className="text-xs text-gray-600 order-1 sm:order-2">
+                            © {currentYear} {footerName}
                         </p>
-                    )}
-                    <p className="text-gray-600 text-xs md:ml-auto">
-                        © {currentYear} {footerName}
-                    </p>
+                    </div>
                 </div>
             </div>
         </footer>
