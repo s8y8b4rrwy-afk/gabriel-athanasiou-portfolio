@@ -53,8 +53,10 @@ ignore = "bash scripts/ignore-netlify-build.sh"
     Cache-Control = "public, max-age=31536000, immutable"
 
 [dev]
+command = "npm run dev:vite"
 targetPort = 3000
 port = 8888
+autoLaunch = false
 
 # Redirect /sitemap.xml to the dynamic sitemap function
 [[redirects]]

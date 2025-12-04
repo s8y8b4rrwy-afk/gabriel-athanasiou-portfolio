@@ -20,6 +20,8 @@ export enum ProjectType {
 export interface Credit {
   role: string;
   name: string;
+  isCrossSite?: boolean; // True if this credit comes from the other portfolio
+  externalUrl?: string;  // URL to the other portfolio (for clickable credits)
 }
 
 export interface ExternalLink {
@@ -134,6 +136,8 @@ export interface HomeConfig {
     profileImage?: string;
   };
   allowedRoles?: string[];
+  otherPortfolioAllowedRoles?: string[]; // Allowed roles from the other portfolio, used for cross-site credits
+  otherPortfolioName?: string; // Site title from the other portfolio, used for cross-site credit display names
   defaultOgImage?: string;
   portfolioOwnerName?: string;
   lastModified?: string;

@@ -557,7 +557,19 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                 {visibleCredits.map((c, i) => (
                                     <div key={i} className="animate-fade-in-up">
                                         <span className={`block ${THEME.typography.meta} text-gray-500 mb-1`}>{c.role}</span>
-                                        <span className="text-sm font-medium">{c.name}</span>
+                                        {c.isCrossSite && c.externalUrl ? (
+                                            <a
+                                                href={c.externalUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm font-medium text-white hover:text-white/80 transition underline underline-offset-2 inline-block"
+                                                title={`View on the other portfolio`}
+                                            >
+                                                {c.name}
+                                            </a>
+                                        ) : (
+                                            <span className="text-sm font-medium">{c.name}</span>
+                                        )}
                                     </div>
                                 ))}
                             </div>

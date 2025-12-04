@@ -1279,8 +1279,36 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
       }
     }
     
-    // Combine owner credits first, then additional credits
-    const credits = [...ownerCredits, ...extraCredits];
+    // Add cross-site credits based on the other portfolio's allowed roles
+    const crossSiteCredits = [];
+    const otherPortfolioAllowedRoles = config?.otherPortfolioAllowedRoles || [];
+    const otherPortfolioUrl = config?.otherPortfolioUrl || '';
+    
+    if (otherPortfolioAllowedRoles.length > 0 && otherPortfolioUrl && roleField) {
+      const projectRoles = Array.isArray(roleField) ? roleField : [roleField];
+      
+      // Find roles that match the OTHER portfolio's allowed roles
+      const matchingCrossSiteRoles = projectRoles.filter(role => 
+        otherPortfolioAllowedRoles.includes(role)
+      );
+      
+      // Add cross-site credits for matching roles
+      matchingCrossSiteRoles.forEach(role => {
+        crossSiteCredits.push({
+          role: role,
+          name: config?.otherPortfolioName || 'Unknown',
+          isCrossSite: true,
+          externalUrl: otherPortfolioUrl
+        });
+      });
+      
+      if (verbose && crossSiteCredits.length > 0) {
+        console.log(`[sync-core] 🔗 Added ${crossSiteCredits.length} cross-site credit(s) to "${title}"`);
+      }
+    }
+    
+    // Combine in order: owner credits, cross-site credits, then additional credits
+    const credits = [...ownerCredits, ...crossSiteCredits, ...extraCredits];
     
     // Get video URL directly from Video URL field
     const videoUrl = f['Video URL'] || '';
@@ -1520,6 +1548,31 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
     allowedRoles = allowedRolesRaw.split(',').map(r => r.trim()).filter(r => r);
   }
   
+  // Get the OTHER portfolio's allowed roles for cross-site credits
+  // If this is 'directing', get 'postproduction' allowed roles, and vice versa
+  let otherPortfolioAllowedRoles = [];
+  let otherPortfolioName = '';
+  const otherPortfolioMode = portfolioMode === 'directing' ? 'postproduction' : 'directing';
+  const otherPortfolioRecord = rawRecords.find(r => {
+    const portfolioId = r.fields?.['Portfolio ID'] || '';
+    return portfolioId.toLowerCase() === otherPortfolioMode.toLowerCase();
+  });
+  
+  if (otherPortfolioRecord) {
+    const otherRolesRaw = otherPortfolioRecord.fields?.['Allowed Roles'] || '';
+    if (Array.isArray(otherRolesRaw)) {
+      otherPortfolioAllowedRoles = otherRolesRaw;
+    } else if (typeof otherRolesRaw === 'string' && otherRolesRaw) {
+      otherPortfolioAllowedRoles = otherRolesRaw.split(',').map(r => r.trim()).filter(r => r);
+    }
+    
+    // Get the other portfolio's name for cross-site credits
+    otherPortfolioName = otherPortfolioRecord.fields?.['Site Title'] || 
+                         otherPortfolioRecord.fields?.['Owner Name'] || 
+                         otherPortfolioRecord.fields?.['Portfolio Owner'] || 
+                         (portfolioMode === 'directing' ? 'Lemon Post' : 'Gabriel Athanasiou');
+  }
+  
   const defaultOgImageAttachments = f['Default OG Image'] || [];
   const defaultOgAirtableUrl = defaultOgImageAttachments[0] ? defaultOgImageAttachments[0].url : '';
   const defaultOgImage = cloudinaryConfigImages['defaultOg'] || defaultOgAirtableUrl;
@@ -1609,6 +1662,8 @@ function processConfigRecords(rawRecords, cloudinaryMapping, verbose, portfolioM
       profileImage: aboutProfileImage
     },
     allowedRoles: allowedRoles,
+    otherPortfolioAllowedRoles: otherPortfolioAllowedRoles,
+    otherPortfolioName: otherPortfolioName,
     defaultOgImage: defaultOgImage,
     portfolioOwnerName: portfolioOwnerName,
     lastModified: lastModified
