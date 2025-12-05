@@ -3,6 +3,12 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[dev]
+  command = "npm run dev"
+  targetPort = 5174
+  port = 8888
+  autoLaunch = false
+
 # SPA routing - all routes go to index.html
 [[redirects]]
   from = "/*"

@@ -122,7 +122,20 @@ export function PublishButton({
         throw new Error(result.error || 'Publishing failed');
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
+      const rawMsg = err instanceof Error ? err.message : 'Unknown error';
+      
+      // Provide user-friendly messages for common Instagram API errors
+      let msg = rawMsg;
+      if (rawMsg.toLowerCase().includes('rate limit') || rawMsg.toLowerCase().includes('request limit')) {
+        msg = '⏳ Instagram rate limit reached. Please wait about an hour and try again.';
+      } else if (rawMsg.toLowerCase().includes('token') && rawMsg.toLowerCase().includes('expired')) {
+        msg = '🔑 Your Instagram token has expired. Please reconnect in Settings.';
+      } else if (rawMsg.toLowerCase().includes('invalid') && rawMsg.toLowerCase().includes('token')) {
+        msg = '🔑 Invalid Instagram token. Please reconnect in Settings.';
+      } else if (rawMsg.toLowerCase().includes('permission')) {
+        msg = '🚫 Permission denied. Make sure your Instagram account has the required permissions.';
+      }
+      
       setStatus('error');
       setError(msg);
       onPublishError?.(msg);

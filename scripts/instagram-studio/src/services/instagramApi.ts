@@ -471,6 +471,31 @@ export async function waitForMediaReady(
 }
 
 /**
+ * Format Instagram API error messages to be more user-friendly
+ */
+function formatInstagramError(error: string): string {
+  const lowerError = error.toLowerCase();
+  
+  if (lowerError.includes('rate limit') || lowerError.includes('request limit')) {
+    return 'Instagram rate limit reached. Please wait about an hour and try again.';
+  }
+  if (lowerError.includes('token') && lowerError.includes('expired')) {
+    return 'Instagram token expired. Please reconnect in Settings.';
+  }
+  if (lowerError.includes('invalid') && lowerError.includes('token')) {
+    return 'Invalid Instagram token. Please reconnect in Settings.';
+  }
+  if (lowerError.includes('permission')) {
+    return 'Permission denied. Make sure your Instagram account has the required permissions.';
+  }
+  if (lowerError.includes('not found')) {
+    return 'Resource not found. The image may not be accessible.';
+  }
+  
+  return error;
+}
+
+/**
  * Publish a single image post (via server-side proxy to avoid CORS)
  */
 export async function publishSingleImage(
@@ -502,8 +527,9 @@ export async function publishSingleImage(
     const result = await response.json();
     
     if (!response.ok || result.error) {
-      console.error('Publish failed:', result.error);
-      return { success: false, error: result.error };
+      const errorMsg = formatInstagramError(result.error || 'Publishing failed');
+      console.error('Publish failed:', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     // Only increment post count after successful publish
@@ -514,10 +540,8 @@ export async function publishSingleImage(
     return { success: true, instagramPostId: result.postId, permalink: result.permalink };
   } catch (error) {
     console.error('Publish error:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
+    const errorMsg = formatInstagramError(error instanceof Error ? error.message : 'Unknown error');
+    return { success: false, error: errorMsg };
   }
 }
 
@@ -563,8 +587,9 @@ export async function publishCarousel(
       const result = await response.json();
       
       if (!response.ok || result.error) {
-        console.error(`Carousel item ${i + 1} failed:`, result.error);
-        return { success: false, error: `Failed to create carousel item ${i + 1}: ${result.error}` };
+        const errorMsg = formatInstagramError(result.error || 'Failed to create carousel item');
+        console.error(`Carousel item ${i + 1} failed:`, errorMsg);
+        return { success: false, error: `Failed to create carousel item ${i + 1}: ${errorMsg}` };
       }
 
       childIds.push(result.containerId);
@@ -588,8 +613,9 @@ export async function publishCarousel(
     const containerResult = await containerResponse.json();
     
     if (!containerResponse.ok || containerResult.error) {
-      console.error('Carousel container failed:', containerResult.error);
-      return { success: false, error: containerResult.error };
+      const errorMsg = formatInstagramError(containerResult.error || 'Failed to create carousel');
+      console.error('Carousel container failed:', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     console.log('✅ Carousel container created:', containerResult.containerId);
@@ -610,8 +636,9 @@ export async function publishCarousel(
     const publishResult = await publishResponse.json();
     
     if (!publishResponse.ok || !publishResult.success) {
-      console.error('Carousel publish failed:', publishResult.error);
-      return { success: false, error: publishResult.error };
+      const errorMsg = formatInstagramError(publishResult.error || 'Publishing failed');
+      console.error('Carousel publish failed:', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     // Only increment post count after successful publish
@@ -622,10 +649,8 @@ export async function publishCarousel(
     return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
   } catch (error) {
     console.error('Carousel publish error:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
+    const errorMsg = formatInstagramError(error instanceof Error ? error.message : 'Unknown error');
+    return { success: false, error: errorMsg };
   }
 }
 

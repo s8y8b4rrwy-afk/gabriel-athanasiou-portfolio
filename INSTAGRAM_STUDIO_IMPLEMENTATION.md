@@ -1282,6 +1282,45 @@ export async function publishMedia(
 - **API version**: Updated to v21.0 (Instagram Graph API)
 - **Image processing**: Added letterboxing with black bars for non-standard aspect ratios
 - **Rate limit tracking**: Added `resetPostCount()` console utility to fix incorrect post count
+- **Retry logic**: Added retry mechanism (3 attempts, 3s delay) for carousel container creation
+- **Success response**: Removed `error` field from success responses (was causing client to think it failed)
+- **Post count timing**: Moved `incrementPostCount()` to after successful publish (was incrementing prematurely)
+
+### Verified Working (5 Dec 2025)
+
+Publishing via terminal/curl is **confirmed working**. Example successful carousel publish:
+
+```bash
+# Step 1: Create carousel items
+TOKEN="your_access_token"
+ACCOUNT_ID="24965197513162722"
+
+# Create item 1
+curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish" \
+  -H "Content-Type: application/json" \
+  -d "{\"action\":\"createCarouselItem\",\"accessToken\":\"$TOKEN\",\"accountId\":\"$ACCOUNT_ID\",\"imageUrl\":\"https://res.cloudinary.com/date24ay6/image/upload/ar_0.8,c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/portfolio-projects-rec4GWEg9Fzqz1vPk-0.jpg\"}"
+# Returns: {"success":true,"containerId":"17845058832624393","ready":true}
+
+# Create item 2
+curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish" \
+  -H "Content-Type: application/json" \
+  -d "{\"action\":\"createCarouselItem\",\"accessToken\":\"$TOKEN\",\"accountId\":\"$ACCOUNT_ID\",\"imageUrl\":\"https://res.cloudinary.com/date24ay6/image/upload/ar_0.8,c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/portfolio-projects-rec4GWEg9Fzqz1vPk-1.jpg\"}"
+# Returns: {"success":true,"containerId":"17845058847624393","ready":true}
+
+# Step 2: Create carousel container (childIds as array)
+curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish" \
+  -H "Content-Type: application/json" \
+  -d "{\"action\":\"createCarouselContainer\",\"accessToken\":\"$TOKEN\",\"accountId\":\"$ACCOUNT_ID\",\"childIds\":[\"17845058832624393\",\"17845058847624393\"],\"caption\":\"Your caption here\"}"
+# Returns: {"success":true,"containerId":"17845058859624393","ready":true}
+
+# Step 3: Publish the container
+curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish" \
+  -H "Content-Type: application/json" \
+  -d "{\"action\":\"publishContainer\",\"accessToken\":\"$TOKEN\",\"accountId\":\"$ACCOUNT_ID\",\"containerId\":\"17845058859624393\"}"
+# Returns: {"success":true,"postId":"...","permalink":"https://www.instagram.com/p/..."}
+```
+
+**Note**: The server-side Netlify function is working correctly. If the UI is not publishing, the issue is client-side (browser caching, CORS, or JavaScript error).
 
 ### Console Utilities
 
@@ -1397,7 +1436,7 @@ git push origin main
 - [x] OAuth flow implemented ✅
 - [x] Publishing features built ✅
 - [x] Rate limit management added ✅
-- [ ] Test post successful (manual verification needed)
+- [x] **Test post successful via terminal (5 Dec 2025)** ✅
 
 ### Current API Credentials
 
