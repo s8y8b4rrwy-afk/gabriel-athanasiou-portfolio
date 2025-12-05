@@ -8,16 +8,17 @@
 
 1. [Overview](#overview)
 2. [Deployment & Access](#deployment--access)
-3. [Instagram Account Setup](#instagram-account-setup)
-4. [Architecture](#architecture)
-5. [Implementation Phases](#implementation-phases)
-6. [Cloud Sync](#cloud-sync)
-7. [Technical Specifications](#technical-specifications)
-8. [Post Format & Templates](#post-format--templates)
-9. [Hashtag Strategy](#hashtag-strategy)
-10. [API Integration](#api-integration)
-11. [Rate Limits & Best Practices](#rate-limits--best-practices)
-12. [Future Enhancements](#future-enhancements)
+3. [Local Development with ngrok](#local-development-with-ngrok)
+4. [Instagram Account Setup](#instagram-account-setup)
+5. [Architecture](#architecture)
+6. [Implementation Phases](#implementation-phases)
+7. [Cloud Sync](#cloud-sync)
+8. [Technical Specifications](#technical-specifications)
+9. [Post Format & Templates](#post-format--templates)
+10. [Hashtag Strategy](#hashtag-strategy)
+11. [API Integration](#api-integration)
+12. [Rate Limits & Best Practices](#rate-limits--best-practices)
+13. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -93,6 +94,111 @@ Commits without `[deploy]` or `[force-deploy]` will be skipped by Netlify.
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret (for signed uploads) |
 | `INSTAGRAM_APP_ID` | Instagram App ID: `837730882390944` |
 | `INSTAGRAM_APP_SECRET` | Instagram App Secret (server-side, never expose!) |
+
+---
+
+## Local Development with ngrok
+
+### Why ngrok?
+
+Meta (Instagram) **doesn't allow `localhost`** URLs for OAuth redirect URIs. ngrok creates a secure HTTPS tunnel from the internet to your local machine, giving you a public URL that Meta will accept.
+
+### Prerequisites
+
+- Node.js installed
+- ngrok installed: `brew install ngrok`
+- ngrok account (free tier works): https://ngrok.com
+
+### One-Time Setup
+
+#### 1. Configure ngrok Auth Token
+
+Get your token from https://dashboard.ngrok.com/get-started/your-authtoken
+
+```bash
+ngrok config add-authtoken YOUR_TOKEN_HERE
+```
+
+### Starting Local Development
+
+#### Terminal 1: Start Dev Server
+
+```bash
+cd scripts/instagram-studio
+npm run dev
+# Note the port (usually 5174 or 5175)
+```
+
+#### Terminal 2: Start ngrok Tunnel
+
+```bash
+ngrok http 5175  # Use your actual port
+```
+
+You'll see output like:
+```
+Session Status                online
+Forwarding                    https://abc123.ngrok-free.app -> http://localhost:5175
+```
+
+#### Terminal 3: Update Local Environment
+
+Create/update `.env.local` in the instagram-studio folder:
+
+```bash
+cd scripts/instagram-studio
+echo "VITE_INSTAGRAM_REDIRECT_URI=https://abc123.ngrok-free.app/auth/callback" > .env.local
+```
+
+Replace `abc123.ngrok-free.app` with your actual ngrok URL.
+
+### Add ngrok URL to Meta Dashboard
+
+1. Copy your ngrok URL (e.g., `https://abc123.ngrok-free.app`)
+2. Go to [Meta Developers](https://developers.facebook.com/apps/) → Your App
+3. Navigate to: **Instagram** → **Instagram Login with Business** → **Settings**
+4. Add to "Valid OAuth redirect URIs": `https://abc123.ngrok-free.app/auth/callback`
+5. Save
+
+**Note:** Free tier gives you a random URL each time you restart ngrok. You'll need to update Meta Dashboard each session.
+
+### Restart Dev Server
+
+After updating `.env.local`, restart the dev server to pick up the new redirect URI.
+
+### Testing the OAuth Flow
+
+1. Open the ngrok URL in your browser: `https://abc123.ngrok-free.app`
+2. Go to **Settings** → **Connect Instagram**
+3. Click "Connect" - this should redirect to Instagram
+4. Authorize the app
+5. You should be redirected back and see "Connected as @username"
+
+### Quick Reference
+
+```bash
+# Full local dev setup with Instagram OAuth
+# Terminal 1
+cd scripts/instagram-studio && npm run dev
+
+# Terminal 2
+ngrok http 5175
+
+# Terminal 3 - Update redirect URI
+cd scripts/instagram-studio
+echo "VITE_INSTAGRAM_REDIRECT_URI=https://YOUR-NGROK-URL.ngrok-free.app/auth/callback" > .env.local
+
+# Then restart Terminal 1's dev server and update Meta Dashboard
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Invalid redirect_uri" | Ensure ngrok URL in Meta Dashboard matches `.env.local` exactly |
+| "ERR_NGROK_3200" | Make sure dev server is running on the correct port |
+| Token expired | Go to Settings → Disconnect, then reconnect |
+| ngrok session expired | Restart ngrok and update Meta Dashboard with new URL |
 
 ---
 
