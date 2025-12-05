@@ -33,6 +33,10 @@ const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||
 const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
   'https://lemonpost.studio/.netlify/functions/instagram-studio-sync';
 
+// Publish function URL (server-side proxy to avoid CORS)
+const PUBLISH_FUNCTION_URL = import.meta.env.VITE_PUBLISH_FUNCTION_URL ||
+  'https://lemonpost.studio/.netlify/functions/instagram-publish';
+
 // Local storage keys
 const CREDENTIALS_KEY = 'instagram-studio-ig-credentials';
 const RATE_LIMIT_KEY = 'instagram-studio-rate-limit';
@@ -467,7 +471,7 @@ export async function waitForMediaReady(
 }
 
 /**
- * Publish a single image post
+ * Publish a single image post (via server-side proxy to avoid CORS)
  */
 export async function publishSingleImage(
   imageUrl: string,
@@ -475,29 +479,47 @@ export async function publishSingleImage(
   accessToken: string,
   accountId: string
 ): Promise<PublishResult> {
-  // Create container
-  const containerResult = await createImageContainer(imageUrl, caption, accessToken, accountId);
-  if (!containerResult.success || !containerResult.containerId) {
-    return { success: false, error: containerResult.error };
-  }
+  try {
+    incrementRateLimit();
+    incrementPostCount();
+    
+    console.log('📤 Publishing single image via server proxy...');
+    console.log('Image URL:', imageUrl);
+    
+    const response = await fetch(PUBLISH_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'publishSingle',
+        accessToken,
+        accountId,
+        imageUrl,
+        caption,
+      }),
+    });
 
-  // Wait for processing
-  const isReady = await waitForMediaReady(containerResult.containerId, accessToken);
-  if (!isReady) {
-    return { success: false, error: 'Media processing timed out or failed' };
-  }
+    const result = await response.json();
+    
+    if (!response.ok || result.error) {
+      console.error('Publish failed:', result.error);
+      return { success: false, error: result.error };
+    }
 
-  // Publish
-  const publishResult = await publishMedia(containerResult.containerId, accessToken, accountId);
-  if (!publishResult.success) {
-    return { success: false, error: publishResult.error };
+    console.log('✅ Published successfully! Post ID:', result.postId);
+    return { success: true, instagramPostId: result.postId };
+  } catch (error) {
+    console.error('Publish error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
   }
-
-  return { success: true, instagramPostId: publishResult.postId };
 }
 
 /**
- * Publish a carousel post (2-10 images)
+ * Publish a carousel post (2-10 images, via server-side proxy to avoid CORS)
  */
 export async function publishCarousel(
   imageUrls: string[],
@@ -505,54 +527,50 @@ export async function publishCarousel(
   accessToken: string,
   accountId: string
 ): Promise<PublishResult> {
+  // Fall back to single image if only 1
   if (imageUrls.length < 2) {
-    // Fall back to single image
     return publishSingleImage(imageUrls[0], caption, accessToken, accountId);
   }
 
-  // Limit to 10 images
-  const urls = imageUrls.slice(0, 10);
-
-  // Create child containers for each image
-  const childIds: string[] = [];
-  for (const url of urls) {
-    const result = await createCarouselItem(url, accessToken, accountId);
-    if (!result.success || !result.containerId) {
-      return { success: false, error: `Failed to create carousel item: ${result.error}` };
-    }
-    childIds.push(result.containerId);
+  try {
+    // Limit to 10 images
+    const urls = imageUrls.slice(0, 10);
     
-    // Small delay between requests
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
+    incrementRateLimit();
+    incrementPostCount();
+    
+    console.log(`📤 Publishing carousel with ${urls.length} images via server proxy...`);
+    
+    const response = await fetch(PUBLISH_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'publishCarousel',
+        accessToken,
+        accountId,
+        imageUrls: urls,
+        caption,
+      }),
+    });
 
-  // Wait for all items to be ready
-  for (const id of childIds) {
-    const isReady = await waitForMediaReady(id, accessToken);
-    if (!isReady) {
-      return { success: false, error: 'Carousel item processing timed out' };
+    const result = await response.json();
+    
+    if (!response.ok || result.error) {
+      console.error('Carousel publish failed:', result.error);
+      return { success: false, error: result.error };
     }
-  }
 
-  // Create carousel container
-  const containerResult = await createCarouselContainer(childIds, caption, accessToken, accountId);
-  if (!containerResult.success || !containerResult.containerId) {
-    return { success: false, error: containerResult.error };
+    console.log('✅ Carousel published successfully! Post ID:', result.postId);
+    return { success: true, instagramPostId: result.postId };
+  } catch (error) {
+    console.error('Carousel publish error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
   }
-
-  // Wait for carousel to be ready
-  const isReady = await waitForMediaReady(containerResult.containerId, accessToken);
-  if (!isReady) {
-    return { success: false, error: 'Carousel processing timed out' };
-  }
-
-  // Publish
-  const publishResult = await publishMedia(containerResult.containerId, accessToken, accountId);
-  if (!publishResult.success) {
-    return { success: false, error: publishResult.error };
-  }
-
-  return { success: true, instagramPostId: publishResult.postId };
 }
 
 // ===== Local Storage Functions =====

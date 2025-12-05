@@ -589,19 +589,23 @@ scripts/
 
 ```json
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "instagram": {
     "connected": true,
     "accountId": "24965197513162722",
     "username": "lemonpoststudio",
-    "accessToken": "encrypted_token_here",
-    "tokenExpiry": "2026-02-03T12:00:00.000Z",
-    "lastRefreshed": "2025-12-05T12:00:00.000Z"
+    "accessToken": "your_long_lived_token",
+    "tokenExpiry": "2026-02-02T16:26:45.466Z",
+    "lastRefreshed": "2025-12-05T16:26:45.534Z"
   },
   "schedules": [...],
-  "templates": [...]
+  "templates": [...],
+  "defaultTemplate": {...},
+  "settings": {...}
 }
 ```
+
+> **✅ Credentials Persistence**: Instagram credentials are now synced to Cloudinary along with all other data. This means you only need to authenticate once - credentials persist across sessions, devices, and even different local dev environments (ngrok URLs).
 
 ---
 
@@ -611,7 +615,7 @@ scripts/
 
 Instagram Studio uses Cloudinary for cloud storage, enabling access from any device:
 
-1. **Data Stored**: Schedules, templates, default template, and settings
+1. **Data Stored**: Schedules, templates, default template, settings, **and Instagram credentials**
 2. **Storage Location**: `instagram-studio/schedule-data.json` in Cloudinary
 3. **Sync Method**: Signed uploads via Netlify serverless function
 

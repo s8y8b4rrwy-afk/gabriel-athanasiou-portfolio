@@ -201,8 +201,9 @@ export function buildCloudinaryUrl(
   const presetConfig = IMAGE_PRESETS[preset];
   
   // For Instagram preset, return original file without transformations
+  // Add .jpg extension for Instagram API compatibility
   if (preset === 'instagram' || !presetConfig.format || !presetConfig.width) {
-    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}`;
+    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}.jpg`;
   }
   
   // Build transformation string for preview (optimized for app display)
