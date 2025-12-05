@@ -735,11 +735,21 @@ function incrementPostCount(): void {
 }
 
 /**
- * Clear rate limit tracking
+ * Clear rate limit tracking (exported for manual reset)
  */
-function clearRateLimitLocally(): void {
+export function clearRateLimitLocally(): void {
   localStorage.removeItem(RATE_LIMIT_KEY);
   localStorage.removeItem(RATE_LIMIT_KEY + '-date');
+}
+
+/**
+ * Reset daily post count (useful after testing or errors)
+ */
+export function resetDailyPostCount(): void {
+  const info = getRateLimitInfo();
+  info.postsToday = 0;
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(info));
+  console.log('✅ Daily post count reset to 0');
 }
 
 /**
