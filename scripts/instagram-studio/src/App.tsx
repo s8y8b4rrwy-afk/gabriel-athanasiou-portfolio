@@ -49,7 +49,6 @@ function App() {
     updateTemplate,
     deleteTemplate,
     duplicateTemplate,
-    toggleTemplateActive,
   } = useTemplates();
 
   const [selectedTemplate, setSelectedTemplate] = useState<RecurringTemplate | null>(null);
@@ -348,7 +347,6 @@ function App() {
               <TemplateList
                 templates={templates}
                 onSelect={setSelectedTemplate}
-                onToggleActive={toggleTemplateActive}
                 onDuplicate={duplicateTemplate}
                 onCreate={handleCreateTemplate}
               />

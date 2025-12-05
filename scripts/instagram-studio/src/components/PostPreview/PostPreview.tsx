@@ -342,7 +342,7 @@ export function PostPreview({
           </div>
 
           {/* Template Selector */}
-          {!isEditing && templates.length > 0 && (
+          {!isEditing && (
             <div className="template-selector">
               <label>Apply Template:</label>
               <div className="template-buttons">
@@ -358,7 +358,7 @@ export function PostPreview({
                 >
                   Default
                 </button>
-                {templates.filter(t => t.isActive).map(template => (
+                {templates.map(template => (
                   <button
                     key={template.id}
                     className={`template-button ${selectedTemplateId === template.id ? 'template-button--active' : ''}`}

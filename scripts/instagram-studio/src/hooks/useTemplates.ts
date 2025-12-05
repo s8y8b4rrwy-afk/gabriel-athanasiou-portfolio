@@ -13,8 +13,6 @@ interface UseTemplatesReturn {
   updateTemplate: (id: string, updates: Partial<RecurringTemplate>) => void;
   deleteTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => RecurringTemplate | null;
-  toggleTemplateActive: (id: string) => void;
-  getActiveTemplates: () => RecurringTemplate[];
 }
 
 export function useTemplates(): UseTemplatesReturn {
@@ -65,7 +63,6 @@ export function useTemplates(): UseTemplatesReturn {
       ...original,
       id: generateId(),
       name: `${original.name} (Copy)`,
-      isActive: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -74,27 +71,11 @@ export function useTemplates(): UseTemplatesReturn {
     return duplicate;
   }, [templates, setTemplates]);
 
-  const toggleTemplateActive = useCallback((id: string) => {
-    setTemplates((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, isActive: !t.isActive, updatedAt: new Date().toISOString() }
-          : t
-      )
-    );
-  }, [setTemplates]);
-
-  const getActiveTemplates = useCallback((): RecurringTemplate[] => {
-    return templates.filter((t) => t.isActive);
-  }, [templates]);
-
   return {
     templates,
     createTemplate,
     updateTemplate,
     deleteTemplate,
     duplicateTemplate,
-    toggleTemplateActive,
-    getActiveTemplates,
   };
 }

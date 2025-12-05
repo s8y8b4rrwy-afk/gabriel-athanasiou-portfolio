@@ -14,8 +14,7 @@ export interface CaptionTemplate {
   // Which hashtag groups to include
   hashtagGroups: HashtagGroupKey[];
   
-  // Status
-  isActive: boolean;
+  // Metadata
   createdAt: string;
   updatedAt: string;
 }
@@ -160,7 +159,6 @@ export const DEFAULT_TEMPLATE: Omit<CaptionTemplate, 'id' | 'createdAt' | 'updat
   description: '',
   captionTemplate: CAPTION_TEMPLATES.standard,
   hashtagGroups: ['base'],
-  isActive: true,
 };
 
 // Keep for backwards compatibility
