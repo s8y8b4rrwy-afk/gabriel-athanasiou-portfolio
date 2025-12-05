@@ -253,6 +253,8 @@ export function buildCloudinaryUrl(
     
     // Instagram transformation: fit image with letterboxing (black bars)
     // Using c_pad to add padding instead of cropping
+    // IMPORTANT: Must use chained transformations - first pad to ratio, then limit width
+    // Instagram limits: max 1440px width, ratio between 4:5 (0.8) and 1.91:1
     const igTransforms = [
       `ar_${ar}`,     // Aspect ratio (dynamic based on original image)
       'c_pad',        // Pad to fit - adds letterboxing instead of cropping
@@ -261,7 +263,11 @@ export function buildCloudinaryUrl(
       'q_95',         // High quality
       'f_jpg'         // JPEG format for compatibility
     ].join(',');
-    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${igTransforms}/${publicId}.jpg`;
+    
+    // Chain a second transformation to limit width (prevents Instagram rejection for large images)
+    const widthLimit = 'w_1440,c_limit';
+    
+    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${igTransforms}/${widthLimit}/${publicId}.jpg`;
   }
   
   // Build transformation string for preview (optimized for app display)
@@ -503,19 +509,8 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
       console.warn('Failed to load image dimensions:', imageUrl.substring(0, 50));
       resolve(null);
     };
-    // Use a small preview URL to load quickly (just need dimensions)
-    // Add Cloudinary transformation to get a tiny version for fast dimension check
-    if (imageUrl.includes('res.cloudinary.com')) {
-      // Extract public ID and get a tiny version
-      const parts = imageUrl.split('/upload/');
-      if (parts.length === 2) {
-        img.src = `${parts[0]}/upload/w_100,q_10/${parts[1].split('/').pop()}`;
-      } else {
-        img.src = imageUrl;
-      }
-    } else {
-      img.src = imageUrl;
-    }
+    // Load the actual image to get true dimensions (don't use tiny preview - causes rounding errors)
+    img.src = imageUrl;
   });
 }
 
