@@ -371,8 +371,25 @@ async function publishMedia(containerId, accessToken, accountId) {
     return { success: false, error: result.error.message };
   }
 
-  console.log('✅ Published! Post ID:', result.id);
-  return { success: true, postId: result.id };
+  const postId = result.id;
+  console.log('✅ Published! Post ID:', postId);
+
+  // Fetch the permalink for the published post
+  let permalink = null;
+  try {
+    const mediaResponse = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${postId}?fields=permalink&access_token=${accessToken}`
+    );
+    const mediaResult = await mediaResponse.json();
+    if (mediaResult.permalink) {
+      permalink = mediaResult.permalink;
+      console.log('📎 Permalink:', permalink);
+    }
+  } catch (err) {
+    console.warn('Could not fetch permalink:', err.message);
+  }
+
+  return { success: true, postId, permalink };
 }
 
 /**

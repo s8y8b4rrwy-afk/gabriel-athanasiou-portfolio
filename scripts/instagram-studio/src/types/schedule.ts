@@ -4,6 +4,9 @@ export interface ScheduleSlot {
   scheduledDate: string; // ISO date string
   scheduledTime: string; // HH:mm format
   status: 'pending' | 'published' | 'failed';
+  instagramPostId?: string; // Instagram media ID when published
+  instagramPermalink?: string; // Direct link to Instagram post
+  publishedAt?: string; // ISO date string when published
 }
 
 export interface ScheduleSettings {

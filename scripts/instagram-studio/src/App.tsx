@@ -268,8 +268,8 @@ function App() {
   }, [reschedulePost]);
 
   // Handle publish success - mark post as published
-  const handlePublishSuccess = useCallback((slotId: string) => {
-    markAsPublished(slotId);
+  const handlePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
+    markAsPublished(slotId, instagramPostId, permalink);
   }, [markAsPublished]);
 
   // Clear current draft and editing state

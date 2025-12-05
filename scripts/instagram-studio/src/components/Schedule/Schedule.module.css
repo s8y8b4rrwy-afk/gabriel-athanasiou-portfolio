@@ -570,3 +570,29 @@
 .actionButton.danger:hover {
   background: rgba(248, 113, 113, 0.15);
 }
+
+/* Instagram link for published posts */
+.instagramLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.instagramLink:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.noLinkHint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  font-style: italic;
+}

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import styles from './Schedule.module.css';
 import { Calendar, TimeSlotPicker } from '../Calendar';
 import { ScheduleQueue } from './ScheduleQueue';
+import { PublishedList } from './PublishedList';
 import type { ScheduleSlot, PostDraft, ScheduleSettings, Project } from '../../types';
-import type { PublishResult } from '../../types/instagram';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -16,14 +16,14 @@ interface SchedulePanelProps {
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
   onEditPost: (post: ScheduledPost) => void;
-  onPublishSuccess?: (slotId: string, result: PublishResult) => void;
+  onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
   onDropProject?: (project: Project, date: Date) => void;
   enableDragDrop?: boolean;
 }
 
-type ViewMode = 'calendar' | 'queue';
+type ViewMode = 'calendar' | 'queue' | 'published';
 
 export function SchedulePanel({
   scheduledPosts,
@@ -102,6 +102,7 @@ export function SchedulePanel({
   const canSchedule = selectedDate && selectedTime && currentDraft && !rescheduleTarget;
   const existingPostsOnDate = getPostsForSelectedDate();
   const isOverLimit = existingPostsOnDate.length >= settings.maxPostsPerDay;
+  const publishedPosts = scheduledPosts.filter(p => p.scheduleSlot.status === 'published');
 
   return (
     <div className={styles.panel}>
@@ -119,6 +120,12 @@ export function SchedulePanel({
             onClick={() => setViewMode('queue')}
           >
             Queue ({scheduledPosts.filter(p => p.scheduleSlot.status === 'pending').length})
+          </button>
+          <button
+            className={`${styles.toggleButton} ${viewMode === 'published' ? styles.active : ''}`}
+            onClick={() => setViewMode('published')}
+          >
+            Published ({publishedPosts.length})
           </button>
         </div>
       </div>
@@ -249,7 +256,7 @@ export function SchedulePanel({
             </div>
           )}
         </div>
-      ) : (
+      ) : viewMode === 'queue' ? (
         <ScheduleQueue
           posts={scheduledPosts}
           onEditPost={onEditPost}
@@ -258,6 +265,8 @@ export function SchedulePanel({
           onPublishSuccess={onPublishSuccess}
           showTitle={false}
         />
+      ) : (
+        <PublishedList posts={publishedPosts} />
       )}
     </div>
   );

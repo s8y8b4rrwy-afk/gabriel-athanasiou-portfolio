@@ -1,7 +1,6 @@
 import styles from './Schedule.module.css';
 import { ScheduleItem } from './ScheduleItem';
 import type { ScheduleSlot, PostDraft } from '../../types';
-import type { PublishResult } from '../../types/instagram';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -12,7 +11,7 @@ interface ScheduleQueueProps {
   onEditPost: (post: ScheduledPost) => void;
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (post: ScheduledPost) => void;
-  onPublishSuccess?: (slotId: string, result: PublishResult) => void;
+  onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   maxItems?: number;
   showTitle?: boolean;
 }
@@ -69,7 +68,7 @@ export function ScheduleQueue({
             onEdit={() => onEditPost(post)}
             onUnschedule={() => onUnschedulePost(post.scheduleSlot.id)}
             onReschedule={() => onReschedulePost(post)}
-            onPublishSuccess={onPublishSuccess ? (result) => onPublishSuccess(post.scheduleSlot.id, result) : undefined}
+            onPublishSuccess={onPublishSuccess ? (instagramPostId, permalink) => onPublishSuccess(post.scheduleSlot.id, instagramPostId, permalink) : undefined}
           />
         ))}
       </div>

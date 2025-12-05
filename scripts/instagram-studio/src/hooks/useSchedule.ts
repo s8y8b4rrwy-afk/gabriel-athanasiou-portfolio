@@ -21,7 +21,7 @@ interface UseScheduleReturn {
   updateSettings: (updates: Partial<ScheduleSettings>) => void;
   getPostsForDate: (date: Date) => ScheduledPost[];
   getPostsForMonth: (year: number, month: number) => Map<string, ScheduledPost[]>;
-  markAsPublished: (slotId: string) => void;
+  markAsPublished: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   markAsFailed: (slotId: string, error: string) => void;
   importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings) => void;
 }
@@ -154,10 +154,16 @@ export function useSchedule(): UseScheduleReturn {
   }, [scheduledPosts]);
 
   // Mark post as published
-  const markAsPublished = useCallback((slotId: string) => {
+  const markAsPublished = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
     setScheduleSlots(prev => prev.map(slot => {
       if (slot.id === slotId) {
-        return { ...slot, status: 'published' as const };
+        return { 
+          ...slot, 
+          status: 'published' as const,
+          instagramPostId,
+          instagramPermalink: permalink,
+          publishedAt: new Date().toISOString(),
+        };
       }
       return slot;
     }));

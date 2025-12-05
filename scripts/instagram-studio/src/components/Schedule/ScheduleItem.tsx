@@ -3,7 +3,6 @@ import { PublishButton } from './PublishButton';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import type { ScheduleSlot, PostDraft } from '../../types';
-import type { PublishResult } from '../../types/instagram';
 import { useMemo } from 'react';
 
 interface ScheduledPost extends PostDraft {
@@ -15,7 +14,7 @@ interface ScheduleItemProps {
   onEdit: () => void;
   onUnschedule: () => void;
   onReschedule: () => void;
-  onPublishSuccess?: (result: PublishResult) => void;
+  onPublishSuccess?: (instagramPostId?: string, permalink?: string) => void;
   compact?: boolean;
 }
 
@@ -135,7 +134,7 @@ export function ScheduleItem({
           {credentials?.connected && (
             <PublishButton
               draft={post}
-              onPublishSuccess={onPublishSuccess}
+              onPublishSuccess={(result) => onPublishSuccess?.(result.instagramPostId, result.permalink)}
               variant="small"
             />
           )}

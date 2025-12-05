@@ -508,7 +508,8 @@ export async function publishSingleImage(
     }
 
     console.log('✅ Published successfully! Post ID:', result.postId);
-    return { success: true, instagramPostId: result.postId };
+    console.log('📎 Permalink:', result.permalink);
+    return { success: true, instagramPostId: result.postId, permalink: result.permalink };
   } catch (error) {
     console.error('Publish error:', error);
     return { 
@@ -613,7 +614,8 @@ export async function publishCarousel(
     }
 
     console.log('✅ Carousel published successfully! Post ID:', publishResult.postId);
-    return { success: true, instagramPostId: publishResult.postId };
+    console.log('📎 Permalink:', publishResult.permalink);
+    return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
   } catch (error) {
     console.error('Carousel publish error:', error);
     return { 

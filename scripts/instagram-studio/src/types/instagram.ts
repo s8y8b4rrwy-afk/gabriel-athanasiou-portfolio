@@ -55,6 +55,7 @@ export type PostPublishStatus = 'idle' | 'creating' | 'publishing' | 'success' |
 export interface PublishResult {
   success: boolean;
   instagramPostId?: string;
+  permalink?: string;
   error?: string;
 }
 
