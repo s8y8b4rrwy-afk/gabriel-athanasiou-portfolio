@@ -7,15 +7,17 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Instagram Account Setup](#instagram-account-setup)
-3. [Architecture](#architecture)
-4. [Implementation Phases](#implementation-phases)
-5. [Technical Specifications](#technical-specifications)
-6. [Post Format & Templates](#post-format--templates)
-7. [Hashtag Strategy](#hashtag-strategy)
-8. [API Integration](#api-integration)
-9. [Rate Limits & Best Practices](#rate-limits--best-practices)
-10. [Future Enhancements](#future-enhancements)
+2. [Deployment & Access](#deployment--access)
+3. [Instagram Account Setup](#instagram-account-setup)
+4. [Architecture](#architecture)
+5. [Implementation Phases](#implementation-phases)
+6. [Cloud Sync](#cloud-sync)
+7. [Technical Specifications](#technical-specifications)
+8. [Post Format & Templates](#post-format--templates)
+9. [Hashtag Strategy](#hashtag-strategy)
+10. [API Integration](#api-integration)
+11. [Rate Limits & Best Practices](#rate-limits--best-practices)
+12. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -38,6 +40,48 @@
 | State | React Context / Zustand |
 | API | Instagram Graph API |
 | Data Source | Local JSON files |
+| Cloud Sync | Cloudinary (signed uploads) |
+| Hosting | Netlify (gram-studio.netlify.app) |
+| Custom Domain | studio.lemonpost.studio |
+
+---
+
+## Deployment & Access
+
+### Live URLs
+
+| Environment | URL |
+|-------------|-----|
+| Production | https://studio.lemonpost.studio |
+| Netlify URL | https://gram-studio.netlify.app |
+| Local Dev | http://localhost:5174 |
+
+### Password Protection
+
+The app is protected with password authentication:
+- Password hash stored in `VITE_PASSWORD_HASH` environment variable
+- Uses SHA-256 for secure client-side hashing
+- "Remember Me" option stores authentication for 7 days
+
+### Deployment Control
+
+Automatic deploys are **disabled** for this site. To deploy:
+
+```bash
+# Include [deploy] in your commit message to trigger a build
+git commit -m "feat: Add new feature [deploy]"
+git push origin main
+```
+
+Commits without `[deploy]` or `[force-deploy]` will be skipped by Netlify.
+
+### Environment Variables (Netlify)
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_PASSWORD_HASH` | SHA-256 hash of the login password |
+| `VITE_SYNC_FUNCTION_URL` | URL to the sync function (`https://lemonpost.studio/.netlify/functions/instagram-studio-sync`) |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret (server-side only, for signed uploads) |
 
 ---
 
@@ -312,6 +356,29 @@ scripts/
 
 ---
 
+### Phase 2.5: Cloud Sync & Deployment ✅ COMPLETE
+**Timeline: 1 day**
+
+#### Features:
+- [x] Signed uploads to Cloudinary (secure, no unsigned presets needed)
+- [x] Sync ALL data: schedules, templates, defaultTemplate, settings
+- [x] Auto-fetch from Cloudinary on app boot
+- [x] Password protection with SHA-256 hashing
+- [x] "Remember Me" authentication (7-day persistence)
+- [x] Deployed to Netlify (gram-studio.netlify.app)
+- [x] Custom domain (studio.lemonpost.studio)
+- [x] Controlled deployments (only with [deploy] marker)
+- [x] Server-side Netlify function for secure Cloudinary signatures
+
+#### Deliverables:
+- ✅ Data syncs securely to Cloudinary cloud storage
+- ✅ Access from any device via custom domain
+- ✅ Password-protected access
+- ✅ Automatic data loading on app start
+- ✅ Export JSON includes all data (schedules + templates + settings)
+
+---
+
 ### Phase 3: Instagram API Integration
 **Timeline: 2-3 days**
 
@@ -328,6 +395,107 @@ scripts/
 - One-click publish to Instagram
 - Automated scheduled posting
 - Status dashboard for posted content
+
+---
+
+## Cloud Sync
+
+### How It Works
+
+Instagram Studio uses Cloudinary for cloud storage, enabling access from any device:
+
+1. **Data Stored**: Schedules, templates, default template, and settings
+2. **Storage Location**: `instagram-studio/schedule-data.json` in Cloudinary
+3. **Sync Method**: Signed uploads via Netlify serverless function
+
+### Sync Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    Instagram Studio App                       │
+│                (studio.lemonpost.studio)                      │
+└─────────────────────┬────────────────────────────────────────┘
+                      │
+                      │ POST /sync (upload)
+                      │ GET  /sync (fetch)
+                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│           Netlify Function (Serverless)                       │
+│      lemonpost.studio/.netlify/functions/instagram-studio-sync│
+│                                                               │
+│   • Generates SHA-1 signature with API secret                 │
+│   • Uploads to Cloudinary with signed params                  │
+│   • Fetches existing data from Cloudinary                     │
+└─────────────────────┬────────────────────────────────────────┘
+                      │
+                      │ Signed Upload / Fetch
+                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│                     Cloudinary                                │
+│                  (cloud: date24ay6)                           │
+│                                                               │
+│   📁 instagram-studio/                                        │
+│      └── schedule-data.json                                   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Data Format (v1.1.0)
+
+```json
+{
+  "version": "1.1.0",
+  "lastUpdated": "2025-12-05T12:00:00.000Z",
+  "schedules": [
+    {
+      "id": "uuid",
+      "projectId": "project-slug",
+      "scheduledDate": "2025-12-10T15:00:00.000Z",
+      "caption": "Generated caption...",
+      "hashtags": ["#tag1", "#tag2"],
+      "status": "scheduled"
+    }
+  ],
+  "templates": [
+    {
+      "id": "uuid",
+      "name": "Template Name",
+      "captionTemplate": "🎬 {title}...",
+      "hashtagGroups": ["film", "grading"],
+      "isDefault": false
+    }
+  ],
+  "defaultTemplate": {
+    "id": "default",
+    "name": "Default",
+    "captionTemplate": "...",
+    "hashtagGroups": [],
+    "isDefault": true
+  },
+  "settings": {
+    "preferredPostTime": "15:00",
+    "timezone": "Europe/London"
+  }
+}
+```
+
+### Sync Buttons
+
+- **Sync to Cloud ☁️↑**: Uploads current local data to Cloudinary
+- **Fetch from Cloud ☁️↓**: Downloads and applies cloud data locally
+- **Auto-fetch**: Data is automatically fetched when app loads
+
+### Netlify Function
+
+Located at `netlify/functions/instagram-studio-sync.mjs`:
+
+```javascript
+// Handles both GET (fetch) and POST (upload)
+// Uses SHA-1 for Cloudinary signature (NOT SHA-256)
+// Keeps API secret secure on server side
+```
+
+Required environment variables on main site (lemonpost.studio):
+- `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
 
 ---
 
@@ -762,30 +930,55 @@ export async function publishMedia(
 ## Quick Start Commands
 
 ```bash
-# Navigate to project
-cd /path/to/gabriel-athanasiou-portfolio
+# Navigate to Instagram Studio
+cd scripts/instagram-studio
 
-# Install dependencies (after Phase 1 setup)
-cd scripts/instagram-studio && npm install
+# Install dependencies
+npm install
 
-# Run Instagram Studio
-npm run instagram-studio
+# Run locally
+npm run dev
+# Opens at http://localhost:5174
 
 # Build for production
-npm run instagram-studio:build
+npm run build
+
+# Deploy to Netlify (include [deploy] in commit message)
+git add -A
+git commit -m "feat: Your changes [deploy]"
+git push origin main
 ```
+
+### Accessing the App
+
+1. **Production**: Go to https://studio.lemonpost.studio
+2. **Enter password** when prompted
+3. **Check "Remember Me"** to stay logged in for 7 days
+4. Data automatically syncs from Cloudinary on load
+
+### Making Changes
+
+1. Edit schedules, templates, or settings in the app
+2. Click **"Sync to Cloud ☁️↑"** to save to Cloudinary
+3. Access from any device - data persists in the cloud
 
 ---
 
 ## Checklist Before Going Live
 
+- [x] Instagram Studio app built and tested
+- [x] Cloudinary sync working (signed uploads)
+- [x] Password protection enabled
+- [x] Deployed to Netlify
+- [x] Custom domain configured (studio.lemonpost.studio)
+- [x] Environment variables set
+- [x] Deploy gate active ([deploy] required)
 - [ ] Instagram account converted to Business/Creator
 - [ ] Facebook Page created and linked
 - [ ] Meta Developer account set up
 - [ ] Meta App created with Instagram Graph API
 - [ ] Access tokens generated and stored securely
 - [ ] Instagram Business Account ID obtained
-- [ ] `.env` file configured
 - [ ] Test post successful
 
 ---
@@ -800,4 +993,4 @@ npm run instagram-studio:build
 ---
 
 *Last Updated: December 2025*
-*Version: 1.0.0*
+*Version: 1.1.0*
