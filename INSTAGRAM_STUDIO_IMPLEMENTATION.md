@@ -290,17 +290,25 @@ scripts/
 - [x] Export schedule to CSV/JSON
 - [x] Cloudinary sync (upload/fetch schedule data)
 - [x] Recurring post templates
+- [x] Draggable calendar mini-cards (reschedule by dragging)
+- [x] Calendar shows project titles instead of dots
+- [x] Delete scheduled posts from day panel
+- [x] Time picker when editing posts
+- [x] Click post title to edit
+- [x] Previous view restoration on cancel/save
 
 #### Deliverables:
-- ✅ Visual calendar with scheduled posts
+- ✅ Visual calendar with scheduled posts showing titles
 - ✅ Ability to plan content weeks in advance
 - ✅ Schedule data persisted in local storage
 - ✅ Edit and manage scheduled posts from project view
 - ✅ Filter projects by schedule status
 - ✅ All images served via Cloudinary CDN
 - ✅ Drag projects onto calendar to quick-schedule
+- ✅ Drag scheduled posts between days to reschedule
 - ✅ Export/import schedule data to/from Cloudinary
 - ✅ Template management for recurring posts
+- ✅ Intuitive UX with back navigation
 
 ---
 
