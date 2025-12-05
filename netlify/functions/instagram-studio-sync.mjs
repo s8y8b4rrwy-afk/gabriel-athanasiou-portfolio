@@ -17,6 +17,7 @@ const PUBLIC_ID = 'schedule-data';
 
 /**
  * Generate Cloudinary signature for signed uploads
+ * Cloudinary uses SHA-1 for signatures
  */
 function generateSignature(paramsToSign, apiSecret) {
   const sortedParams = Object.keys(paramsToSign)
@@ -25,7 +26,7 @@ function generateSignature(paramsToSign, apiSecret) {
     .join('&');
   
   return crypto
-    .createHash('sha256')
+    .createHash('sha1')
     .update(sortedParams + apiSecret)
     .digest('hex');
 }
@@ -80,14 +81,13 @@ export const handler = async (event) => {
       };
     }
 
-    // Prepare the upload
+    // Prepare the upload - only sign the required params
     const timestamp = Math.round(Date.now() / 1000);
     const paramsToSign = {
       folder: CLOUDINARY_FOLDER,
       invalidate: 'true',
       overwrite: 'true',
       public_id: PUBLIC_ID,
-      resource_type: 'raw',
       timestamp: timestamp,
     };
 
@@ -106,7 +106,6 @@ export const handler = async (event) => {
     formData.append('signature', signature);
     formData.append('folder', CLOUDINARY_FOLDER);
     formData.append('public_id', PUBLIC_ID);
-    formData.append('resource_type', 'raw');
     formData.append('overwrite', 'true');
     formData.append('invalidate', 'true');
 
