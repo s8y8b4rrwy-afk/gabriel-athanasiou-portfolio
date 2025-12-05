@@ -13,7 +13,9 @@ const CLOUDINARY_CLOUD_NAME = 'date24ay6';
 const CLOUDINARY_FOLDER = 'instagram-studio';
 
 // Netlify function endpoint for signed uploads
-const SYNC_FUNCTION_URL = '/.netlify/functions/instagram-studio-sync';
+// In dev, use the main portfolio's function; in prod, use environment variable
+const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
+  'https://gabriel-athanasiou.netlify.app/.netlify/functions/instagram-studio-sync';
 
 interface ScheduleData {
   version: string;
