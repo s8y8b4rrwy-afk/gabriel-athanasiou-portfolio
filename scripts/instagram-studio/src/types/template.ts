@@ -124,11 +124,15 @@ export function applyTemplateToProject(template: string, project: Project): stri
     ? formatCredits(project.credits)
     : '';
 
+  // Use 'Artist' for Music Video projects, 'Client' for others
+  const clientLabel = project.type === 'Music Video' ? 'Artist' : 'Client';
+  const clientText = project.client ? `${clientLabel}: ${project.client}` : '';
+
   return template
     .replace(/{title}/g, project.title || '')
     .replace(/{year}/g, project.year || '')
     .replace(/{description}/g, project.description || '')
-    .replace(/{client}/g, project.client ? `Client: ${project.client}` : '')
+    .replace(/{client}/g, clientText)
     .replace(/{productionCompany}/g, project.productionCompany || 'Lemon Post')
     .replace(/{awards}/g, awardsText)
     .replace(/{credits}/g, creditsText)

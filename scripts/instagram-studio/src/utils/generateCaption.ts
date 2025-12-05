@@ -34,9 +34,11 @@ function formatAwards(awards: string[]): string {
   return '🏆 ' + awards.join(' | ') + '\n';
 }
 
-function formatClientLine(client: string): string {
+function formatClientLine(client: string, projectType?: string): string {
   if (!client) return '';
-  return `Client: ${client}`;
+  // Use 'Artist' for Music Video projects, 'Client' for others
+  const label = projectType === 'Music Video' ? 'Artist' : 'Client';
+  return `${label}: ${client}`;
 }
 
 export interface CaptionOptions {
@@ -64,7 +66,7 @@ export function generateCaption(
 
   const awards = formatAwards(project.awards);
   const credits = formatCredits(project.credits);
-  const clientLine = formatClientLine(project.client);
+  const clientLine = formatClientLine(project.client, project.type);
   const hashtags = includeHashtags
     ? formatHashtagsForCaption(customHashtags || generateHashtags(project))
     : '';
@@ -94,9 +96,9 @@ export function generateCaption(
   // Clean up the caption
   caption = caption.replace(/\n{3,}/g, '\n\n'); // Max 2 consecutive newlines
   
-  // Remove empty client line if no client
+  // Remove empty client/artist line if no client
   if (!project.client) {
-    caption = caption.replace(/^Client: \n?/gm, '');
+    caption = caption.replace(/^(Client|Artist): \n?/gm, '');
   }
 
   return caption.trim();

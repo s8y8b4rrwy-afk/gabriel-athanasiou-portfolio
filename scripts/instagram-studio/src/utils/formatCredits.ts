@@ -125,25 +125,24 @@ export function formatCredits(credits: Credit[]): string {
   
   const formattedLines: string[] = [];
   
-  // Format Lemon Post credits as combined line: "🎨 Colour Grading, Edit by @lemonpoststudio"
+  // Format Lemon Post credits as combined line: "Colour Grading, Edit by @lemonpoststudio"
   if (lemonPostCredits.length > 0) {
     const roles = lemonPostCredits.map(c => getRoleNameForRole(c.role));
-    // Use the emoji of the first role
-    const emoji = getEmojiForRole(lemonPostCredits[0].role);
     const combinedRoles = roles.join(', ');
-    formattedLines.push(`${emoji} ${combinedRoles} by @lemonpoststudio`);
+    formattedLines.push(`${combinedRoles} by @lemonpoststudio`);
   }
   
   // Format Gabriel Athanasiou credits with @gab.ath
   for (const credit of gabrielCredits) {
-    const emoji = getEmojiForRole(credit.role);
     const label = getLabelForRole(credit.role);
-    formattedLines.push(`${emoji} ${label} @gab.ath`);
+    formattedLines.push(`${label} @gab.ath`);
   }
   
-  // Format other credits normally
+  // Format other credits normally (without emojis)
   for (const credit of otherCredits) {
-    formattedLines.push(formatCredit(credit));
+    const label = getLabelForRole(credit.role);
+    const displayName = getInstagramHandle(credit.name);
+    formattedLines.push(`${label} ${displayName}`);
   }
   
   return formattedLines.join('\n');
