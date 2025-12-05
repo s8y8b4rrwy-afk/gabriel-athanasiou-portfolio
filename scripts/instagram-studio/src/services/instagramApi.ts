@@ -18,8 +18,11 @@ import type {
 // Instagram App credentials from environment
 // App ID is hardcoded as fallback since it's not secret
 const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '1386961439465356';
-const INSTAGRAM_REDIRECT_URI = import.meta.env.VITE_INSTAGRAM_REDIRECT_URI || 
-  'https://studio.lemonpost.studio/auth/callback';
+
+// IMPORTANT: For OAuth to work, the redirect_uri must be registered in Meta Dashboard
+// Meta does NOT allow localhost URLs - only HTTPS production URLs work
+// Always use the production redirect URI, even when testing locally
+const INSTAGRAM_REDIRECT_URI = 'https://studio.lemonpost.studio/auth/callback';
 
 // Auth function URL (on main site)
 const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||
@@ -41,9 +44,38 @@ const SCOPES = [
 ].join(',');
 
 /**
+ * Debug function to check OAuth configuration
+ */
+export function debugOAuthConfig(): void {
+  console.log('=== Instagram OAuth Configuration ===');
+  console.log('App ID:', INSTAGRAM_APP_ID);
+  console.log('Redirect URI:', INSTAGRAM_REDIRECT_URI);
+  console.log('Auth Function URL:', AUTH_FUNCTION_URL);
+  console.log('');
+  console.log('ℹ️  OAuth always uses production redirect URI.');
+  console.log('   After auth, you\'ll be redirected to production site.');
+  console.log('   The token will be saved and synced via Cloudinary.');
+  console.log('=====================================');
+}
+
+/**
  * Get the Instagram OAuth authorization URL
+ * 
+ * IMPORTANT: The redirect_uri MUST exactly match what's configured in:
+ * Meta App Dashboard → Instagram → API setup with Instagram login → 
+ * Business login settings → OAuth Redirect URIs
+ * 
+ * Including:
+ * - Protocol (https vs http)
+ * - Domain
+ * - Path
+ * - Trailing slash (or lack thereof)
  */
 export function getAuthorizationUrl(): string {
+  // Debug: Log the redirect URI being used
+  console.log('🔐 Instagram OAuth - Using redirect_uri:', INSTAGRAM_REDIRECT_URI);
+  console.log('🔐 Instagram OAuth - Using App ID:', INSTAGRAM_APP_ID);
+  
   const params = new URLSearchParams({
     client_id: INSTAGRAM_APP_ID,
     redirect_uri: INSTAGRAM_REDIRECT_URI,
@@ -51,7 +83,10 @@ export function getAuthorizationUrl(): string {
     response_type: 'code',
   });
   
-  return `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  const authUrl = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  console.log('🔐 Instagram OAuth - Full auth URL:', authUrl);
+  
+  return authUrl;
 }
 
 /**
