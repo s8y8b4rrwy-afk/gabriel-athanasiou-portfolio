@@ -1052,9 +1052,13 @@ branded content.
 #ukfilm #londonfilm #britishfilm #londoncreatives #ukproduction
 ```
 
-### Hashtag Count
+### Hashtag Count & Limits
 - **Target**: 15-20 hashtags per post
-- **Maximum**: 30 (Instagram limit)
+- **Maximum**: 30 (Instagram API hard limit - exceeding causes "Invalid parameter" error)
+- **Enforcement**: 
+  - `hashtagLibrary.ts` - `getHashtagsForProject()` limits output to 30 hashtags
+  - `instagram-publish.mjs` - Server validates hashtag count before API call
+  - `instagram-scheduled-publish.mjs` - Trims hashtags to 30 if exceeded
 - **Avoid**: Banned or spammy hashtags
 
 ---
@@ -1254,11 +1258,13 @@ export async function publishMedia(
 
 | Error | Cause | Solution |
 |-------|-------|----------|
+| "Invalid parameter" + "Too many tags" | Caption has >30 hashtags | Hashtag limit enforced in `hashtagLibrary.ts` (fixed Dec 2025) |
 | "Invalid parameter" | Colons in URL (e.g., `ar_4:5`) | Use decimal format (`ar_0.8`) |
 | "Permission denied" on carousel | `children` passed as string | Pass as JSON array |
 | "Unsupported get request" | Container still processing | Retry after 2-3 seconds |
 | Token expired | 60-day token expiry | Reconnect in Settings |
 | Image URL not accessible | Airtable URLs expire | Always use Cloudinary URLs |
+| "Application request limit reached" | Rate limit (200 calls/hour) | Wait ~1 hour for reset |
 
 ### Debugging Steps
 
@@ -1277,6 +1283,10 @@ export async function publishMedia(
 
 ### Recent Fixes (Dec 2025)
 
+- **Hashtag limit (30 max)**: Instagram API rejects posts with >30 hashtags. Fixed in:
+  - `hashtagLibrary.ts` - `getHashtagsForProject()` now limits to 30
+  - `instagram-publish.mjs` - Validates hashtag count before API call
+  - `instagram-scheduled-publish.mjs` - Trims hashtags to 30 if exceeded
 - **Aspect ratio format**: Changed from `ar_4:5` to `ar_0.8` (decimal) to avoid URL parsing issues
 - **Carousel children**: Changed from comma-separated string to JSON array
 - **API version**: Updated to v21.0 (Instagram Graph API)
