@@ -69,10 +69,9 @@ export function PublishButton({
       return;
     }
 
-    // Build full caption with hashtags
-    const fullCaption = draft.hashtags.length > 0 
-      ? `${draft.caption}\n\n${draft.hashtags.join(' ')}`
-      : draft.caption;
+    // Caption already includes hashtags (added during generation/editing)
+    // No need to add them again
+    const fullCaption = draft.caption;
 
     setStatus('creating');
     setError(null);
