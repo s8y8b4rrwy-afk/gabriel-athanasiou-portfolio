@@ -2,7 +2,7 @@
  * Cloudinary Sync Service for Instagram Studio
  * 
  * Handles uploading and fetching schedule data to/from Cloudinary.
- * Uses Cloudinary's unsigned upload for JSON data.
+ * Uses a Netlify function for signed uploads (keeps API secret secure).
  */
 
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
@@ -10,8 +10,10 @@ import type { RecurringTemplate } from '../types/template';
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
-const CLOUDINARY_UPLOAD_PRESET = 'instagram_studio'; // Create this preset in Cloudinary settings
 const CLOUDINARY_FOLDER = 'instagram-studio';
+
+// Netlify function endpoint for signed uploads
+const SYNC_FUNCTION_URL = '/.netlify/functions/instagram-studio-sync';
 
 interface ScheduleData {
   version: string;
@@ -75,7 +77,7 @@ export async function fetchScheduleFromCloudinary(): Promise<ScheduleData | null
 
 /**
  * Upload schedule data to Cloudinary
- * Uses unsigned upload with a preset configured in Cloudinary
+ * Uses a Netlify function for signed uploads (API secret stays on server)
  */
 export async function uploadScheduleToCloudinary(
   drafts: PostDraft[],
@@ -95,38 +97,23 @@ export async function uploadScheduleToCloudinary(
       defaultTemplate,
     };
 
-    // Convert to JSON string
-    const jsonString = JSON.stringify(scheduleData, null, 2);
-    
-    // Create a Blob from the JSON
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    
-    // Create FormData for upload
-    const formData = new FormData();
-    formData.append('file', blob, 'schedule-data.json');
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    formData.append('public_id', 'schedule-data');
-    formData.append('folder', CLOUDINARY_FOLDER);
-    formData.append('resource_type', 'raw');
-    formData.append('overwrite', 'true');
-    formData.append('invalidate', 'true');
+    // Call the Netlify function for signed upload
+    const response = await fetch(SYNC_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ scheduleData }),
+    });
 
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
+    const result = await response.json();
 
-    const result = await response.json() as CloudinaryUploadResponse & CloudinaryError;
-
-    if (result.error) {
-      throw new Error(result.error.message);
+    if (!response.ok || result.error) {
+      throw new Error(result.error || `Upload failed: ${response.status}`);
     }
 
-    console.log('✅ Uploaded schedule to Cloudinary:', result.secure_url);
-    return { success: true, url: result.secure_url };
+    console.log('✅ Uploaded schedule to Cloudinary:', result.url);
+    return { success: true, url: result.url };
   } catch (error) {
     console.error('Error uploading schedule to Cloudinary:', error);
     return { 
