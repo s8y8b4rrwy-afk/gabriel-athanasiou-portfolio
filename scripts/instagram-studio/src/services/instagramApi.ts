@@ -35,7 +35,7 @@ const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL ||
 
 // Publish function URL (server-side proxy to avoid CORS)
 const PUBLISH_FUNCTION_URL = import.meta.env.VITE_PUBLISH_FUNCTION_URL ||
-  'https://lemonpost.studio/.netlify/functions/instagram-publish';
+  'https://studio.lemonpost.studio/.netlify/functions/instagram-publish';
 
 // Local storage keys
 const CREDENTIALS_KEY = 'instagram-studio-ig-credentials';
