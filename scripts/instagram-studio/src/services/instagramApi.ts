@@ -17,7 +17,7 @@ import type {
 
 // Instagram App credentials from environment
 // App ID is hardcoded as fallback since it's not secret
-const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '1386961439465356';
+const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '837730882390944';
 const INSTAGRAM_REDIRECT_URI = import.meta.env.VITE_INSTAGRAM_REDIRECT_URI || 
   'https://studio.lemonpost.studio/auth/callback';
 
