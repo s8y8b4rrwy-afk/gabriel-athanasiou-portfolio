@@ -26,11 +26,11 @@ const INSTAGRAM_REDIRECT_URI = 'https://studio.lemonpost.studio/auth/callback';
 
 // Auth function URL (on main site)
 const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||
-  'https://gabriel-athanasiou.netlify.app/.netlify/functions/instagram-auth';
+  'https://lemonpost.studio/.netlify/functions/instagram-auth';
 
 // Sync function URL (for storing/retrieving credentials)
 const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
-  'https://gabriel-athanasiou.netlify.app/.netlify/functions/instagram-studio-sync';
+  'https://lemonpost.studio/.netlify/functions/instagram-studio-sync';
 
 // Local storage keys
 const CREDENTIALS_KEY = 'instagram-studio-ig-credentials';
