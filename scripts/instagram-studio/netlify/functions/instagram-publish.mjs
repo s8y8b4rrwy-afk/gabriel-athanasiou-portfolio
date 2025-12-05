@@ -462,54 +462,82 @@ async function handleCreateCarouselItem(headers, accessToken, accountId, imageUr
  * Create carousel container from child IDs
  */
 async function handleCreateCarouselContainer(headers, accessToken, accountId, childIds, caption) {
-  try {
-    console.log('Creating carousel container with children:', childIds);
-    
-    // Instagram API expects children as an array, not comma-separated string
-    const response = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: 'CAROUSEL',
-          children: childIds,  // Pass as array, not string
-          caption: caption,
-          access_token: accessToken,
-        }),
+  const maxRetries = 3;
+  const retryDelay = 3000; // 3 seconds between retries
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Creating carousel container (attempt ${attempt}/${maxRetries}) with children:`, childIds);
+      
+      // Wait a bit before first attempt to let child items process
+      if (attempt === 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
-    );
+      
+      // Instagram API expects children as an array, not comma-separated string
+      const response = await fetch(
+        `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            media_type: 'CAROUSEL',
+            children: childIds,  // Pass as array, not string
+            caption: caption,
+            access_token: accessToken,
+          }),
+        }
+      );
 
-    const result = await response.json();
-    
-    if (result.error) {
+      const result = await response.json();
+      
+      if (result.error) {
+        // Retry on "Unsupported get request" error - means children aren't ready yet
+        if (result.error.message?.includes('Unsupported') && attempt < maxRetries) {
+          console.log(`Got "${result.error.message}", retrying in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          continue;
+        }
+        
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: result.error.message }),
+        };
+      }
+
+      // Wait briefly for processing
+      const ready = await waitForProcessing(result.id, accessToken);
+      
       return {
-        statusCode: 400,
+        statusCode: 200,
         headers,
-        body: JSON.stringify({ error: result.error.message }),
+        body: JSON.stringify({ 
+          success: true, 
+          containerId: result.id,
+          ready: ready.success,
+          error: ready.error
+        }),
+      };
+    } catch (error) {
+      if (attempt < maxRetries) {
+        console.log(`Error on attempt ${attempt}, retrying...`, error.message);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        continue;
+      }
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: error.message }),
       };
     }
-
-    // Wait briefly for processing
-    const ready = await waitForProcessing(result.id, accessToken);
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ 
-        success: true, 
-        containerId: result.id,
-        ready: ready.success,
-        error: ready.error
-      }),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: error.message }),
-    };
   }
+  
+  return {
+    statusCode: 500,
+    headers,
+    body: JSON.stringify({ error: 'Max retries exceeded' }),
+  };
 }
 
 /**

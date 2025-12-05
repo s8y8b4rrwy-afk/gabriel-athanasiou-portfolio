@@ -52,6 +52,13 @@ ignore = "bash scripts/ignore-netlify-build.sh"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Allow CORS for cloudinary-mapping.json (used by Instagram Studio)
+[[headers]]
+  for = "/cloudinary-mapping.json"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=3600"
+
 [dev]
 command = "npm run dev:vite"
 targetPort = 3000
