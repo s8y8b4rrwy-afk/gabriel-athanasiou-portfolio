@@ -51,7 +51,7 @@ export function getAuthorizationUrl(): string {
     response_type: 'code',
   });
   
-  return `https://api.instagram.com/oauth/authorize?${params.toString()}`;
+  return `https://www.instagram.com/oauth/authorize?${params.toString()}`;
 }
 
 /**
