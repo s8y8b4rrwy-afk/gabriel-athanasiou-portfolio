@@ -481,7 +481,6 @@ export async function publishSingleImage(
 ): Promise<PublishResult> {
   try {
     incrementRateLimit();
-    incrementPostCount();
     
     console.log('📤 Publishing single image via server proxy...');
     console.log('Image URL:', imageUrl);
@@ -507,6 +506,9 @@ export async function publishSingleImage(
       return { success: false, error: result.error };
     }
 
+    // Only increment post count after successful publish
+    incrementPostCount();
+    
     console.log('✅ Published successfully! Post ID:', result.postId);
     console.log('📎 Permalink:', result.permalink);
     return { success: true, instagramPostId: result.postId, permalink: result.permalink };
@@ -539,7 +541,6 @@ export async function publishCarousel(
     const urls = imageUrls.slice(0, 10);
     
     incrementRateLimit();
-    incrementPostCount();
     
     console.log(`📤 Publishing carousel with ${urls.length} images (step-by-step)...`);
     
@@ -613,6 +614,9 @@ export async function publishCarousel(
       return { success: false, error: publishResult.error };
     }
 
+    // Only increment post count after successful publish
+    incrementPostCount();
+    
     console.log('✅ Carousel published successfully! Post ID:', publishResult.postId);
     console.log('📎 Permalink:', publishResult.permalink);
     return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
