@@ -19,10 +19,8 @@ async function hashPassword(password: string): Promise<string> {
 // crypto.subtle.digest('SHA-256', new TextEncoder().encode('YOUR_PASSWORD')).then(h => console.log(Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('')))
 const PASSWORD_HASH = import.meta.env.VITE_PASSWORD_HASH || '';
 
-// Debug: log if hash is loaded (remove in production)
-if (!PASSWORD_HASH) {
-  console.warn('⚠️ VITE_PASSWORD_HASH environment variable is not set!');
-}
+// Debug: log hash status
+console.log('🔐 Password hash loaded:', PASSWORD_HASH ? `${PASSWORD_HASH.substring(0, 8)}...` : 'NOT SET');
 
 const AUTH_KEY = 'instagram-studio-auth';
 const REMEMBER_KEY = 'instagram-studio-remember';
@@ -68,6 +66,11 @@ export function PasswordGate({ children }: PasswordGateProps) {
 
     try {
       const hashedInput = await hashPassword(password);
+      
+      // Debug logging
+      console.log('🔑 Input hash:', hashedInput);
+      console.log('🔒 Expected hash:', PASSWORD_HASH);
+      console.log('✅ Match:', hashedInput === PASSWORD_HASH);
       
       if (hashedInput === PASSWORD_HASH) {
         if (rememberMe) {
