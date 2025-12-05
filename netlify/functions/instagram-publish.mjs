@@ -305,6 +305,8 @@ async function handleCheckStatus(headers, accessToken, containerId) {
  */
 async function waitForProcessing(containerId, accessToken) {
   const startTime = Date.now();
+  let retryCount = 0;
+  const maxRetries = 3;
   
   while (Date.now() - startTime < MAX_PROCESSING_WAIT) {
     const response = await fetch(
@@ -314,8 +316,19 @@ async function waitForProcessing(containerId, accessToken) {
     const result = await response.json();
     
     if (result.error) {
+      // Handle "Unsupported get request" - this can happen temporarily
+      // Retry a few times before failing
+      if (result.error.message?.includes('Unsupported get request') && retryCount < maxRetries) {
+        console.log(`⚠️ Got "Unsupported get request" for ${containerId}, retrying (${retryCount + 1}/${maxRetries})...`);
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL * 2));
+        continue;
+      }
       return { success: false, error: result.error.message };
     }
+    
+    // Reset retry count on successful response
+    retryCount = 0;
 
     const status = result.status_code;
     console.log(`Container ${containerId} status: ${status}`);
