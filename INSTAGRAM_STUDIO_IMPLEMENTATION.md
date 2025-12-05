@@ -521,10 +521,10 @@ scripts/
 - [x] Retry logic for failed posts
 
 #### 3.3 Automated Scheduling
-- [ ] Background job for scheduled posts (Netlify scheduled functions)
-- [ ] Check for due posts every 15 minutes
-- [ ] Auto-publish when scheduled time arrives
-- [ ] Update post status after publishing
+- [x] Background job for scheduled posts (Netlify scheduled functions)
+- [x] Check for due posts every 15 minutes
+- [x] Auto-publish when scheduled time arrives
+- [x] Update post status after publishing
 - [ ] Notification system for publish results
 
 #### 3.4 Rate Limit Management
@@ -537,7 +537,7 @@ scripts/
 - ✅ One-click "Connect Instagram" (OAuth)
 - ✅ Token auto-refresh (never expires if used regularly)
 - ✅ Publish directly from the app
-- ⏳ Automated scheduled posting (Netlify scheduled functions needed)
+- ✅ Automated scheduled posting (Netlify scheduled function runs every 15 min)
 - ✅ Status dashboard for all posts
 
 #### OAuth Flow Architecture
