@@ -267,10 +267,22 @@ function App() {
     reschedulePost(slotId, newDate, newTime);
   }, [reschedulePost]);
 
-  // Handle publish success - mark post as published
-  const handlePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
+  // Handle publish success from SchedulePanel/Queue - mark post as published
+  const handleSchedulePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
     markAsPublished(slotId, instagramPostId, permalink);
   }, [markAsPublished]);
+
+  // Handle publish success from PostPreview (when editing a scheduled post)
+  const handlePreviewPublishSuccess = useCallback((result: { instagramPostId?: string; permalink?: string }) => {
+    // If we're editing a scheduled post, mark it as published
+    if (editingPost?.slotId) {
+      markAsPublished(editingPost.slotId, result.instagramPostId, result.permalink);
+      setEditingPost(null);
+      setCurrentDraft(null);
+      setSelectedProject(null);
+      setViewMode(previousViewMode);
+    }
+  }, [editingPost, markAsPublished, previousViewMode]);
 
   // Clear current draft and editing state
   const handleClearDraft = useCallback(() => {
@@ -425,7 +437,7 @@ function App() {
               scheduledPostsForProject={scheduledPostsForProject}
               onEditScheduledPost={handleEditPost}
               onUnschedulePost={unschedulePost}
-              onPublishSuccess={handlePublishSuccess}
+              onPublishSuccess={handlePreviewPublishSuccess}
               templates={templates}
               defaultTemplate={defaultTemplate}
             />
@@ -438,7 +450,7 @@ function App() {
               onUnschedulePost={unschedulePost}
               onReschedulePost={handleReschedulePost}
               onEditPost={handleEditPost}
-              onPublishSuccess={handlePublishSuccess}
+              onPublishSuccess={handleSchedulePublishSuccess}
               currentDraft={currentDraft}
               onClearDraft={handleClearDraft}
               onDropProject={handleDropProjectOnDate}
