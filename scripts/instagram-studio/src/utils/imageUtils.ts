@@ -203,40 +203,27 @@ const INSTAGRAM_ASPECT_RATIOS = {
 };
 
 /**
- * Get the closest Instagram-acceptable aspect ratio for an image
+ * Get the Instagram aspect ratio for an image
  * Instagram accepts: 4:5 (0.8) to 1.91:1 (1.91)
+ * 
+ * Strategy: Default to landscape (1.91:1) unless image is portrait.
+ * This ensures consistent letterboxing for wide images.
  * 
  * @param width - Original image width
  * @param height - Original image height
- * @returns The Cloudinary ar_ parameter value for the closest acceptable ratio
+ * @returns The Cloudinary ar_ parameter value
  */
 export function getClosestInstagramAspectRatio(width: number, height: number): string {
   const originalRatio = width / height;
   
-  // If already within acceptable range, use the closest standard ratio
-  if (originalRatio >= INSTAGRAM_ASPECT_RATIOS.MIN && originalRatio <= INSTAGRAM_ASPECT_RATIOS.MAX) {
-    // Find closest standard ratio
-    if (originalRatio < 0.9) {
-      return INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5; // 0.8
-    } else if (originalRatio < 1.1) {
-      return INSTAGRAM_ASPECT_RATIOS.SQUARE_1_1; // 1.0
-    } else if (originalRatio < 1.5) {
-      return INSTAGRAM_ASPECT_RATIOS.SQUARE_1_1; // Keep more square-ish
-    } else if (originalRatio < 1.85) {
-      return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_16_9; // 1.78
-    } else {
-      return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100; // 1.91
-    }
+  // If portrait (ratio < 1), use 4:5
+  if (originalRatio < 1) {
+    return INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
   }
   
-  // Outside acceptable range - clamp to nearest limit
-  if (originalRatio < INSTAGRAM_ASPECT_RATIOS.MIN) {
-    // Too tall/narrow - crop to 4:5
-    return INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
-  } else {
-    // Too wide - crop to 1.91:1
-    return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
-  }
+  // Otherwise use landscape 1.91:1 (Instagram's max landscape)
+  // This will add letterboxing (black bars) for images wider than 1.91:1
+  return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
 }
 
 /**

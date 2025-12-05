@@ -61,7 +61,7 @@ export function PostPreview({
   const [editingTime, setEditingTime] = useState<string>('11:00');
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [aspectRatio, setAspectRatio] = useState(4 / 5); // Default to 4:5 (Instagram portrait)
+  const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
   
   // Check if Instagram is connected
@@ -141,49 +141,64 @@ export function PostPreview({
     }
   }, [project?.id, currentDraft, defaultTemplate]); // Re-run when project ID, currentDraft, or defaultTemplate changes
 
-  // Calculate median aspect ratio when selected images change
+  // Calculate aspect ratio for each selected image and store dimensions
   useEffect(() => {
     if (selectedImages.length === 0) {
-      setAspectRatio(4 / 5);
+      setImageDimensions(new Map());
       return;
     }
 
     // Load image dimensions for selected images
     const loadDimensions = async () => {
-      const dimensionPromises = selectedImages.map((src) => {
+      const newDimensions = new Map<string, { width: number; height: number }>();
+      
+      for (const src of selectedImages) {
         // Check cache first
         if (loadedDimensionsRef.current.has(src)) {
-          return Promise.resolve(loadedDimensionsRef.current.get(src)!);
+          newDimensions.set(src, loadedDimensionsRef.current.get(src)!);
+          continue;
         }
         
-        return new Promise<{ width: number; height: number }>((resolve) => {
+        const dims = await new Promise<{ width: number; height: number }>((resolve) => {
           const img = new Image();
           img.onload = () => {
-            const dims = { width: img.naturalWidth, height: img.naturalHeight };
-            loadedDimensionsRef.current.set(src, dims);
-            resolve(dims);
+            const d = { width: img.naturalWidth, height: img.naturalHeight };
+            loadedDimensionsRef.current.set(src, d);
+            resolve(d);
           };
           img.onerror = () => resolve({ width: 4, height: 5 }); // Default on error
           img.src = src;
         });
-      });
-
-      const dimensions = await Promise.all(dimensionPromises);
-      const ratios = dimensions.map((d) => d.width / d.height).sort((a, b) => a - b);
+        newDimensions.set(src, dims);
+      }
       
-      // Get median
-      const mid = Math.floor(ratios.length / 2);
-      const medianRatio = ratios.length % 2 !== 0
-        ? ratios[mid]
-        : (ratios[mid - 1] + ratios[mid]) / 2;
-      
-      // Clamp to Instagram's allowed range: 1.91:1 (landscape) to 4:5 (portrait)
-      const clampedRatio = Math.max(4 / 5, Math.min(1.91, medianRatio));
-      setAspectRatio(clampedRatio);
+      setImageDimensions(newDimensions);
     };
 
     loadDimensions();
   }, [selectedImages]);
+
+  // Get Instagram aspect ratio for current image
+  // Default to landscape (1.91:1) unless image is clearly portrait
+  const getCurrentImageAspectRatio = useCallback(() => {
+    const currentImage = selectedImages[currentPreviewIndex];
+    if (!currentImage) return 1.91; // Default to landscape
+    
+    const dims = imageDimensions.get(currentImage);
+    if (!dims) return 1.91; // Default to landscape when dimensions unknown
+    
+    const originalRatio = dims.width / dims.height;
+    
+    // If portrait (ratio < 1), use 4:5
+    if (originalRatio < 1) {
+      return 4 / 5;
+    }
+    
+    // Otherwise use landscape 1.91:1 (Instagram's max landscape)
+    return 1.91;
+  }, [selectedImages, currentPreviewIndex, imageDimensions]);
+
+  const currentAspectRatio = getCurrentImageAspectRatio();
 
   // Reset preview index if it goes out of bounds
   useEffect(() => {
@@ -305,7 +320,7 @@ export function PostPreview({
               <span className="instagram-more">•••</span>
             </div>
             
-            <div className="instagram-image" style={{ aspectRatio: aspectRatio }}>
+            <div className="instagram-image" style={{ aspectRatio: currentAspectRatio }}>
               {selectedImages.length > 0 ? (
                 <>
                   <img src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} alt={project.title} />
