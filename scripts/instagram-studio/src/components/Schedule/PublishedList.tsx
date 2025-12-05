@@ -24,7 +24,25 @@ export function PublishedList({ posts }: PublishedListProps) {
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'Unknown date';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', { 
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    // Relative time for recent posts
+    let relativeTime = '';
+    if (diffMins < 1) {
+      relativeTime = 'just now';
+    } else if (diffMins < 60) {
+      relativeTime = `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+      relativeTime = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+      relativeTime = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
+    
+    const fullDate = date.toLocaleDateString('en-GB', { 
       weekday: 'short', 
       day: 'numeric', 
       month: 'short',
@@ -32,6 +50,8 @@ export function PublishedList({ posts }: PublishedListProps) {
       hour: '2-digit',
       minute: '2-digit',
     });
+    
+    return relativeTime ? `${fullDate} (${relativeTime})` : fullDate;
   };
 
   const getInstagramUrl = (post: ScheduledPost) => {
@@ -87,9 +107,10 @@ export function PublishedList({ posts }: PublishedListProps) {
             <div key={post.scheduleSlot.id} className={`${styles.item} ${styles.published}`}>
               <div className={styles.itemHeader}>
                 <div className={styles.datetime}>
+                  <span className={styles.publishedLabel}>Published on</span>
                   <span className={styles.date}>{formatDate(post.scheduleSlot.publishedAt)}</span>
                 </div>
-                <span className={`${styles.badge} ${styles.published}`}>Published</span>
+                <span className={`${styles.badge} ${styles.published}`}>✓</span>
               </div>
 
               <div className={styles.itemContent}>

@@ -265,11 +265,11 @@ export function buildCloudinaryUrl(
     const ar = aspectRatio || INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
     
     // Instagram transformation: crop to aspect ratio, high quality JPEG
-    // Using c_fill to crop to exact ratio, g_auto for smart cropping
+    // Using c_fill to crop to exact ratio, g_center for center-focused cropping
     const igTransforms = [
       `ar_${ar}`,   // Aspect ratio (dynamic based on original image)
       'c_fill',     // Fill/crop to exact ratio
-      'g_auto',     // Smart gravity - focus on important content
+      'g_center',   // Center gravity - always focus on center of image
       'q_95',       // High quality
       'f_jpg'       // JPEG format for compatibility
     ].join(',');
@@ -546,22 +546,41 @@ export async function getInstagramPublishUrls(
   await loadCloudinaryMapping();
   
   // Get dimensions for each image to determine correct aspect ratio
+  // IMPORTANT: Preserve the order of urls (user's selected order for carousel)
   const results: string[] = [];
   
-  for (let index = 0; index < urls.length; index++) {
-    // Get the preview URL to check dimensions
-    const previewUrl = buildCloudinaryUrl(projectId, index, 'fine');
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    
+    // Find the actual image index from the URL
+    // If it's a Cloudinary URL, extract the index from the public ID pattern
+    let imageIndex = i; // default to position in array
+    
+    if (url.includes('res.cloudinary.com')) {
+      const match = url.match(/portfolio-projects-[^-]+-([\d]+)/);
+      if (match) {
+        imageIndex = parseInt(match[1], 10);
+      }
+    } else {
+      // For Airtable URLs, we need to look up the mapping or use the position
+      // In this case, we use the findImageIndex function if we have the gallery
+      // But since we don't have gallery here, we'll use the position
+      // The caller should ensure urls are in the correct order
+    }
+    
+    // Get the preview URL to check dimensions (using the actual image index)
+    const previewUrl = buildCloudinaryUrl(projectId, imageIndex, 'fine');
     const dimensions = await getImageDimensions(previewUrl);
     
     if (dimensions) {
       // Build URL with the correct aspect ratio
       const aspectRatio = getClosestInstagramAspectRatio(dimensions.width, dimensions.height);
-      console.log(`📐 Image ${index}: ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
-      results.push(buildCloudinaryUrl(projectId, index, 'instagram', aspectRatio));
+      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
+      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio));
     } else {
       // Fallback to default 4:5 if dimensions couldn't be loaded
-      console.log(`📐 Image ${index}: using default 4:5 ratio`);
-      results.push(buildCloudinaryUrl(projectId, index, 'instagram', '4:5'));
+      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): using default 4:5 ratio`);
+      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', '4:5'));
     }
   }
   
