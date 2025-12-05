@@ -86,7 +86,7 @@ Commits without `[deploy]` or `[force-deploy]` will be skipped by Netlify.
 | `VITE_INSTAGRAM_APP_ID` | Instagram App ID: `837730882390944` |
 | `VITE_INSTAGRAM_REDIRECT_URI` | OAuth callback: `https://studio.lemonpost.studio/auth/callback` |
 
-#### Main Site Functions (gabriel-athanasiou.netlify.app)
+#### Main Site Functions (lemonpost.studio / gabriel-athanasiou.netlify.app)
 
 | Variable | Description |
 |----------|-------------|
