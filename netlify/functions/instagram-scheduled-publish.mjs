@@ -1,10 +1,13 @@
 /**
  * Instagram Scheduled Publish - Netlify Scheduled Function
  * 
- * Runs every 15 minutes to check for scheduled posts that are due
+ * Runs every hour to check for scheduled posts that are due
  * and publishes them automatically.
  * 
- * Schedule: Every 15 minutes
+ * Posts are considered "due" if their scheduled time is within the last hour
+ * (giving a 1-hour window to catch any posts that should have been published).
+ * 
+ * Schedule: Every hour at minute 0
  */
 
 import crypto from 'crypto';
@@ -18,9 +21,12 @@ const CLOUDINARY_API_KEY = '889494878498498';
 const MAX_PROCESSING_WAIT = 30000;
 const POLL_INTERVAL = 2000;
 
+// Window for catching scheduled posts (1 hour in milliseconds)
+const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 // Netlify scheduled function config
 export const config = {
-  schedule: '*/15 * * * *', // Every 15 minutes
+  schedule: '0 * * * *', // Every hour at minute 0
 };
 
 export const handler = async (event) => {
@@ -43,12 +49,16 @@ export const handler = async (event) => {
     
     const { accessToken, accountId } = scheduleData.instagram;
     
-    // 3. Find posts that are due (scheduled time <= now, status = 'scheduled')
+    // 3. Find posts that are due (scheduled time within the last hour, status = 'scheduled')
+    // This gives a 1-hour window: if scheduled for 9:40 and function runs at 10:00, it will still post
     const now = new Date();
+    const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+    
     const duePosts = (scheduleData.schedules || []).filter(post => {
       if (post.status !== 'scheduled') return false;
       const scheduledTime = new Date(post.scheduledDate);
-      return scheduledTime <= now;
+      // Post is due if scheduled time is between (now - 1 hour) and now
+      return scheduledTime <= now && scheduledTime >= windowStart;
     });
     
     if (duePosts.length === 0) {
