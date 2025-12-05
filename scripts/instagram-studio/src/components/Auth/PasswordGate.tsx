@@ -19,6 +19,11 @@ async function hashPassword(password: string): Promise<string> {
 // crypto.subtle.digest('SHA-256', new TextEncoder().encode('YOUR_PASSWORD')).then(h => console.log(Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('')))
 const PASSWORD_HASH = import.meta.env.VITE_PASSWORD_HASH || '';
 
+// Debug: log if hash is loaded (remove in production)
+if (!PASSWORD_HASH) {
+  console.warn('⚠️ VITE_PASSWORD_HASH environment variable is not set!');
+}
+
 const AUTH_KEY = 'instagram-studio-auth';
 const REMEMBER_KEY = 'instagram-studio-remember';
 
