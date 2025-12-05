@@ -19,7 +19,7 @@ import type {
 // App ID is hardcoded as fallback since it's not secret
 const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '1386961439465356';
 const INSTAGRAM_REDIRECT_URI = import.meta.env.VITE_INSTAGRAM_REDIRECT_URI || 
-  'https://gram-studio.netlify.app/auth/callback';
+  'https://studio.lemonpost.studio/auth/callback';
 
 // Auth function URL (on main site)
 const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||
