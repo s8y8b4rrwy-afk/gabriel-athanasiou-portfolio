@@ -1,45 +1,27 @@
 import type { Project } from './project';
 
 /**
- * Recurring post template configuration
+ * Caption template - reusable caption format with placeholders
  */
-export interface RecurringTemplate {
+export interface CaptionTemplate {
   id: string;
   name: string;
   description: string;
   
-  // Caption template with placeholders
+  // Caption template with placeholders like {title}, {year}, {description}, etc.
   captionTemplate: string;
   
-  // Default hashtag groups to include
-  hashtagGroups: string[];
-  
-  // Schedule pattern
-  schedule: {
-    frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
-    daysOfWeek?: number[]; // 0 = Sunday, 6 = Saturday
-    timeSlots: string[]; // ['11:00', '19:00']
-    startDate?: string;
-    endDate?: string;
-  };
-  
-  // Filters to auto-select projects
-  projectFilters?: {
-    types?: string[];
-    kinds?: string[];
-    years?: string[];
-    excludePosted?: boolean; // Exclude already posted projects
-  };
-  
-  // Image selection
-  imageSelection: 'hero' | 'first' | 'all' | 'random';
-  maxImages: number;
+  // Which hashtag groups to include
+  hashtagGroups: HashtagGroupKey[];
   
   // Status
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+// Keep RecurringTemplate as alias for backwards compatibility
+export type RecurringTemplate = CaptionTemplate;
 
 /**
  * Predefined caption templates
@@ -130,22 +112,56 @@ export const HASHTAG_GROUPS = {
 export type HashtagGroupKey = keyof typeof HASHTAG_GROUPS;
 
 /**
- * Default template for new recurring templates
+ * Apply a caption template to a project
  */
-export const DEFAULT_RECURRING_TEMPLATE: Omit<RecurringTemplate, 'id' | 'createdAt' | 'updatedAt'> = {
+export function applyTemplateToProject(template: string, project: Project): string {
+  const awardsText = project.awards?.length 
+    ? `🏆 ${project.awards.join(' | ')}` 
+    : '';
+  
+  const creditsText = project.credits
+    ?.filter(c => c.name && c.role)
+    .map(c => `${c.role}: ${c.name}`)
+    .join('\n') || '';
+
+  return template
+    .replace(/{title}/g, project.title || '')
+    .replace(/{year}/g, project.year || '')
+    .replace(/{description}/g, project.description || '')
+    .replace(/{client}/g, project.client ? `Client: ${project.client}` : '')
+    .replace(/{productionCompany}/g, project.productionCompany || 'Lemon Post')
+    .replace(/{awards}/g, awardsText)
+    .replace(/{credits}/g, creditsText)
+    .replace(/{type}/g, project.type || '')
+    .replace(/{genre}/g, project.genre?.join(', ') || '')
+    .replace(/{hashtags}/g, '') // Hashtags added separately
+    .replace(/\n{3,}/g, '\n\n') // Clean up extra newlines
+    .trim();
+}
+
+/**
+ * Get hashtags from selected groups
+ */
+export function getHashtagsFromGroups(groups: HashtagGroupKey[]): string[] {
+  const hashtags = new Set<string>();
+  groups.forEach(group => {
+    if (HASHTAG_GROUPS[group]) {
+      HASHTAG_GROUPS[group].forEach(tag => hashtags.add(tag));
+    }
+  });
+  return Array.from(hashtags);
+}
+
+/**
+ * Default template for new templates
+ */
+export const DEFAULT_TEMPLATE: Omit<CaptionTemplate, 'id' | 'createdAt' | 'updatedAt'> = {
   name: 'New Template',
   description: '',
   captionTemplate: CAPTION_TEMPLATES.standard,
   hashtagGroups: ['base'],
-  schedule: {
-    frequency: 'weekly',
-    daysOfWeek: [2, 4], // Tuesday, Thursday
-    timeSlots: ['11:00'],
-  },
-  projectFilters: {
-    excludePosted: true,
-  },
-  imageSelection: 'hero',
-  maxImages: 1,
-  isActive: false,
+  isActive: true,
 };
+
+// Keep for backwards compatibility
+export const DEFAULT_RECURRING_TEMPLATE = DEFAULT_TEMPLATE;

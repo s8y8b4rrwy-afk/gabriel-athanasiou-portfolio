@@ -10,41 +10,13 @@ interface TemplateEditorProps {
   onDelete: () => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Bi-weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
-
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sun' },
-  { value: 1, label: 'Mon' },
-  { value: 2, label: 'Tue' },
-  { value: 3, label: 'Wed' },
-  { value: 4, label: 'Thu' },
-  { value: 5, label: 'Fri' },
-  { value: 6, label: 'Sat' },
-];
-
-const IMAGE_SELECTION_OPTIONS = [
-  { value: 'hero', label: 'Hero image only' },
-  { value: 'first', label: 'First gallery image' },
-  { value: 'all', label: 'All images (up to max)' },
-  { value: 'random', label: 'Random selection' },
-];
-
 export function TemplateEditor({ template, onSave, onCancel, onDelete }: TemplateEditorProps) {
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description);
   const [captionTemplate, setCaptionTemplate] = useState(template.captionTemplate);
-  const [hashtagGroups, setHashtagGroups] = useState<string[]>(template.hashtagGroups);
-  const [frequency, setFrequency] = useState(template.schedule.frequency);
-  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(template.schedule.daysOfWeek || []);
-  const [timeSlots, setTimeSlots] = useState(template.schedule.timeSlots);
-  const [imageSelection, setImageSelection] = useState(template.imageSelection);
-  const [maxImages, setMaxImages] = useState(template.maxImages);
-  const [excludePosted, setExcludePosted] = useState(template.projectFilters?.excludePosted ?? true);
+  const [hashtagGroups, setHashtagGroups] = useState<HashtagGroupKey[]>(
+    template.hashtagGroups as HashtagGroupKey[]
+  );
 
   const handleSave = () => {
     onSave({
@@ -52,42 +24,13 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
       description,
       captionTemplate,
       hashtagGroups,
-      schedule: {
-        frequency,
-        daysOfWeek: frequency !== 'daily' ? daysOfWeek : undefined,
-        timeSlots,
-      },
-      imageSelection,
-      maxImages,
-      projectFilters: {
-        ...template.projectFilters,
-        excludePosted,
-      },
     });
   };
 
-  const toggleDay = (day: number) => {
-    setDaysOfWeek((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()
-    );
-  };
-
-  const toggleHashtagGroup = (group: string) => {
+  const toggleHashtagGroup = (group: HashtagGroupKey) => {
     setHashtagGroups((prev) =>
       prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
     );
-  };
-
-  const addTimeSlot = () => {
-    setTimeSlots((prev) => [...prev, '12:00']);
-  };
-
-  const removeTimeSlot = (index: number) => {
-    setTimeSlots((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const updateTimeSlot = (index: number, value: string) => {
-    setTimeSlots((prev) => prev.map((t, i) => (i === index ? value : t)));
   };
 
   const loadPresetCaption = (preset: keyof typeof CAPTION_TEMPLATES) => {
@@ -121,7 +64,7 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter template name"
+              placeholder="e.g., Project Spotlight, Throwback Thursday"
             />
           </div>
           <div className={styles.field}>
@@ -130,7 +73,7 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this template"
+              placeholder="Brief description of when to use this template"
             />
           </div>
         </section>
@@ -138,6 +81,9 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
         {/* Caption Template */}
         <section className={styles.section}>
           <h4>Caption Template</h4>
+          <p className={styles.sectionHint}>
+            Use placeholders that will be replaced with project data when applied.
+          </p>
           <div className={styles.presetButtons}>
             {Object.keys(CAPTION_TEMPLATES).map((preset) => (
               <button
@@ -157,8 +103,8 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
               placeholder="Caption template with {placeholders}"
             />
             <div className={styles.hint}>
-              Available placeholders: {'{title}'}, {'{year}'}, {'{description}'}, {'{credits}'}, 
-              {'{awards}'}, {'{client}'}, {'{productionCompany}'}, {'{hashtags}'}
+              <strong>Placeholders:</strong> {'{title}'}, {'{year}'}, {'{description}'}, {'{credits}'}, 
+              {'{awards}'}, {'{client}'}, {'{productionCompany}'}, {'{type}'}, {'{genre}'}
             </div>
           </div>
         </section>
@@ -166,6 +112,9 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
         {/* Hashtag Groups */}
         <section className={styles.section}>
           <h4>Hashtag Groups</h4>
+          <p className={styles.sectionHint}>
+            Select hashtag groups to include when this template is applied.
+          </p>
           <div className={styles.hashtagGroups}>
             {(Object.keys(HASHTAG_GROUPS) as HashtagGroupKey[]).map((group) => (
               <button
@@ -182,117 +131,16 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
               </button>
             ))}
           </div>
-          <div className={styles.selectedTags}>
-            {hashtagGroups.map((group) => (
-              <div key={group} className={styles.tagGroup}>
-                <strong>{group}:</strong> {HASHTAG_GROUPS[group as HashtagGroupKey]?.join(' ')}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Schedule */}
-        <section className={styles.section}>
-          <h4>Schedule</h4>
-          <div className={styles.field}>
-            <label>Frequency</label>
-            <select
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as typeof frequency)}
-            >
-              {FREQUENCY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {frequency !== 'daily' && (
-            <div className={styles.field}>
-              <label>Days of Week</label>
-              <div className={styles.daysOfWeek}>
-                {DAYS_OF_WEEK.map((day) => (
-                  <button
-                    key={day.value}
-                    className={`${styles.dayButton} ${
-                      daysOfWeek.includes(day.value) ? styles.active : ''
-                    }`}
-                    onClick={() => toggleDay(day.value)}
-                  >
-                    {day.label}
-                  </button>
-                ))}
+          {hashtagGroups.length > 0 && (
+            <div className={styles.selectedTags}>
+              <strong>Selected hashtags:</strong>
+              <div className={styles.tagPreview}>
+                {hashtagGroups.map((group) => 
+                  HASHTAG_GROUPS[group]?.join(' ')
+                ).join(' ')}
               </div>
             </div>
           )}
-
-          <div className={styles.field}>
-            <label>Posting Times</label>
-            <div className={styles.timeSlots}>
-              {timeSlots.map((time, index) => (
-                <div key={index} className={styles.timeSlot}>
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => updateTimeSlot(index, e.target.value)}
-                  />
-                  {timeSlots.length > 1 && (
-                    <button
-                      className={styles.removeTimeButton}
-                      onClick={() => removeTimeSlot(index)}
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button className={styles.addTimeButton} onClick={addTimeSlot}>
-                + Add Time
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Image Selection */}
-        <section className={styles.section}>
-          <h4>Image Selection</h4>
-          <div className={styles.field}>
-            <label>Selection Mode</label>
-            <select
-              value={imageSelection}
-              onChange={(e) => setImageSelection(e.target.value as typeof imageSelection)}
-            >
-              {IMAGE_SELECTION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.field}>
-            <label>Max Images (for carousel)</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={maxImages}
-              onChange={(e) => setMaxImages(parseInt(e.target.value) || 1)}
-            />
-          </div>
-        </section>
-
-        {/* Filters */}
-        <section className={styles.section}>
-          <h4>Project Filters</h4>
-          <label className={styles.checkbox}>
-            <input
-              type="checkbox"
-              checked={excludePosted}
-              onChange={(e) => setExcludePosted(e.target.checked)}
-            />
-            <span>Exclude already posted projects</span>
-          </label>
         </section>
       </div>
     </div>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Project, PostDraft, ScheduleSlot } from '../../types';
+import type { Project, PostDraft, ScheduleSlot, RecurringTemplate } from '../../types';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
 import { ProjectScheduledPosts } from './ProjectScheduledPosts';
 import { TimeSlotPicker } from '../Calendar';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
+import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
 
 interface ScheduledPost extends PostDraft {
@@ -28,6 +29,7 @@ interface PostPreviewProps {
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
   onUnschedulePost?: (slotId: string) => void;
+  templates?: RecurringTemplate[];
 }
 
 export function PostPreview({ 
@@ -42,12 +44,14 @@ export function PostPreview({
   scheduledPostsForProject = [],
   onEditScheduledPost,
   onUnschedulePost,
+  templates = [],
 }: PostPreviewProps) {
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [editingTime, setEditingTime] = useState<string>('11:00');
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState(4 / 5); // Default to 4:5 (Instagram portrait)
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
 
@@ -184,6 +188,26 @@ export function PostPreview({
     }
   }, [caption, project]);
 
+  // Apply a template to the current project
+  const handleApplyTemplate = useCallback((template: RecurringTemplate) => {
+    if (!project) return;
+    
+    // Generate caption from template
+    const newCaption = applyTemplateToProject(template.captionTemplate, project);
+    
+    // Get hashtags from template groups
+    const templateHashtags = getHashtagsFromGroups(template.hashtagGroups as HashtagGroupKey[]);
+    
+    // Add hashtags to caption
+    const captionWithHashtags = templateHashtags.length > 0 
+      ? `${newCaption}\n\n${formatHashtagsForCaption(templateHashtags)}`
+      : newCaption;
+    
+    setCaption(captionWithHashtags);
+    setHashtags(templateHashtags);
+    setSelectedTemplateId(template.id);
+  }, [project]);
+
   const handleDownloadImages = useCallback(() => {
     selectedImages.forEach((imageUrl, index) => {
       const link = document.createElement('a');
@@ -316,6 +340,37 @@ export function PostPreview({
               ))}
             </div>
           </div>
+
+          {/* Template Selector */}
+          {!isEditing && templates.length > 0 && (
+            <div className="template-selector">
+              <label>Apply Template:</label>
+              <div className="template-buttons">
+                <button 
+                  className={`template-button ${!selectedTemplateId ? 'template-button--active' : ''}`}
+                  onClick={() => {
+                    // Reset to default generated caption
+                    const generatedHashtags = generateHashtags(project);
+                    setHashtags(generatedHashtags);
+                    setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
+                    setSelectedTemplateId(null);
+                  }}
+                >
+                  Default
+                </button>
+                {templates.filter(t => t.isActive).map(template => (
+                  <button
+                    key={template.id}
+                    className={`template-button ${selectedTemplateId === template.id ? 'template-button--active' : ''}`}
+                    onClick={() => handleApplyTemplate(template)}
+                    title={template.description}
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Show scheduled posts for this project */}
           {!isEditing && scheduledPostsForProject.length > 0 && onEditScheduledPost && onUnschedulePost && (

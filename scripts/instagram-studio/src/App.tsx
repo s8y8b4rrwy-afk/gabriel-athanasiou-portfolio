@@ -319,6 +319,7 @@ function App() {
               scheduledPostsForProject={scheduledPostsForProject}
               onEditScheduledPost={handleEditPost}
               onUnschedulePost={unschedulePost}
+              templates={templates}
             />
           )}
           {viewMode === 'schedule' && (
