@@ -83,15 +83,15 @@ Commits without `[deploy]` or `[force-deploy]` will be skipped by Netlify.
 |----------|-------------|
 | `VITE_PASSWORD_HASH` | SHA-256 hash of the login password |
 | `VITE_SYNC_FUNCTION_URL` | URL to the sync function |
-| `VITE_INSTAGRAM_APP_ID` | Instagram App ID: `1386961439465356` |
+| `VITE_INSTAGRAM_APP_ID` | Instagram App ID: `837730882390944` |
 | `VITE_INSTAGRAM_REDIRECT_URI` | OAuth callback: `https://studio.lemonpost.studio/auth/callback` |
 
-#### Main Site Functions (lemonpost.studio)
+#### Main Site Functions (gabriel-athanasiou.netlify.app)
 
 | Variable | Description |
 |----------|-------------|
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret (for signed uploads) |
-| `INSTAGRAM_APP_ID` | Instagram App ID (server-side) |
+| `INSTAGRAM_APP_ID` | Instagram App ID: `837730882390944` |
 | `INSTAGRAM_APP_SECRET` | Instagram App Secret (server-side, never expose!) |
 
 ---
