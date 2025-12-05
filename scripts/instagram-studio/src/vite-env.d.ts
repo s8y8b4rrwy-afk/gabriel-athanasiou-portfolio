@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_SYNC_FUNCTION_URL?: string;
+  readonly VITE_PASSWORD_HASH?: string;
 }
 
 interface ImportMeta {
