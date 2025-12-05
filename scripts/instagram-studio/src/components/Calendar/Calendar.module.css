@@ -135,21 +135,26 @@
 
 /* Day Cell */
 .day {
-  aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
-  padding: 8px;
+  padding: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   border: 2px solid transparent;
   position: relative;
-  min-height: 60px;
+  min-height: 90px;
+  max-height: 110px;
+  overflow: hidden;
 }
 
 .day:hover {
   background: rgba(255, 255, 255, 0.06);
+}
+
+.day.hasEvents {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .day.today {
@@ -159,8 +164,8 @@
 .day.today .dayNumber {
   background: #fcd34d;
   color: #0f0f1a;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -178,18 +183,21 @@
 }
 
 .weekViewDay {
-  aspect-ratio: unset;
+  min-height: 200px;
+  max-height: unset;
 }
 
 .emptyDay {
-  aspect-ratio: 1;
+  min-height: 90px;
+  max-height: 110px;
   background: transparent;
 }
 
 .dayNumber {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4px;
 }
 
 /* Posts Container */
@@ -197,9 +205,64 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 2px;
   overflow: hidden;
+  min-height: 0;
+}
+
+/* Mini Cards for Month View */
+.miniCards {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.miniCard {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-left: 2px solid transparent;
+  min-height: 0;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.miniCard:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.miniCard.pending {
+  border-left-color: #fcd34d;
+  background: rgba(252, 211, 77, 0.1);
+}
+
+.miniCard.published {
+  border-left-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.miniCard.failed {
+  border-left-color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.miniTime {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.miniTitle {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .dots {
@@ -276,10 +339,12 @@
 }
 
 .moreCount {
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(255, 255, 255, 0.5);
   text-align: center;
-  padding: 2px;
+  padding: 2px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
 }
 
 /* Legend */

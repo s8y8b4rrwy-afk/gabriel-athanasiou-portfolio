@@ -1,5 +1,6 @@
 import styles from './Calendar.module.css';
 import type { ScheduleSlot, PostDraft } from '../../types';
+import { DraggableMiniCard } from '../DragDrop/DraggableMiniCard';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -42,6 +43,10 @@ export function CalendarDay({
     }
   };
 
+  const truncateTitle = (title: string, maxLength: number = 12) => {
+    return title.length > maxLength ? title.slice(0, maxLength) + '...' : title;
+  };
+
   return (
     <div
       className={`
@@ -50,6 +55,7 @@ export function CalendarDay({
         ${isSelected ? styles.selected : ''}
         ${isPast ? styles.past : ''}
         ${isWeekView ? styles.weekViewDay : ''}
+        ${posts.length > 0 ? styles.hasEvents : ''}
       `}
       onClick={onClick}
     >
@@ -58,32 +64,30 @@ export function CalendarDay({
       {posts.length > 0 && (
         <div className={styles.postsContainer}>
           {isWeekView ? (
-            // Week view shows full post details
+            // Week view shows full post details (also draggable)
             posts.slice(0, 4).map(post => (
-              <div
+              <DraggableMiniCard
                 key={post.scheduleSlot.id}
-                className={`${styles.postCard} ${getStatusClass(post.scheduleSlot.status)}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPostClick?.(post);
-                }}
-              >
-                <span className={styles.postTime}>{post.scheduleSlot.scheduledTime}</span>
-                <span className={styles.postTitle}>{post.project.title}</span>
-              </div>
+                post={post}
+                onClick={() => onPostClick?.(post)}
+                statusClass={getStatusClass(post.scheduleSlot.status)}
+                truncatedTitle={post.project.title}
+              />
             ))
           ) : (
-            // Month view shows dots only
-            <div className={styles.dots}>
-              {posts.slice(0, 3).map(post => (
-                <span 
+            // Month view shows mini cards with truncated title
+            <div className={styles.miniCards}>
+              {posts.slice(0, 2).map(post => (
+                <DraggableMiniCard
                   key={post.scheduleSlot.id}
-                  className={`${styles.dot} ${getStatusClass(post.scheduleSlot.status)}`}
-                  title={`${post.project.title} at ${post.scheduleSlot.scheduledTime}`}
+                  post={post}
+                  onClick={() => onPostClick?.(post)}
+                  statusClass={getStatusClass(post.scheduleSlot.status)}
+                  truncatedTitle={truncateTitle(post.project.title, 18)}
                 />
               ))}
-              {posts.length > 3 && (
-                <span className={styles.moreIndicator}>+{posts.length - 3}</span>
+              {posts.length > 2 && (
+                <div className={styles.moreCount}>+{posts.length - 2} more</div>
               )}
             </div>
           )}

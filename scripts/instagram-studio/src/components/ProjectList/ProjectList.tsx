@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { Project } from '../../types';
 import { ProjectFilters, type ScheduleStatus } from './ProjectFilters';
 import { ProjectCard } from './ProjectCard';
+import { DraggableProjectCard } from '../DragDrop/DraggableProjectCard';
 import './ProjectList.css';
 
 interface ProjectListProps {
@@ -17,6 +18,7 @@ interface ProjectListProps {
   onSelectProject: (project: Project) => void;
   scheduledCountByProject: Record<string, number>;
   publishedCountByProject: Record<string, number>;
+  enableDragDrop?: boolean;
 }
 
 export function ProjectList({
@@ -28,6 +30,7 @@ export function ProjectList({
   onSelectProject,
   scheduledCountByProject,
   publishedCountByProject,
+  enableDragDrop = false,
 }: ProjectListProps) {
   const [filterType, setFilterType] = useState('');
   const [filterKind, setFilterKind] = useState('');
@@ -130,15 +133,25 @@ export function ProjectList({
             </div>
 
             <div className="project-list-items">
-              {filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  isSelected={selectedProject?.id === project.id}
-                  onClick={() => onSelectProject(project)}
-                  scheduledCount={scheduledCountByProject[project.id] || 0}
-                />
-              ))}
+              {filteredProjects.map((project) => 
+                enableDragDrop ? (
+                  <DraggableProjectCard
+                    key={project.id}
+                    project={project}
+                    isSelected={selectedProject?.id === project.id}
+                    onClick={() => onSelectProject(project)}
+                    scheduledCount={scheduledCountByProject[project.id] || 0}
+                  />
+                ) : (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    isSelected={selectedProject?.id === project.id}
+                    onClick={() => onSelectProject(project)}
+                    scheduledCount={scheduledCountByProject[project.id] || 0}
+                  />
+                )
+              )}
 
               {filteredProjects.length === 0 && (
                 <div className="project-list-empty">

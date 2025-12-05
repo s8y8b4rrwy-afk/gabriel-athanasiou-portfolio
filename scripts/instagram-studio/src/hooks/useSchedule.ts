@@ -10,6 +10,7 @@ interface ScheduledPost extends PostDraft {
 interface UseScheduleReturn {
   scheduledPosts: ScheduledPost[];
   drafts: PostDraft[];
+  scheduleSlots: ScheduleSlot[];
   settings: ScheduleSettings;
   schedulePost: (draft: PostDraft, date: Date, time: string) => void;
   unschedulePost: (slotId: string) => void;
@@ -22,6 +23,7 @@ interface UseScheduleReturn {
   getPostsForMonth: (year: number, month: number) => Map<string, ScheduledPost[]>;
   markAsPublished: (slotId: string) => void;
   markAsFailed: (slotId: string, error: string) => void;
+  importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings) => void;
 }
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
@@ -176,9 +178,21 @@ export function useSchedule(): UseScheduleReturn {
     setSettings(prev => ({ ...prev, ...updates }));
   }, [setSettings]);
 
+  // Import schedule data from external source (Cloudinary/file)
+  const importScheduleData = useCallback((
+    importedDrafts: PostDraft[],
+    importedSlots: ScheduleSlot[],
+    importedSettings: ScheduleSettings
+  ) => {
+    setDrafts(importedDrafts);
+    setScheduleSlots(importedSlots);
+    setSettings(importedSettings);
+  }, [setDrafts, setScheduleSlots, setSettings]);
+
   return {
     scheduledPosts,
     drafts,
+    scheduleSlots,
     settings,
     schedulePost,
     unschedulePost,
@@ -191,5 +205,6 @@ export function useSchedule(): UseScheduleReturn {
     getPostsForMonth,
     markAsPublished,
     markAsFailed,
+    importScheduleData,
   };
 }

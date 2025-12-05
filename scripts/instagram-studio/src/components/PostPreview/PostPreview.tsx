@@ -3,11 +3,17 @@ import type { Project, PostDraft, ScheduleSlot } from '../../types';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
 import { ProjectScheduledPosts } from './ProjectScheduledPosts';
+import { TimeSlotPicker } from '../Calendar';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import './PostPreview.css';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
+}
+
+interface EditingScheduleInfo {
+  scheduledDate: string;
+  scheduledTime: string;
 }
 
 interface PostPreviewProps {
@@ -16,7 +22,8 @@ interface PostPreviewProps {
   currentDraft?: { caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onScheduleClick?: () => void;
   isEditing?: boolean;
-  onSaveEdit?: () => void;
+  editingScheduleInfo?: EditingScheduleInfo | null;
+  onSaveEdit?: (newTime?: string) => void;
   onCancelEdit?: () => void;
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
@@ -29,6 +36,7 @@ export function PostPreview({
   currentDraft, 
   onScheduleClick,
   isEditing = false,
+  editingScheduleInfo,
   onSaveEdit,
   onCancelEdit,
   scheduledPostsForProject = [],
@@ -38,6 +46,7 @@ export function PostPreview({
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [editingTime, setEditingTime] = useState<string>('11:00');
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [aspectRatio, setAspectRatio] = useState(4 / 5); // Default to 4:5 (Instagram portrait)
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
@@ -48,6 +57,13 @@ export function PostPreview({
         (img, idx, arr) => arr.indexOf(img) === idx // Remove duplicates
       )
     : [];
+
+  // Set editing time when schedule info is provided
+  useEffect(() => {
+    if (editingScheduleInfo) {
+      setEditingTime(editingScheduleInfo.scheduledTime);
+    }
+  }, [editingScheduleInfo]);
 
   // Generate caption and hashtags when project changes, or load from currentDraft when editing
   useEffect(() => {
@@ -335,11 +351,27 @@ export function PostPreview({
             
             {isEditing ? (
               <>
+                {editingScheduleInfo && (
+                  <div className="editing-schedule-info">
+                    <span className="editing-date">
+                      📅 {new Date(editingScheduleInfo.scheduledDate).toLocaleDateString('en-GB', { 
+                        weekday: 'short', 
+                        day: 'numeric', 
+                        month: 'short' 
+                      })}
+                    </span>
+                    <TimeSlotPicker
+                      selectedTime={editingTime}
+                      onTimeSelect={setEditingTime}
+                      defaultTimes={['09:00', '11:00', '14:00', '17:00', '19:00']}
+                    />
+                  </div>
+                )}
                 <button 
                   className="final-action final-action--save" 
                   onClick={() => {
                     onSaveDraft?.({ caption, hashtags, selectedImages });
-                    onSaveEdit?.();
+                    onSaveEdit?.(editingTime);
                   }}
                   disabled={selectedImages.length === 0}
                 >

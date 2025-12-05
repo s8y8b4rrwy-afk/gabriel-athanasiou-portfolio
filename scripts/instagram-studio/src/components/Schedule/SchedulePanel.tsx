@@ -17,6 +17,8 @@ interface SchedulePanelProps {
   onEditPost: (post: ScheduledPost) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
+  onDropProject?: (project: Project, date: Date) => void;
+  enableDragDrop?: boolean;
 }
 
 type ViewMode = 'calendar' | 'queue';
@@ -30,6 +32,8 @@ export function SchedulePanel({
   onEditPost,
   currentDraft,
   onClearDraft,
+  onDropProject,
+  enableDragDrop = false,
 }: SchedulePanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -51,6 +55,16 @@ export function SchedulePanel({
     setRescheduleTarget(post);
     setSelectedDate(new Date(post.scheduleSlot.scheduledDate));
     setSelectedTime(post.scheduleSlot.scheduledTime);
+    // Switch to calendar view so user can pick a new date
+    setViewMode('calendar');
+  };
+
+  // Handle drag-drop reschedule (keeps the original time)
+  const handleDragReschedule = (slotId: string, newDate: Date) => {
+    const post = scheduledPosts.find(p => p.scheduleSlot.id === slotId);
+    if (post) {
+      onReschedulePost(slotId, newDate, post.scheduleSlot.scheduledTime);
+    }
   };
 
   const confirmReschedule = () => {
@@ -108,6 +122,11 @@ export function SchedulePanel({
 
       {viewMode === 'calendar' ? (
         <div className={styles.calendarView}>
+          {enableDragDrop && (
+            <div className={styles.dragDropHint}>
+              💡 Drag projects or scheduled posts to reschedule them
+            </div>
+          )}
           <Calendar
             scheduledPosts={scheduledPosts}
             selectedDate={selectedDate}
@@ -115,6 +134,9 @@ export function SchedulePanel({
             onPostClick={(post) => {
               handleReschedule(post);
             }}
+            onDropProject={onDropProject}
+            onReschedulePost={handleDragReschedule}
+            enableDragDrop={enableDragDrop}
           />
 
           {selectedDate && (
@@ -141,9 +163,20 @@ export function SchedulePanel({
                       <span className={styles.existingPostTime}>
                         {post.scheduleSlot.scheduledTime}
                       </span>
-                      <span className={styles.existingPostTitle}>
+                      <span 
+                        className={styles.existingPostTitle}
+                        onClick={() => onEditPost(post)}
+                        title="Click to edit"
+                      >
                         {post.project.title}
                       </span>
+                      <button
+                        className={styles.deletePostButton}
+                        onClick={() => onUnschedulePost(post.scheduleSlot.id)}
+                        title="Remove from schedule"
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -155,11 +188,14 @@ export function SchedulePanel({
                 </div>
               )}
 
-              <TimeSlotPicker
-                selectedTime={selectedTime}
-                onTimeSelect={setSelectedTime}
-                defaultTimes={settings.defaultTimes}
-              />
+              {/* Only show time picker when scheduling or rescheduling */}
+              {(currentDraft || rescheduleTarget) && (
+                <TimeSlotPicker
+                  selectedTime={selectedTime}
+                  onTimeSelect={setSelectedTime}
+                  defaultTimes={settings.defaultTimes}
+                />
+              )}
 
               {rescheduleTarget ? (
                 <div className={styles.rescheduleInfo}>

@@ -1,0 +1,220 @@
+/* Sync Panel Styles */
+
+.syncPanel {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.syncing {
+  font-size: 12px;
+  color: #fcd34d;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.syncStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.statusLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.statusValue {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.autoSync {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle input:checked + .slider {
+  background-color: rgba(252, 211, 77, 0.5);
+}
+
+.toggle input:checked + .slider:before {
+  transform: translateX(20px);
+  background-color: #fcd34d;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.primaryButton,
+.secondaryButton,
+.exportButton,
+.importButton {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.primaryButton {
+  background: rgba(252, 211, 77, 0.2);
+  border: 1px solid rgba(252, 211, 77, 0.3);
+  color: #fcd34d;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: rgba(252, 211, 77, 0.3);
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.exportButton {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.exportButton:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.importButton {
+  width: 100%;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.importButton:hover {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 8px 0 0;
+}

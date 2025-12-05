@@ -1,0 +1,86 @@
+import { useDrop } from 'react-dnd';
+import type { Project, ScheduleSlot, PostDraft } from '../../types';
+import { CalendarDay } from '../Calendar/CalendarDay';
+import { ITEM_TYPES } from './DraggableProjectCard';
+
+interface ProjectDragItem {
+  type: typeof ITEM_TYPES.PROJECT;
+  project: Project;
+}
+
+interface ScheduledPost extends PostDraft {
+  scheduleSlot: ScheduleSlot;
+}
+
+interface ScheduledPostDragItem {
+  type: typeof ITEM_TYPES.SCHEDULED_POST;
+  post: ScheduledPost;
+}
+
+type DragItem = ProjectDragItem | ScheduledPostDragItem;
+
+interface DroppableCalendarDayProps {
+  date: Date | null;
+  posts: ScheduledPost[];
+  isToday: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+  onPostClick?: (post: ScheduledPost) => void;
+  isWeekView?: boolean;
+  onDropProject?: (project: Project, date: Date) => void;
+  onReschedulePost?: (slotId: string, newDate: Date) => void;
+}
+
+export function DroppableCalendarDay({
+  date,
+  posts,
+  isToday,
+  isSelected,
+  onClick,
+  onPostClick,
+  isWeekView = false,
+  onDropProject,
+  onReschedulePost,
+}: DroppableCalendarDayProps) {
+  const [{ isOver, canDrop }, drop] = useDrop<DragItem, void, { isOver: boolean; canDrop: boolean }>(() => ({
+    accept: [ITEM_TYPES.PROJECT, ITEM_TYPES.SCHEDULED_POST],
+    canDrop: () => date !== null && date >= new Date(new Date().setHours(0, 0, 0, 0)),
+    drop: (item) => {
+      if (!date) return;
+      
+      if (item.type === ITEM_TYPES.PROJECT && onDropProject) {
+        onDropProject(item.project, date);
+      } else if (item.type === ITEM_TYPES.SCHEDULED_POST && onReschedulePost) {
+        onReschedulePost(item.post.scheduleSlot.id, date);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }), [date, onDropProject, onReschedulePost]);
+
+  if (!date) {
+    return <CalendarDay date={null} posts={[]} isToday={false} isSelected={false} onClick={() => {}} />;
+  }
+
+  const dropStyle = {
+    outline: isOver && canDrop ? '2px dashed #fcd34d' : undefined,
+    backgroundColor: isOver && canDrop ? 'rgba(252, 211, 77, 0.1)' : undefined,
+    transition: 'all 0.2s ease',
+  };
+
+  return (
+    <div ref={drop} style={dropStyle}>
+      <CalendarDay
+        date={date}
+        posts={posts}
+        isToday={isToday}
+        isSelected={isSelected}
+        onClick={onClick}
+        onPostClick={onPostClick}
+        isWeekView={isWeekView}
+      />
+    </div>
+  );
+}

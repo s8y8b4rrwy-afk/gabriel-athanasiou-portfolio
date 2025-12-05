@@ -278,7 +278,7 @@ scripts/
 
 #### Features:
 - [x] Calendar view (month/week)
-- [ ] Drag & drop scheduling
+- [x] Drag & drop scheduling (react-dnd)
 - [x] Time slot management
 - [x] Schedule queue view
 - [x] Optimal posting times suggestions
@@ -287,8 +287,9 @@ scripts/
 - [x] Schedule status filter (scheduled/published/unscheduled)
 - [x] Enhanced metadata search (title, description, client, type, kinds, genre, credits, awards)
 - [x] Cloudinary image integration (automatic Airtable → Cloudinary URL conversion)
-- [ ] Export schedule to CSV/JSON
-- [ ] Recurring post templates
+- [x] Export schedule to CSV/JSON
+- [x] Cloudinary sync (upload/fetch schedule data)
+- [x] Recurring post templates
 
 #### Deliverables:
 - ✅ Visual calendar with scheduled posts
@@ -297,6 +298,9 @@ scripts/
 - ✅ Edit and manage scheduled posts from project view
 - ✅ Filter projects by schedule status
 - ✅ All images served via Cloudinary CDN
+- ✅ Drag projects onto calendar to quick-schedule
+- ✅ Export/import schedule data to/from Cloudinary
+- ✅ Template management for recurring posts
 
 ---
 

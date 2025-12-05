@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import styles from './Calendar.module.css';
 import { CalendarDay } from './CalendarDay';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import { DroppableCalendarDay } from '../DragDrop/DroppableCalendarDay';
+import type { ScheduleSlot, PostDraft, Project } from '../../types';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -12,6 +13,9 @@ interface CalendarProps {
   onDateSelect: (date: Date) => void;
   selectedDate: Date | null;
   onPostClick?: (post: ScheduledPost) => void;
+  onDropProject?: (project: Project, date: Date) => void;
+  onReschedulePost?: (slotId: string, newDate: Date) => void;
+  enableDragDrop?: boolean;
 }
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -24,7 +28,10 @@ export function Calendar({
   scheduledPosts, 
   onDateSelect, 
   selectedDate,
-  onPostClick 
+  onPostClick,
+  onDropProject,
+  onReschedulePost,
+  enableDragDrop = false,
 }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
@@ -173,18 +180,33 @@ export function Calendar({
       </div>
 
       <div className={`${styles.grid} ${viewMode === 'week' ? styles.weekGrid : ''}`}>
-        {displayDays.map((date, index) => (
-          <CalendarDay
-            key={date ? date.toISOString() : `empty-${index}`}
-            date={date}
-            posts={date ? postsMap.get(formatDateKey(date)) || [] : []}
-            isToday={date ? isToday(date) : false}
-            isSelected={date ? isSelected(date) : false}
-            onClick={() => date && onDateSelect(date)}
-            onPostClick={onPostClick}
-            isWeekView={viewMode === 'week'}
-          />
-        ))}
+        {displayDays.map((date, index) => 
+          enableDragDrop ? (
+            <DroppableCalendarDay
+              key={date ? date.toISOString() : `empty-${index}`}
+              date={date}
+              posts={date ? postsMap.get(formatDateKey(date)) || [] : []}
+              isToday={date ? isToday(date) : false}
+              isSelected={date ? isSelected(date) : false}
+              onClick={() => date && onDateSelect(date)}
+              onPostClick={onPostClick}
+              isWeekView={viewMode === 'week'}
+              onDropProject={onDropProject}
+              onReschedulePost={onReschedulePost}
+            />
+          ) : (
+            <CalendarDay
+              key={date ? date.toISOString() : `empty-${index}`}
+              date={date}
+              posts={date ? postsMap.get(formatDateKey(date)) || [] : []}
+              isToday={date ? isToday(date) : false}
+              isSelected={date ? isSelected(date) : false}
+              onClick={() => date && onDateSelect(date)}
+              onPostClick={onPostClick}
+              isWeekView={viewMode === 'week'}
+            />
+          )
+        )}
       </div>
 
       <div className={styles.legend}>

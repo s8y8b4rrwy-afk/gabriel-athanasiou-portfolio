@@ -1,0 +1,459 @@
+/* Template Component Styles */
+
+.templateList {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.templateHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.templateHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.createButton {
+  background: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(252, 211, 77, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.createButton:hover {
+  background: rgba(252, 211, 77, 0.3);
+}
+
+.templates {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.templateCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.templateCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.templateCard.active {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.templateInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.templateName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.templateStatus {
+  font-size: 8px;
+}
+
+.templateDescription {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.templateMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.templateActions {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleButton,
+.duplicateButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover,
+.duplicateButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+/* Template Editor */
+.editor {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.editorHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.editorActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancelButton,
+.deleteButton,
+.saveButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.deleteButton {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.saveButton {
+  background: rgba(252, 211, 77, 0.2);
+  border: 1px solid rgba(252, 211, 77, 0.3);
+  color: #fcd34d;
+}
+
+.saveButton:hover {
+  background: rgba(252, 211, 77, 0.3);
+}
+
+.editorContent {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.field input[type="text"],
+.field input[type="number"],
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: rgba(252, 211, 77, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: 'SF Mono', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 6px;
+}
+
+.presetButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.presetButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.presetButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.hashtagGroups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hashtagGroupButton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hashtagGroupButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hashtagGroupButton.active {
+  background: rgba(252, 211, 77, 0.1);
+  border-color: rgba(252, 211, 77, 0.3);
+}
+
+.groupName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.groupCount {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.selectedTags {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.6;
+}
+
+.tagGroup {
+  margin-bottom: 4px;
+}
+
+.tagGroup strong {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.daysOfWeek {
+  display: flex;
+  gap: 6px;
+}
+
+.dayButton {
+  width: 44px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.dayButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dayButton.active {
+  background: rgba(252, 211, 77, 0.2);
+  border-color: rgba(252, 211, 77, 0.3);
+  color: #fcd34d;
+}
+
+.timeSlots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.timeSlot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeSlot input[type="time"] {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.timeSlot input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.removeTimeButton {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeTimeButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.addTimeButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.addTimeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #fcd34d;
+}
