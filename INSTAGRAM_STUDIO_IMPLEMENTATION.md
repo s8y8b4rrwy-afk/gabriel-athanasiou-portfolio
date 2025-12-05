@@ -748,7 +748,9 @@ Where:
 | Use Case | URL |
 |----------|-----|
 | **App Preview** (fine preset) | `https://res.cloudinary.com/date24ay6/image/upload/f_webp,w_1000,c_limit,q_80/portfolio-projects-rec4QdaV0qLrTR8fh-0` |
-| **Instagram Publish** (original) | `https://res.cloudinary.com/date24ay6/image/upload/portfolio-projects-rec4QdaV0qLrTR8fh-0` |
+| **Instagram Publish** (with aspect ratio) | `https://res.cloudinary.com/date24ay6/image/upload/ar_1.91,c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/portfolio-projects-rec4QdaV0qLrTR8fh-0.jpg` |
+
+> **Important:** Aspect ratios use decimal format (`ar_1.91`, `ar_0.8`) instead of colon format (`ar_191:100`, `ar_4:5`) to avoid URL parsing issues with the Instagram API.
 
 ### How It Works
 
@@ -769,7 +771,9 @@ Where:
 │   url = ".../f_webp,w_1000,c_limit,q_80/{publicId}"             │
 │                                                                  │
 │   For Instagram (preset='instagram'):                            │
-│   url = ".../upload/{publicId}" (no transformations)             │
+│   url = ".../ar_1.91,c_pad,b_black,g_center,q_95,f_jpg/         │
+│          w_1440,c_limit/{publicId}.jpg"                          │
+│   (with letterboxing for correct aspect ratio)                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1075,24 +1079,27 @@ POST https://graph.facebook.com/v18.0/{ig-user-id}/media
 
 ```javascript
 // Step 1: Create child containers for each image
-POST https://graph.facebook.com/v18.0/{ig-user-id}/media
+POST https://graph.instagram.com/v21.0/{ig-user-id}/media
 {
-  "image_url": "https://...",
+  "image_url": "https://res.cloudinary.com/.../portfolio-projects-xxx-0.jpg",
   "is_carousel_item": true,
   "access_token": "{access-token}"
 }
 // Returns: { id: "child_container_id_1" }
 
 // Step 2: Create carousel container
-POST https://graph.facebook.com/v18.0/{ig-user-id}/media
+// IMPORTANT: children must be an ARRAY, not a comma-separated string!
+POST https://graph.instagram.com/v21.0/{ig-user-id}/media
 {
   "media_type": "CAROUSEL",
-  "children": ["child_id_1", "child_id_2", "child_id_3"],
+  "children": ["child_id_1", "child_id_2", "child_id_3"],  // Array format required
   "caption": "Your caption...",
   "access_token": "{access-token}"
 }
 // Returns: { id: "carousel_container_id" }
 ```
+
+> **⚠️ Common Issue:** If you get "Invalid parameter" or permission errors when creating carousel containers, ensure `children` is passed as a JSON array, not a comma-separated string.
 
 #### 3. Publish Media
 
@@ -1238,6 +1245,42 @@ export async function publishMedia(
      }
    }
    ```
+
+---
+
+## Troubleshooting
+
+### Common Publishing Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "Invalid parameter" | Colons in URL (e.g., `ar_4:5`) | Use decimal format (`ar_0.8`) |
+| "Permission denied" on carousel | `children` passed as string | Pass as JSON array |
+| "Unsupported get request" | Container still processing | Retry after 2-3 seconds |
+| Token expired | 60-day token expiry | Reconnect in Settings |
+| Image URL not accessible | Airtable URLs expire | Always use Cloudinary URLs |
+
+### Debugging Steps
+
+1. **Check browser console** for detailed error messages
+2. **Verify token status** in Settings → shows expiry date
+3. **Test Cloudinary URLs** - should return HTTP 200:
+   ```bash
+   curl -sI "https://res.cloudinary.com/date24ay6/image/upload/ar_1.91,c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/portfolio-projects-{projectId}-0.jpg"
+   ```
+4. **Test function directly**:
+   ```bash
+   curl -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish" \
+     -H "Content-Type: application/json" \
+     -d '{"action":"test","accessToken":"xxx","accountId":"xxx"}'
+   ```
+
+### Recent Fixes (Dec 2025)
+
+- **Aspect ratio format**: Changed from `ar_4:5` to `ar_0.8` (decimal) to avoid URL parsing issues
+- **Carousel children**: Changed from comma-separated string to JSON array
+- **API version**: Updated to v21.0 (Instagram Graph API)
+- **Image processing**: Added letterboxing with black bars for non-standard aspect ratios
 
 ---
 
