@@ -439,14 +439,14 @@ async function handleCreateCarouselItem(headers, accessToken, accountId, imageUr
     // Wait briefly for processing
     const ready = await waitForProcessing(result.id, accessToken);
     
+    // Don't include error field on success - client checks for it
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ 
         success: true, 
         containerId: result.id,
-        ready: ready.success,
-        error: ready.error
+        ready: ready.success
       }),
     };
   } catch (error) {
@@ -509,14 +509,14 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
       // Wait briefly for processing
       const ready = await waitForProcessing(result.id, accessToken);
       
+      // Don't include error field on success - client checks for it
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({ 
           success: true, 
           containerId: result.id,
-          ready: ready.success,
-          error: ready.error
+          ready: ready.success
         }),
       };
     } catch (error) {
