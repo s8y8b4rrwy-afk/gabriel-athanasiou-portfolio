@@ -1,4 +1,5 @@
 import type { Project } from './project';
+import { formatCredits } from '../utils/formatCredits';
 
 /**
  * Caption template - reusable caption format with placeholders
@@ -118,10 +119,10 @@ export function applyTemplateToProject(template: string, project: Project): stri
     ? `🏆 ${project.awards.join(' | ')}` 
     : '';
   
-  const creditsText = project.credits
-    ?.filter(c => c.name && c.role)
-    .map(c => `${c.role}: ${c.name}`)
-    .join('\n') || '';
+  // Use the formatCredits utility for proper Instagram handle formatting
+  const creditsText = project.credits?.length 
+    ? formatCredits(project.credits)
+    : '';
 
   return template
     .replace(/{title}/g, project.title || '')
