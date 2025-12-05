@@ -118,5 +118,7 @@ export function getHashtagsForProject(
   // Add location hashtags
   hashtagLibrary.location.forEach(tag => hashtags.add(tag));
 
-  return Array.from(hashtags);
+  // Instagram allows max 30 hashtags - prioritize and limit
+  const allTags = Array.from(hashtags);
+  return allTags.slice(0, 30);
 }

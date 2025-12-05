@@ -102,6 +102,20 @@ async function handlePublishSingle(headers, accessToken, accountId, imageUrl, ca
     console.log('   caption length:', caption?.length);
     console.log('   accountId:', accountId);
     
+    // Validate hashtag count (Instagram max is 30)
+    const hashtagCount = (caption?.match(/#\w+/g) || []).length;
+    console.log('   hashtag count:', hashtagCount);
+    if (hashtagCount > 30) {
+      console.error('Too many hashtags:', hashtagCount);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          error: `Too many hashtags (${hashtagCount}). Instagram allows maximum 30 hashtags.` 
+        }),
+      };
+    }
+    
     // Step 1: Create media container
     const requestBody = {
       image_url: imageUrl,
