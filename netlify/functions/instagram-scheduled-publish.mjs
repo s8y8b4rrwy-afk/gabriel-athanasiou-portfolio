@@ -156,9 +156,14 @@ export const handler = async (event) => {
       try {
         console.log(`📤 Publishing post: ${draft.projectId}`);
         
-        // Build full caption with hashtags
-        const fullCaption = draft.hashtags?.length > 0 
-          ? `${draft.caption}\n\n${draft.hashtags.join(' ')}`
+        // Build full caption with hashtags (limit to 30 hashtags - Instagram max)
+        let hashtags = draft.hashtags || [];
+        if (hashtags.length > 30) {
+          console.log(`⚠️ Trimming hashtags from ${hashtags.length} to 30`);
+          hashtags = hashtags.slice(0, 30);
+        }
+        const fullCaption = hashtags.length > 0 
+          ? `${draft.caption}\n\n${hashtags.join(' ')}`
           : draft.caption;
         
         // Get Cloudinary URLs for images (convert from Airtable URLs if needed)
