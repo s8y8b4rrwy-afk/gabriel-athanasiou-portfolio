@@ -504,31 +504,64 @@ export async function publishSingleImage(
   accessToken: string,
   accountId: string
 ): Promise<PublishResult> {
+  console.log('========================================');
+  console.log('📤 PUBLISH SINGLE IMAGE - START');
+  console.log('========================================');
+  console.log('🔗 Function URL:', PUBLISH_FUNCTION_URL);
+  console.log('🖼️ Image URL:', imageUrl);
+  console.log('📝 Caption length:', caption?.length || 0);
+  console.log('🔑 Token (first 20 chars):', accessToken?.substring(0, 20) + '...');
+  console.log('👤 Account ID:', accountId);
+  
+  if (!imageUrl) {
+    console.error('❌ No image URL provided');
+    return { success: false, error: 'No image URL provided' };
+  }
+  
+  if (!accessToken) {
+    console.error('❌ No access token provided');
+    return { success: false, error: 'No access token provided' };
+  }
+  
+  if (!accountId) {
+    console.error('❌ No account ID provided');
+    return { success: false, error: 'No account ID provided' };
+  }
+  
   try {
     incrementRateLimit();
     
-    console.log('📤 Publishing single image via server proxy...');
-    console.log('Image URL:', imageUrl);
+    const requestBody = {
+      action: 'publishSingle',
+      accessToken,
+      accountId,
+      imageUrl,
+      caption,
+    };
+    
+    console.log('📦 Request body:', JSON.stringify({ ...requestBody, accessToken: '[HIDDEN]' }, null, 2));
     
     const response = await fetch(PUBLISH_FUNCTION_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        action: 'publishSingle',
-        accessToken,
-        accountId,
-        imageUrl,
-        caption,
-      }),
+      body: JSON.stringify(requestBody),
     });
+    
+    console.log('📬 Response status:', response.status);
+    console.log('📬 Response ok:', response.ok);
 
     const result = await response.json();
     
+    console.log('📦 Response body:', JSON.stringify(result, null, 2));
+    
     if (!response.ok || result.error) {
       const errorMsg = formatInstagramError(result.error || 'Publishing failed');
-      console.error('Publish failed:', errorMsg);
+      console.error('❌ Publish failed:', errorMsg);
+      console.log('========================================');
+      console.log('📤 PUBLISH SINGLE IMAGE - FAILED');
+      console.log('========================================');
       return { success: false, error: errorMsg };
     }
 
@@ -537,10 +570,16 @@ export async function publishSingleImage(
     
     console.log('✅ Published successfully! Post ID:', result.postId);
     console.log('📎 Permalink:', result.permalink);
+    console.log('========================================');
+    console.log('📤 PUBLISH SINGLE IMAGE - SUCCESS');
+    console.log('========================================');
     return { success: true, instagramPostId: result.postId, permalink: result.permalink };
   } catch (error) {
-    console.error('Publish error:', error);
+    console.error('❌ Publish exception:', error);
     const errorMsg = formatInstagramError(error instanceof Error ? error.message : 'Unknown error');
+    console.log('========================================');
+    console.log('📤 PUBLISH SINGLE IMAGE - EXCEPTION');
+    console.log('========================================');
     return { success: false, error: errorMsg };
   }
 }
@@ -555,89 +594,157 @@ export async function publishCarousel(
   accessToken: string,
   accountId: string
 ): Promise<PublishResult> {
+  console.log('========================================');
+  console.log('📤 PUBLISH CAROUSEL - START');
+  console.log('========================================');
+  console.log('🔗 Function URL:', PUBLISH_FUNCTION_URL);
+  console.log('🖼️ Image count:', imageUrls?.length || 0);
+  console.log('🖼️ Image URLs:', imageUrls);
+  console.log('📝 Caption length:', caption?.length || 0);
+  console.log('🔑 Token (first 20 chars):', accessToken?.substring(0, 20) + '...');
+  console.log('👤 Account ID:', accountId);
+  
   // Fall back to single image if only 1
-  if (imageUrls.length < 2) {
+  if (!imageUrls || imageUrls.length < 2) {
+    console.log('⚠️ Less than 2 images, falling back to single image publish');
+    if (!imageUrls || imageUrls.length === 0) {
+      return { success: false, error: 'No images provided' };
+    }
     return publishSingleImage(imageUrls[0], caption, accessToken, accountId);
   }
+  
+  if (!accessToken) {
+    console.error('❌ No access token provided');
+    return { success: false, error: 'No access token provided' };
+  }
+  
+  if (!accountId) {
+    console.error('❌ No account ID provided');
+    return { success: false, error: 'No account ID provided' };
+  }
 
+  // Limit to 10 images
+  const urls = imageUrls.slice(0, 10);
+  
+  incrementRateLimit();
+  
+  console.log(`📤 Creating carousel with ${urls.length} images (step-by-step)...`);
+  
+  // Step 1: Create each carousel item one at a time
+  const childIds: string[] = [];
+  
   try {
-    // Limit to 10 images
-    const urls = imageUrls.slice(0, 10);
-    
-    incrementRateLimit();
-    
-    console.log(`📤 Publishing carousel with ${urls.length} images (step-by-step)...`);
-    
-    // Step 1: Create each carousel item one at a time
-    const childIds: string[] = [];
     for (let i = 0; i < urls.length; i++) {
-      console.log(`Creating carousel item ${i + 1}/${urls.length}...`);
+      console.log(`📸 Creating carousel item ${i + 1}/${urls.length}...`);
+      console.log(`   URL: ${urls[i]}`);
+      
+      const requestBody = {
+        action: 'createCarouselItem',
+        accessToken,
+        accountId,
+        imageUrl: urls[i],
+      };
       
       const response = await fetch(PUBLISH_FUNCTION_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'createCarouselItem',
-          accessToken,
-          accountId,
-          imageUrl: urls[i],
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log(`   Response status: ${response.status}`);
+      
       const result = await response.json();
+      console.log(`   Response body:`, result);
       
       if (!response.ok || result.error) {
         const errorMsg = formatInstagramError(result.error || 'Failed to create carousel item');
-        console.error(`Carousel item ${i + 1} failed:`, errorMsg);
+        console.error(`❌ Carousel item ${i + 1} failed:`, errorMsg);
+        console.log('========================================');
+        console.log('📤 PUBLISH CAROUSEL - FAILED AT ITEM CREATION');
+        console.log('========================================');
         return { success: false, error: `Failed to create carousel item ${i + 1}: ${errorMsg}` };
       }
 
+      if (!result.containerId) {
+        console.error(`❌ Carousel item ${i + 1} - no containerId in response`);
+        console.log('========================================');
+        console.log('📤 PUBLISH CAROUSEL - FAILED: NO CONTAINER ID');
+        console.log('========================================');
+        return { success: false, error: `Carousel item ${i + 1}: Server didn't return container ID` };
+      }
+
       childIds.push(result.containerId);
-      console.log(`✅ Carousel item ${i + 1} created:`, result.containerId);
+      console.log(`✅ Carousel item ${i + 1} created: ${result.containerId}`);
     }
 
+    console.log('📦 All child IDs:', childIds);
+
     // Step 2: Create carousel container
-    console.log('Creating carousel container...');
+    console.log('🎠 Creating carousel container...');
+    const containerRequestBody = {
+      action: 'createCarouselContainer',
+      accessToken,
+      accountId,
+      childIds,
+      caption,
+    };
+    
     const containerResponse = await fetch(PUBLISH_FUNCTION_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'createCarouselContainer',
-        accessToken,
-        accountId,
-        childIds,
-        caption,
-      }),
+      body: JSON.stringify(containerRequestBody),
     });
 
+    console.log(`   Response status: ${containerResponse.status}`);
+    
     const containerResult = await containerResponse.json();
+    console.log(`   Response body:`, containerResult);
     
     if (!containerResponse.ok || containerResult.error) {
       const errorMsg = formatInstagramError(containerResult.error || 'Failed to create carousel');
-      console.error('Carousel container failed:', errorMsg);
+      console.error('❌ Carousel container failed:', errorMsg);
+      console.log('========================================');
+      console.log('📤 PUBLISH CAROUSEL - FAILED AT CONTAINER CREATION');
+      console.log('========================================');
       return { success: false, error: errorMsg };
+    }
+
+    if (!containerResult.containerId) {
+      console.error('❌ Carousel container - no containerId in response');
+      console.log('========================================');
+      console.log('📤 PUBLISH CAROUSEL - FAILED: NO CAROUSEL CONTAINER ID');
+      console.log('========================================');
+      return { success: false, error: 'Server didn\'t return carousel container ID' };
     }
 
     console.log('✅ Carousel container created:', containerResult.containerId);
 
     // Step 3: Publish the carousel
-    console.log('Publishing carousel...');
+    console.log('🚀 Publishing carousel...');
+    const publishRequestBody = {
+      action: 'publishContainer',
+      accessToken,
+      accountId,
+      containerId: containerResult.containerId,
+    };
+    
     const publishResponse = await fetch(PUBLISH_FUNCTION_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'publishContainer',
-        accessToken,
-        accountId,
-        containerId: containerResult.containerId,
-      }),
+      body: JSON.stringify(publishRequestBody),
     });
 
+    console.log(`   Response status: ${publishResponse.status}`);
+    
     const publishResult = await publishResponse.json();
+    console.log(`   Response body:`, publishResult);
     
     if (!publishResponse.ok || !publishResult.success) {
       const errorMsg = formatInstagramError(publishResult.error || 'Publishing failed');
-      console.error('Carousel publish failed:', errorMsg);
+      console.error('❌ Carousel publish failed:', errorMsg);
+      console.log('========================================');
+      console.log('📤 PUBLISH CAROUSEL - FAILED AT PUBLISH');
+      console.log('========================================');
       return { success: false, error: errorMsg };
     }
 
@@ -646,10 +753,16 @@ export async function publishCarousel(
     
     console.log('✅ Carousel published successfully! Post ID:', publishResult.postId);
     console.log('📎 Permalink:', publishResult.permalink);
+    console.log('========================================');
+    console.log('📤 PUBLISH CAROUSEL - SUCCESS');
+    console.log('========================================');
     return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
   } catch (error) {
-    console.error('Carousel publish error:', error);
+    console.error('❌ Carousel publish exception:', error);
     const errorMsg = formatInstagramError(error instanceof Error ? error.message : 'Unknown error');
+    console.log('========================================');
+    console.log('📤 PUBLISH CAROUSEL - EXCEPTION');
+    console.log('========================================');
     return { success: false, error: errorMsg };
   }
 }

@@ -97,30 +97,40 @@ export const handler = async (event) => {
  */
 async function handlePublishSingle(headers, accessToken, accountId, imageUrl, caption) {
   try {
-    console.log('📸 Creating single image container...', { imageUrl: imageUrl?.substring(0, 50) });
+    console.log('📸 Creating single image container...');
+    console.log('   imageUrl:', imageUrl);
+    console.log('   caption length:', caption?.length);
+    console.log('   accountId:', accountId);
     
     // Step 1: Create media container
+    const requestBody = {
+      image_url: imageUrl,
+      caption: caption,
+      access_token: accessToken,
+    };
+    
+    console.log('   Request to Instagram API:', JSON.stringify({ ...requestBody, access_token: '[HIDDEN]' }));
+    
     const containerResponse = await fetch(
       `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          caption: caption,
-          access_token: accessToken,
-        }),
+        body: JSON.stringify(requestBody),
       }
     );
 
     const containerResult = await containerResponse.json();
+    console.log('   Instagram API response:', JSON.stringify(containerResult));
     
     if (containerResult.error) {
       console.error('Container creation failed:', containerResult.error);
+      // Include more details in the error message
+      const errorDetail = containerResult.error.error_user_msg || containerResult.error.message || 'Unknown error';
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: containerResult.error.message }),
+        body: JSON.stringify({ error: errorDetail, details: containerResult.error }),
       };
     }
 
