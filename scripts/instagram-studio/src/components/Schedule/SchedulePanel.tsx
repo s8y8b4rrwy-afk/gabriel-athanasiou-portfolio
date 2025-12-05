@@ -3,6 +3,7 @@ import styles from './Schedule.module.css';
 import { Calendar, TimeSlotPicker } from '../Calendar';
 import { ScheduleQueue } from './ScheduleQueue';
 import type { ScheduleSlot, PostDraft, ScheduleSettings, Project } from '../../types';
+import type { PublishResult } from '../../types/instagram';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -15,6 +16,7 @@ interface SchedulePanelProps {
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
   onEditPost: (post: ScheduledPost) => void;
+  onPublishSuccess?: (slotId: string, result: PublishResult) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
   onDropProject?: (project: Project, date: Date) => void;
@@ -30,6 +32,7 @@ export function SchedulePanel({
   onUnschedulePost,
   onReschedulePost,
   onEditPost,
+  onPublishSuccess,
   currentDraft,
   onClearDraft,
   onDropProject,
@@ -252,6 +255,7 @@ export function SchedulePanel({
           onEditPost={onEditPost}
           onUnschedulePost={onUnschedulePost}
           onReschedulePost={handleReschedule}
+          onPublishSuccess={onPublishSuccess}
           showTitle={false}
         />
       )}

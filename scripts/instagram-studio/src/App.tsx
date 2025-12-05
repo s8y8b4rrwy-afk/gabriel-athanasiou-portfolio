@@ -1,9 +1,10 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel, TemplateList, TemplateEditor } from './components';
+import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel, TemplateList, TemplateEditor, AuthCallback, InstagramConnect } from './components';
 import { useProjects, useSchedule, useCloudinarySync, useTemplates } from './hooks';
 import { generateCaption } from './utils/generateCaption';
 import { generateHashtags } from './utils/generateHashtags';
-import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings } from './types';
+import { getCredentialsLocally } from './services/instagramApi';
+import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials } from './types';
 import type { ScheduleData } from './services/cloudinarySync';
 import './App.css';
 
@@ -11,7 +12,7 @@ interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
 }
 
-type ViewMode = 'create' | 'schedule' | 'templates' | 'sync';
+type ViewMode = 'create' | 'schedule' | 'templates' | 'sync' | 'settings';
 
 interface EditingState {
   draftId: string;
@@ -40,6 +41,7 @@ function App() {
     saveDraft,
     updateDraft,
     importScheduleData,
+    markAsPublished,
   } = useSchedule();
 
   // Template management
@@ -99,6 +101,28 @@ function App() {
   
   // Track if we're editing an existing scheduled post
   const [editingPost, setEditingPost] = useState<EditingState | null>(null);
+
+  // Instagram OAuth callback check
+  const [isOAuthCallback, setIsOAuthCallback] = useState(false);
+  
+  // Instagram credentials
+  const [instagramCredentials, setInstagramCredentials] = useState<InstagramCredentials | null>(null);
+
+  // Check for OAuth callback on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasCode = urlParams.has('code');
+    const hasError = urlParams.has('error');
+    setIsOAuthCallback(hasCode || hasError);
+  }, []);
+
+  // Load Instagram credentials on mount
+  useEffect(() => {
+    const creds = getCredentialsLocally();
+    if (creds) {
+      setInstagramCredentials(creds);
+    }
+  }, []);
 
   // Fetch from Cloudinary on initial load
   useEffect(() => {
@@ -240,6 +264,11 @@ function App() {
     reschedulePost(slotId, newDate, newTime);
   }, [reschedulePost]);
 
+  // Handle publish success - mark post as published
+  const handlePublishSuccess = useCallback((slotId: string) => {
+    markAsPublished(slotId);
+  }, [markAsPublished]);
+
   // Clear current draft and editing state
   const handleClearDraft = useCallback(() => {
     setCurrentDraft(null);
@@ -290,6 +319,38 @@ function App() {
     }
   }, [selectedTemplate, deleteTemplate]);
 
+  // OAuth callback handlers
+  const handleOAuthSuccess = useCallback((credentials: InstagramCredentials) => {
+    setInstagramCredentials(credentials);
+    setIsOAuthCallback(false);
+    setViewMode('settings');
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, []);
+
+  const handleOAuthError = useCallback((error: string) => {
+    console.error('OAuth error:', error);
+    setIsOAuthCallback(false);
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, []);
+
+  const handleOAuthCancel = useCallback(() => {
+    setIsOAuthCallback(false);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, []);
+
+  // Show OAuth callback UI if we're handling a redirect
+  if (isOAuthCallback) {
+    return (
+      <AuthCallback
+        onSuccess={handleOAuthSuccess}
+        onError={handleOAuthError}
+        onCancel={handleOAuthCancel}
+      />
+    );
+  }
+
   return (
     <DndContext>
       <Layout onRefresh={refetch}>
@@ -318,6 +379,13 @@ function App() {
               onClick={() => setViewMode('sync')}
             >
               ☁️ Sync
+            </button>
+            <button 
+              className={`view-mode-button ${viewMode === 'settings' ? 'active' : ''}`}
+              onClick={() => setViewMode('settings')}
+            >
+              ⚙️ Settings
+              {instagramCredentials?.connected && <span className="connected-dot">●</span>}
             </button>
           </div>
           <ProjectList
@@ -366,6 +434,7 @@ function App() {
               onUnschedulePost={unschedulePost}
               onReschedulePost={handleReschedulePost}
               onEditPost={handleEditPost}
+              onPublishSuccess={handlePublishSuccess}
               currentDraft={currentDraft}
               onClearDraft={handleClearDraft}
               onDropProject={handleDropProjectOnDate}
@@ -403,6 +472,15 @@ function App() {
               onImportFile={importFromFile}
               onToggleAutoSync={setAutoSync}
             />
+          )}
+          {viewMode === 'settings' && (
+            <div className="settings-panel">
+              <h2>Settings</h2>
+              <InstagramConnect
+                credentials={instagramCredentials}
+                onCredentialsChange={setInstagramCredentials}
+              />
+            </div>
           )}
         </div>
       </Layout>

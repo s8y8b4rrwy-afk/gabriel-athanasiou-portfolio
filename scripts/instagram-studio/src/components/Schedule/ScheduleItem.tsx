@@ -1,5 +1,8 @@
 import styles from './Schedule.module.css';
+import { PublishButton } from './PublishButton';
+import { getCredentialsLocally } from '../../services/instagramApi';
 import type { ScheduleSlot, PostDraft } from '../../types';
+import type { PublishResult } from '../../types/instagram';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -10,6 +13,7 @@ interface ScheduleItemProps {
   onEdit: () => void;
   onUnschedule: () => void;
   onReschedule: () => void;
+  onPublishSuccess?: (result: PublishResult) => void;
   compact?: boolean;
 }
 
@@ -18,9 +22,11 @@ export function ScheduleItem({
   onEdit, 
   onUnschedule, 
   onReschedule,
+  onPublishSuccess,
   compact = false 
 }: ScheduleItemProps) {
   const { scheduleSlot, project } = post;
+  const credentials = getCredentialsLocally();
   
   // Get thumbnail directly from post or project
   const thumbnail = post.selectedImages[0] || project.gallery?.[0] || '';
@@ -102,6 +108,13 @@ export function ScheduleItem({
 
       {scheduleSlot.status === 'pending' && (
         <div className={styles.itemActions}>
+          {credentials?.connected && (
+            <PublishButton
+              draft={post}
+              onPublishSuccess={onPublishSuccess}
+              variant="small"
+            />
+          )}
           <button onClick={onEdit} className={styles.actionButton}>
             ✏️ Edit
           </button>

@@ -17,15 +17,23 @@ async function hashPassword(password: string): Promise<string> {
 // Password hash from environment variable
 const PASSWORD_HASH = import.meta.env.VITE_PASSWORD_HASH || '';
 
+// Dev mode bypass - skip auth if no password hash is set
+const DEV_MODE_BYPASS = import.meta.env.DEV && !PASSWORD_HASH;
+
 const AUTH_KEY = 'instagram-studio-auth';
 const REMEMBER_KEY = 'instagram-studio-remember';
 
 export function PasswordGate({ children }: PasswordGateProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(DEV_MODE_BYPASS ? true : null);
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // In dev mode with no password, skip auth entirely
+  if (DEV_MODE_BYPASS) {
+    return <>{children}</>;
+  }
 
   // Check if already authenticated on mount
   useEffect(() => {

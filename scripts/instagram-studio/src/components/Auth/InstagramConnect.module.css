@@ -1,0 +1,212 @@
+.container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.instagramIcon {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerText h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1a1a2e;
+}
+
+.status {
+  font-size: 0.85rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.expiring {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.disconnected {
+  background: #e2e3e5;
+  color: #6c757d;
+}
+
+/* Connected State */
+.connectedState {
+  padding-top: 0.5rem;
+}
+
+.accountInfo {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.username {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.accountId {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.25rem;
+  font-family: monospace;
+}
+
+.detailsToggle {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.detailsToggle:hover {
+  text-decoration: underline;
+}
+
+.details {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailRow span:first-child {
+  color: #666;
+}
+
+.detailRow span:last-child {
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.warning {
+  color: #dc3545 !important;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.refreshButton {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.refreshButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.refreshButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.disconnectButton {
+  background: #f8f9fa;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.disconnectButton:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Disconnected State */
+.disconnectedState {
+  text-align: center;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.connectButton {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.connectButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 39, 67, 0.3);
+}
+
+.igLogo {
+  font-size: 1.2rem;
+}
+
+.note {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #999;
+}

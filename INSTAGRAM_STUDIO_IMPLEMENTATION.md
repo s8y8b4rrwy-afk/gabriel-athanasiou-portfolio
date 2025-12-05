@@ -77,11 +77,22 @@ Commits without `[deploy]` or `[force-deploy]` will be skipped by Netlify.
 
 ### Environment Variables (Netlify)
 
+#### Instagram Studio Site (gram-studio.netlify.app)
+
 | Variable | Description |
 |----------|-------------|
 | `VITE_PASSWORD_HASH` | SHA-256 hash of the login password |
-| `VITE_SYNC_FUNCTION_URL` | URL to the sync function (`https://lemonpost.studio/.netlify/functions/instagram-studio-sync`) |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret (server-side only, for signed uploads) |
+| `VITE_SYNC_FUNCTION_URL` | URL to the sync function |
+| `VITE_INSTAGRAM_APP_ID` | Instagram App ID: `1386961439465356` |
+| `VITE_INSTAGRAM_REDIRECT_URI` | OAuth callback: `https://studio.lemonpost.studio/auth/callback` |
+
+#### Main Site Functions (lemonpost.studio)
+
+| Variable | Description |
+|----------|-------------|
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret (for signed uploads) |
+| `INSTAGRAM_APP_ID` | Instagram App ID (server-side) |
+| `INSTAGRAM_APP_SECRET` | Instagram App Secret (server-side, never expose!) |
 
 ---
 
@@ -379,22 +390,108 @@ scripts/
 
 ---
 
-### Phase 3: Instagram API Integration
+### Phase 3: Instagram API Integration ✅ COMPLETE
 **Timeline: 2-3 days**
 
-#### Features:
-- [ ] OAuth connection flow
-- [ ] Publish single image posts
-- [ ] Publish carousel posts (up to 10 images)
-- [ ] Scheduled publishing (via API)
-- [ ] Post status tracking
-- [ ] Error handling & retry logic
-- [ ] Rate limit management
+#### 3.1 OAuth Authentication System
+- [x] Create `/auth/callback` route in app
+- [x] Build Netlify function for token exchange (`instagram-auth.mjs`)
+- [x] Implement token storage locally (with Cloudinary sync planned)
+- [x] Add "Connect Instagram" button in Settings
+- [x] Display connection status (connected/expired/not connected)
+- [x] Auto-refresh tokens before expiry
+- [x] Handle token revocation gracefully
+
+#### 3.2 Publishing Features
+- [x] Publish single image posts
+- [x] Publish carousel posts (up to 10 images)
+- [x] "Publish Now" button on scheduled posts
+- [x] Post status tracking (pending/published/failed)
+- [x] Error handling with user-friendly messages
+- [x] Retry logic for failed posts
+
+#### 3.3 Automated Scheduling
+- [ ] Background job for scheduled posts (Netlify scheduled functions)
+- [ ] Check for due posts every 15 minutes
+- [ ] Auto-publish when scheduled time arrives
+- [ ] Update post status after publishing
+- [ ] Notification system for publish results
+
+#### 3.4 Rate Limit Management
+- [x] Track API calls per hour
+- [x] Queue posts if approaching limit
+- [x] Show rate limit status in UI
+- [x] Graceful degradation when limited
 
 #### Deliverables:
-- One-click publish to Instagram
-- Automated scheduled posting
-- Status dashboard for posted content
+- ✅ One-click "Connect Instagram" (OAuth)
+- ✅ Token auto-refresh (never expires if used regularly)
+- ✅ Publish directly from the app
+- ⏳ Automated scheduled posting (Netlify scheduled functions needed)
+- ✅ Status dashboard for all posts
+
+#### OAuth Flow Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      USER CLICKS "CONNECT"                       │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│           Redirect to Instagram Authorization                    │
+│   https://api.instagram.com/oauth/authorize?                     │
+│     client_id={APP_ID}&                                          │
+│     redirect_uri={CALLBACK_URL}&                                 │
+│     scope=instagram_business_basic,instagram_business_content_publish&
+│     response_type=code                                           │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              User Authorizes on Instagram                        │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│     Redirect to: studio.lemonpost.studio/auth/callback?code=XXX │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              Netlify Function: instagram-auth.mjs                │
+│                                                                  │
+│   1. Exchange code for short-lived token                         │
+│   2. Exchange short-lived for long-lived token (60 days)         │
+│   3. Get Instagram Business Account ID                           │
+│   4. Store token + account ID in Cloudinary                      │
+│   5. Return success to frontend                                  │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    App Shows "Connected" ✅                      │
+│              Token auto-refreshes before expiry                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Token Storage Format (Cloudinary)
+
+```json
+{
+  "version": "1.2.0",
+  "instagram": {
+    "connected": true,
+    "accountId": "24965197513162722",
+    "username": "lemonpoststudio",
+    "accessToken": "encrypted_token_here",
+    "tokenExpiry": "2026-02-03T12:00:00.000Z",
+    "lastRefreshed": "2025-12-05T12:00:00.000Z"
+  },
+  "schedules": [...],
+  "templates": [...]
+}
+```
 
 ---
 
@@ -901,6 +998,21 @@ export async function publishMedia(
 
 ## Future Enhancements
 
+### Multi-Account Support (Planned)
+> **Priority Feature**: Support for managing multiple Instagram accounts from one dashboard
+
+| Account | Type | Data Source | Status |
+|---------|------|-------------|--------|
+| @lemonpost.studio | Post-Production Studio | `portfolio-data-postproduction.json` | 🟢 Active |
+| @gabriel.athanasiou (Director) | Director/Filmmaker | `portfolio-data-directing.json` | 🔜 Planned |
+
+**Implementation Notes:**
+- [ ] Account switcher in header/sidebar
+- [ ] Separate schedule data per account (Cloudinary)
+- [ ] Account-specific templates and hashtag libraries
+- [ ] Unified calendar view with color-coded accounts
+- [ ] Per-account API credentials storage
+
 ### AI-Powered Features
 - [ ] GPT-generated caption variations
 - [ ] Hashtag relevance scoring
@@ -973,13 +1085,25 @@ git push origin main
 - [x] Custom domain configured (studio.lemonpost.studio)
 - [x] Environment variables set
 - [x] Deploy gate active ([deploy] required)
-- [ ] Instagram account converted to Business/Creator
-- [ ] Facebook Page created and linked
-- [ ] Meta Developer account set up
-- [ ] Meta App created with Instagram Graph API
-- [ ] Access tokens generated and stored securely
-- [ ] Instagram Business Account ID obtained
-- [ ] Test post successful
+- [x] Instagram account converted to Business/Creator ✅
+- [x] Facebook Page created and linked ✅
+- [x] Meta Developer account set up ✅
+- [x] Meta App created with Instagram Graph API ✅
+- [x] Access tokens generated ✅
+- [x] Instagram Business Account ID obtained ✅
+- [x] OAuth flow implemented ✅
+- [x] Publishing features built ✅
+- [x] Rate limit management added ✅
+- [ ] Test post successful (manual verification needed)
+
+### Current API Credentials
+
+| Credential | Value | Notes |
+|------------|-------|-------|
+| Instagram App ID | `1386961439465356` | SocialUpload-Studio-IG |
+| Instagram Account ID | `24965197513162722` | @lemonpoststudio |
+| Redirect URL | `https://studio.lemonpost.studio/auth/callback` | For OAuth flow |
+| Token Expiry | ~60 days | Auto-refresh via OAuth |
 
 ---
 
@@ -992,5 +1116,6 @@ git push origin main
 
 ---
 
-*Last Updated: December 2025*
-*Version: 1.1.0*
+*Last Updated: 5 December 2025*
+*Version: 1.3.0 - Phase 3 OAuth & Publishing Complete*
+*Version: 1.2.0*

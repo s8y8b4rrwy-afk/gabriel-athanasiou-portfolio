@@ -12,10 +12,11 @@
   overflow: hidden;
 }
 
+/* View mode toggle - responsive layout */
 .view-mode-toggle {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -25,7 +26,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
@@ -36,6 +37,18 @@
   justify-content: center;
   gap: 4px;
   white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: fit-content;
+}
+
+/* First row: main tabs take more space */
+.view-mode-button:nth-child(-n+3) {
+  flex: 1 1 30%;
+}
+
+/* Second row: utility tabs */
+.view-mode-button:nth-child(n+4) {
+  flex: 1 1 45%;
 }
 
 .view-mode-button:hover {
@@ -47,4 +60,28 @@
   background: rgba(252, 211, 77, 0.15);
   border-color: rgba(252, 211, 77, 0.3);
   color: #fcd34d;
+}
+
+/* Connected indicator dot */
+.connected-dot {
+  color: #22c55e;
+  font-size: 8px;
+  margin-left: 4px;
+}
+
+/* Settings panel */
+.settings-panel {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.settings-panel h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
