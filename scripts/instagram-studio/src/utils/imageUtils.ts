@@ -259,19 +259,20 @@ export function buildCloudinaryUrl(
   
   const presetConfig = IMAGE_PRESETS[preset];
   
-  // For Instagram preset, crop to acceptable aspect ratio (4:5 to 1.91:1)
+  // For Instagram preset, fit to aspect ratio with letterboxing (no cropping)
   if (preset === 'instagram' || !presetConfig.format || !presetConfig.width) {
     // Use provided aspect ratio or default to 4:5
     const ar = aspectRatio || INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
     
-    // Instagram transformation: crop to aspect ratio, high quality JPEG
-    // Using c_fill to crop to exact ratio, g_center for center-focused cropping
+    // Instagram transformation: fit image with letterboxing (black bars)
+    // Using c_pad to add padding instead of cropping
     const igTransforms = [
-      `ar_${ar}`,   // Aspect ratio (dynamic based on original image)
-      'c_fill',     // Fill/crop to exact ratio
-      'g_center',   // Center gravity - always focus on center of image
-      'q_95',       // High quality
-      'f_jpg'       // JPEG format for compatibility
+      `ar_${ar}`,     // Aspect ratio (dynamic based on original image)
+      'c_pad',        // Pad to fit - adds letterboxing instead of cropping
+      'b_black',      // Black background for letterboxing
+      'g_center',     // Center the image
+      'q_95',         // High quality
+      'f_jpg'         // JPEG format for compatibility
     ].join(',');
     return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${igTransforms}/${publicId}.jpg`;
   }
