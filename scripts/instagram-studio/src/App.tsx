@@ -45,8 +45,10 @@ function App() {
   // Template management
   const {
     templates,
+    defaultTemplate,
     createTemplate,
     updateTemplate,
+    updateDefaultTemplate,
     deleteTemplate,
     duplicateTemplate,
   } = useTemplates();
@@ -242,13 +244,17 @@ function App() {
 
   const handleSaveTemplate = useCallback((updates: Partial<RecurringTemplate>) => {
     if (selectedTemplate) {
-      updateTemplate(selectedTemplate.id, updates);
+      if (selectedTemplate.id === 'default') {
+        updateDefaultTemplate(updates);
+      } else {
+        updateTemplate(selectedTemplate.id, updates);
+      }
       setSelectedTemplate(null);
     }
-  }, [selectedTemplate, updateTemplate]);
+  }, [selectedTemplate, updateTemplate, updateDefaultTemplate]);
 
   const handleDeleteTemplate = useCallback(() => {
-    if (selectedTemplate) {
+    if (selectedTemplate && selectedTemplate.id !== 'default') {
       deleteTemplate(selectedTemplate.id);
       setSelectedTemplate(null);
     }
@@ -319,6 +325,7 @@ function App() {
               onEditScheduledPost={handleEditPost}
               onUnschedulePost={unschedulePost}
               templates={templates}
+              defaultTemplate={defaultTemplate}
             />
           )}
           {viewMode === 'schedule' && (
@@ -341,11 +348,12 @@ function App() {
                 template={selectedTemplate}
                 onSave={handleSaveTemplate}
                 onCancel={() => setSelectedTemplate(null)}
-                onDelete={handleDeleteTemplate}
+                onDelete={selectedTemplate.id !== 'default' ? handleDeleteTemplate : undefined}
               />
             ) : (
               <TemplateList
                 templates={templates}
+                defaultTemplate={defaultTemplate}
                 onSelect={setSelectedTemplate}
                 onDuplicate={duplicateTemplate}
                 onCreate={handleCreateTemplate}

@@ -3,6 +3,7 @@ import styles from './Templates.module.css';
 
 interface TemplateListProps {
   templates: RecurringTemplate[];
+  defaultTemplate: RecurringTemplate;
   onSelect: (template: RecurringTemplate) => void;
   onDuplicate: (id: string) => void;
   onCreate: () => void;
@@ -10,6 +11,7 @@ interface TemplateListProps {
 
 export function TemplateList({
   templates,
+  defaultTemplate,
   onSelect,
   onDuplicate,
   onCreate,
@@ -23,51 +25,74 @@ export function TemplateList({
         </button>
       </div>
 
-      {templates.length === 0 ? (
-        <div className={styles.emptyState}>
-          <span className={styles.emptyIcon}>📋</span>
-          <p>No templates yet</p>
-          <p className={styles.emptyHint}>
-            Create templates to quickly apply caption formats and hashtags
-          </p>
-        </div>
-      ) : (
-        <div className={styles.templates}>
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className={styles.templateCard}
-              onClick={() => onSelect(template)}
-            >
-              <div className={styles.templateInfo}>
-                <div className={styles.templateName}>
-                  {template.name}
-                </div>
-                {template.description && (
-                  <div className={styles.templateDescription}>
-                    {template.description}
-                  </div>
-                )}
-                <div className={styles.templateMeta}>
-                  <span>🏷️ {template.hashtagGroups.length} hashtag groups</span>
-                </div>
+      <div className={styles.templates}>
+        {/* Default Template - Always shown first */}
+        <div
+          className={`${styles.templateCard} ${styles.defaultTemplate}`}
+          onClick={() => onSelect(defaultTemplate)}
+        >
+          <div className={styles.templateInfo}>
+            <div className={styles.templateName}>
+              ⭐ {defaultTemplate.name}
+            </div>
+            {defaultTemplate.description && (
+              <div className={styles.templateDescription}>
+                {defaultTemplate.description}
               </div>
-              <div className={styles.templateActions}>
-                <button
-                  className={styles.duplicateButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicate(template.id);
-                  }}
-                  title="Duplicate"
-                >
-                  📋
-                </button>
+            )}
+            <div className={styles.templateMeta}>
+              <span>🏷️ {defaultTemplate.hashtagGroups.length} hashtag groups</span>
+            </div>
+          </div>
+          <div className={styles.templateActions}>
+            <button
+              className={styles.duplicateButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate(defaultTemplate.id);
+              }}
+              title="Duplicate"
+            >
+              📋
+            </button>
+          </div>
+        </div>
+
+        {/* Custom Templates */}
+        {templates.map((template) => (
+          <div
+            key={template.id}
+            className={styles.templateCard}
+            onClick={() => onSelect(template)}
+          >
+            <div className={styles.templateInfo}>
+              <div className={styles.templateName}>
+                {template.name}
+              </div>
+              {template.description && (
+                <div className={styles.templateDescription}>
+                  {template.description}
+                </div>
+              )}
+              <div className={styles.templateMeta}>
+                <span>🏷️ {template.hashtagGroups.length} hashtag groups</span>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+            <div className={styles.templateActions}>
+              <button
+                className={styles.duplicateButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate(template.id);
+                }}
+                title="Duplicate"
+              >
+                📋
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

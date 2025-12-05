@@ -30,6 +30,7 @@ interface PostPreviewProps {
   onEditScheduledPost?: (post: ScheduledPost) => void;
   onUnschedulePost?: (slotId: string) => void;
   templates?: RecurringTemplate[];
+  defaultTemplate?: RecurringTemplate;
 }
 
 export function PostPreview({ 
@@ -45,6 +46,7 @@ export function PostPreview({
   onEditScheduledPost,
   onUnschedulePost,
   templates = [],
+  defaultTemplate,
 }: PostPreviewProps) {
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -78,10 +80,22 @@ export function PostPreview({
         setHashtags(currentDraft.hashtags);
         setSelectedImages(currentDraft.selectedImages.length > 0 ? currentDraft.selectedImages : allImages.slice(0, 10));
       } else {
-        // Generate fresh content for a new post
-        const generatedHashtags = generateHashtags(project);
-        setHashtags(generatedHashtags);
-        setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
+        // Generate fresh content using the default template if available
+        if (defaultTemplate) {
+          const newCaption = applyTemplateToProject(defaultTemplate.captionTemplate, project);
+          const templateHashtags = getHashtagsFromGroups(defaultTemplate.hashtagGroups as HashtagGroupKey[]);
+          const captionWithHashtags = templateHashtags.length > 0 
+            ? `${newCaption}\n\n${formatHashtagsForCaption(templateHashtags)}`
+            : newCaption;
+          setCaption(captionWithHashtags);
+          setHashtags(templateHashtags);
+          setSelectedTemplateId('default');
+        } else {
+          // Fallback to old behavior
+          const generatedHashtags = generateHashtags(project);
+          setHashtags(generatedHashtags);
+          setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
+        }
         setSelectedImages(allImages.slice(0, 10)); // Select first 10 by default
       }
       setCurrentPreviewIndex(0); // Reset preview index
@@ -92,7 +106,7 @@ export function PostPreview({
       setSelectedImages([]);
       setCurrentPreviewIndex(0);
     }
-  }, [project?.id, currentDraft]); // Re-run when project ID or currentDraft changes
+  }, [project?.id, currentDraft, defaultTemplate]); // Re-run when project ID, currentDraft, or defaultTemplate changes
 
   // Calculate median aspect ratio when selected images change
   useEffect(() => {
@@ -347,13 +361,17 @@ export function PostPreview({
               <label>Apply Template:</label>
               <div className="template-buttons">
                 <button 
-                  className={`template-button ${!selectedTemplateId ? 'template-button--active' : ''}`}
+                  className={`template-button ${!selectedTemplateId || selectedTemplateId === 'default' ? 'template-button--active' : ''}`}
                   onClick={() => {
-                    // Reset to default generated caption
-                    const generatedHashtags = generateHashtags(project);
-                    setHashtags(generatedHashtags);
-                    setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
-                    setSelectedTemplateId(null);
+                    if (defaultTemplate) {
+                      handleApplyTemplate(defaultTemplate);
+                    } else {
+                      // Fallback to old behavior if no default template
+                      const generatedHashtags = generateHashtags(project);
+                      setHashtags(generatedHashtags);
+                      setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
+                      setSelectedTemplateId(null);
+                    }
                   }}
                 >
                   Default

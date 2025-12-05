@@ -7,7 +7,7 @@ interface TemplateEditorProps {
   template: RecurringTemplate;
   onSave: (updates: Partial<RecurringTemplate>) => void;
   onCancel: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 export function TemplateEditor({ template, onSave, onCancel, onDelete }: TemplateEditorProps) {
@@ -18,9 +18,11 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
     template.hashtagGroups as HashtagGroupKey[]
   );
 
+  const isDefaultTemplate = template.id === 'default';
+
   const handleSave = () => {
     onSave({
-      name,
+      name: isDefaultTemplate ? 'Default' : name, // Don't allow renaming default
       description,
       captionTemplate,
       hashtagGroups,
@@ -40,14 +42,16 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
   return (
     <div className={styles.editor}>
       <div className={styles.editorHeader}>
-        <h3>Edit Template</h3>
+        <h3>{isDefaultTemplate ? 'Edit Default Template' : 'Edit Template'}</h3>
         <div className={styles.editorActions}>
           <button className={styles.cancelButton} onClick={onCancel}>
             Cancel
           </button>
-          <button className={styles.deleteButton} onClick={onDelete}>
-            Delete
-          </button>
+          {onDelete && (
+            <button className={styles.deleteButton} onClick={onDelete}>
+              Delete
+            </button>
+          )}
           <button className={styles.saveButton} onClick={handleSave}>
             Save
           </button>
@@ -58,15 +62,17 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Templat
         {/* Basic Info */}
         <section className={styles.section}>
           <h4>Basic Info</h4>
-          <div className={styles.field}>
-            <label>Template Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Project Spotlight, Throwback Thursday"
-            />
-          </div>
+          {!isDefaultTemplate && (
+            <div className={styles.field}>
+              <label>Template Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Project Spotlight, Throwback Thursday"
+              />
+            </div>
+          )}
           <div className={styles.field}>
             <label>Description</label>
             <input
