@@ -13,12 +13,13 @@
 5. [Architecture](#architecture)
 6. [Implementation Phases](#implementation-phases)
 7. [Cloud Sync](#cloud-sync)
-8. [Technical Specifications](#technical-specifications)
-9. [Post Format & Templates](#post-format--templates)
-10. [Hashtag Strategy](#hashtag-strategy)
-11. [API Integration](#api-integration)
-12. [Rate Limits & Best Practices](#rate-limits--best-practices)
-13. [Future Enhancements](#future-enhancements)
+8. [Cloudinary Image URLs](#cloudinary-image-urls)
+9. [Technical Specifications](#technical-specifications)
+10. [Post Format & Templates](#post-format--templates)
+11. [Hashtag Strategy](#hashtag-strategy)
+12. [API Integration](#api-integration)
+13. [Rate Limits & Best Practices](#rate-limits--best-practices)
+14. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -126,19 +127,19 @@ ngrok config add-authtoken YOUR_TOKEN_HERE
 ```bash
 cd scripts/instagram-studio
 npm run dev
-# Note the port (usually 5174 or 5175)
+# Server runs on port 5174
 ```
 
 #### Terminal 2: Start ngrok Tunnel
 
 ```bash
-ngrok http 5175  # Use your actual port
+ngrok http 5174
 ```
 
 You'll see output like:
 ```
 Session Status                online
-Forwarding                    https://abc123.ngrok-free.app -> http://localhost:5175
+Forwarding                    https://abc123.ngrok-free.app -> http://localhost:5174
 ```
 
 #### Terminal 3: Update Local Environment
@@ -151,6 +152,8 @@ echo "VITE_INSTAGRAM_REDIRECT_URI=https://abc123.ngrok-free.app/auth/callback" >
 ```
 
 Replace `abc123.ngrok-free.app` with your actual ngrok URL.
+
+> **Note:** The Vite config has `allowedHosts: true` to allow ngrok connections.
 
 ### Add ngrok URL to Meta Dashboard
 
@@ -182,7 +185,7 @@ After updating `.env.local`, restart the dev server to pick up the new redirect 
 cd scripts/instagram-studio && npm run dev
 
 # Terminal 2
-ngrok http 5175
+ngrok http 5174
 
 # Terminal 3 - Update redirect URI
 cd scripts/instagram-studio
@@ -196,7 +199,8 @@ echo "VITE_INSTAGRAM_REDIRECT_URI=https://YOUR-NGROK-URL.ngrok-free.app/auth/cal
 | Issue | Solution |
 |-------|----------|
 | "Invalid redirect_uri" | Ensure ngrok URL in Meta Dashboard matches `.env.local` exactly |
-| "ERR_NGROK_3200" | Make sure dev server is running on the correct port |
+| "ERR_NGROK_3200" | Make sure dev server is running on port 5174 |
+| "Blocked request" host error | Already fixed - Vite config has `allowedHosts: true` |
 | Token expired | Go to Settings → Disconnect, then reconnect |
 | ngrok session expired | Restart ngrok and update Meta Dashboard with new URL |
 
@@ -447,7 +451,7 @@ scripts/
 - [x] View scheduled posts per project
 - [x] Schedule status filter (scheduled/published/unscheduled)
 - [x] Enhanced metadata search (title, description, client, type, kinds, genre, credits, awards)
-- [x] Cloudinary image integration (automatic Airtable → Cloudinary URL conversion)
+- [x] Cloudinary image integration (builds URLs from project ID + index, no Airtable ID extraction needed)
 - [x] Export schedule to CSV/JSON
 - [x] Cloudinary sync (upload/fetch schedule data)
 - [x] Recurring post templates
@@ -699,6 +703,137 @@ Located at `netlify/functions/instagram-studio-sync.mjs`:
 
 Required environment variables on main site (lemonpost.studio):
 - `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
+
+---
+
+## Cloudinary Image URLs
+
+### Why Cloudinary?
+
+Portfolio data from Airtable contains **temporary image URLs** that expire after a few hours. Instagram's API requires **permanent, publicly accessible URLs** to publish posts. All portfolio images are already synced to Cloudinary by the main site, so Instagram Studio builds Cloudinary URLs directly.
+
+### Image Quality Presets
+
+Instagram Studio uses presets matching the main site for consistent image quality:
+
+| Preset | Quality | Width | Format | Use Case |
+|--------|---------|-------|--------|----------|
+| `micro` | 70 | 600px | webp | Slow 2G connections |
+| `fine` | 80 | 1000px | webp | **App preview** (default) |
+| `ultra` | 90 | 1600px | webp | Larger displays |
+| `hero` | 100 | 2400px | webp | Hero images |
+| `instagram` | 100 | original | original | **Instagram publishing** |
+
+**Key difference:**
+- **Preview in app**: Uses `fine` preset (42KB, webp, compressed) for fast loading
+- **Publish to Instagram**: Uses `instagram` preset (203KB, original jpeg) for best quality
+
+### URL Pattern
+
+Cloudinary images follow this naming convention:
+```
+portfolio-projects-{recordId}-{index}
+```
+
+Where:
+- `recordId`: The Airtable record ID (e.g., `rec4QdaV0qLrTR8fh`)
+- `index`: Zero-based index of the image in the project gallery
+
+### Example URLs
+
+| Use Case | URL |
+|----------|-----|
+| **App Preview** (fine preset) | `https://res.cloudinary.com/date24ay6/image/upload/f_webp,w_1000,c_limit,q_80/portfolio-projects-rec4QdaV0qLrTR8fh-0` |
+| **Instagram Publish** (original) | `https://res.cloudinary.com/date24ay6/image/upload/portfolio-projects-rec4QdaV0qLrTR8fh-0` |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Portfolio Data (Airtable)                     │
+│                                                                  │
+│   project.id = "rec4QdaV0qLrTR8fh"                              │
+│   project.gallery = ["airtable-url-0", "airtable-url-1", ...]   │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      │ buildCloudinaryUrl(projectId, imageIndex, preset)
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Cloudinary URL Built                          │
+│                                                                  │
+│   For preview (preset='fine'):                                   │
+│   url = ".../f_webp,w_1000,c_limit,q_80/{publicId}"             │
+│                                                                  │
+│   For Instagram (preset='instagram'):                            │
+│   url = ".../upload/{publicId}" (no transformations)             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/utils/imageUtils.ts` | Core URL building functions with presets |
+| `src/hooks/useCloudinaryImages.ts` | React hooks for components |
+
+### Main Functions
+
+```typescript
+// Build a Cloudinary URL with preset (default: 'fine' for preview)
+buildCloudinaryUrl(projectId: string, imageIndex: number, preset?: ImagePreset): string
+
+// Convenience functions
+buildPreviewUrl(projectId: string, imageIndex: number): string  // Uses 'fine' preset
+buildInstagramUrl(projectId: string, imageIndex: number): string // Uses 'instagram' preset
+
+// Convert URLs for preview display (optimized, compressed)
+ensureCloudinaryUrls(urls: string[], projectId: string): Promise<string[]>
+
+// Get original quality URLs for Instagram API publishing
+getInstagramPublishUrls(urls: string[], projectId: string): Promise<string[]>
+```
+
+### React Hooks
+
+```typescript
+// Get optimized Cloudinary URL for preview (fine preset)
+const imageUrl = useCloudinaryUrl(originalUrl, projectId, imageIndex);
+
+// Get optimized URLs for all gallery images
+const imageUrls = useCloudinaryUrls(galleryUrls, projectId);
+
+// Build preview URLs directly from project ID
+const urls = useProjectCloudinaryUrls(projectId, imageCount);
+
+// Get original quality URLs for Instagram publishing
+const getPublishUrls = useInstagramPublishUrls();
+const instagramUrls = await getPublishUrls(selectedImages, projectId);
+```
+
+### Cloudinary Mapping
+
+The main site generates a `cloudinary-mapping.json` file that maps project IDs to their Cloudinary images:
+
+```json
+{
+  "generatedAt": "2025-12-05T12:00:00.000Z",
+  "projects": [
+    {
+      "recordId": "rec4QdaV0qLrTR8fh",
+      "title": "The Newspaper",
+      "images": [
+        {
+          "index": 0,
+          "publicId": "portfolio-projects-rec4QdaV0qLrTR8fh-0",
+          "cloudinaryUrl": "https://res.cloudinary.com/date24ay6/image/upload/..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+This mapping is fetched from `https://lemonpost.studio/cloudinary-mapping.json` and used for validation.
 
 ---
 
@@ -1223,5 +1358,4 @@ git push origin main
 ---
 
 *Last Updated: 5 December 2025*
-*Version: 1.3.0 - Phase 3 OAuth & Publishing Complete*
-*Version: 1.2.0*
+*Version: 1.3.1 - Fixed Cloudinary image URL building (uses projectId + index pattern)*

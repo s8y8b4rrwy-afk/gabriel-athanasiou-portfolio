@@ -7,6 +7,7 @@
 
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
 import type { RecurringTemplate } from '../types/template';
+import type { InstagramCredentials } from '../types/instagram';
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
@@ -31,6 +32,8 @@ interface ScheduleData {
   // New fields for templates
   templates?: RecurringTemplate[];
   defaultTemplate?: RecurringTemplate;
+  // Instagram credentials (synced to cloud for persistence)
+  instagram?: InstagramCredentials;
 }
 
 interface CloudinaryUploadResponse {
@@ -97,11 +100,12 @@ export async function uploadScheduleToCloudinary(
   settings: ScheduleSettings,
   templates?: RecurringTemplate[],
   defaultTemplate?: RecurringTemplate,
+  instagram?: InstagramCredentials | null,
   profileId: string = DEFAULT_PROFILE_ID
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const scheduleData: ScheduleData = {
-      version: '1.2.0', // Version bump for profile support
+      version: '1.3.0', // Version bump for Instagram credentials sync
       exportedAt: new Date().toISOString(),
       profileId,
       settings,
@@ -109,6 +113,7 @@ export async function uploadScheduleToCloudinary(
       scheduleSlots,
       templates: templates || [],
       defaultTemplate,
+      instagram: instagram || undefined,
     };
 
     // Call the Netlify function for signed upload
@@ -145,16 +150,18 @@ export function exportScheduleAsJson(
   scheduleSlots: ScheduleSlot[],
   settings: ScheduleSettings,
   templates?: RecurringTemplate[],
-  defaultTemplate?: RecurringTemplate
+  defaultTemplate?: RecurringTemplate,
+  instagram?: InstagramCredentials | null
 ): void {
   const scheduleData: ScheduleData = {
-    version: '1.1.0',
+    version: '1.3.0',
     exportedAt: new Date().toISOString(),
     settings,
     drafts,
     scheduleSlots,
     templates: templates || [],
     defaultTemplate,
+    instagram: instagram || undefined,
   };
 
   const jsonString = JSON.stringify(scheduleData, null, 2);

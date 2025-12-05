@@ -3,7 +3,7 @@ import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel,
 import { useProjects, useSchedule, useCloudinarySync, useTemplates } from './hooks';
 import { generateCaption } from './utils/generateCaption';
 import { generateHashtags } from './utils/generateHashtags';
-import { getCredentialsLocally } from './services/instagramApi';
+import { getCredentialsLocally, saveCredentialsLocally } from './services/instagramApi';
 import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials } from './types';
 import type { ScheduleData } from './services/cloudinarySync';
 import './App.css';
@@ -58,13 +58,25 @@ function App() {
 
   const [selectedTemplate, setSelectedTemplate] = useState<RecurringTemplate | null>(null);
   
-  // Cloudinary sync - handle importing all data including templates
+  // Instagram credentials - must be declared early as it's used by cloud sync
+  const [instagramCredentials, setInstagramCredentials] = useState<InstagramCredentials | null>(() => {
+    // Initialize from localStorage on mount
+    return getCredentialsLocally();
+  });
+  
+  // Cloudinary sync - handle importing all data including templates and Instagram credentials
   const handleImportScheduleData = useCallback((data: ScheduleData) => {
     // Import schedule data
     importScheduleData(data.drafts, data.scheduleSlots, data.settings);
     // Import templates if present
     if (data.templates || data.defaultTemplate) {
       importTemplates(data.templates || [], data.defaultTemplate);
+    }
+    // Import Instagram credentials if present (for persistence across sessions)
+    if (data.instagram && data.instagram.accessToken) {
+      console.log('📷 Restoring Instagram credentials from cloud...');
+      saveCredentialsLocally(data.instagram);
+      setInstagramCredentials(data.instagram);
     }
   }, [importScheduleData, importTemplates]);
 
@@ -86,6 +98,7 @@ function App() {
     settings,
     templates,
     defaultTemplate,
+    instagramCredentials,
     onImport: handleImportScheduleData,
   });
   
@@ -105,9 +118,6 @@ function App() {
 
   // Instagram OAuth callback check
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
-  
-  // Instagram credentials
-  const [instagramCredentials, setInstagramCredentials] = useState<InstagramCredentials | null>(null);
 
   // Check for OAuth callback on mount
   useEffect(() => {
@@ -115,14 +125,6 @@ function App() {
     const hasCode = urlParams.has('code');
     const hasError = urlParams.has('error');
     setIsOAuthCallback(hasCode || hasError);
-  }, []);
-
-  // Load Instagram credentials on mount
-  useEffect(() => {
-    const creds = getCredentialsLocally();
-    if (creds) {
-      setInstagramCredentials(creds);
-    }
   }, []);
 
   // Fetch from Cloudinary on initial load

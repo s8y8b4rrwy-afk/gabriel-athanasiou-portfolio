@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import type { PostDraft, ScheduleSlot } from '../../types';
+import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import './PostPreview.css';
 
 interface ScheduledPost extends PostDraft {
@@ -29,15 +31,35 @@ function ScheduledPostItem({
   formatDate: (dateStr: string) => string;
   formatTime: (timeStr: string) => string;
 }) {
-  const thumbnailUrl = post.selectedImages[0] || '';
+  const cloudinaryThumbnail = useMemo(() => {
+    const thumbnailUrl = post.selectedImages[0] || '';
+    if (!thumbnailUrl) return '';
+    
+    // If already Cloudinary, just optimize
+    if (thumbnailUrl.includes('res.cloudinary.com')) {
+      return getOptimizedCloudinaryUrl(thumbnailUrl);
+    }
+    
+    // Find the index in the project gallery
+    const allImages = post.project?.gallery || [];
+    const index = findImageIndex(thumbnailUrl, allImages);
+    if (index !== -1) {
+      return buildCloudinaryUrl(post.projectId, index);
+    }
+    
+    // Fallback: assume first image
+    return buildCloudinaryUrl(post.projectId, 0);
+  }, [post.selectedImages, post.project?.gallery, post.projectId]);
+  
+  const hasThumbnail = post.selectedImages.length > 0;
 
   return (
     <div 
       className={`scheduled-post-item ${getStatusClass(post.scheduleSlot.status)}`}
     >
       <div className="scheduled-post-thumbnail">
-        {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt="Post thumbnail" />
+        {hasThumbnail ? (
+          <img src={cloudinaryThumbnail} alt="Post thumbnail" />
         ) : (
           <span className="scheduled-post-no-image">📷</span>
         )}

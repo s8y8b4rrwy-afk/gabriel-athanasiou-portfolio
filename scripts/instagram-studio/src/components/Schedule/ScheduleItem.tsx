@@ -1,8 +1,10 @@
 import styles from './Schedule.module.css';
 import { PublishButton } from './PublishButton';
 import { getCredentialsLocally } from '../../services/instagramApi';
+import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import type { ScheduleSlot, PostDraft } from '../../types';
 import type { PublishResult } from '../../types/instagram';
+import { useMemo } from 'react';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -28,8 +30,30 @@ export function ScheduleItem({
   const { scheduleSlot, project } = post;
   const credentials = getCredentialsLocally();
   
-  // Get thumbnail directly from post or project
-  const thumbnail = post.selectedImages[0] || project.gallery?.[0] || '';
+  // Get thumbnail with Cloudinary conversion
+  const thumbnail = useMemo(() => {
+    const rawThumbnail = post.selectedImages[0] || project.gallery?.[0] || '';
+    if (!rawThumbnail) return '';
+    
+    // If already Cloudinary, just optimize it
+    if (rawThumbnail.includes('res.cloudinary.com')) {
+      return getOptimizedCloudinaryUrl(rawThumbnail);
+    }
+    
+    // Find the index in the gallery
+    const allImages = project.gallery || [];
+    const index = findImageIndex(rawThumbnail, allImages);
+    if (index !== -1) {
+      return buildCloudinaryUrl(project.id, index);
+    }
+    
+    // Fallback: use index 0 if first selected image
+    if (post.selectedImages[0] === rawThumbnail) {
+      return buildCloudinaryUrl(project.id, 0);
+    }
+    
+    return rawThumbnail;
+  }, [post.selectedImages, project.gallery, project.id]);
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);

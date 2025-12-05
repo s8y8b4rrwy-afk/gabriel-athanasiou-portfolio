@@ -9,6 +9,7 @@ import {
 } from '../services/cloudinarySync';
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
 import type { RecurringTemplate } from '../types/template';
+import type { InstagramCredentials } from '../types/instagram';
 
 interface UseCloudinarySyncOptions {
   drafts: PostDraft[];
@@ -16,6 +17,7 @@ interface UseCloudinarySyncOptions {
   settings: ScheduleSettings;
   templates: RecurringTemplate[];
   defaultTemplate: RecurringTemplate;
+  instagramCredentials: InstagramCredentials | null;
   onImport: (data: ScheduleData) => void;
 }
 
@@ -39,6 +41,7 @@ export function useCloudinarySync({
   settings,
   templates,
   defaultTemplate,
+  instagramCredentials,
   onImport,
 }: UseCloudinarySyncOptions): UseCloudinarySyncReturn {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -70,7 +73,7 @@ export function useCloudinarySync({
     setSyncSuccess(null);
 
     try {
-      const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings, templates, defaultTemplate);
+      const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials);
       
       if (result.success) {
         const now = new Date().toISOString();
@@ -88,7 +91,7 @@ export function useCloudinarySync({
     } finally {
       setIsSyncing(false);
     }
-  }, [drafts, scheduleSlots, settings, templates, defaultTemplate]);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials]);
 
   const fetchFromCloudinary = useCallback(async (): Promise<boolean> => {
     setIsSyncing(true);
@@ -116,8 +119,8 @@ export function useCloudinarySync({
   }, [onImport]);
 
   const exportAsJson = useCallback(() => {
-    exportScheduleAsJson(drafts, scheduleSlots, settings, templates, defaultTemplate);
-  }, [drafts, scheduleSlots, settings, templates, defaultTemplate]);
+    exportScheduleAsJson(drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials]);
 
   const exportAsCsv = useCallback(() => {
     exportScheduleAsCsv(drafts, scheduleSlots);
@@ -142,7 +145,7 @@ export function useCloudinarySync({
     }, 5000); // 5 second debounce
 
     return () => clearTimeout(timeoutId);
-  }, [autoSync, drafts, scheduleSlots, settings, templates, defaultTemplate, syncToCloudinary]);
+  }, [autoSync, drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, syncToCloudinary]);
 
   return {
     isSyncing,

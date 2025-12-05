@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Project, PostDraft, ScheduleSlot, RecurringTemplate } from '../../types';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
 import { ProjectScheduledPosts } from './ProjectScheduledPosts';
 import { TimeSlotPicker } from '../Calendar';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
+import { useCloudinaryMappingReady } from '../../hooks';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
 
@@ -56,6 +58,9 @@ export function PostPreview({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState(4 / 5); // Default to 4:5 (Instagram portrait)
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
+  
+  // This will trigger re-render when Cloudinary mapping loads
+  useCloudinaryMappingReady();
 
   // Get all available images for the project (use original URLs directly)
   const allImages = project
@@ -63,6 +68,25 @@ export function PostPreview({
         (img, idx, arr) => arr.indexOf(img) === idx // Remove duplicates
       )
     : [];
+    
+  // Build a map of original URL -> Cloudinary URL for fast lookups
+  const cloudinaryUrlMap = useMemo(() => {
+    if (!project) return new Map<string, string>();
+    const map = new Map<string, string>();
+    allImages.forEach((url, index) => {
+      if (url.includes('res.cloudinary.com')) {
+        map.set(url, getOptimizedCloudinaryUrl(url));
+      } else {
+        map.set(url, buildCloudinaryUrl(project.id, index));
+      }
+    });
+    return map;
+  }, [allImages, project?.id]);
+  
+  // Helper to get Cloudinary URL for any image
+  const getCloudinaryUrl = useCallback((url: string): string => {
+    return cloudinaryUrlMap.get(url) || url;
+  }, [cloudinaryUrlMap]);
 
   // Set editing time when schedule info is provided
   useEffect(() => {
@@ -275,7 +299,7 @@ export function PostPreview({
             <div className="instagram-image" style={{ aspectRatio: aspectRatio }}>
               {selectedImages.length > 0 ? (
                 <>
-                  <img src={selectedImages[currentPreviewIndex]} alt={project.title} />
+                  <img src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} alt={project.title} />
                   {selectedImages.length > 1 && (
                     <>
                       <button 
@@ -296,7 +320,7 @@ export function PostPreview({
                   )}
                 </>
               ) : allImages.length > 0 ? (
-                <img src={allImages[0]} alt={project.title} />
+                <img src={getCloudinaryUrl(allImages[0])} alt={project.title} />
               ) : (
                 <div className="instagram-no-image">🎬</div>
               )}
@@ -402,6 +426,7 @@ export function PostPreview({
           <ImageCarousel
             images={allImages}
             selectedImages={selectedImages}
+            projectId={project.id}
             onToggleImage={handleToggleImage}
             onReorderImages={handleReorderImages}
             onSelectAll={handleSelectAllImages}

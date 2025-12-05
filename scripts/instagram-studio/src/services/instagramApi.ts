@@ -21,8 +21,9 @@ const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '1386961439465
 
 // IMPORTANT: For OAuth to work, the redirect_uri must be registered in Meta Dashboard
 // Meta does NOT allow localhost URLs - only HTTPS production URLs work
-// Always use the production redirect URI, even when testing locally
-const INSTAGRAM_REDIRECT_URI = 'https://studio.lemonpost.studio/auth/callback';
+// Use env variable for local ngrok testing, fallback to production for deployed app
+const INSTAGRAM_REDIRECT_URI = import.meta.env.VITE_INSTAGRAM_REDIRECT_URI || 
+  'https://studio.lemonpost.studio/auth/callback';
 
 // Auth function URL (on main site)
 const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||

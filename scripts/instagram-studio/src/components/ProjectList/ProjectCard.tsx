@@ -1,4 +1,5 @@
 import type { Project } from '../../types';
+import { useCloudinaryUrl } from '../../hooks';
 import './ProjectCard.css';
 
 interface ProjectCardProps {
@@ -9,8 +10,10 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, isSelected, onClick, scheduledCount = 0 }: ProjectCardProps) {
-  const imageUrl = project.heroImage || project.gallery[0] || '';
-  const hasImages = imageUrl || project.gallery.length > 0;
+  const rawImageUrl = project.heroImage || project.gallery[0] || '';
+  // Hero image is index 0, first gallery image is also index 0 (if no hero)
+  const imageUrl = useCloudinaryUrl(rawImageUrl, project.id, 0);
+  const hasImages = rawImageUrl || project.gallery.length > 0;
   const imageCount = project.gallery.length || (project.heroImage ? 1 : 0);
 
   return (

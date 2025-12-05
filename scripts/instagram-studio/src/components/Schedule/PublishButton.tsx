@@ -7,6 +7,7 @@ import {
   canPublishPost,
   canMakeApiCall,
 } from '../../services/instagramApi';
+import { getInstagramPublishUrls } from '../../utils/imageUtils';
 import type { PostDraft } from '../../types';
 import type { PostPublishStatus, PublishResult } from '../../types/instagram';
 import styles from './PublishButton.module.css';
@@ -77,13 +78,29 @@ export function PublishButton({
     setError(null);
 
     try {
+      // CRITICAL: Get ORIGINAL quality Cloudinary URLs for Instagram publishing
+      // - Airtable URLs expire after a few hours
+      // - Instagram API needs permanent, publicly accessible URLs
+      // - We use original files (no transformations) for best quality on Instagram
+      const instagramUrls = await getInstagramPublishUrls(draft.selectedImages, draft.projectId);
+      
+      // Check if any URLs failed to convert (still contain airtable)
+      const failedUrls = instagramUrls.filter(url => 
+        url.includes('airtable.com') || url.includes('airtableusercontent.com')
+      );
+      if (failedUrls.length > 0) {
+        console.warn('Some URLs could not be converted to Cloudinary:', failedUrls);
+      }
+      
+      console.log('📸 Publishing to Instagram with original quality URLs:', instagramUrls);
+      
       let result: PublishResult;
 
-      if (draft.selectedImages.length === 1) {
+      if (instagramUrls.length === 1) {
         // Single image post
         setStatus('publishing');
         result = await publishSingleImage(
-          draft.selectedImages[0],
+          instagramUrls[0],
           fullCaption,
           credentials.accessToken,
           credentials.accountId
@@ -92,7 +109,7 @@ export function PublishButton({
         // Carousel post
         setStatus('publishing');
         result = await publishCarousel(
-          draft.selectedImages,
+          instagramUrls,
           fullCaption,
           credentials.accessToken,
           credentials.accountId

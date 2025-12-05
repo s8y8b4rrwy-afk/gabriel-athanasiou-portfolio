@@ -8,6 +8,7 @@ export default defineConfig({
   server: {
     port: 5174,
     open: true,
+    allowedHosts: true, // Allow all hosts (for ngrok)
     fs: {
       // Allow serving files from the parent public folder
       allow: ['..', '../..'],

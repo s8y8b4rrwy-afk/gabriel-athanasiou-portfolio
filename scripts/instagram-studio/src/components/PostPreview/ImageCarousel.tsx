@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useCloudinaryMappingReady } from '../../hooks';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import './ImageCarousel.css';
 
 interface ImageCarouselProps {
   images: string[];
   selectedImages: string[];
+  projectId: string;
   onToggleImage: (imageUrl: string) => void;
   onReorderImages: (newOrder: string[]) => void;
   onSelectAll: () => void;
@@ -13,6 +16,7 @@ interface ImageCarouselProps {
 export function ImageCarousel({
   images,
   selectedImages,
+  projectId,
   onToggleImage,
   onReorderImages,
   onSelectAll,
@@ -20,6 +24,27 @@ export function ImageCarousel({
 }: ImageCarouselProps) {
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [dragOverImage, setDragOverImage] = useState<string | null>(null);
+  
+  // This will trigger re-render when mapping loads
+  useCloudinaryMappingReady();
+  
+  // Build a map of original URL -> Cloudinary URL
+  const cloudinaryUrlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    images.forEach((url, index) => {
+      if (url.includes('res.cloudinary.com')) {
+        map.set(url, getOptimizedCloudinaryUrl(url));
+      } else {
+        map.set(url, buildCloudinaryUrl(projectId, index));
+      }
+    });
+    return map;
+  }, [images, projectId]);
+  
+  // Helper to get Cloudinary URL for an image
+  const getCloudinaryUrl = (url: string): string => {
+    return cloudinaryUrlMap.get(url) || url;
+  };
 
   if (images.length === 0) {
     return (
@@ -101,7 +126,7 @@ export function ImageCarousel({
                 onDragEnd={handleDragEnd}
               >
                 <img 
-                  src={image} 
+                  src={getCloudinaryUrl(image)} 
                   alt={`Image ${images.indexOf(image) + 1}`} 
                 />
                 
