@@ -13,7 +13,18 @@ import crypto from 'crypto';
 
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
 const CLOUDINARY_FOLDER = 'instagram-studio';
-const PUBLIC_ID = 'schedule-data';
+const DEFAULT_PUBLIC_ID = 'schedule-data';
+
+/**
+ * Get the public ID for the schedule data based on profile
+ * @param profileId - Optional profile ID (defaults to 'default')
+ */
+function getPublicId(profileId) {
+  if (!profileId || profileId === 'default') {
+    return DEFAULT_PUBLIC_ID;
+  }
+  return `schedule-data-${profileId}`;
+}
 
 /**
  * Generate Cloudinary signature for signed uploads
@@ -71,7 +82,7 @@ export const handler = async (event) => {
 
     // Parse the request body
     const body = JSON.parse(event.body);
-    const { scheduleData } = body;
+    const { scheduleData, profileId } = body;
 
     if (!scheduleData) {
       return {
@@ -81,13 +92,16 @@ export const handler = async (event) => {
       };
     }
 
+    // Get profile-specific public ID
+    const publicId = getPublicId(profileId);
+
     // Prepare the upload - only sign the required params
     const timestamp = Math.round(Date.now() / 1000);
     const paramsToSign = {
       folder: CLOUDINARY_FOLDER,
       invalidate: 'true',
       overwrite: 'true',
-      public_id: PUBLIC_ID,
+      public_id: publicId,
       timestamp: timestamp,
     };
 
@@ -105,7 +119,7 @@ export const handler = async (event) => {
     formData.append('timestamp', timestamp.toString());
     formData.append('signature', signature);
     formData.append('folder', CLOUDINARY_FOLDER);
-    formData.append('public_id', PUBLIC_ID);
+    formData.append('public_id', publicId);
     formData.append('overwrite', 'true');
     formData.append('invalidate', 'true');
 

@@ -5,6 +5,7 @@ interface SyncPanelProps {
   isSyncing: boolean;
   lastSyncedAt: string | null;
   syncError: string | null;
+  syncSuccess: string | null;
   autoSync: boolean;
   onSyncToCloud: () => void;
   onFetchFromCloud: () => void;
@@ -18,6 +19,7 @@ export function SyncPanel({
   isSyncing,
   lastSyncedAt,
   syncError,
+  syncSuccess,
   autoSync,
   onSyncToCloud,
   onFetchFromCloud,
@@ -63,6 +65,12 @@ export function SyncPanel({
       {syncError && (
         <div className={styles.error}>
           <span>⚠️</span> {syncError}
+        </div>
+      )}
+
+      {syncSuccess && (
+        <div className={styles.success}>
+          {syncSuccess}
         </div>
       )}
 

@@ -72,6 +72,7 @@ function App() {
     isSyncing,
     lastSyncedAt,
     syncError,
+    syncSuccess,
     syncToCloudinary,
     fetchFromCloudinary,
     exportAsJson,
@@ -464,6 +465,7 @@ function App() {
               isSyncing={isSyncing}
               lastSyncedAt={lastSyncedAt}
               syncError={syncError}
+              syncSuccess={syncSuccess}
               autoSync={autoSync}
               onSyncToCloud={syncToCloudinary}
               onFetchFromCloud={fetchFromCloudinary}

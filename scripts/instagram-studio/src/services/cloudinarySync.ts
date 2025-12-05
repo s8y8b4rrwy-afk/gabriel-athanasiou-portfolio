@@ -12,6 +12,10 @@ import type { RecurringTemplate } from '../types/template';
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
 const CLOUDINARY_FOLDER = 'instagram-studio';
 
+// Default profile ID - will be replaced with Instagram user ID when multi-profile is implemented
+// For now, use 'default' to maintain backwards compatibility
+const DEFAULT_PROFILE_ID = 'default';
+
 // Netlify function endpoint for signed uploads
 // In dev, use the main portfolio's function; in prod, use environment variable
 const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
@@ -20,6 +24,7 @@ const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL ||
 interface ScheduleData {
   version: string;
   exportedAt: string;
+  profileId?: string; // For multi-profile support
   settings: ScheduleSettings;
   drafts: PostDraft[];
   scheduleSlots: ScheduleSlot[];
@@ -44,17 +49,21 @@ interface CloudinaryError {
 
 /**
  * Get the Cloudinary URL for the schedule data
+ * Note: Cloudinary stores raw files without extension, so we don't add .json
+ * @param profileId - Optional profile ID for multi-profile support (defaults to 'default')
  */
-export function getScheduleDataUrl(): string {
-  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/${CLOUDINARY_FOLDER}/schedule-data.json`;
+export function getScheduleDataUrl(profileId: string = DEFAULT_PROFILE_ID): string {
+  const publicId = profileId === 'default' ? 'schedule-data' : `schedule-data-${profileId}`;
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/${CLOUDINARY_FOLDER}/${publicId}`;
 }
 
 /**
  * Fetch schedule data from Cloudinary
+ * @param profileId - Optional profile ID for multi-profile support (defaults to 'default')
  */
-export async function fetchScheduleFromCloudinary(): Promise<ScheduleData | null> {
+export async function fetchScheduleFromCloudinary(profileId: string = DEFAULT_PROFILE_ID): Promise<ScheduleData | null> {
   try {
-    const url = getScheduleDataUrl();
+    const url = getScheduleDataUrl(profileId);
     // Add cache-busting parameter
     const cacheBuster = `?t=${Date.now()}`;
     
@@ -62,14 +71,14 @@ export async function fetchScheduleFromCloudinary(): Promise<ScheduleData | null
     
     if (!response.ok) {
       if (response.status === 404) {
-        console.log('No schedule data found in Cloudinary');
+        console.log(`No schedule data found in Cloudinary for profile: ${profileId}`);
         return null;
       }
       throw new Error(`Failed to fetch schedule data: ${response.status}`);
     }
     
     const data: ScheduleData = await response.json();
-    console.log('✅ Fetched schedule from Cloudinary:', data.exportedAt);
+    console.log(`✅ Fetched schedule from Cloudinary (profile: ${profileId}):`, data.exportedAt);
     return data;
   } catch (error) {
     console.error('Error fetching schedule from Cloudinary:', error);
@@ -80,18 +89,21 @@ export async function fetchScheduleFromCloudinary(): Promise<ScheduleData | null
 /**
  * Upload schedule data to Cloudinary
  * Uses a Netlify function for signed uploads (API secret stays on server)
+ * @param profileId - Optional profile ID for multi-profile support (defaults to 'default')
  */
 export async function uploadScheduleToCloudinary(
   drafts: PostDraft[],
   scheduleSlots: ScheduleSlot[],
   settings: ScheduleSettings,
   templates?: RecurringTemplate[],
-  defaultTemplate?: RecurringTemplate
+  defaultTemplate?: RecurringTemplate,
+  profileId: string = DEFAULT_PROFILE_ID
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const scheduleData: ScheduleData = {
-      version: '1.1.0', // Updated version to include templates
+      version: '1.2.0', // Version bump for profile support
       exportedAt: new Date().toISOString(),
+      profileId,
       settings,
       drafts,
       scheduleSlots,
@@ -105,7 +117,7 @@ export async function uploadScheduleToCloudinary(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ scheduleData }),
+      body: JSON.stringify({ scheduleData, profileId }),
     });
 
     const result = await response.json();
@@ -114,7 +126,7 @@ export async function uploadScheduleToCloudinary(
       throw new Error(result.error || `Upload failed: ${response.status}`);
     }
 
-    console.log('✅ Uploaded schedule to Cloudinary:', result.url);
+    console.log(`✅ Uploaded schedule to Cloudinary (profile: ${profileId}):`, result.url);
     return { success: true, url: result.url };
   } catch (error) {
     console.error('Error uploading schedule to Cloudinary:', error);

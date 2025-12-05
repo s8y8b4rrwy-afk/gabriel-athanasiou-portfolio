@@ -23,6 +23,7 @@ interface UseCloudinarySyncReturn {
   isSyncing: boolean;
   lastSyncedAt: string | null;
   syncError: string | null;
+  syncSuccess: string | null;
   syncToCloudinary: () => Promise<boolean>;
   fetchFromCloudinary: () => Promise<boolean>;
   exportAsJson: () => void;
@@ -42,6 +43,7 @@ export function useCloudinarySync({
 }: UseCloudinarySyncOptions): UseCloudinarySyncReturn {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState<string | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => {
     return localStorage.getItem('instagram-studio-last-sync');
   });
@@ -54,9 +56,18 @@ export function useCloudinarySync({
     localStorage.setItem('instagram-studio-auto-sync', String(value));
   }, []);
 
+  // Clear success message after 3 seconds
+  useEffect(() => {
+    if (syncSuccess) {
+      const timeout = setTimeout(() => setSyncSuccess(null), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [syncSuccess]);
+
   const syncToCloudinary = useCallback(async (): Promise<boolean> => {
     setIsSyncing(true);
     setSyncError(null);
+    setSyncSuccess(null);
 
     try {
       const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings, templates, defaultTemplate);
@@ -65,6 +76,7 @@ export function useCloudinarySync({
         const now = new Date().toISOString();
         setLastSyncedAt(now);
         localStorage.setItem('instagram-studio-last-sync', now);
+        setSyncSuccess('✅ Data synced to cloud successfully!');
         return true;
       } else {
         setSyncError(result.error || 'Upload failed');
@@ -81,15 +93,20 @@ export function useCloudinarySync({
   const fetchFromCloudinary = useCallback(async (): Promise<boolean> => {
     setIsSyncing(true);
     setSyncError(null);
+    setSyncSuccess(null);
 
     try {
       const data = await fetchScheduleFromCloudinary();
       
       if (data) {
         onImport(data);
+        setSyncSuccess('✅ Data fetched from cloud successfully!');
         return true;
+      } else {
+        // No data found - show helpful message
+        setSyncError('No data in cloud yet. Click "Sync to Cloud" first to upload your data.');
+        return false;
       }
-      return false;
     } catch (error) {
       setSyncError(error instanceof Error ? error.message : 'Unknown error');
       return false;
@@ -131,6 +148,7 @@ export function useCloudinarySync({
     isSyncing,
     lastSyncedAt,
     syncError,
+    syncSuccess,
     syncToCloudinary,
     fetchFromCloudinary,
     exportAsJson,
