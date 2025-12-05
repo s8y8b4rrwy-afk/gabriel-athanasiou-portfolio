@@ -220,6 +220,7 @@
 }
 
 .miniCard {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -246,6 +247,20 @@
 .miniCard.published {
   border-left-color: #4ade80;
   background: rgba(74, 222, 128, 0.1);
+}
+
+.miniCard.published.notDraggable {
+  cursor: default;
+}
+
+.miniCard.published.notDraggable::after {
+  content: '✓';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  color: #4ade80;
 }
 
 .miniCard.failed {

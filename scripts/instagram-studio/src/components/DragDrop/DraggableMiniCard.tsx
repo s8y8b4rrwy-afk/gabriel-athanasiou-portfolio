@@ -25,27 +25,31 @@ export function DraggableMiniCard({
   statusClass,
   truncatedTitle,
 }: DraggableMiniCardProps) {
+  // Published posts should not be draggable
+  const isPublished = post.scheduleSlot.status === 'published';
+  
   const [{ isDragging }, drag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
     type: ITEM_TYPES.SCHEDULED_POST,
     item: { type: ITEM_TYPES.SCHEDULED_POST, post },
+    canDrag: !isPublished,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }), [post]);
+  }), [post, isPublished]);
 
   return (
     <div
-      ref={drag}
-      className={`${styles.miniCard} ${statusClass}`}
+      ref={isPublished ? undefined : drag}
+      className={`${styles.miniCard} ${statusClass} ${isPublished ? styles.notDraggable : ''}`}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? 'grabbing' : 'grab',
+        cursor: isPublished ? 'default' : (isDragging ? 'grabbing' : 'grab'),
       }}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${post.project.title} at ${post.scheduleSlot.scheduledTime}`}
+      title={`${post.project.title} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}`}
     >
       <span className={styles.miniTitle}>{truncatedTitle}</span>
     </div>

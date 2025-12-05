@@ -3,6 +3,7 @@ import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel,
 import { useProjects, useSchedule, useCloudinarySync, useTemplates } from './hooks';
 import { generateCaption } from './utils/generateCaption';
 import { generateHashtags } from './utils/generateHashtags';
+import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from './types/template';
 import { getCredentialsLocally, saveCredentialsLocally } from './services/instagramApi';
 import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials } from './types';
 import type { ScheduleData } from './services/cloudinarySync';
@@ -299,16 +300,26 @@ function App() {
   }, [previousViewMode]);
 
   // Handle dropping a project onto a calendar day (drag & drop)
-  const handleDropProjectOnDate = useCallback((project: Project, date: Date) => {
-    const caption = generateCaption(project);
-    const hashtags = generateHashtags(project);
+  const handleDropProjectOnDate = useCallback((project: Project, date: Date, time: string, template?: RecurringTemplate) => {
+    // Use template if provided, otherwise fall back to defaults
+    let caption: string;
+    let hashtags: string[];
+    
+    if (template) {
+      caption = applyTemplateToProject(template.captionTemplate, project);
+      hashtags = getHashtagsFromGroups(template.hashtagGroups as HashtagGroupKey[]);
+    } else {
+      caption = generateCaption(project);
+      hashtags = generateHashtags(project);
+    }
+    
     const selectedImages = project.heroImage 
       ? [project.heroImage] 
       : project.gallery.slice(0, 1);
     
     const savedDraft = saveDraft(project, caption, hashtags, selectedImages);
-    schedulePost(savedDraft, date, settings.defaultTimes[0] || '11:00');
-  }, [saveDraft, schedulePost, settings.defaultTimes]);
+    schedulePost(savedDraft, date, time);
+  }, [saveDraft, schedulePost]);
 
   // Template handlers
   const handleCreateTemplate = useCallback(() => {
@@ -455,6 +466,8 @@ function App() {
               onClearDraft={handleClearDraft}
               onDropProject={handleDropProjectOnDate}
               enableDragDrop={true}
+              templates={templates}
+              defaultTemplate={defaultTemplate}
             />
           )}
           {viewMode === 'templates' && (

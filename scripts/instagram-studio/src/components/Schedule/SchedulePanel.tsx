@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useDragLayer } from 'react-dnd';
 import styles from './Schedule.module.css';
 import { Calendar, TimeSlotPicker } from '../Calendar';
 import { ScheduleQueue } from './ScheduleQueue';
 import { PublishedList } from './PublishedList';
-import type { ScheduleSlot, PostDraft, ScheduleSettings, Project } from '../../types';
+import { DeleteDropZone, ITEM_TYPES } from '../DragDrop';
+import type { ScheduleSlot, PostDraft, ScheduleSettings, Project, RecurringTemplate } from '../../types';
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -19,8 +21,10 @@ interface SchedulePanelProps {
   onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
-  onDropProject?: (project: Project, date: Date) => void;
+  onDropProject?: (project: Project, date: Date, time: string, template?: RecurringTemplate) => void;
   enableDragDrop?: boolean;
+  templates?: RecurringTemplate[];
+  defaultTemplate?: RecurringTemplate;
 }
 
 type ViewMode = 'calendar' | 'queue' | 'published';
@@ -37,11 +41,34 @@ export function SchedulePanel({
   onClearDraft,
   onDropProject,
   enableDragDrop = false,
+  templates = [],
+  defaultTemplate,
 }: SchedulePanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>(settings.defaultTimes[0] || '11:00');
   const [rescheduleTarget, setRescheduleTarget] = useState<ScheduledPost | null>(null);
+  
+  // Quick schedule defaults (applied when dragging projects to calendar)
+  const [quickScheduleTime, setQuickScheduleTime] = useState<string>(settings.defaultTimes[0] || '11:00');
+  const [quickScheduleTemplateId, setQuickScheduleTemplateId] = useState<string>('default');
+  
+  // Track if a scheduled post is being dragged (to show delete zone)
+  const { isDraggingScheduledPost } = useDragLayer((monitor) => ({
+    isDraggingScheduledPost: monitor.isDragging() && monitor.getItemType() === ITEM_TYPES.SCHEDULED_POST,
+  }));
+  
+  // Get the selected template for quick scheduling
+  const quickScheduleTemplate = quickScheduleTemplateId === 'default'
+    ? defaultTemplate
+    : templates.find(t => t.id === quickScheduleTemplateId) || defaultTemplate;
+  
+  // Handler for dropping projects that uses quick schedule settings
+  const handleDropProjectWithSettings = (project: Project, date: Date) => {
+    if (onDropProject) {
+      onDropProject(project, date, quickScheduleTime, quickScheduleTemplate);
+    }
+  };
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -144,117 +171,158 @@ export function SchedulePanel({
             onPostClick={(post) => {
               handleReschedule(post);
             }}
-            onDropProject={onDropProject}
+            onDropProject={handleDropProjectWithSettings}
             onReschedulePost={handleDragReschedule}
             enableDragDrop={enableDragDrop}
           />
+          
+          {/* Consolidated Settings Panel - context-aware */}
+          <div className={styles.settingsPanel}>
+            {selectedDate ? (
+              <>
+                {/* Date-specific header */}
+                <div className={styles.selectedDateHeader}>
+                  <h3>{formatSelectedDate()}</h3>
+                  <button 
+                    className={styles.closeButton}
+                    onClick={() => {
+                      setSelectedDate(null);
+                      setRescheduleTarget(null);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
 
-          {selectedDate && (
-            <div className={styles.selectedDatePanel}>
-              <div className={styles.selectedDateHeader}>
-                <h3>{formatSelectedDate()}</h3>
-                <button 
-                  className={styles.closeButton}
-                  onClick={() => {
-                    setSelectedDate(null);
-                    setRescheduleTarget(null);
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
+                {/* Show existing posts for this date */}
+                {existingPostsOnDate.length > 0 && (
+                  <div className={styles.existingPosts}>
+                    <h4>Scheduled for this day:</h4>
+                    {existingPostsOnDate.map(post => (
+                      <div key={post.scheduleSlot.id} className={styles.existingPost}>
+                        <span className={styles.existingPostTime}>
+                          {post.scheduleSlot.scheduledTime}
+                        </span>
+                        <span 
+                          className={styles.existingPostTitle}
+                          onClick={() => onEditPost(post)}
+                          title="Click to edit"
+                        >
+                          {post.project.title}
+                        </span>
+                        <button
+                          className={styles.deletePostButton}
+                          onClick={() => onUnschedulePost(post.scheduleSlot.id)}
+                          title="Remove from schedule"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              {/* Show existing posts for this date */}
-              {existingPostsOnDate.length > 0 && (
-                <div className={styles.existingPosts}>
-                  <h4>Scheduled for this day:</h4>
-                  {existingPostsOnDate.map(post => (
-                    <div key={post.scheduleSlot.id} className={styles.existingPost}>
-                      <span className={styles.existingPostTime}>
-                        {post.scheduleSlot.scheduledTime}
-                      </span>
-                      <span 
-                        className={styles.existingPostTitle}
-                        onClick={() => onEditPost(post)}
-                        title="Click to edit"
+                {isOverLimit && !rescheduleTarget && (
+                  <div className={styles.limitWarning}>
+                    ⚠️ Maximum {settings.maxPostsPerDay} posts per day reached
+                  </div>
+                )}
+
+                {/* Time picker for scheduling/rescheduling */}
+                {(currentDraft || rescheduleTarget) && (
+                  <TimeSlotPicker
+                    selectedTime={selectedTime}
+                    onTimeSelect={setSelectedTime}
+                    defaultTimes={settings.defaultTimes}
+                  />
+                )}
+
+                {rescheduleTarget ? (
+                  <div className={styles.rescheduleInfo}>
+                    <p>Rescheduling: <strong>{rescheduleTarget.project.title}</strong></p>
+                    <div className={styles.rescheduleActions}>
+                      <button 
+                        onClick={confirmReschedule}
+                        className={styles.confirmButton}
                       >
-                        {post.project.title}
-                      </span>
-                      <button
-                        className={styles.deletePostButton}
-                        onClick={() => onUnschedulePost(post.scheduleSlot.id)}
-                        title="Remove from schedule"
+                        Confirm Reschedule
+                      </button>
+                      <button 
+                        onClick={cancelReschedule}
+                        className={styles.cancelButton}
                       >
-                        ✕
+                        Cancel
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {isOverLimit && !rescheduleTarget && (
-                <div className={styles.limitWarning}>
-                  ⚠️ Maximum {settings.maxPostsPerDay} posts per day reached
-                </div>
-              )}
-
-              {/* Only show time picker when scheduling or rescheduling */}
-              {(currentDraft || rescheduleTarget) && (
+                  </div>
+                ) : currentDraft ? (
+                  <div className={styles.scheduleAction}>
+                    <div className={styles.draftPreview}>
+                      <strong>Ready to schedule:</strong>
+                      <p>{currentDraft.project.title}</p>
+                      <span className={styles.imageCount}>
+                        {currentDraft.selectedImages.length} images
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleSchedule}
+                      className={styles.scheduleButton}
+                      disabled={!canSchedule || isOverLimit}
+                    >
+                      📅 Schedule Post
+                    </button>
+                    <button
+                      onClick={onClearDraft}
+                      className={styles.clearButton}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.noDraft}>
+                    <p>Select a project and create a caption to schedule</p>
+                  </div>
+                )}
+              </>
+            ) : enableDragDrop ? (
+              <>
+                {/* Quick Schedule Defaults - when no date selected */}
+                <h4 className={styles.quickScheduleTitle}>
+                  ⚡ Quick Schedule Defaults
+                </h4>
+                <p className={styles.quickScheduleDesc}>
+                  These settings apply when you drag a project onto a day
+                </p>
+                
                 <TimeSlotPicker
-                  selectedTime={selectedTime}
-                  onTimeSelect={setSelectedTime}
+                  selectedTime={quickScheduleTime}
+                  onTimeSelect={setQuickScheduleTime}
                   defaultTimes={settings.defaultTimes}
                 />
-              )}
-
-              {rescheduleTarget ? (
-                <div className={styles.rescheduleInfo}>
-                  <p>Rescheduling: <strong>{rescheduleTarget.project.title}</strong></p>
-                  <div className={styles.rescheduleActions}>
-                    <button 
-                      onClick={confirmReschedule}
-                      className={styles.confirmButton}
+                
+                <div className={styles.templateSelector}>
+                  <label className={styles.templateLabel}>Template:</label>
+                  <div className={styles.templateButtons}>
+                    <button
+                      className={`${styles.templateButton} ${quickScheduleTemplateId === 'default' ? styles.selected : ''}`}
+                      onClick={() => setQuickScheduleTemplateId('default')}
                     >
-                      Confirm Reschedule
+                      {defaultTemplate?.name || 'Default'}
                     </button>
-                    <button 
-                      onClick={cancelReschedule}
-                      className={styles.cancelButton}
-                    >
-                      Cancel
-                    </button>
+                    {templates.map(t => (
+                      <button
+                        key={t.id}
+                        className={`${styles.templateButton} ${quickScheduleTemplateId === t.id ? styles.selected : ''}`}
+                        onClick={() => setQuickScheduleTemplateId(t.id)}
+                      >
+                        {t.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              ) : currentDraft ? (
-                <div className={styles.scheduleAction}>
-                  <div className={styles.draftPreview}>
-                    <strong>Ready to schedule:</strong>
-                    <p>{currentDraft.project.title}</p>
-                    <span className={styles.imageCount}>
-                      {currentDraft.selectedImages.length} images
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleSchedule}
-                    className={styles.scheduleButton}
-                    disabled={!canSchedule || isOverLimit}
-                  >
-                    📅 Schedule Post
-                  </button>
-                  <button
-                    onClick={onClearDraft}
-                    className={styles.clearButton}
-                  >
-                    Clear
-                  </button>
-                </div>
-              ) : (
-                <div className={styles.noDraft}>
-                  <p>Select a project and create a caption to schedule</p>
-                </div>
-              )}
-            </div>
-          )}
+              </>
+            ) : null}
+          </div>
         </div>
       ) : viewMode === 'queue' ? (
         <ScheduleQueue
@@ -268,6 +336,12 @@ export function SchedulePanel({
       ) : (
         <PublishedList posts={publishedPosts} />
       )}
+      
+      {/* Delete zone appears when dragging scheduled posts */}
+      <DeleteDropZone
+        onDelete={onUnschedulePost}
+        isVisible={isDraggingScheduledPost && enableDragDrop}
+      />
     </div>
   );
 }

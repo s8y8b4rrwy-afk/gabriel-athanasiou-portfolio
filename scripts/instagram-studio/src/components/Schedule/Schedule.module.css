@@ -72,6 +72,85 @@
   text-align: center;
 }
 
+/* Unified Settings Panel - context-aware */
+.settingsPanel {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settingsPanel:empty {
+  display: none;
+}
+
+/* Quick Schedule Defaults (legacy class - keeping for compatibility) */
+.quickScheduleDefaults {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quickScheduleTitle {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fcd34d;
+}
+
+.quickScheduleDesc {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Template Selector */
+.templateSelector {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.templateLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 10px;
+}
+
+.templateButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.templateButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.templateButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.templateButton.selected {
+  background: rgba(252, 211, 77, 0.2);
+  border-color: rgba(252, 211, 77, 0.4);
+  color: #fcd34d;
+}
+
 /* Selected Date Panel */
 .selectedDatePanel {
   margin-top: 20px;
