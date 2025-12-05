@@ -1,0 +1,538 @@
+/* Schedule Component Styles */
+
+.panel {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.viewToggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.toggleButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  color: #fff;
+}
+
+.toggleButton.active {
+  background: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+}
+
+/* Calendar View */
+.calendarView {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Selected Date Panel */
+.selectedDatePanel {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.selectedDateHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.selectedDateHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fcd34d;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Existing Posts */
+.existingPosts {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.existingPosts h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.existingPost {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.existingPost:last-child {
+  border-bottom: none;
+}
+
+.existingPostTime {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: monospace;
+}
+
+.existingPostTitle {
+  font-size: 14px;
+  color: #fff;
+}
+
+.limitWarning {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* Reschedule Info */
+.rescheduleInfo {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(252, 211, 77, 0.1);
+  border-radius: 8px;
+}
+
+.rescheduleInfo p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.rescheduleActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Schedule Action */
+.scheduleAction {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.draftPreview {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.draftPreview strong {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.draftPreview p {
+  margin: 4px 0;
+  font-size: 15px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.imageCount {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.scheduleButton {
+  background: #fcd34d;
+  color: #0f0f1a;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scheduleButton:hover:not(:disabled) {
+  background: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.scheduleButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clearButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.confirmButton {
+  flex: 1;
+  background: #fcd34d;
+  color: #0f0f1a;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirmButton:hover {
+  background: #fbbf24;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.noDraft {
+  margin-top: 16px;
+  padding: 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.noDraft p {
+  margin: 0;
+}
+
+/* Queue Styles */
+.queue {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.queueHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.queueTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.queueCount {
+  background: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emptyQueue {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyQueue p {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.emptyHint {
+  font-size: 13px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.morePostsHint {
+  text-align: center;
+  padding: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+/* Schedule Item */
+.item {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.item.pending {
+  border-left: 3px solid #fcd34d;
+}
+
+.item.published {
+  border-left: 3px solid #4ade80;
+}
+
+.item.failed {
+  border-left: 3px solid #f87171;
+}
+
+.item.compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.datetime {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.date {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.time {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge.pending {
+  background: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+}
+
+.badge.published {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.badge.failed {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.itemContent {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.thumbnail {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.thumbnailSmall {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.itemDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.projectTitle {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectYear {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.compactInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compactTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compactTime {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.captionPreview {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+.itemActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.actionButton.danger {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.actionButton.danger:hover {
+  background: rgba(248, 113, 113, 0.15);
+}

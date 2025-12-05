@@ -37,7 +37,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "instagram-studio": "cd scripts/instagram-studio && npm run dev",
+    "instagram-studio:install": "cd scripts/instagram-studio && npm install",
+    "instagram-studio:build": "cd scripts/instagram-studio && npm run build"
   },
   "dependencies": {
     "@netlify/functions": "^2.8.1",

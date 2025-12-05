@@ -1,0 +1,461 @@
+/* Calendar Component Styles */
+
+.calendar {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navButton {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  min-width: 180px;
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.todayButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.todayButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.viewToggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.viewButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.viewButton:hover {
+  color: #fff;
+}
+
+.viewButton.active {
+  background: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+}
+
+/* Week Header */
+.weekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 0;
+}
+
+/* Calendar Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.weekGrid {
+  min-height: 300px;
+}
+
+.weekGrid .day {
+  min-height: 200px;
+}
+
+/* Day Cell */
+.day {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid transparent;
+  position: relative;
+  min-height: 60px;
+}
+
+.day:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.day.today {
+  background: rgba(252, 211, 77, 0.1);
+}
+
+.day.today .dayNumber {
+  background: #fcd34d;
+  color: #0f0f1a;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.day.selected {
+  border-color: #fcd34d;
+  background: rgba(252, 211, 77, 0.15);
+}
+
+.day.past {
+  opacity: 0.5;
+}
+
+.weekViewDay {
+  aspect-ratio: unset;
+}
+
+.emptyDay {
+  aspect-ratio: 1;
+  background: transparent;
+}
+
+.dayNumber {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Posts Container */
+.postsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.dots {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.pending {
+  background: #fcd34d;
+}
+
+.dot.published {
+  background: #4ade80;
+}
+
+.dot.failed {
+  background: #f87171;
+}
+
+.moreIndicator {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Post Card (Week View) */
+.postCard {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.postCard:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.postCard.pending {
+  border-left-color: #fcd34d;
+}
+
+.postCard.published {
+  border-left-color: #4ade80;
+}
+
+.postCard.failed {
+  border-left-color: #f87171;
+}
+
+.postTime {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+}
+
+.postTitle {
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moreCount {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2px;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: center;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Time Slot Picker */
+.timeSlotPicker {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timeSlotHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timeSlotHeader h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.timezone {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.suggestedTimes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.timeSlot {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 10px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.timeSlot:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.timeSlot.selected {
+  background: rgba(252, 211, 77, 0.2);
+  border-color: #fcd34d;
+  color: #fcd34d;
+}
+
+.timeSlot.recommended {
+  border-color: rgba(252, 211, 77, 0.3);
+}
+
+.recommendedBadge {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: #fcd34d;
+}
+
+.customTimeButton {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.customTimeButton:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+}
+
+.customTimeInput {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.timeInput {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: #fcd34d;
+}
+
+.confirmButton,
+.cancelButton {
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.confirmButton {
+  background: #fcd34d;
+  color: #0f0f1a;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: #fbbf24;
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.optimalTimesNote {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(252, 211, 77, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.optimalTimesNote strong {
+  color: #fcd34d;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.optimalTimesNote p {
+  margin: 2px 0;
+}

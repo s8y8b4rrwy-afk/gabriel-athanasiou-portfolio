@@ -1,0 +1,70 @@
+.project-filters {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-search {
+  margin-bottom: 0.75rem;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.filter-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #fcd34d;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #fcd34d;
+}
+
+.filter-select option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.filter-select-schedule {
+  background: rgba(252, 211, 77, 0.1);
+  border-color: rgba(252, 211, 77, 0.3);
+}
+
+.filter-select-schedule:focus {
+  border-color: #fcd34d;
+  background: rgba(252, 211, 77, 0.2);
+}

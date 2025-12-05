@@ -158,7 +158,7 @@ You must add a `Last Modified` formula field to **all 5 Airtable tables**:
 After adding the fields, run a **force full sync** to populate initial metadata:
 
 ```bash
-curl -X POST "https://your-site.netlify.app/.netlify/functions/sync-now?force=true"
+curl -X POST "https://directedbygabriel.netlify.app/.netlify/functions/sync-now?force=true"
 ```
 
 All subsequent syncs will automatically use incremental mode.

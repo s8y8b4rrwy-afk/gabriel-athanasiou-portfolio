@@ -1,0 +1,27 @@
+.layout {
+  min-height: 100vh;
+  background: #0f0f1a;
+  color: #fff;
+}
+
+.layout-main {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: calc(100vh - 65px);
+  overflow: hidden;
+}
+
+.layout-main > *:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+}
+
+.layout-main > *:last-child {
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .layout-main {
+    grid-template-columns: 1fr;
+  }
+}

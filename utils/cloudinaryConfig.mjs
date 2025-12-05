@@ -26,8 +26,8 @@ export const CLOUDINARY_PRESETS = {
     width: 1600
   },
   hero: {
-    quality: 90,
-    width: 3000
+    quality: 100,
+    width: 2400
   }
 };
 
