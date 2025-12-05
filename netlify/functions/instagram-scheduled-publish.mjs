@@ -8,6 +8,8 @@
  * (giving a 1-hour window to catch any posts that should have been published).
  * 
  * Schedule: Every hour at minute 0
+ * 
+ * Notifications: Sends email via Resend when posts are published or fail
  */
 
 import crypto from 'crypto';
@@ -29,6 +31,76 @@ export const config = {
   schedule: '0 * * * *', // Every hour at minute 0
 };
 
+/**
+ * Send notification email about publish results
+ * Uses Resend API (set RESEND_API_KEY and NOTIFICATION_EMAIL in env)
+ */
+async function sendNotification(results, scheduleData) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const notificationEmail = process.env.NOTIFICATION_EMAIL;
+  
+  if (!resendApiKey || !notificationEmail) {
+    console.log('📧 Notification skipped: RESEND_API_KEY or NOTIFICATION_EMAIL not configured');
+    return;
+  }
+  
+  const successful = results.filter(r => r.success);
+  const failed = results.filter(r => !r.success);
+  
+  const subject = failed.length > 0 
+    ? `⚠️ Instagram: ${successful.length} published, ${failed.length} failed`
+    : `✅ Instagram: ${successful.length} post(s) published`;
+  
+  // Build HTML email
+  let html = `<h2>Instagram Scheduled Publish Report</h2>`;
+  html += `<p>Time: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>`;
+  
+  if (successful.length > 0) {
+    html += `<h3>✅ Successfully Published (${successful.length})</h3><ul>`;
+    for (const r of successful) {
+      const post = (scheduleData.schedules || []).find(p => p.id === r.postId);
+      html += `<li><strong>${post?.projectId || r.postId}</strong> - Media ID: ${r.mediaId}</li>`;
+    }
+    html += `</ul>`;
+  }
+  
+  if (failed.length > 0) {
+    html += `<h3>❌ Failed (${failed.length})</h3><ul>`;
+    for (const r of failed) {
+      const post = (scheduleData.schedules || []).find(p => p.id === r.postId);
+      html += `<li><strong>${post?.projectId || r.postId}</strong> - Error: ${r.error}</li>`;
+    }
+    html += `</ul>`;
+  }
+  
+  html += `<p><a href="https://studio.lemonpost.studio">Open Instagram Studio →</a></p>`;
+  
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Instagram Studio <noreply@lemonpost.studio>',
+        to: [notificationEmail],
+        subject: subject,
+        html: html,
+      }),
+    });
+    
+    if (response.ok) {
+      console.log('📧 Notification email sent successfully');
+    } else {
+      const error = await response.text();
+      console.error('📧 Failed to send notification:', error);
+    }
+  } catch (error) {
+    console.error('📧 Notification error:', error.message);
+  }
+}
+
 export const handler = async (event) => {
   console.log('⏰ Scheduled publish check started at:', new Date().toISOString());
   
@@ -49,17 +121,27 @@ export const handler = async (event) => {
     
     const { accessToken, accountId } = scheduleData.instagram;
     
-    // 3. Find posts that are due (scheduled time within the last hour, status = 'scheduled')
-    // This gives a 1-hour window: if scheduled for 9:40 and function runs at 10:00, it will still post
+    // 3. Find posts that are due (scheduled time within the last hour, status = 'pending')
+    // Data structure: scheduleSlots links to drafts via postDraftId
+    // scheduleSlot: { id, postDraftId, scheduledDate, scheduledTime, status }
+    // draft: { id, projectId, caption, hashtags, selectedImages }
     const now = new Date();
     const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
     
-    const duePosts = (scheduleData.schedules || []).filter(post => {
-      if (post.status !== 'scheduled') return false;
-      const scheduledTime = new Date(post.scheduledDate);
+    const draftsMap = new Map((scheduleData.drafts || []).map(d => [d.id, d]));
+    
+    const duePosts = (scheduleData.scheduleSlots || []).filter(slot => {
+      if (slot.status !== 'pending') return false;
+      
+      // Combine date and time into a proper datetime
+      const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
+      
       // Post is due if scheduled time is between (now - 1 hour) and now
-      return scheduledTime <= now && scheduledTime >= windowStart;
-    });
+      return scheduledDateTime <= now && scheduledDateTime >= windowStart;
+    }).map(slot => {
+      const draft = draftsMap.get(slot.postDraftId);
+      return { slot, draft };
+    }).filter(({ draft }) => draft !== undefined);
     
     if (duePosts.length === 0) {
       console.log('📭 No posts due for publishing');
@@ -70,28 +152,40 @@ export const handler = async (event) => {
     
     // 4. Publish each due post
     const results = [];
-    for (const post of duePosts) {
+    for (const { slot, draft } of duePosts) {
       try {
-        console.log(`📤 Publishing post: ${post.projectId}`);
-        const result = await publishPost(post, accessToken, accountId);
+        console.log(`📤 Publishing post: ${draft.projectId}`);
         
-        // Update post status
-        post.status = 'published';
-        post.publishedAt = new Date().toISOString();
-        post.instagramMediaId = result.mediaId;
+        // Build full caption with hashtags
+        const fullCaption = draft.hashtags?.length > 0 
+          ? `${draft.caption}\n\n${draft.hashtags.join(' ')}`
+          : draft.caption;
         
-        results.push({ postId: post.id, success: true, mediaId: result.mediaId });
-        console.log(`✅ Published: ${post.projectId}`);
+        // Get Cloudinary URLs for images (convert from Airtable URLs if needed)
+        const imageUrls = await getInstagramUrls(draft.selectedImages, draft.projectId);
+        
+        const result = await publishPost({ imageUrls, caption: fullCaption }, accessToken, accountId);
+        
+        // Update slot status
+        slot.status = 'published';
+        slot.publishedAt = new Date().toISOString();
+        slot.instagramMediaId = result.mediaId;
+        
+        results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId });
+        console.log(`✅ Published: ${draft.projectId}`);
       } catch (error) {
-        console.error(`❌ Failed to publish ${post.projectId}:`, error.message);
-        post.status = 'failed';
-        post.error = error.message;
-        results.push({ postId: post.id, success: false, error: error.message });
+        console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
+        slot.status = 'failed';
+        slot.error = error.message;
+        results.push({ postId: slot.id, projectId: draft.projectId, success: false, error: error.message });
       }
     }
     
     // 5. Save updated schedule data back to Cloudinary
     await saveScheduleData(scheduleData);
+    
+    // 6. Send notification email
+    await sendNotification(results, scheduleData);
     
     console.log('✅ Scheduled publish complete:', results);
     return {
@@ -114,7 +208,8 @@ export const handler = async (event) => {
  * Fetch schedule data from Cloudinary
  */
 async function fetchScheduleData() {
-  const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data.json?t=${Date.now()}`;
+  // Note: The file is stored without .json extension
+  const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
   
   try {
     const response = await fetch(url);
@@ -173,6 +268,44 @@ async function saveScheduleData(data) {
   }
   
   return await response.json();
+}
+
+/**
+ * Instagram aspect ratios (Instagram accepts 0.8 to 1.91)
+ */
+const ASPECT_PORTRAIT = '0.8';  // 4:5
+const ASPECT_LANDSCAPE = '1.91'; // 1.91:1
+
+/**
+ * Convert image URLs to Cloudinary Instagram-ready URLs
+ * Uses the same pattern as the client: portfolio-projects-{projectId}-{index}
+ */
+async function getInstagramUrls(imageUrls, projectId) {
+  const results = [];
+  
+  for (let i = 0; i < imageUrls.length; i++) {
+    const url = imageUrls[i];
+    
+    // Find the image index from the URL
+    let imageIndex = i;
+    
+    if (url.includes('res.cloudinary.com')) {
+      // Already a Cloudinary URL - extract index
+      const match = url.match(/portfolio-projects-[^-]+-(\d+)/);
+      if (match) {
+        imageIndex = parseInt(match[1], 10);
+      }
+    }
+    
+    // Build Instagram-optimized Cloudinary URL
+    // Default to portrait (0.8) ratio - most common for Instagram
+    const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
+    const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
+    
+    results.push(instagramUrl);
+  }
+  
+  return results;
 }
 
 /**
