@@ -520,6 +520,7 @@ export async function publishSingleImage(
 
 /**
  * Publish a carousel post (2-10 images, via server-side proxy to avoid CORS)
+ * Uses step-by-step approach to avoid Netlify function timeouts
  */
 export async function publishCarousel(
   imageUrls: string[],
@@ -539,31 +540,80 @@ export async function publishCarousel(
     incrementRateLimit();
     incrementPostCount();
     
-    console.log(`📤 Publishing carousel with ${urls.length} images via server proxy...`);
+    console.log(`📤 Publishing carousel with ${urls.length} images (step-by-step)...`);
     
-    const response = await fetch(PUBLISH_FUNCTION_URL, {
+    // Step 1: Create each carousel item one at a time
+    const childIds: string[] = [];
+    for (let i = 0; i < urls.length; i++) {
+      console.log(`Creating carousel item ${i + 1}/${urls.length}...`);
+      
+      const response = await fetch(PUBLISH_FUNCTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'createCarouselItem',
+          accessToken,
+          accountId,
+          imageUrl: urls[i],
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok || result.error) {
+        console.error(`Carousel item ${i + 1} failed:`, result.error);
+        return { success: false, error: `Failed to create carousel item ${i + 1}: ${result.error}` };
+      }
+
+      childIds.push(result.containerId);
+      console.log(`✅ Carousel item ${i + 1} created:`, result.containerId);
+    }
+
+    // Step 2: Create carousel container
+    console.log('Creating carousel container...');
+    const containerResponse = await fetch(PUBLISH_FUNCTION_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'publishCarousel',
+        action: 'createCarouselContainer',
         accessToken,
         accountId,
-        imageUrls: urls,
+        childIds,
         caption,
       }),
     });
 
-    const result = await response.json();
+    const containerResult = await containerResponse.json();
     
-    if (!response.ok || result.error) {
-      console.error('Carousel publish failed:', result.error);
-      return { success: false, error: result.error };
+    if (!containerResponse.ok || containerResult.error) {
+      console.error('Carousel container failed:', containerResult.error);
+      return { success: false, error: containerResult.error };
     }
 
-    console.log('✅ Carousel published successfully! Post ID:', result.postId);
-    return { success: true, instagramPostId: result.postId };
+    console.log('✅ Carousel container created:', containerResult.containerId);
+
+    // Step 3: Publish the carousel
+    console.log('Publishing carousel...');
+    const publishResponse = await fetch(PUBLISH_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'publishContainer',
+        accessToken,
+        accountId,
+        containerId: containerResult.containerId,
+      }),
+    });
+
+    const publishResult = await publishResponse.json();
+    
+    if (!publishResponse.ok || !publishResult.success) {
+      console.error('Carousel publish failed:', publishResult.error);
+      return { success: false, error: publishResult.error };
+    }
+
+    console.log('✅ Carousel published successfully! Post ID:', publishResult.postId);
+    return { success: true, instagramPostId: publishResult.postId };
   } catch (error) {
     console.error('Carousel publish error:', error);
     return { 

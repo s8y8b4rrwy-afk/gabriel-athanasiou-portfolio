@@ -8,14 +8,17 @@
  * - Publish media to Instagram
  * 
  * This avoids CORS issues by making API calls from the server.
+ * 
+ * NOTE: Netlify functions have a 10-second timeout on free tier.
+ * We use shorter polling intervals and fail fast if processing takes too long.
  */
 
 const GRAPH_API_BASE = 'https://graph.instagram.com';
 const GRAPH_API_VERSION = 'v21.0';
 
-// Maximum wait time for media processing (30 seconds)
-const MAX_PROCESSING_WAIT = 30000;
-const POLL_INTERVAL = 2000;
+// Shorter wait times to fit within Netlify's 10-second limit
+const MAX_PROCESSING_WAIT = 8000; // 8 seconds max
+const POLL_INTERVAL = 1000; // Poll every 1 second
 
 export const handler = async (event) => {
   // CORS headers
@@ -41,7 +44,7 @@ export const handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body);
-    const { action, accessToken, accountId, imageUrl, imageUrls, caption } = body;
+    const { action, accessToken, accountId, imageUrl, imageUrls, caption, containerId, childIds } = body;
 
     if (!accessToken || !accountId) {
       return {
@@ -58,8 +61,18 @@ export const handler = async (event) => {
       case 'publishCarousel':
         return await handlePublishCarousel(headers, accessToken, accountId, imageUrls, caption);
       
+      // Step-by-step carousel actions (for handling timeouts)
+      case 'createCarouselItem':
+        return await handleCreateCarouselItem(headers, accessToken, accountId, imageUrl);
+      
+      case 'createCarouselContainer':
+        return await handleCreateCarouselContainer(headers, accessToken, accountId, childIds, caption);
+      
+      case 'publishContainer':
+        return await handlePublishContainer(headers, accessToken, accountId, containerId);
+      
       case 'checkStatus':
-        return await handleCheckStatus(headers, accessToken, body.containerId);
+        return await handleCheckStatus(headers, accessToken, containerId);
       
       default:
         return {
@@ -359,4 +372,130 @@ async function publishMedia(containerId, accessToken, accountId) {
 
   console.log('✅ Published! Post ID:', result.id);
   return { success: true, postId: result.id };
+}
+
+/**
+ * Create a single carousel item (for step-by-step approach)
+ */
+async function handleCreateCarouselItem(headers, accessToken, accountId, imageUrl) {
+  try {
+    console.log('Creating carousel item:', imageUrl?.substring(0, 50));
+    
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageUrl,
+          is_carousel_item: true,
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    const result = await response.json();
+    
+    if (result.error) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: result.error.message }),
+      };
+    }
+
+    // Wait briefly for processing
+    const ready = await waitForProcessing(result.id, accessToken);
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        containerId: result.id,
+        ready: ready.success,
+        error: ready.error
+      }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
+}
+
+/**
+ * Create carousel container from child IDs
+ */
+async function handleCreateCarouselContainer(headers, accessToken, accountId, childIds, caption) {
+  try {
+    console.log('Creating carousel container with children:', childIds);
+    
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_type: 'CAROUSEL',
+          children: childIds.join(','),
+          caption: caption,
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    const result = await response.json();
+    
+    if (result.error) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: result.error.message }),
+      };
+    }
+
+    // Wait briefly for processing
+    const ready = await waitForProcessing(result.id, accessToken);
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        containerId: result.id,
+        ready: ready.success,
+        error: ready.error
+      }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
+}
+
+/**
+ * Publish a container by ID
+ */
+async function handlePublishContainer(headers, accessToken, accountId, containerId) {
+  try {
+    const result = await publishMedia(containerId, accessToken, accountId);
+    
+    return {
+      statusCode: result.success ? 200 : 400,
+      headers,
+      body: JSON.stringify(result),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
 }

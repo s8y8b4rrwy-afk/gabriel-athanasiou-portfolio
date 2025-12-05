@@ -2,6 +2,12 @@
 
 This file is an alias for AI assistants. The canonical guide is `AI_AGENT_GUIDE.md` at the repo root. If you're an AI agent, you MUST read and follow that document.
 
+
+My domains are: 
+- directedbygabriel.com for the directing portfolio
+- lemonpost.studio for the post production portfolio
+- studio.lemonpost.studio for the Instagram Studio App
+
 Quick essentials (do not skip the full guide):
 
 - Documentation-first workflow: update `AI_AGENT_GUIDE.md` after any change.
