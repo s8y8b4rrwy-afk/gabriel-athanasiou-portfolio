@@ -225,6 +225,7 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
     // Step 2: Create carousel container
     console.log('Creating carousel container with children:', childIds);
     
+    // Instagram API expects children as an array, not comma-separated string
     const carouselResponse = await fetch(
       `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
       {
@@ -232,7 +233,7 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           media_type: 'CAROUSEL',
-          children: childIds.join(','),
+          children: childIds,  // Pass as array, not string
           caption: caption,
           access_token: accessToken,
         }),
@@ -464,6 +465,7 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
   try {
     console.log('Creating carousel container with children:', childIds);
     
+    // Instagram API expects children as an array, not comma-separated string
     const response = await fetch(
       `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
       {
@@ -471,7 +473,7 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           media_type: 'CAROUSEL',
-          children: childIds.join(','),
+          children: childIds,  // Pass as array, not string
           caption: caption,
           access_token: accessToken,
         }),
