@@ -16,9 +16,10 @@
 const GRAPH_API_BASE = 'https://graph.instagram.com';
 const GRAPH_API_VERSION = 'v21.0';
 
-// Shorter wait times to fit within Netlify's 10-second limit
-const MAX_PROCESSING_WAIT = 8000; // 8 seconds max
-const POLL_INTERVAL = 1000; // Poll every 1 second
+// Netlify Pro has 26 second timeout, Free has 10 seconds
+// We'll use 25 seconds to be safe - if on free tier, it will just timeout
+const MAX_PROCESSING_WAIT = 25000; // 25 seconds max
+const POLL_INTERVAL = 2000; // Poll every 2 seconds
 
 export const handler = async (event) => {
   // CORS headers

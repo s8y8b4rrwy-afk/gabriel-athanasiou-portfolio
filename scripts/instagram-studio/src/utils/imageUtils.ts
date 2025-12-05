@@ -43,10 +43,11 @@ export const IMAGE_PRESETS = {
     format: 'webp' as const
   },
   // Original quality for Instagram publishing (no transformations)
+  // Will be cropped to 4:5 aspect ratio for Instagram compatibility
   instagram: {
     quality: 100,
     width: null, // No width limit - use original
-    format: null // No format conversion - use original
+    format: null // No format conversion - handled separately
   }
 } as const;
 
@@ -183,27 +184,96 @@ function isCloudinaryUrl(url: string): boolean {
 }
 
 /**
+ * Instagram acceptable aspect ratios
+ * Min: 4:5 (0.8) - portrait
+ * Max: 1.91:1 (1.91) - landscape
+ * Square: 1:1 (1.0)
+ */
+const INSTAGRAM_ASPECT_RATIOS = {
+  MIN: 0.8,      // 4:5 portrait
+  MAX: 1.91,     // 1.91:1 landscape
+  SQUARE: 1.0,  // 1:1 square
+  
+  // Common ratios for Cloudinary ar_ parameter
+  // Note: Cloudinary needs integer ratios like 4:5, not decimals like 1.91:1
+  PORTRAIT_4_5: '4:5',
+  SQUARE_1_1: '1:1', 
+  LANDSCAPE_191_100: '191:100',  // 1.91:1 as integers
+  LANDSCAPE_16_9: '16:9',  // 1.78
+};
+
+/**
+ * Get the closest Instagram-acceptable aspect ratio for an image
+ * Instagram accepts: 4:5 (0.8) to 1.91:1 (1.91)
+ * 
+ * @param width - Original image width
+ * @param height - Original image height
+ * @returns The Cloudinary ar_ parameter value for the closest acceptable ratio
+ */
+export function getClosestInstagramAspectRatio(width: number, height: number): string {
+  const originalRatio = width / height;
+  
+  // If already within acceptable range, use the closest standard ratio
+  if (originalRatio >= INSTAGRAM_ASPECT_RATIOS.MIN && originalRatio <= INSTAGRAM_ASPECT_RATIOS.MAX) {
+    // Find closest standard ratio
+    if (originalRatio < 0.9) {
+      return INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5; // 0.8
+    } else if (originalRatio < 1.1) {
+      return INSTAGRAM_ASPECT_RATIOS.SQUARE_1_1; // 1.0
+    } else if (originalRatio < 1.5) {
+      return INSTAGRAM_ASPECT_RATIOS.SQUARE_1_1; // Keep more square-ish
+    } else if (originalRatio < 1.85) {
+      return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_16_9; // 1.78
+    } else {
+      return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100; // 1.91
+    }
+  }
+  
+  // Outside acceptable range - clamp to nearest limit
+  if (originalRatio < INSTAGRAM_ASPECT_RATIOS.MIN) {
+    // Too tall/narrow - crop to 4:5
+    return INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+  } else {
+    // Too wide - crop to 1.91:1
+    return INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
+  }
+}
+
+/**
  * Build a Cloudinary URL directly from project ID and image index
  * This is the core function - matches main site pattern: portfolio-projects-{recordId}-{index}
  * 
  * @param projectId - The project's record ID
  * @param imageIndex - The image's index in the gallery
  * @param preset - Image quality preset ('fine' for preview, 'instagram' for publishing)
+ * @param aspectRatio - Optional aspect ratio for Instagram (e.g., '4:5', '1:1', '1.91:1')
  */
 export function buildCloudinaryUrl(
   projectId: string,
   imageIndex: number,
-  preset: ImagePreset = 'fine'
+  preset: ImagePreset = 'fine',
+  aspectRatio?: string
 ): string {
   // Build public ID in the same format as main site
   const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
   
   const presetConfig = IMAGE_PRESETS[preset];
   
-  // For Instagram preset, return original file without transformations
-  // Add .jpg extension for Instagram API compatibility
+  // For Instagram preset, crop to acceptable aspect ratio (4:5 to 1.91:1)
   if (preset === 'instagram' || !presetConfig.format || !presetConfig.width) {
-    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}.jpg`;
+    // Use provided aspect ratio or default to 4:5
+    const ar = aspectRatio || INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    
+    // Instagram transformation: crop to aspect ratio, high quality JPEG
+    // Using c_fill to crop to exact ratio, g_auto for smart cropping
+    const igTransforms = [
+      `ar_${ar}`,   // Aspect ratio (dynamic based on original image)
+      'c_fill',     // Fill/crop to exact ratio
+      'g_auto',     // Smart gravity - focus on important content
+      'q_95',       // High quality
+      'f_jpg'       // JPEG format for compatibility
+    ].join(',');
+    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${igTransforms}/${publicId}.jpg`;
   }
   
   // Build transformation string for preview (optimized for app display)
@@ -215,6 +285,31 @@ export function buildCloudinaryUrl(
   ].join(',');
 
   return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${transforms}/${publicId}`;
+}
+
+/**
+ * Build Cloudinary URL for Instagram with automatic aspect ratio detection
+ * Fetches image dimensions and crops to the closest acceptable ratio
+ * 
+ * @param projectId - The project's record ID
+ * @param imageIndex - The image's index in the gallery
+ * @param width - Original image width (optional - will use default if not provided)
+ * @param height - Original image height (optional - will use default if not provided)
+ */
+export function buildInstagramUrlWithRatio(
+  projectId: string,
+  imageIndex: number,
+  width?: number,
+  height?: number
+): string {
+  // If dimensions provided, calculate closest ratio
+  if (width && height) {
+    const aspectRatio = getClosestInstagramAspectRatio(width, height);
+    return buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio);
+  }
+  
+  // Default to 4:5 portrait if no dimensions
+  return buildCloudinaryUrl(projectId, imageIndex, 'instagram', INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5);
 }
 
 /**
@@ -407,8 +502,40 @@ export async function ensureCloudinaryUrls(
 }
 
 /**
+ * Load image dimensions from URL
+ * Returns { width, height } or null if failed
+ */
+async function getImageDimensions(imageUrl: string): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      console.warn('Failed to load image dimensions:', imageUrl.substring(0, 50));
+      resolve(null);
+    };
+    // Use a small preview URL to load quickly (just need dimensions)
+    // Add Cloudinary transformation to get a tiny version for fast dimension check
+    if (imageUrl.includes('res.cloudinary.com')) {
+      // Extract public ID and get a tiny version
+      const parts = imageUrl.split('/upload/');
+      if (parts.length === 2) {
+        img.src = `${parts[0]}/upload/w_100,q_10/${parts[1].split('/').pop()}`;
+      } else {
+        img.src = imageUrl;
+      }
+    } else {
+      img.src = imageUrl;
+    }
+  });
+}
+
+/**
  * Get original quality Cloudinary URLs for Instagram publishing
- * Returns URLs WITHOUT any transformations - Instagram gets the original files
+ * Automatically crops each image to the closest Instagram-acceptable aspect ratio
+ * 
+ * Instagram accepts aspect ratios from 4:5 (0.8) to 1.91:1 (1.91)
  * 
  * IMPORTANT: Use this for publishing to Instagram API, not for preview!
  */
@@ -417,7 +544,28 @@ export async function getInstagramPublishUrls(
   projectId: string
 ): Promise<string[]> {
   await loadCloudinaryMapping();
-  return urls.map((_, index) => buildCloudinaryUrl(projectId, index, 'instagram'));
+  
+  // Get dimensions for each image to determine correct aspect ratio
+  const results: string[] = [];
+  
+  for (let index = 0; index < urls.length; index++) {
+    // Get the preview URL to check dimensions
+    const previewUrl = buildCloudinaryUrl(projectId, index, 'fine');
+    const dimensions = await getImageDimensions(previewUrl);
+    
+    if (dimensions) {
+      // Build URL with the correct aspect ratio
+      const aspectRatio = getClosestInstagramAspectRatio(dimensions.width, dimensions.height);
+      console.log(`📐 Image ${index}: ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
+      results.push(buildCloudinaryUrl(projectId, index, 'instagram', aspectRatio));
+    } else {
+      // Fallback to default 4:5 if dimensions couldn't be loaded
+      console.log(`📐 Image ${index}: using default 4:5 ratio`);
+      results.push(buildCloudinaryUrl(projectId, index, 'instagram', '4:5'));
+    }
+  }
+  
+  return results;
 }
 
 /**
