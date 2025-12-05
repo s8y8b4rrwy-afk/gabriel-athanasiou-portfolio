@@ -425,6 +425,7 @@ function App() {
               scheduledPostsForProject={scheduledPostsForProject}
               onEditScheduledPost={handleEditPost}
               onUnschedulePost={unschedulePost}
+              onPublishSuccess={handlePublishSuccess}
               templates={templates}
               defaultTemplate={defaultTemplate}
             />

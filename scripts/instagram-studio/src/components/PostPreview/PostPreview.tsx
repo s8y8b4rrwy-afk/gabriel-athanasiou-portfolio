@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Project, PostDraft, ScheduleSlot, RecurringTemplate } from '../../types';
+import type { PublishResult } from '../../types/instagram';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
 import { ProjectScheduledPosts } from './ProjectScheduledPosts';
 import { TimeSlotPicker } from '../Calendar';
+import { PublishButton } from '../Schedule/PublishButton';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import { useCloudinaryMappingReady } from '../../hooks';
 import { buildCloudinaryUrl, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
+import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
 
@@ -31,6 +34,7 @@ interface PostPreviewProps {
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
   onUnschedulePost?: (slotId: string) => void;
+  onPublishSuccess?: (result: PublishResult) => void;
   templates?: RecurringTemplate[];
   defaultTemplate?: RecurringTemplate;
 }
@@ -47,6 +51,7 @@ export function PostPreview({
   scheduledPostsForProject = [],
   onEditScheduledPost,
   onUnschedulePost,
+  onPublishSuccess,
   templates = [],
   defaultTemplate,
 }: PostPreviewProps) {
@@ -58,6 +63,10 @@ export function PostPreview({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState(4 / 5); // Default to 4:5 (Instagram portrait)
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
+  
+  // Check if Instagram is connected
+  const credentials = getCredentialsLocally();
+  const isInstagramConnected = credentials?.connected ?? false;
   
   // This will trigger re-render when Cloudinary mapping loads
   useCloudinaryMappingReady();
@@ -360,6 +369,24 @@ export function PostPreview({
               </span>
             </div>
           </div>
+
+          {/* Time picker shown under preview when editing */}
+          {isEditing && editingScheduleInfo && (
+            <div className="editing-time-section">
+              <div className="editing-date-display">
+                📅 {new Date(editingScheduleInfo.scheduledDate).toLocaleDateString('en-GB', { 
+                  weekday: 'short', 
+                  day: 'numeric', 
+                  month: 'short' 
+                })}
+              </div>
+              <TimeSlotPicker
+                selectedTime={editingTime}
+                onTimeSelect={setEditingTime}
+                defaultTimes={['09:00', '11:00', '14:00', '17:00', '19:00']}
+              />
+            </div>
+          )}
         </div>
 
         <div className="post-preview-editor">
@@ -379,40 +406,38 @@ export function PostPreview({
             </div>
           </div>
 
-          {/* Template Selector */}
-          {!isEditing && (
-            <div className="template-selector">
-              <label>Apply Template:</label>
-              <div className="template-buttons">
-                <button 
-                  className={`template-button ${!selectedTemplateId || selectedTemplateId === 'default' ? 'template-button--active' : ''}`}
-                  onClick={() => {
-                    if (defaultTemplate) {
-                      handleApplyTemplate(defaultTemplate);
-                    } else {
-                      // Fallback to old behavior if no default template
-                      const generatedHashtags = generateHashtags(project);
-                      setHashtags(generatedHashtags);
-                      setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
-                      setSelectedTemplateId(null);
-                    }
-                  }}
+          {/* Template Selector - available in both create and edit modes */}
+          <div className="template-selector">
+            <label>Apply Template:</label>
+            <div className="template-buttons">
+              <button 
+                className={`template-button ${!selectedTemplateId || selectedTemplateId === 'default' ? 'template-button--active' : ''}`}
+                onClick={() => {
+                  if (defaultTemplate) {
+                    handleApplyTemplate(defaultTemplate);
+                  } else {
+                    // Fallback to old behavior if no default template
+                    const generatedHashtags = generateHashtags(project);
+                    setHashtags(generatedHashtags);
+                    setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
+                    setSelectedTemplateId(null);
+                  }
+                }}
+              >
+                Default
+              </button>
+              {templates.map(template => (
+                <button
+                  key={template.id}
+                  className={`template-button ${selectedTemplateId === template.id ? 'template-button--active' : ''}`}
+                  onClick={() => handleApplyTemplate(template)}
+                  title={template.description}
                 >
-                  Default
+                  {template.name}
                 </button>
-                {templates.map(template => (
-                  <button
-                    key={template.id}
-                    className={`template-button ${selectedTemplateId === template.id ? 'template-button--active' : ''}`}
-                    onClick={() => handleApplyTemplate(template)}
-                    title={template.description}
-                  >
-                    {template.name}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Show scheduled posts for this project */}
           {!isEditing && scheduledPostsForProject.length > 0 && onEditScheduledPost && onUnschedulePost && (
@@ -449,22 +474,6 @@ export function PostPreview({
             
             {isEditing ? (
               <>
-                {editingScheduleInfo && (
-                  <div className="editing-schedule-info">
-                    <span className="editing-date">
-                      📅 {new Date(editingScheduleInfo.scheduledDate).toLocaleDateString('en-GB', { 
-                        weekday: 'short', 
-                        day: 'numeric', 
-                        month: 'short' 
-                      })}
-                    </span>
-                    <TimeSlotPicker
-                      selectedTime={editingTime}
-                      onTimeSelect={setEditingTime}
-                      defaultTimes={['09:00', '11:00', '14:00', '17:00', '19:00']}
-                    />
-                  </div>
-                )}
                 <button 
                   className="final-action final-action--save" 
                   onClick={() => {
@@ -475,6 +484,23 @@ export function PostPreview({
                 >
                   ✅ Save Changes
                 </button>
+                {isInstagramConnected && project && (
+                  <PublishButton
+                    draft={{
+                      id: 'direct-publish',
+                      projectId: project.id,
+                      project,
+                      caption,
+                      hashtags,
+                      selectedImages,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }}
+                    onPublishSuccess={onPublishSuccess}
+                    variant="primary"
+                    disabled={selectedImages.length === 0}
+                  />
+                )}
                 <button 
                   className="final-action final-action--cancel" 
                   onClick={onCancelEdit}
@@ -494,9 +520,31 @@ export function PostPreview({
                 >
                   📅 Schedule Post
                 </button>
-                <button className="final-action final-action--publish" disabled>
-                  📱 Publish (Phase 3)
-                </button>
+                {isInstagramConnected && project ? (
+                  <PublishButton
+                    draft={{
+                      id: 'direct-publish',
+                      projectId: project.id,
+                      project,
+                      caption,
+                      hashtags,
+                      selectedImages,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }}
+                    onPublishSuccess={onPublishSuccess}
+                    variant="primary"
+                    disabled={selectedImages.length === 0}
+                  />
+                ) : (
+                  <button 
+                    className="final-action final-action--publish" 
+                    disabled
+                    title="Connect Instagram in Settings to publish"
+                  >
+                    📱 Publish Now
+                  </button>
+                )}
               </>
             )}
           </div>
