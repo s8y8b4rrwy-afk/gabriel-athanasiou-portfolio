@@ -351,6 +351,13 @@ scripts/
     │   │   │   ├── CalendarDay.tsx
     │   │   │   └── TimeSlotPicker.tsx
     │   │   │
+    │   │   ├── DragDrop/
+    │   │   │   ├── DndContext.tsx
+    │   │   │   ├── DraggableProjectCard.tsx
+    │   │   │   ├── DraggableMiniCard.tsx
+    │   │   │   ├── DroppableCalendarDay.tsx
+    │   │   │   └── DeleteDropZone.tsx
+    │   │   │
     │   │   └── Schedule/
     │   │       ├── SchedulePanel.tsx
     │   │       ├── ScheduleQueue.tsx
@@ -461,6 +468,10 @@ scripts/
 - [x] Time picker when editing posts
 - [x] Click post title to edit
 - [x] Previous view restoration on cancel/save
+- [x] Quick Schedule Defaults panel (set time & template before drag-drop)
+- [x] Drag-to-delete: drop scheduled posts outside calendar to delete
+- [x] Published posts are non-draggable (shown with ✓ indicator)
+- [x] Consolidated settings panel (context-aware UI)
 
 #### Deliverables:
 - ✅ Visual calendar with scheduled posts showing titles
@@ -474,6 +485,9 @@ scripts/
 - ✅ Export/import schedule data to/from Cloudinary
 - ✅ Template management for recurring posts
 - ✅ Intuitive UX with back navigation
+- ✅ Quick Schedule Defaults: pre-select time & template for drag-drop
+- ✅ Drag scheduled posts to delete zone to remove them
+- ✅ Smart UI: shows Quick Defaults or Date Panel based on context
 
 ---
 
@@ -1468,5 +1482,5 @@ git push origin main
 
 ---
 
-*Last Updated: 5 December 2025*
+*Last Updated: 19 June 2025*
 *Version: 1.3.1 - Fixed Cloudinary image URL building (uses projectId + index pattern)*
