@@ -195,11 +195,11 @@ const INSTAGRAM_ASPECT_RATIOS = {
   SQUARE: 1.0,  // 1:1 square
   
   // Common ratios for Cloudinary ar_ parameter
-  // Note: Cloudinary needs integer ratios like 4:5, not decimals like 1.91:1
-  PORTRAIT_4_5: '4:5',
-  SQUARE_1_1: '1:1', 
-  LANDSCAPE_191_100: '191:100',  // 1.91:1 as integers
-  LANDSCAPE_16_9: '16:9',  // 1.78
+  // Using decimal format to avoid colons in URL (Instagram API doesn't like colons)
+  PORTRAIT_4_5: '0.8',      // 4:5 as decimal
+  SQUARE_1_1: '1.0',        // 1:1 as decimal
+  LANDSCAPE_191_100: '1.91', // 1.91:1 as decimal
+  LANDSCAPE_16_9: '1.78',    // 16:9 as decimal
 };
 
 /**
@@ -233,7 +233,7 @@ export function getClosestInstagramAspectRatio(width: number, height: number): s
  * @param projectId - The project's record ID
  * @param imageIndex - The image's index in the gallery
  * @param preset - Image quality preset ('fine' for preview, 'instagram' for publishing)
- * @param aspectRatio - Optional aspect ratio for Instagram (e.g., '4:5', '1:1', '1.91:1')
+ * @param aspectRatio - Optional aspect ratio for Instagram (e.g., '0.8', '1.0', '1.91' - use decimals to avoid colons in URL)
  */
 export function buildCloudinaryUrl(
   projectId: string,
@@ -561,9 +561,9 @@ export async function getInstagramPublishUrls(
       console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
       results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio));
     } else {
-      // Fallback to default 4:5 if dimensions couldn't be loaded
+      // Fallback to default 0.8 (4:5) if dimensions couldn't be loaded
       console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): using default 4:5 ratio`);
-      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', '4:5'));
+      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', '0.8'));
     }
   }
   
