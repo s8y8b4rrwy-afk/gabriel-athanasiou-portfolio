@@ -1281,6 +1281,21 @@ export async function publishMedia(
 - **Carousel children**: Changed from comma-separated string to JSON array
 - **API version**: Updated to v21.0 (Instagram Graph API)
 - **Image processing**: Added letterboxing with black bars for non-standard aspect ratios
+- **Rate limit tracking**: Added `resetPostCount()` console utility to fix incorrect post count
+
+### Console Utilities
+
+The following utilities are available in the browser console for debugging:
+
+```javascript
+// Check current rate limit status
+getRateLimitInfo()
+// Returns: { callsRemaining, postsToday, postsLimit, ... }
+
+// Reset daily post count (if it shows incorrect count)
+resetPostCount()
+// Resets postsToday to 0
+```
 
 ---
 
