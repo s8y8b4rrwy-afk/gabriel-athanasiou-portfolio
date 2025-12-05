@@ -26,6 +26,7 @@ interface UseTemplatesReturn {
   updateDefaultTemplate: (updates: Partial<RecurringTemplate>) => void;
   deleteTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => RecurringTemplate | null;
+  importTemplates: (templates: RecurringTemplate[], defaultTemplate?: RecurringTemplate) => void;
 }
 
 export function useTemplates(): UseTemplatesReturn {
@@ -103,6 +104,19 @@ export function useTemplates(): UseTemplatesReturn {
     return duplicate;
   }, [templates, defaultTemplate, setTemplates]);
 
+  // Import templates from synced data
+  const importTemplates = useCallback((
+    importedTemplates: RecurringTemplate[],
+    importedDefaultTemplate?: RecurringTemplate
+  ) => {
+    if (importedTemplates && importedTemplates.length > 0) {
+      setTemplates(importedTemplates);
+    }
+    if (importedDefaultTemplate) {
+      setDefaultTemplate(importedDefaultTemplate);
+    }
+  }, [setTemplates, setDefaultTemplate]);
+
   return {
     templates,
     defaultTemplate,
@@ -111,5 +125,6 @@ export function useTemplates(): UseTemplatesReturn {
     updateDefaultTemplate,
     deleteTemplate,
     duplicateTemplate,
+    importTemplates,
   };
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel, TemplateList, TemplateEditor } from './components';
 import { useProjects, useSchedule, useCloudinarySync, useTemplates } from './hooks';
 import { generateCaption } from './utils/generateCaption';
@@ -51,14 +51,20 @@ function App() {
     updateDefaultTemplate,
     deleteTemplate,
     duplicateTemplate,
+    importTemplates,
   } = useTemplates();
 
   const [selectedTemplate, setSelectedTemplate] = useState<RecurringTemplate | null>(null);
   
-  // Cloudinary sync
+  // Cloudinary sync - handle importing all data including templates
   const handleImportScheduleData = useCallback((data: ScheduleData) => {
+    // Import schedule data
     importScheduleData(data.drafts, data.scheduleSlots, data.settings);
-  }, [importScheduleData]);
+    // Import templates if present
+    if (data.templates || data.defaultTemplate) {
+      importTemplates(data.templates || [], data.defaultTemplate);
+    }
+  }, [importScheduleData, importTemplates]);
 
   const {
     isSyncing,
@@ -75,6 +81,8 @@ function App() {
     drafts,
     scheduleSlots,
     settings,
+    templates,
+    defaultTemplate,
     onImport: handleImportScheduleData,
   });
   
@@ -87,9 +95,31 @@ function App() {
     hashtags: string[];
     selectedImages: string[];
   } | null>(null);
+  const [hasInitializedFromCloud, setHasInitializedFromCloud] = useState(false);
   
   // Track if we're editing an existing scheduled post
   const [editingPost, setEditingPost] = useState<EditingState | null>(null);
+
+  // Fetch from Cloudinary on initial load
+  useEffect(() => {
+    if (!hasInitializedFromCloud) {
+      setHasInitializedFromCloud(true);
+      // Only auto-fetch if we don't have local data or if auto-sync is enabled
+      const hasLocalData = drafts.length > 0 || scheduleSlots.length > 0;
+      const shouldAutoFetch = autoSync || !hasLocalData;
+      
+      if (shouldAutoFetch) {
+        console.log('🔄 Fetching data from Cloudinary on boot...');
+        fetchFromCloudinary().then(success => {
+          if (success) {
+            console.log('✅ Successfully loaded data from Cloudinary');
+          } else {
+            console.log('ℹ️ No data found in Cloudinary or fetch failed');
+          }
+        });
+      }
+    }
+  }, [hasInitializedFromCloud, autoSync, drafts.length, scheduleSlots.length, fetchFromCloudinary]);
 
   // Get scheduled posts for the selected project
   const scheduledPostsForProject = useMemo(() => {

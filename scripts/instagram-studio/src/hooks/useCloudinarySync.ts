@@ -8,11 +8,14 @@ import {
   type ScheduleData,
 } from '../services/cloudinarySync';
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
+import type { RecurringTemplate } from '../types/template';
 
 interface UseCloudinarySyncOptions {
   drafts: PostDraft[];
   scheduleSlots: ScheduleSlot[];
   settings: ScheduleSettings;
+  templates: RecurringTemplate[];
+  defaultTemplate: RecurringTemplate;
   onImport: (data: ScheduleData) => void;
 }
 
@@ -33,6 +36,8 @@ export function useCloudinarySync({
   drafts,
   scheduleSlots,
   settings,
+  templates,
+  defaultTemplate,
   onImport,
 }: UseCloudinarySyncOptions): UseCloudinarySyncReturn {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -54,7 +59,7 @@ export function useCloudinarySync({
     setSyncError(null);
 
     try {
-      const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings);
+      const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings, templates, defaultTemplate);
       
       if (result.success) {
         const now = new Date().toISOString();
@@ -71,7 +76,7 @@ export function useCloudinarySync({
     } finally {
       setIsSyncing(false);
     }
-  }, [drafts, scheduleSlots, settings]);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate]);
 
   const fetchFromCloudinary = useCallback(async (): Promise<boolean> => {
     setIsSyncing(true);
@@ -94,8 +99,8 @@ export function useCloudinarySync({
   }, [onImport]);
 
   const exportAsJson = useCallback(() => {
-    exportScheduleAsJson(drafts, scheduleSlots, settings);
-  }, [drafts, scheduleSlots, settings]);
+    exportScheduleAsJson(drafts, scheduleSlots, settings, templates, defaultTemplate);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate]);
 
   const exportAsCsv = useCallback(() => {
     exportScheduleAsCsv(drafts, scheduleSlots);
@@ -120,7 +125,7 @@ export function useCloudinarySync({
     }, 5000); // 5 second debounce
 
     return () => clearTimeout(timeoutId);
-  }, [autoSync, drafts, scheduleSlots, settings, syncToCloudinary]);
+  }, [autoSync, drafts, scheduleSlots, settings, templates, defaultTemplate, syncToCloudinary]);
 
   return {
     isSyncing,

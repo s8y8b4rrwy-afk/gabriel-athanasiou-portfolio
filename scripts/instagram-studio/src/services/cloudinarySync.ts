@@ -6,6 +6,7 @@
  */
 
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
+import type { RecurringTemplate } from '../types/template';
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
@@ -18,6 +19,9 @@ interface ScheduleData {
   settings: ScheduleSettings;
   drafts: PostDraft[];
   scheduleSlots: ScheduleSlot[];
+  // New fields for templates
+  templates?: RecurringTemplate[];
+  defaultTemplate?: RecurringTemplate;
 }
 
 interface CloudinaryUploadResponse {
@@ -76,15 +80,19 @@ export async function fetchScheduleFromCloudinary(): Promise<ScheduleData | null
 export async function uploadScheduleToCloudinary(
   drafts: PostDraft[],
   scheduleSlots: ScheduleSlot[],
-  settings: ScheduleSettings
+  settings: ScheduleSettings,
+  templates?: RecurringTemplate[],
+  defaultTemplate?: RecurringTemplate
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const scheduleData: ScheduleData = {
-      version: '1.0.0',
+      version: '1.1.0', // Updated version to include templates
       exportedAt: new Date().toISOString(),
       settings,
       drafts,
       scheduleSlots,
+      templates: templates || [],
+      defaultTemplate,
     };
 
     // Convert to JSON string
@@ -134,14 +142,18 @@ export async function uploadScheduleToCloudinary(
 export function exportScheduleAsJson(
   drafts: PostDraft[],
   scheduleSlots: ScheduleSlot[],
-  settings: ScheduleSettings
+  settings: ScheduleSettings,
+  templates?: RecurringTemplate[],
+  defaultTemplate?: RecurringTemplate
 ): void {
   const scheduleData: ScheduleData = {
-    version: '1.0.0',
+    version: '1.1.0',
     exportedAt: new Date().toISOString(),
     settings,
     drafts,
     scheduleSlots,
+    templates: templates || [],
+    defaultTemplate,
   };
 
   const jsonString = JSON.stringify(scheduleData, null, 2);
@@ -150,7 +162,7 @@ export function exportScheduleAsJson(
   
   const link = document.createElement('a');
   link.href = url;
-  link.download = `instagram-schedule-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `instagram-studio-${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
