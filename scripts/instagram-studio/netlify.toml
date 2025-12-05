@@ -1,6 +1,7 @@
 [build]
   publish = "dist"
   command = "npm run build"
+  ignore = "bash scripts/ignore-build.sh"
 
 [build.environment]
   NODE_VERSION = "18"
