@@ -1,9 +1,32 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** January 2026  
+> **Last Updated:** December 2025  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
+
+---
+
+## 🌐 Domains & Portfolio Modes
+
+This codebase powers **two portfolio sites** and an **Instagram scheduling app** from a single repository:
+
+| Portfolio | Domain | Data File | Env Variable |
+|-----------|--------|-----------|--------------|
+| **Directing** | directedbygabriel.com | `portfolio-data-directing.json` | `PORTFOLIO_MODE=directing` |
+| **Post-Production** | lemonpost.studio | `portfolio-data-postproduction.json` | `PORTFOLIO_MODE=postproduction` |
+| **Instagram Studio** | studio.lemonpost.studio | N/A (sub-app in `scripts/instagram-studio/`) | — |
+
+### Data File Separation
+
+Each portfolio has its own data file synced from Airtable:
+- `public/portfolio-data-directing.json` - Projects with `allowedRoles` containing "directing"
+- `public/portfolio-data-postproduction.json` - Projects with `allowedRoles` containing "postproduction"
+
+The `PORTFOLIO_MODE` environment variable controls:
+1. Which data file is loaded by the app
+2. Which static files are generated (`sitemap-{mode}.xml`, `robots-{mode}.txt`, `share-meta-{mode}.json`)
+3. Which domain URLs are used in meta tags and sitemaps
 
 ---
 
@@ -21,8 +44,7 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 **Other Documentation Files:**
 - `README.md` - Quick start guide for developers
-- `copilot-instructions.md` - Alias file pointing here
-- `COPILOT.md` - Alias file pointing here
+- `.github/copilot-instructions.md` - Quick reference for GitHub Copilot (points here)
 - `docs/*` - Supplementary guides (all key content integrated here)
 
 ---
@@ -4050,18 +4072,37 @@ npm run dev
 ### Development Commands
 
 ```bash
-# Development
-npm run dev                # Start Netlify Dev server with Functions (http://localhost:8888)
+# Development - Portfolio-Specific (Recommended)
+npm run dev:directing      # Start Vite for DIRECTING portfolio (http://localhost:3000)
+npm run dev:postprod       # Start Vite for POST-PRODUCTION portfolio (http://localhost:3000)
+npm run dev:directing:full # Build data + static files + start Vite (directing)
+npm run dev:postprod:full  # Build data + static files + start Vite (postproduction)
+
+# Development - General
+npm run dev                # Start Netlify Dev with Functions (http://localhost:8888)
 npm run dev:vite           # Start Vite only (no Functions, http://localhost:3000)
 npm run preview            # Preview production build locally
 
 # Building
-npm run build              # Full production build (with image optimization)
-npm run optimize:images    # Run image optimization only
-npm run build:content      # Legacy: Generate share-meta.json (now in scheduled-sync)
+npm run build              # Vite production build
+npm run build:directing    # Full directing portfolio build
+npm run build:postprod     # Full postproduction portfolio build
+npm run build:static:all   # Generate static files for both portfolios
+
+# Data Sync
+npm run sync:directing     # Sync Airtable data for directing
+npm run sync:postprod      # Sync Airtable data for postproduction
+npm run sync:both          # Sync data for both portfolios
+npm run sync:all           # Sync data + static files + upload to Cloudinary
+
+# Instagram Studio (Sub-app at studio.lemonpost.studio)
+npm run instagram-studio          # Start Instagram Studio dev server
+npm run instagram-studio:install  # Install Instagram Studio dependencies
+npm run instagram-studio:build    # Build Instagram Studio for production
 
 # Testing
-npm run test:images        # Verify Airtable image URLs
+npm run test               # Run Vitest tests
+npm run test:ui            # Run Vitest with UI
 ```
 
 ### Git Workflow
@@ -5519,9 +5560,9 @@ Savings: 76% (brotli vs uncompressed)
 6. **Never commit without updating documentation**
 
 **Guide Aliases for AI Agents/Bots**
-- Canonical guide: `AI_AGENT_GUIDE.md`
-- Aliases (kept in sync): `copilot-instructions.md`, `COPILOT.md`
-- Why: Some assistants scan for conventional filenames; these aliases ensure discovery.
+- Canonical guide: `AI_AGENT_GUIDE.md` (root)
+- Quick reference: `.github/copilot-instructions.md` (GitHub Copilot's standard location)
+- Why: GitHub Copilot looks for `.github/copilot-instructions.md` by convention.
 
 **Documentation Checklist Before Committing:**
 - [ ] AI_AGENT_GUIDE.md updated with changes

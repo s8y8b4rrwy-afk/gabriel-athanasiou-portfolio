@@ -56,11 +56,9 @@ These guides provide additional context but **all critical information is in AI_
 
 ## 🤖 AI Agent Quick Reference
 
-### Alias Files (Point to AI_AGENT_GUIDE.md)
-- `copilot-instructions.md` - Copilot alias
-- `COPILOT.md` - Copilot alias
-
-These files exist for compatibility but redirect to the master guide.
+### Copilot Instructions
+- `.github/copilot-instructions.md` - Quick reference for GitHub Copilot (GitHub's standard location)
+- Points to `AI_AGENT_GUIDE.md` for full documentation
 
 ### Critical Workflow
 1. **Before changes:** Read relevant section in `AI_AGENT_GUIDE.md`
