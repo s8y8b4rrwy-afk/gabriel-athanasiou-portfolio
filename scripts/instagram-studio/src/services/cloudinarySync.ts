@@ -3,11 +3,21 @@
  * 
  * Handles uploading and fetching schedule data to/from Cloudinary.
  * Uses a Netlify function for signed uploads (keeps API secret secure).
+ * 
+ * SMART MERGE: When syncing, local and cloud data are intelligently merged
+ * to preserve the latest changes from both sources.
  */
 
 import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
 import type { RecurringTemplate } from '../types/template';
 import type { InstagramCredentials } from '../types/instagram';
+import { 
+  mergeScheduleData, 
+  formatMergeStats, 
+  cleanupOldDeletions,
+  type ScheduleDataWithMerge,
+  type MergeResult 
+} from '../utils/mergeScheduleData';
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
@@ -25,6 +35,7 @@ const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL ||
 interface ScheduleData {
   version: string;
   exportedAt: string;
+  lastMergedAt?: string; // Track when data was last merged
   profileId?: string; // For multi-profile support
   settings: ScheduleSettings;
   drafts: PostDraft[];
@@ -34,6 +45,12 @@ interface ScheduleData {
   defaultTemplate?: RecurringTemplate;
   // Instagram credentials (synced to cloud for persistence)
   instagram?: InstagramCredentials;
+  // Deletion tracking for smart merge
+  deletedIds?: {
+    drafts: { id: string; deletedAt: string }[];
+    scheduleSlots: { id: string; deletedAt: string }[];
+    templates: { id: string; deletedAt: string }[];
+  };
 }
 
 interface CloudinaryUploadResponse {
@@ -90,7 +107,14 @@ export async function fetchScheduleFromCloudinary(profileId: string = DEFAULT_PR
 }
 
 /**
- * Upload schedule data to Cloudinary
+ * Upload schedule data to Cloudinary with SMART MERGE
+ * 
+ * This function:
+ * 1. Fetches current cloud data
+ * 2. Merges local + cloud data (keeping latest changes from both)
+ * 3. Uploads the merged result
+ * 4. Returns the merged data so local state can be updated
+ * 
  * Uses a Netlify function for signed uploads (API secret stays on server)
  * @param profileId - Optional profile ID for multi-profile support (defaults to 'default')
  */
@@ -101,11 +125,17 @@ export async function uploadScheduleToCloudinary(
   templates?: RecurringTemplate[],
   defaultTemplate?: RecurringTemplate,
   instagram?: InstagramCredentials | null,
+  deletedIds?: ScheduleData['deletedIds'],
   profileId: string = DEFAULT_PROFILE_ID
-): Promise<{ success: boolean; url?: string; error?: string }> {
+): Promise<{ success: boolean; url?: string; error?: string; mergedData?: ScheduleData; mergeStats?: string }> {
   try {
-    const scheduleData: ScheduleData = {
-      version: '1.3.0', // Version bump for Instagram credentials sync
+    // Step 1: Fetch current cloud data for merging
+    console.log('📥 Fetching cloud data for merge...');
+    const cloudData = await fetchScheduleFromCloudinary(profileId);
+    
+    // Step 2: Build local data object
+    const localData: ScheduleDataWithMerge = {
+      version: '1.4.0', // Version bump for merge support
       exportedAt: new Date().toISOString(),
       profileId,
       settings,
@@ -114,15 +144,26 @@ export async function uploadScheduleToCloudinary(
       templates: templates || [],
       defaultTemplate,
       instagram: instagram || undefined,
+      deletedIds: deletedIds || { drafts: [], scheduleSlots: [], templates: [] }
     };
+    
+    // Step 3: Merge local and cloud data
+    console.log('🔄 Merging local and cloud data...');
+    const mergeResult: MergeResult = mergeScheduleData(localData, cloudData as ScheduleDataWithMerge | null);
+    
+    // Clean up old deletions (older than 30 days)
+    mergeResult.data.deletedIds = cleanupOldDeletions(mergeResult.data.deletedIds, 30);
+    
+    const mergeStatsMessage = formatMergeStats(mergeResult.stats);
+    console.log('📊 Merge stats:', mergeStatsMessage);
 
-    // Call the Netlify function for signed upload
+    // Step 4: Upload merged data to Cloudinary
     const response = await fetch(SYNC_FUNCTION_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ scheduleData, profileId }),
+      body: JSON.stringify({ scheduleData: mergeResult.data, profileId }),
     });
 
     const result = await response.json();
@@ -131,8 +172,13 @@ export async function uploadScheduleToCloudinary(
       throw new Error(result.error || `Upload failed: ${response.status}`);
     }
 
-    console.log(`✅ Uploaded schedule to Cloudinary (profile: ${profileId}):`, result.url);
-    return { success: true, url: result.url };
+    console.log(`✅ Uploaded merged schedule to Cloudinary (profile: ${profileId}):`, result.url);
+    return { 
+      success: true, 
+      url: result.url, 
+      mergedData: mergeResult.data,
+      mergeStats: mergeStatsMessage 
+    };
   } catch (error) {
     console.error('Error uploading schedule to Cloudinary:', error);
     return { 
@@ -151,10 +197,11 @@ export function exportScheduleAsJson(
   settings: ScheduleSettings,
   templates?: RecurringTemplate[],
   defaultTemplate?: RecurringTemplate,
-  instagram?: InstagramCredentials | null
+  instagram?: InstagramCredentials | null,
+  deletedIds?: ScheduleData['deletedIds']
 ): void {
   const scheduleData: ScheduleData = {
-    version: '1.3.0',
+    version: '1.4.0',
     exportedAt: new Date().toISOString(),
     settings,
     drafts,
@@ -162,6 +209,7 @@ export function exportScheduleAsJson(
     templates: templates || [],
     defaultTemplate,
     instagram: instagram || undefined,
+    deletedIds: deletedIds || { drafts: [], scheduleSlots: [], templates: [] },
   };
 
   const jsonString = JSON.stringify(scheduleData, null, 2);

@@ -11,6 +11,12 @@ import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
 import type { RecurringTemplate } from '../types/template';
 import type { InstagramCredentials } from '../types/instagram';
 
+interface DeletedIds {
+  drafts: { id: string; deletedAt: string }[];
+  scheduleSlots: { id: string; deletedAt: string }[];
+  templates: { id: string; deletedAt: string }[];
+}
+
 interface UseCloudinarySyncOptions {
   drafts: PostDraft[];
   scheduleSlots: ScheduleSlot[];
@@ -18,6 +24,7 @@ interface UseCloudinarySyncOptions {
   templates: RecurringTemplate[];
   defaultTemplate: RecurringTemplate;
   instagramCredentials: InstagramCredentials | null;
+  deletedIds?: DeletedIds;
   onImport: (data: ScheduleData) => void;
 }
 
@@ -42,6 +49,7 @@ export function useCloudinarySync({
   templates,
   defaultTemplate,
   instagramCredentials,
+  deletedIds,
   onImport,
 }: UseCloudinarySyncOptions): UseCloudinarySyncReturn {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -73,13 +81,29 @@ export function useCloudinarySync({
     setSyncSuccess(null);
 
     try {
-      const result = await uploadScheduleToCloudinary(drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials);
+      // Smart merge: fetch cloud data, merge with local, upload merged result
+      const result = await uploadScheduleToCloudinary(
+        drafts, 
+        scheduleSlots, 
+        settings, 
+        templates, 
+        defaultTemplate, 
+        instagramCredentials,
+        deletedIds
+      );
       
       if (result.success) {
         const now = new Date().toISOString();
         setLastSyncedAt(now);
         localStorage.setItem('instagram-studio-last-sync', now);
-        setSyncSuccess('✅ Data synced to cloud successfully!');
+        
+        // If we have merged data, update local state with it
+        if (result.mergedData) {
+          onImport(result.mergedData);
+          setSyncSuccess(`✅ Synced & merged! ${result.mergeStats || 'Data is in sync'}`);
+        } else {
+          setSyncSuccess('✅ Data synced to cloud successfully!');
+        }
         return true;
       } else {
         setSyncError(result.error || 'Upload failed');
@@ -91,7 +115,7 @@ export function useCloudinarySync({
     } finally {
       setIsSyncing(false);
     }
-  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials]);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, deletedIds, onImport]);
 
   const fetchFromCloudinary = useCallback(async (): Promise<boolean> => {
     setIsSyncing(true);
@@ -119,8 +143,8 @@ export function useCloudinarySync({
   }, [onImport]);
 
   const exportAsJson = useCallback(() => {
-    exportScheduleAsJson(drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials);
-  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials]);
+    exportScheduleAsJson(drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, deletedIds);
+  }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, deletedIds]);
 
   const exportAsCsv = useCallback(() => {
     exportScheduleAsCsv(drafts, scheduleSlots);
@@ -145,7 +169,7 @@ export function useCloudinarySync({
     }, 5000); // 5 second debounce
 
     return () => clearTimeout(timeoutId);
-  }, [autoSync, drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, syncToCloudinary]);
+  }, [autoSync, drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, deletedIds, syncToCloudinary]);
 
   return {
     isSyncing,

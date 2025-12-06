@@ -7,11 +7,23 @@ interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
 }
 
+interface DeletedIdEntry {
+  id: string;
+  deletedAt: string;
+}
+
+export interface DeletedIds {
+  drafts: DeletedIdEntry[];
+  scheduleSlots: DeletedIdEntry[];
+  templates: DeletedIdEntry[];
+}
+
 interface UseScheduleReturn {
   scheduledPosts: ScheduledPost[];
   drafts: PostDraft[];
   scheduleSlots: ScheduleSlot[];
   settings: ScheduleSettings;
+  deletedIds: DeletedIds;
   schedulePost: (draft: PostDraft, date: Date, time: string) => void;
   unschedulePost: (slotId: string) => void;
   reschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
@@ -23,13 +35,19 @@ interface UseScheduleReturn {
   getPostsForMonth: (year: number, month: number) => Map<string, ScheduledPost[]>;
   markAsPublished: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   markAsFailed: (slotId: string, error: string) => void;
-  importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings) => void;
+  importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings, deletedIds?: DeletedIds) => void;
 }
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
   defaultTimes: ['11:00', '19:00'],
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   maxPostsPerDay: 3,
+};
+
+const DEFAULT_DELETED_IDS: DeletedIds = {
+  drafts: [],
+  scheduleSlots: [],
+  templates: [],
 };
 
 function generateId(): string {
@@ -40,10 +58,23 @@ function formatDateKey(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
+// Helper to track a deletion
+function trackDeletion(deletedIds: DeletedIds, type: keyof DeletedIds, id: string): DeletedIds {
+  // Don't add duplicates
+  if (deletedIds[type].some(d => d.id === id)) {
+    return deletedIds;
+  }
+  return {
+    ...deletedIds,
+    [type]: [...deletedIds[type], { id, deletedAt: new Date().toISOString() }]
+  };
+}
+
 export function useSchedule(): UseScheduleReturn {
   const [drafts, setDrafts] = useLocalStorage<PostDraft[]>('instagram-studio-drafts', []);
   const [scheduleSlots, setScheduleSlots] = useLocalStorage<ScheduleSlot[]>('instagram-studio-schedule', []);
   const [settings, setSettings] = useLocalStorage<ScheduleSettings>('instagram-studio-settings', DEFAULT_SETTINGS);
+  const [deletedIds, setDeletedIds] = useLocalStorage<DeletedIds>('instagram-studio-deleted-ids', DEFAULT_DELETED_IDS);
 
   // Combine drafts with their schedule slots
   const scheduledPosts = useMemo((): ScheduledPost[] => {
@@ -83,12 +114,20 @@ export function useSchedule(): UseScheduleReturn {
     return draft;
   }, [setDrafts]);
 
-  // Delete a draft
+  // Delete a draft (and track deletion for cloud sync)
   const deleteDraft = useCallback((draftId: string) => {
-    // Also remove any schedule slots for this draft
-    setScheduleSlots(prev => prev.filter(slot => slot.postDraftId !== draftId));
+    // Track the deletion for smart merge
+    setDeletedIds(prev => trackDeletion(prev, 'drafts', draftId));
+    // Also remove any schedule slots for this draft and track those deletions
+    setScheduleSlots(prev => {
+      const slotsToDelete = prev.filter(slot => slot.postDraftId === draftId);
+      slotsToDelete.forEach(slot => {
+        setDeletedIds(p => trackDeletion(p, 'scheduleSlots', slot.id));
+      });
+      return prev.filter(slot => slot.postDraftId !== draftId);
+    });
     setDrafts(prev => prev.filter(d => d.id !== draftId));
-  }, [setDrafts, setScheduleSlots]);
+  }, [setDrafts, setScheduleSlots, setDeletedIds]);
 
   // Update a draft
   const updateDraft = useCallback((draftId: string, updates: Partial<PostDraft>) => {
@@ -112,10 +151,12 @@ export function useSchedule(): UseScheduleReturn {
     setScheduleSlots(prev => [...prev, slot]);
   }, [setScheduleSlots]);
 
-  // Unschedule a post
+  // Unschedule a post (and track deletion for cloud sync)
   const unschedulePost = useCallback((slotId: string) => {
+    // Track the deletion for smart merge
+    setDeletedIds(prev => trackDeletion(prev, 'scheduleSlots', slotId));
     setScheduleSlots(prev => prev.filter(slot => slot.id !== slotId));
-  }, [setScheduleSlots]);
+  }, [setScheduleSlots, setDeletedIds]);
 
   // Reschedule a post
   const reschedulePost = useCallback((slotId: string, newDate: Date, newTime: string) => {
@@ -185,21 +226,27 @@ export function useSchedule(): UseScheduleReturn {
   }, [setSettings]);
 
   // Import schedule data from external source (Cloudinary/file)
+  // Now also imports deletedIds for smart merge support
   const importScheduleData = useCallback((
     importedDrafts: PostDraft[],
     importedSlots: ScheduleSlot[],
-    importedSettings: ScheduleSettings
+    importedSettings: ScheduleSettings,
+    importedDeletedIds?: DeletedIds
   ) => {
     setDrafts(importedDrafts);
     setScheduleSlots(importedSlots);
     setSettings(importedSettings);
-  }, [setDrafts, setScheduleSlots, setSettings]);
+    if (importedDeletedIds) {
+      setDeletedIds(importedDeletedIds);
+    }
+  }, [setDrafts, setScheduleSlots, setSettings, setDeletedIds]);
 
   return {
     scheduledPosts,
     drafts,
     scheduleSlots,
     settings,
+    deletedIds,
     schedulePost,
     unschedulePost,
     reschedulePost,

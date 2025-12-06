@@ -632,6 +632,33 @@ Instagram Studio uses Cloudinary for cloud storage, enabling access from any dev
 1. **Data Stored**: Schedules, templates, default template, settings, **and Instagram credentials**
 2. **Storage Location**: `instagram-studio/schedule-data.json` in Cloudinary
 3. **Sync Method**: Signed uploads via Netlify serverless function
+4. **Smart Merge**: Local and cloud data are intelligently merged to preserve latest changes from both sources
+
+### Smart Merge (v1.4.0)
+
+When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** intelligently:
+
+| Data Type | Merge Strategy |
+|-----------|----------------|
+| Drafts | Merged by ID, keeps the one with latest `updatedAt` |
+| Schedule Slots | Merged by ID, keeps the one with latest timestamp |
+| Templates | Merged by ID, keeps the one with latest `updatedAt` |
+| Settings | Keeps whichever was modified more recently |
+| Instagram Credentials | Keeps the most recent valid token |
+| Deletions | Tracked with timestamps to prevent re-appearance |
+
+**How it works:**
+1. When you sync, the app first fetches current cloud data
+2. It compares each item's `updatedAt` timestamp
+3. Items only in local → added to cloud
+4. Items only in cloud → added to local
+5. Items in both → keeps the more recently modified version
+6. Deleted items are tracked so they don't reappear from the other source
+
+**Deletion Tracking:**
+- When you delete a draft or unschedule a post, the deletion is tracked with a timestamp
+- If the same item exists in cloud but was deleted locally, it stays deleted (unless modified after deletion)
+- Deletions older than 30 days are automatically cleaned up
 
 ### Sync Architecture
 
@@ -641,8 +668,9 @@ Instagram Studio uses Cloudinary for cloud storage, enabling access from any dev
 │                (studio.lemonpost.studio)                      │
 └─────────────────────┬────────────────────────────────────────┘
                       │
-                      │ POST /sync (upload)
-                      │ GET  /sync (fetch)
+                      │ 1. Fetch current cloud data
+                      │ 2. Merge local + cloud (smart merge)
+                      │ 3. Upload merged result
                       ▼
 ┌──────────────────────────────────────────────────────────────┐
 │           Netlify Function (Serverless)                       │
@@ -664,48 +692,49 @@ Instagram Studio uses Cloudinary for cloud storage, enabling access from any dev
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Data Format (v1.1.0)
+### Data Format (v1.4.0)
 
 ```json
 {
-  "version": "1.1.0",
-  "lastUpdated": "2025-12-05T12:00:00.000Z",
-  "schedules": [
+  "version": "1.4.0",
+  "exportedAt": "2025-12-06T12:00:00.000Z",
+  "lastMergedAt": "2025-12-06T12:00:00.000Z",
+  "drafts": [
     {
       "id": "uuid",
       "projectId": "project-slug",
-      "scheduledDate": "2025-12-10T15:00:00.000Z",
       "caption": "Generated caption...",
       "hashtags": ["#tag1", "#tag2"],
-      "status": "scheduled"
+      "createdAt": "2025-12-05T10:00:00.000Z",
+      "updatedAt": "2025-12-06T11:00:00.000Z"
     }
   ],
-  "templates": [
+  "scheduleSlots": [
     {
       "id": "uuid",
-      "name": "Template Name",
-      "captionTemplate": "🎬 {title}...",
-      "hashtagGroups": ["film", "grading"],
-      "isDefault": false
+      "postDraftId": "draft-uuid",
+      "scheduledDate": "2025-12-10",
+      "scheduledTime": "15:00",
+      "status": "pending"
     }
   ],
-  "defaultTemplate": {
-    "id": "default",
-    "name": "Default",
-    "captionTemplate": "...",
-    "hashtagGroups": [],
-    "isDefault": true
-  },
-  "settings": {
-    "preferredPostTime": "15:00",
-    "timezone": "Europe/London"
+  "templates": [...],
+  "defaultTemplate": {...},
+  "settings": {...},
+  "instagram": {...},
+  "deletedIds": {
+    "drafts": [
+      { "id": "deleted-draft-id", "deletedAt": "2025-12-06T10:00:00.000Z" }
+    ],
+    "scheduleSlots": [],
+    "templates": []
   }
 }
 ```
 
 ### Sync Buttons
 
-- **Sync to Cloud ☁️↑**: Uploads current local data to Cloudinary
+- **Sync to Cloud ☁️↑**: Merges local + cloud data and uploads the result
 - **Fetch from Cloud ☁️↓**: Downloads and applies cloud data locally
 - **Auto-fetch**: Data is automatically fetched when app loads
 
@@ -1482,5 +1511,5 @@ git push origin main
 
 ---
 
-*Last Updated: 19 June 2025*
-*Version: 1.3.1 - Fixed Cloudinary image URL building (uses projectId + index pattern)*
+*Last Updated: 6 December 2025*
+*Version: 1.4.0 - Smart Merge: Local and cloud data are now intelligently merged during sync*

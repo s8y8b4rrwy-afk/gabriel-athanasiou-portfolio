@@ -36,6 +36,7 @@ function App() {
     drafts,
     scheduleSlots,
     settings,
+    deletedIds,
     schedulePost,
     unschedulePost,
     reschedulePost,
@@ -67,8 +68,8 @@ function App() {
   
   // Cloudinary sync - handle importing all data including templates and Instagram credentials
   const handleImportScheduleData = useCallback((data: ScheduleData) => {
-    // Import schedule data
-    importScheduleData(data.drafts, data.scheduleSlots, data.settings);
+    // Import schedule data (including deletedIds for smart merge)
+    importScheduleData(data.drafts, data.scheduleSlots, data.settings, data.deletedIds);
     // Import templates if present
     if (data.templates || data.defaultTemplate) {
       importTemplates(data.templates || [], data.defaultTemplate);
@@ -100,6 +101,7 @@ function App() {
     templates,
     defaultTemplate,
     instagramCredentials,
+    deletedIds,
     onImport: handleImportScheduleData,
   });
   
@@ -128,26 +130,29 @@ function App() {
     setIsOAuthCallback(hasCode || hasError);
   }, []);
 
-  // Fetch from Cloudinary on initial load
+  // Fetch from Cloudinary on initial load - ALWAYS fetch to ensure we're up to date
   useEffect(() => {
     if (!hasInitializedFromCloud) {
       setHasInitializedFromCloud(true);
-      // Only auto-fetch if we don't have local data or if auto-sync is enabled
-      const hasLocalData = drafts.length > 0 || scheduleSlots.length > 0;
-      const shouldAutoFetch = autoSync || !hasLocalData;
-      
-      if (shouldAutoFetch) {
-        console.log('🔄 Fetching data from Cloudinary on boot...');
-        fetchFromCloudinary().then(success => {
-          if (success) {
-            console.log('✅ Successfully loaded data from Cloudinary');
-          } else {
-            console.log('ℹ️ No data found in Cloudinary or fetch failed');
-          }
-        });
-      }
+      // Always fetch fresh data from cloud on app open to ensure we're up to date
+      console.log('🔄 Fetching fresh data from Cloudinary on boot...');
+      syncToCloudinary().then(success => {
+        if (success) {
+          console.log('✅ Successfully synced with Cloudinary');
+        } else {
+          // If sync failed, try just fetching
+          console.log('⚠️ Sync failed, trying fetch only...');
+          fetchFromCloudinary().then(fetchSuccess => {
+            if (fetchSuccess) {
+              console.log('✅ Successfully loaded data from Cloudinary');
+            } else {
+              console.log('ℹ️ No data found in Cloudinary or fetch failed');
+            }
+          });
+        }
+      });
     }
-  }, [hasInitializedFromCloud, autoSync, drafts.length, scheduleSlots.length, fetchFromCloudinary]);
+  }, [hasInitializedFromCloud, syncToCloudinary, fetchFromCloudinary]);
 
   // Get scheduled posts for the selected project
   const scheduledPostsForProject = useMemo(() => {
