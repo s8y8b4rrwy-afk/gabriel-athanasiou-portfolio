@@ -58,8 +58,33 @@ function App() {
       if (projectFromList) {
         return { ...post, project: projectFromList };
       }
-      // Return as-is if project not found
-      return post;
+      // Create stub project if project not found (deleted/hidden project)
+      // This prevents crashes and shows meaningful info
+      const stubProject = {
+        id: post.projectId,
+        title: `Project ${post.projectId?.slice(-6) || 'Unknown'}`,
+        year: '',
+        gallery: post.selectedImages || [],
+        type: 'unknown' as const,
+        slug: '',
+        kinds: [],
+        genre: [],
+        productionCompany: '',
+        client: '',
+        releaseDate: '',
+        workDate: '',
+        description: '',
+        isFeatured: false,
+        isHero: false,
+        heroImage: post.selectedImages?.[0] || '',
+        videoUrl: '',
+        additionalVideos: [],
+        awards: [],
+        credits: [],
+        externalLinks: [],
+        relatedArticleId: null,
+      };
+      return { ...post, project: stubProject };
     });
   }, [rawScheduledPosts, projects]);
 
@@ -153,21 +178,14 @@ function App() {
     if (hasInitializedFromCloudRef.current) return;
     hasInitializedFromCloudRef.current = true;
     
-    // Always fetch fresh data from cloud on app open to ensure we're up to date
+    // Always FETCH (download) fresh data from cloud on app open
+    // This ensures we're using the latest cloud state, not stale localStorage
     console.log('🔄 Fetching fresh data from Cloudinary on boot...');
-    syncToCloudinary().then(success => {
+    fetchFromCloudinary().then(success => {
       if (success) {
-        console.log('✅ Successfully synced with Cloudinary');
+        console.log('✅ Successfully loaded data from Cloudinary');
       } else {
-        // If sync failed, try just fetching
-        console.log('⚠️ Sync failed, trying fetch only...');
-        fetchFromCloudinary().then(fetchSuccess => {
-          if (fetchSuccess) {
-            console.log('✅ Successfully loaded data from Cloudinary');
-          } else {
-            console.log('ℹ️ No data found in Cloudinary or fetch failed');
-          }
-        });
+        console.log('ℹ️ No data found in Cloudinary or fetch failed, using local data');
       }
     });
   }, []); // Empty deps - only run once on mount

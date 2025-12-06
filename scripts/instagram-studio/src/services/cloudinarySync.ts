@@ -110,13 +110,14 @@ export async function fetchScheduleFromCloudinary(profileId: string = DEFAULT_PR
  * Upload schedule data to Cloudinary with SMART MERGE
  * 
  * This function:
- * 1. Fetches current cloud data
+ * 1. Fetches current cloud data (unless forceOverwrite is true)
  * 2. Merges local + cloud data (keeping latest changes from both)
  * 3. Uploads the merged result
  * 4. Returns the merged data so local state can be updated
  * 
  * Uses a Netlify function for signed uploads (API secret stays on server)
  * @param profileId - Optional profile ID for multi-profile support (defaults to 'default')
+ * @param forceOverwrite - If true, skip merge and just overwrite cloud data with local
  */
 export async function uploadScheduleToCloudinary(
   drafts: PostDraft[],
@@ -126,14 +127,11 @@ export async function uploadScheduleToCloudinary(
   defaultTemplate?: RecurringTemplate,
   instagram?: InstagramCredentials | null,
   deletedIds?: ScheduleData['deletedIds'],
-  profileId: string = DEFAULT_PROFILE_ID
+  profileId: string = DEFAULT_PROFILE_ID,
+  forceOverwrite: boolean = false
 ): Promise<{ success: boolean; url?: string; error?: string; mergedData?: ScheduleData; mergeStats?: string }> {
   try {
-    // Step 1: Fetch current cloud data for merging
-    console.log('📥 Fetching cloud data for merge...');
-    const cloudData = await fetchScheduleFromCloudinary(profileId);
-    
-    // Step 2: Build local data object
+    // Build local data object
     const localData: ScheduleDataWithMerge = {
       version: '1.4.0', // Version bump for merge support
       exportedAt: new Date().toISOString(),
@@ -147,23 +145,38 @@ export async function uploadScheduleToCloudinary(
       deletedIds: deletedIds || { drafts: [], scheduleSlots: [], templates: [] }
     };
     
-    // Step 3: Merge local and cloud data
-    console.log('🔄 Merging local and cloud data...');
-    const mergeResult: MergeResult = mergeScheduleData(localData, cloudData as ScheduleDataWithMerge | null);
+    let dataToUpload: ScheduleDataWithMerge;
+    let mergeStatsMessage: string;
     
-    // Clean up old deletions (older than 30 days)
-    mergeResult.data.deletedIds = cleanupOldDeletions(mergeResult.data.deletedIds, 30);
-    
-    const mergeStatsMessage = formatMergeStats(mergeResult.stats);
-    console.log('📊 Merge stats:', mergeStatsMessage);
+    if (forceOverwrite) {
+      // Skip merge - just use local data directly
+      console.log('⚠️ Force overwrite mode - skipping merge, using local data only');
+      dataToUpload = localData;
+      mergeStatsMessage = 'Force overwrite (no merge)';
+    } else {
+      // Step 1: Fetch current cloud data for merging
+      console.log('📥 Fetching cloud data for merge...');
+      const cloudData = await fetchScheduleFromCloudinary(profileId);
+      
+      // Step 2: Merge local and cloud data
+      console.log('🔄 Merging local and cloud data...');
+      const mergeResult: MergeResult = mergeScheduleData(localData, cloudData as ScheduleDataWithMerge | null);
+      
+      // Clean up old deletions (older than 30 days)
+      mergeResult.data.deletedIds = cleanupOldDeletions(mergeResult.data.deletedIds, 30);
+      
+      dataToUpload = mergeResult.data;
+      mergeStatsMessage = formatMergeStats(mergeResult.stats);
+      console.log('📊 Merge stats:', mergeStatsMessage);
+    }
 
-    // Step 4: Upload merged data to Cloudinary
+    // Upload data to Cloudinary
     const response = await fetch(SYNC_FUNCTION_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ scheduleData: mergeResult.data, profileId }),
+      body: JSON.stringify({ scheduleData: dataToUpload, profileId }),
     });
 
     const result = await response.json();
@@ -172,11 +185,11 @@ export async function uploadScheduleToCloudinary(
       throw new Error(result.error || `Upload failed: ${response.status}`);
     }
 
-    console.log(`✅ Uploaded merged schedule to Cloudinary (profile: ${profileId}):`, result.url);
+    console.log(`✅ Uploaded schedule to Cloudinary (profile: ${profileId}):`, result.url);
     return { 
       success: true, 
       url: result.url, 
-      mergedData: mergeResult.data,
+      mergedData: dataToUpload,
       mergeStats: mergeStatsMessage 
     };
   } catch (error) {

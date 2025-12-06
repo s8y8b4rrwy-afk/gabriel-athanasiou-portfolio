@@ -734,9 +734,26 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
 
 ### Sync Buttons
 
-- **Sync to Cloud ☁️↑**: Merges local + cloud data and uploads the result
-- **Fetch from Cloud ☁️↓**: Downloads and applies cloud data locally
-- **Auto-fetch**: Data is automatically fetched when app loads
+| Button | Location | Action |
+|--------|----------|--------|
+| **Sync Now** | Sync panel (main) | Downloads latest data from cloud |
+| **Download from Cloud** | Advanced options | Same as Sync Now - replaces local with cloud data |
+| **Upload to Cloud** | Advanced options | Merges local changes to cloud (smart merge) |
+| **Auto-sync toggle** | Sync panel | When enabled, uploads local changes to cloud automatically (5s debounce) |
+
+### Sync Behavior
+
+**On App Boot:**
+- App always fetches (downloads) fresh data from Cloudinary
+- This ensures you see the latest cloud state, not stale localStorage
+
+**When You Make Changes (with Auto-sync ON):**
+- Changes are debounced (5 seconds) then uploaded to cloud
+- Uses smart merge to combine local changes with cloud data
+
+**Manual Sync:**
+- "Sync Now" downloads cloud data to replace local state
+- Use "Upload to Cloud" (in Advanced) to push local changes up
 
 ### Netlify Function
 

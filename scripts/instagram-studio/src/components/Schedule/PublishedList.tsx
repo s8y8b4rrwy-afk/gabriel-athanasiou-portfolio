@@ -133,10 +133,10 @@ export function PublishedList({ posts }: PublishedListProps) {
                   />
                 )}
                 <div className={styles.itemDetails}>
-                  <h4 className={styles.projectTitle}>{post.project?.title || 'Unknown Project'}</h4>
+                  <h4 className={styles.projectTitle}>{post.project?.title || `Project ${post.projectId?.slice(-6) || 'Unknown'}`}</h4>
                   <p className={styles.projectYear}>{post.project?.year || ''}</p>
                   <div className={styles.imageCount}>
-                    📷 {post.selectedImages?.length || post.project?.gallery?.length || 0} images
+                    📷 {post.selectedImages?.length || 0} images
                   </div>
                 </div>
               </div>

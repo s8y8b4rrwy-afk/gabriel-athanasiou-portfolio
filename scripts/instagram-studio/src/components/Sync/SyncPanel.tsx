@@ -80,16 +80,16 @@ export function SyncPanel({
         <span className={styles.statusValue}>{formatLastSync(lastSyncedAt)}</span>
       </div>
 
-      {/* Main Sync Button */}
+      {/* Main Sync Button - Downloads fresh data from cloud */}
       <button
         className={styles.mainSyncButton}
-        onClick={onSyncToCloud}
+        onClick={onFetchFromCloud}
         disabled={isSyncing}
       >
         {isSyncing ? '🔄 Syncing...' : '🔄 Sync Now'}
       </button>
       <p className={styles.syncHint}>
-        Merges your local changes with cloud data
+        Downloads latest data from cloud
       </p>
 
       <div className={styles.autoSync}>
@@ -115,16 +115,27 @@ export function SyncPanel({
       {showAdvanced && (
         <>
           <div className={styles.section}>
-            <h4>Force Refresh</h4>
+            <h4>Cloud Operations</h4>
             <button
               className={styles.secondaryButton}
               onClick={onFetchFromCloud}
               disabled={isSyncing}
             >
-              ⬇️ Replace with Cloud Data
+              ⬇️ Download from Cloud
             </button>
             <p className={styles.hint}>
-              Overwrites local data with cloud version (no merge)
+              Replaces local data with cloud version
+            </p>
+            <button
+              className={styles.secondaryButton}
+              onClick={onSyncToCloud}
+              disabled={isSyncing}
+              style={{ marginTop: '8px' }}
+            >
+              ⬆️ Upload to Cloud
+            </button>
+            <p className={styles.hint}>
+              Merges local changes to cloud (smart merge)
             </p>
           </div>
 
