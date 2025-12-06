@@ -15,6 +15,7 @@ interface DragItem {
 interface DraggableMiniCardProps {
   post: ScheduledPost;
   onClick?: () => void;
+  onDoubleClick?: () => void;
   statusClass: string;
   truncatedTitle: string;
 }
@@ -22,6 +23,7 @@ interface DraggableMiniCardProps {
 export function DraggableMiniCard({
   post,
   onClick,
+  onDoubleClick,
   statusClass,
   truncatedTitle,
 }: DraggableMiniCardProps) {
@@ -49,7 +51,11 @@ export function DraggableMiniCard({
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${post.project?.title || 'Untitled'} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}`}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onDoubleClick?.();
+      }}
+      title={`${post.project?.title || 'Untitled'} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}\nDouble-click to edit • ⌥+drag to duplicate`}
     >
       <span className={styles.miniTitle}>{truncatedTitle}</span>
     </div>

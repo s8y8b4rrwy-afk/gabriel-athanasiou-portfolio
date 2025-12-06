@@ -13,6 +13,7 @@ interface CalendarDayProps {
   isSelected: boolean;
   onClick: () => void;
   onPostClick?: (post: ScheduledPost) => void;
+  onPostDoubleClick?: (post: ScheduledPost) => void;
   isWeekView?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function CalendarDay({
   isSelected, 
   onClick,
   onPostClick,
+  onPostDoubleClick,
   isWeekView = false
 }: CalendarDayProps) {
   if (!date) {
@@ -70,6 +72,7 @@ export function CalendarDay({
                 key={post.scheduleSlot.id}
                 post={post}
                 onClick={() => onPostClick?.(post)}
+                onDoubleClick={() => onPostDoubleClick?.(post)}
                 statusClass={getStatusClass(post.scheduleSlot.status)}
                 truncatedTitle={post.project?.title || 'Untitled'}
               />
@@ -82,6 +85,7 @@ export function CalendarDay({
                   key={post.scheduleSlot.id}
                   post={post}
                   onClick={() => onPostClick?.(post)}
+                  onDoubleClick={() => onPostDoubleClick?.(post)}
                   statusClass={getStatusClass(post.scheduleSlot.status)}
                   truncatedTitle={truncateTitle(post.project?.title || 'Untitled', 18)}
                 />

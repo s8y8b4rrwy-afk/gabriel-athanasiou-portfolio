@@ -476,6 +476,9 @@ scripts/
 - [x] Accurate Instagram preview simulation (shows exact Cloudinary transform result)
 - [x] Visual transform indicator (▬ letterbox / ✂️ crop / 📷 original toggle)
 - [x] Click-to-toggle preview between original and Instagram-transformed view
+- [x] Calendar entry hover states (visual feedback with transform and shadow)
+- [x] Double-click calendar entry to edit post
+- [x] Option+drag (⌥) to duplicate post to a new date
 
 #### Deliverables:
 - ✅ Visual calendar with scheduled posts showing titles
@@ -493,6 +496,8 @@ scripts/
 - ✅ Drag scheduled posts to delete zone to remove them
 - ✅ Smart UI: shows Quick Defaults or Date Panel based on context
 - ✅ Preview shows exactly how images will appear on Instagram after Cloudinary transforms
+- ✅ Calendar entries have hover feedback and double-click to edit
+- ✅ Option+drag to duplicate scheduled posts to new dates
 - ✅ Toggle between original image and Instagram-cropped/letterboxed view
 
 ---

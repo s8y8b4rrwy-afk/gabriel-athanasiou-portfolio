@@ -41,6 +41,7 @@ function App() {
     schedulePost,
     unschedulePost,
     reschedulePost,
+    duplicatePost,
     saveDraft,
     updateDraft,
     importScheduleData,
@@ -582,6 +583,7 @@ function App() {
               onSchedulePost={handleSchedulePost}
               onUnschedulePost={unschedulePost}
               onReschedulePost={handleReschedulePost}
+              onDuplicatePost={duplicatePost}
               onEditPost={handleEditPost}
               onPublishSuccess={handleSchedulePublishSuccess}
               onMarkAsPublished={handleDebugMarkAsPublished}

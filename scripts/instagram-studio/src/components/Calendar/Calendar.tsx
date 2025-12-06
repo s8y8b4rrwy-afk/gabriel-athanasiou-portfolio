@@ -13,8 +13,10 @@ interface CalendarProps {
   onDateSelect: (date: Date) => void;
   selectedDate: Date | null;
   onPostClick?: (post: ScheduledPost) => void;
+  onPostDoubleClick?: (post: ScheduledPost) => void;
   onDropProject?: (project: Project, date: Date) => void;
   onReschedulePost?: (slotId: string, newDate: Date) => void;
+  onDuplicatePost?: (slotId: string, newDate: Date) => void;
   enableDragDrop?: boolean;
 }
 
@@ -29,8 +31,10 @@ export function Calendar({
   onDateSelect, 
   selectedDate,
   onPostClick,
+  onPostDoubleClick,
   onDropProject,
   onReschedulePost,
+  onDuplicatePost,
   enableDragDrop = false,
 }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -190,9 +194,11 @@ export function Calendar({
               isSelected={date ? isSelected(date) : false}
               onClick={() => date && onDateSelect(date)}
               onPostClick={onPostClick}
+              onPostDoubleClick={onPostDoubleClick}
               isWeekView={viewMode === 'week'}
               onDropProject={onDropProject}
               onReschedulePost={onReschedulePost}
+              onDuplicatePost={onDuplicatePost}
             />
           ) : (
             <CalendarDay
@@ -203,6 +209,7 @@ export function Calendar({
               isSelected={date ? isSelected(date) : false}
               onClick={() => date && onDateSelect(date)}
               onPostClick={onPostClick}
+              onPostDoubleClick={onPostDoubleClick}
               isWeekView={viewMode === 'week'}
             />
           )

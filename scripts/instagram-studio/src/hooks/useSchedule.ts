@@ -27,6 +27,7 @@ interface UseScheduleReturn {
   schedulePost: (draft: PostDraft, date: Date, time: string) => void;
   unschedulePost: (slotId: string) => void;
   reschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
+  duplicatePost: (slotId: string, newDate: Date) => void;
   saveDraft: (project: Project, caption: string, hashtags: string[], selectedImages: string[], imageMode?: ImageDisplayMode) => PostDraft;
   deleteDraft: (draftId: string) => void;
   updateDraft: (draftId: string, updates: Partial<PostDraft>) => void;
@@ -178,6 +179,38 @@ export function useSchedule(): UseScheduleReturn {
     }));
   }, [setScheduleSlots]);
 
+  // Duplicate a post to a new date (Option+drag on macOS)
+  const duplicatePost = useCallback((slotId: string, newDate: Date) => {
+    const originalSlot = scheduleSlots.find(slot => slot.id === slotId);
+    if (!originalSlot) return;
+    
+    const originalDraft = drafts.find(d => d.id === originalSlot.postDraftId);
+    if (!originalDraft) return;
+    
+    const now = new Date().toISOString();
+    
+    // Create a copy of the draft
+    const newDraft: PostDraft = {
+      ...originalDraft,
+      id: generateId(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    setDrafts(prev => [...prev, newDraft]);
+    
+    // Create a new schedule slot for the duplicate
+    const newSlot: ScheduleSlot = {
+      id: generateId(),
+      postDraftId: newDraft.id,
+      scheduledDate: formatDateKey(newDate),
+      scheduledTime: originalSlot.scheduledTime,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    };
+    setScheduleSlots(prev => [...prev, newSlot]);
+  }, [scheduleSlots, drafts, setDrafts, setScheduleSlots]);
+
   // Get posts for a specific date
   const getPostsForDate = useCallback((date: Date): ScheduledPost[] => {
     const dateKey = formatDateKey(date);
@@ -261,6 +294,7 @@ export function useSchedule(): UseScheduleReturn {
     schedulePost,
     unschedulePost,
     reschedulePost,
+    duplicatePost,
     saveDraft,
     deleteDraft,
     updateDraft,

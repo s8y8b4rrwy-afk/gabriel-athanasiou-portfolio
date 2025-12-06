@@ -17,6 +17,7 @@ interface SchedulePanelProps {
   onSchedulePost?: (date: Date, time: string) => void;
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
+  onDuplicatePost?: (slotId: string, newDate: Date) => void;
   onEditPost: (post: ScheduledPost) => void;
   onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   onMarkAsPublished?: (slotId: string) => void;
@@ -40,6 +41,7 @@ export function SchedulePanel({
   onSchedulePost,
   onUnschedulePost,
   onReschedulePost,
+  onDuplicatePost,
   onEditPost,
   onPublishSuccess,
   onMarkAsPublished,
@@ -231,8 +233,12 @@ export function SchedulePanel({
                 onPostClick={(post) => {
                   handleReschedule(post);
                 }}
+                onPostDoubleClick={(post) => {
+                  onEditPost(post);
+                }}
                 onDropProject={handleDropProjectWithSettings}
                 onReschedulePost={handleDragReschedule}
+                onDuplicatePost={onDuplicatePost}
                 enableDragDrop={enableDragDrop}
               />
             </div>
