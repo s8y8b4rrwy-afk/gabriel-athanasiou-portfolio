@@ -110,16 +110,15 @@ export function useCloudinarySync({
         setLastSyncedAt(syncTime);
         localStorage.setItem('instagram-studio-last-sync', syncTime);
         
-        // If we have merged data, update local state with it
-        if (result.mergedData) {
-          // Set flag to prevent auto-sync from triggering on this import
-          justSyncedRef.current = true;
-          onImport(result.mergedData);
-          // Reset flag after a short delay to allow state to settle
-          setTimeout(() => {
-            justSyncedRef.current = false;
-          }, 1000);
-          setSyncSuccess(`✅ Synced & merged! ${result.mergeStats || 'Data is in sync'}`);
+        // NOTE: We do NOT call onImport here anymore!
+        // The local state is the source of truth during a sync.
+        // The merge happens server-side, and we trust that our local changes
+        // were included in the upload. Calling onImport here would overwrite
+        // any state changes made AFTER the sync started (race condition).
+        // 
+        // If you need to sync FROM cloud, use fetchFromCloudinary explicitly.
+        if (result.mergeStats) {
+          setSyncSuccess(`✅ Synced! ${result.mergeStats}`);
         } else {
           setSyncSuccess('✅ Data synced to cloud successfully!');
         }

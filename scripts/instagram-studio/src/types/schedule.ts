@@ -7,6 +7,9 @@ export interface ScheduleSlot {
   instagramPostId?: string; // Instagram media ID when published
   instagramPermalink?: string; // Direct link to Instagram post
   publishedAt?: string; // ISO date string when published
+  updatedAt?: string; // ISO date string - used for smart merge
+  createdAt?: string; // ISO date string - used for smart merge
+  error?: string; // Error message if failed
 }
 
 export interface ScheduleSettings {

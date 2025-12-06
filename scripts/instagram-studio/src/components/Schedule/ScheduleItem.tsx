@@ -95,9 +95,10 @@ export function ScheduleItem({
           <span 
             className={`${styles.badge} ${styles.pending}`}
             onDoubleClick={handleDebugClick}
-            title={DEBUG_ENABLED ? "Shift+double-click to mark as published" : undefined}
+            title="Shift+double-click to mark as published"
+            style={{ cursor: DEBUG_ENABLED ? 'help' : 'default' }}
           >
-            Pending
+            Pending {DEBUG_ENABLED && <span style={{ opacity: 0.5, fontSize: '0.75em' }}>⇧⇧</span>}
           </span>
         );
     }

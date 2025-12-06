@@ -141,12 +141,15 @@ export function useSchedule(): UseScheduleReturn {
 
   // Schedule a post
   const schedulePost = useCallback((draft: PostDraft, date: Date, time: string) => {
+    const now = new Date().toISOString();
     const slot: ScheduleSlot = {
       id: generateId(),
       postDraftId: draft.id,
       scheduledDate: formatDateKey(date),
       scheduledTime: time,
       status: 'pending',
+      createdAt: now,
+      updatedAt: now,
     };
     setScheduleSlots(prev => [...prev, slot]);
   }, [setScheduleSlots]);
@@ -166,6 +169,7 @@ export function useSchedule(): UseScheduleReturn {
           ...slot,
           scheduledDate: formatDateKey(newDate),
           scheduledTime: newTime,
+          updatedAt: new Date().toISOString(),
         };
       }
       return slot;
@@ -204,6 +208,7 @@ export function useSchedule(): UseScheduleReturn {
           instagramPostId,
           instagramPermalink: permalink,
           publishedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(), // Important for smart merge!
         };
       }
       return slot;
@@ -214,7 +219,11 @@ export function useSchedule(): UseScheduleReturn {
   const markAsFailed = useCallback((slotId: string, _error: string) => {
     setScheduleSlots(prev => prev.map(slot => {
       if (slot.id === slotId) {
-        return { ...slot, status: 'failed' as const };
+        return { 
+          ...slot, 
+          status: 'failed' as const,
+          updatedAt: new Date().toISOString(), // Important for smart merge!
+        };
       }
       return slot;
     }));

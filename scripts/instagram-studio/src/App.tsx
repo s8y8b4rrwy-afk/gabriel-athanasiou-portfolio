@@ -323,9 +323,12 @@ function App() {
   // Debug: Manual mark as published (for fixing out-of-sync data)
   const handleDebugMarkAsPublished = useCallback((slotId: string) => {
     markAsPublished(slotId, `debug-${Date.now()}`, undefined);
-    // Sync immediately
-    syncToCloudinary();
-    console.log('🔧 Debug: Marked slot as published:', slotId);
+    // Delay sync to allow React state to update first
+    // The auto-sync will handle it, but we also trigger a manual sync after delay
+    setTimeout(() => {
+      syncToCloudinary();
+      console.log('🔧 Debug: Marked slot as published and synced:', slotId);
+    }, 100);
   }, [markAsPublished, syncToCloudinary]);
 
   // Clear current draft and editing state
