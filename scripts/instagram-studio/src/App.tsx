@@ -48,17 +48,21 @@ function App() {
     markAsPublished,
   } = useSchedule();
 
-  // Enhance scheduled posts with project data lookup (for cloud-synced posts missing project info)
+  // Enhance scheduled posts with project data lookup
+  // ALWAYS use fresh project data from projects list (has current Cloudinary URLs)
+  // Saved project data may have old/expired Airtable URLs
   const scheduledPosts = useMemo(() => {
     return rawScheduledPosts.map(post => {
-      // If project data is already present, return as-is
-      if (post.project?.title) {
-        return post;
-      }
-      // Look up project by projectId
+      // Always try to look up fresh project data first
       const projectFromList = projects.find(p => p.id === post.projectId);
       if (projectFromList) {
+        // Use fresh project data, but keep selectedImages from the saved post
+        // (selectedImages may have Airtable URLs but PostPreview handles conversion)
         return { ...post, project: projectFromList };
+      }
+      // Fallback: use saved project data if project not in list
+      if (post.project?.title) {
+        return post;
       }
       // Create stub project if project not found (deleted/hidden project)
       // This prevents crashes and shows meaningful info

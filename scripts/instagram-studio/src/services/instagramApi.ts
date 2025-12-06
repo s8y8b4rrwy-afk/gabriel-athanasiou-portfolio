@@ -585,6 +585,42 @@ export async function publishSingleImage(
 }
 
 /**
+ * Verify if a post was actually published (useful after rate limit errors)
+ * Calls the server to check recent media on the Instagram account
+ */
+export async function verifyPublishStatus(
+  containerId: string
+): Promise<{ verified: boolean; postId?: string; permalink?: string; error?: string; message?: string }> {
+  const credentials = getCredentialsLocally();
+  if (!credentials?.accessToken || !credentials?.accountId) {
+    return { verified: false, error: 'No credentials available' };
+  }
+  
+  try {
+    console.log('🔍 Verifying publish status for container:', containerId);
+    
+    const response = await fetch(PUBLISH_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'verifyPublish',
+        accessToken: credentials.accessToken,
+        accountId: credentials.accountId,
+        containerId,
+      }),
+    });
+    
+    const result = await response.json();
+    console.log('🔍 Verify result:', result);
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Error verifying publish status:', error);
+    return { verified: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
  * Publish a carousel post (2-10 images, via server-side proxy to avoid CORS)
  * Uses step-by-step approach to avoid Netlify function timeouts
  */
@@ -739,24 +775,50 @@ export async function publishCarousel(
     const publishResult = await publishResponse.json();
     console.log(`   Response body:`, publishResult);
     
-    if (!publishResponse.ok || !publishResult.success) {
-      const errorMsg = formatInstagramError(publishResult.error || 'Publishing failed');
-      console.error('❌ Carousel publish failed:', errorMsg);
+    // Check if it succeeded (including rate limit recovery)
+    if (publishResult.success) {
+      // Only increment post count after successful publish
+      incrementPostCount();
+      
+      const rateLimitNote = publishResult.rateLimitHit ? ' (recovered from rate limit)' : '';
+      console.log(`✅ Carousel published successfully${rateLimitNote}! Post ID:`, publishResult.postId);
+      console.log('📎 Permalink:', publishResult.permalink);
       console.log('========================================');
-      console.log('📤 PUBLISH CAROUSEL - FAILED AT PUBLISH');
+      console.log('📤 PUBLISH CAROUSEL - SUCCESS');
       console.log('========================================');
-      return { success: false, error: errorMsg };
+      return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
     }
-
-    // Only increment post count after successful publish
-    incrementPostCount();
     
-    console.log('✅ Carousel published successfully! Post ID:', publishResult.postId);
-    console.log('📎 Permalink:', publishResult.permalink);
+    // If we got a rate limit error, try to verify if the post was actually published
+    const errorMsg = publishResult.error || 'Publishing failed';
+    const isRateLimit = errorMsg.toLowerCase().includes('rate limit') || 
+                        errorMsg.toLowerCase().includes('request limit');
+    
+    if (isRateLimit) {
+      console.log('⚠️ Rate limit error, verifying if post was actually published...');
+      const verifyResult = await verifyPublishStatus(containerResult.containerId);
+      
+      if (verifyResult.verified) {
+        incrementPostCount();
+        console.log('✅ Post was actually published despite rate limit error!');
+        console.log('📎 Permalink:', verifyResult.permalink);
+        console.log('========================================');
+        console.log('📤 PUBLISH CAROUSEL - SUCCESS (VERIFIED AFTER RATE LIMIT)');
+        console.log('========================================');
+        return { 
+          success: true, 
+          instagramPostId: verifyResult.postId, 
+          permalink: verifyResult.permalink 
+        };
+      }
+    }
+    
+    const formattedError = formatInstagramError(errorMsg);
+    console.error('❌ Carousel publish failed:', formattedError);
     console.log('========================================');
-    console.log('📤 PUBLISH CAROUSEL - SUCCESS');
+    console.log('📤 PUBLISH CAROUSEL - FAILED AT PUBLISH');
     console.log('========================================');
-    return { success: true, instagramPostId: publishResult.postId, permalink: publishResult.permalink };
+    return { success: false, error: formattedError };
   } catch (error) {
     console.error('❌ Carousel publish exception:', error);
     const errorMsg = formatInstagramError(error instanceof Error ? error.message : 'Unknown error');

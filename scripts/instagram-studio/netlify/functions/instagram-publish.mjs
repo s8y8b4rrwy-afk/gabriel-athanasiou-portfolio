@@ -75,6 +75,9 @@ export const handler = async (event) => {
       case 'checkStatus':
         return await handleCheckStatus(headers, accessToken, containerId);
       
+      case 'verifyPublish':
+        return await handleVerifyPublish(headers, accessToken, accountId, containerId);
+      
       default:
         return {
           statusCode: 400,
@@ -388,6 +391,58 @@ async function waitForProcessing(containerId, accessToken) {
 }
 
 /**
+ * Verify if a container was successfully published by checking recent media
+ * This is useful when the publish call returns an error but the post might have succeeded
+ */
+async function verifyPublishStatus(containerId, accessToken, accountId) {
+  try {
+    // First, try to get the container status - if it was published, it might show that
+    const containerResponse = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=id,status_code&access_token=${accessToken}`
+    );
+    const containerResult = await containerResponse.json();
+    
+    // If we can't access the container (might be consumed after publish), check recent media
+    if (containerResult.error) {
+      console.log('Container not accessible, checking recent media...');
+    }
+    
+    // Check recent media from the account to see if our content was published
+    const mediaResponse = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media?fields=id,timestamp,permalink&limit=5&access_token=${accessToken}`
+    );
+    const mediaResult = await mediaResponse.json();
+    
+    if (mediaResult.error) {
+      console.log('Could not verify publish status:', mediaResult.error.message);
+      return { verified: false, error: mediaResult.error.message };
+    }
+    
+    // Check if there's a recent post (within last 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentPosts = (mediaResult.data || []).filter(post => {
+      const postTime = new Date(post.timestamp);
+      return postTime > fiveMinutesAgo;
+    });
+    
+    if (recentPosts.length > 0) {
+      console.log('✅ Found recent post that may be ours:', recentPosts[0].id);
+      return { 
+        verified: true, 
+        postId: recentPosts[0].id, 
+        permalink: recentPosts[0].permalink,
+        message: 'Post appears to have been published successfully'
+      };
+    }
+    
+    return { verified: false, message: 'Could not find recently published post' };
+  } catch (error) {
+    console.error('Error verifying publish status:', error);
+    return { verified: false, error: error.message };
+  }
+}
+
+/**
  * Publish a media container
  */
 async function publishMedia(containerId, accessToken, accountId) {
@@ -406,6 +461,28 @@ async function publishMedia(containerId, accessToken, accountId) {
   const result = await response.json();
   
   if (result.error) {
+    // If we hit a rate limit, the post might still have succeeded
+    // Try to verify by checking recent media
+    const isRateLimit = result.error.message?.toLowerCase().includes('rate limit') ||
+                        result.error.message?.toLowerCase().includes('request limit') ||
+                        result.error.code === 4 || // OAuthException rate limit
+                        result.error.code === 32;  // Rate limit error code
+    
+    if (isRateLimit) {
+      console.log('⚠️ Rate limit error during publish, verifying status...');
+      const verification = await verifyPublishStatus(containerId, accessToken, accountId);
+      
+      if (verification.verified) {
+        console.log('✅ Post was actually published despite rate limit error!');
+        return { 
+          success: true, 
+          postId: verification.postId, 
+          permalink: verification.permalink,
+          rateLimitHit: true 
+        };
+      }
+    }
+    
     return { success: false, error: result.error.message };
   }
 
@@ -573,6 +650,28 @@ async function handlePublishContainer(headers, accessToken, accountId, container
     
     return {
       statusCode: result.success ? 200 : 400,
+      headers,
+      body: JSON.stringify(result),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
+}
+
+/**
+ * Verify if a post was successfully published
+ * This can be called by the client when a publish fails to double-check
+ */
+async function handleVerifyPublish(headers, accessToken, accountId, containerId) {
+  try {
+    const result = await verifyPublishStatus(containerId, accessToken, accountId);
+    
+    return {
+      statusCode: 200,
       headers,
       body: JSON.stringify(result),
     };

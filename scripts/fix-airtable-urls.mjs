@@ -47,7 +47,7 @@ function fixPortfolioFile(filename) {
     const cloudinaryData = recordToCloudinaryUrls[project.id];
     
     // Check heroImage
-    if (project.heroImage && project.heroImage.includes('airtableusercontent.com')) {
+    if (project.heroImage && project.heroImage.includes('airtableusercontent')) {
       if (cloudinaryData && cloudinaryData.images.length > 0) {
         console.log(`  🔧 Fixing heroImage for "${project.title}": ${cloudinaryData.images[0].substring(0, 60)}...`);
         project.heroImage = cloudinaryData.images[0];
@@ -63,7 +63,7 @@ function fixPortfolioFile(filename) {
       const newGallery = [];
       for (let i = 0; i < project.gallery.length; i++) {
         const url = project.gallery[i];
-        if (url.includes('airtableusercontent.com')) {
+        if (url.includes('airtableusercontent')) {
           if (cloudinaryData && cloudinaryData.images.length > i) {
             console.log(`  🔧 Fixing gallery[${i}] for "${project.title}"`);
             newGallery.push(cloudinaryData.images[i]);

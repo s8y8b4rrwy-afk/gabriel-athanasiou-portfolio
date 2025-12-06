@@ -143,7 +143,25 @@ export function PostPreview({
       if (currentDraft) {
         setCaption(currentDraft.caption);
         setHashtags(currentDraft.hashtags);
-        setSelectedImages(currentDraft.selectedImages.length > 0 ? currentDraft.selectedImages : allImages.slice(0, 10));
+        
+        // Convert any Airtable URLs to Cloudinary URLs
+        // Old drafts may have Airtable URLs saved, but we should use Cloudinary URLs now
+        const convertedImages = currentDraft.selectedImages.length > 0 
+          ? currentDraft.selectedImages.map((url, index) => {
+              // If it's already a Cloudinary URL, use it
+              if (url.includes('res.cloudinary.com')) {
+                return url;
+              }
+              // If it's an Airtable URL, use the corresponding image from allImages by position
+              // (Airtable URLs can't be matched directly, so we use position-based fallback)
+              if (url.includes('airtable') && allImages[index]) {
+                console.log(`🔄 Converting Airtable URL to Cloudinary (position ${index})`);
+                return allImages[index];
+              }
+              return url;
+            })
+          : allImages.slice(0, 10);
+        setSelectedImages(convertedImages);
         setImageMode(currentDraft.imageMode || 'fit'); // Load saved image mode
       } else {
         // Generate fresh content using the default template if available
