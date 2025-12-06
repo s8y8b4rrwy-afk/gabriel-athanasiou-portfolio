@@ -66,6 +66,9 @@ export function useCloudinarySync({
   const justSyncedRef = useRef(false);
   // Track the last sync timestamp to debounce properly
   const lastSyncTimeRef = useRef(0);
+  
+  // Create a stable hash of the data for auto-sync comparison
+  const dataHashRef = useRef<string>('');
 
   const setAutoSync = useCallback((value: boolean) => {
     setAutoSyncState(value);
@@ -109,6 +112,21 @@ export function useCloudinarySync({
         const syncTime = new Date().toISOString();
         setLastSyncedAt(syncTime);
         localStorage.setItem('instagram-studio-last-sync', syncTime);
+        
+        // Mark that we just synced to prevent auto-sync loop
+        justSyncedRef.current = true;
+        setTimeout(() => { justSyncedRef.current = false; }, 10000); // Reset after 10s
+        
+        // Update the data hash after successful sync
+        dataHashRef.current = JSON.stringify({
+          drafts: drafts.map(d => ({ id: d.id, updatedAt: d.updatedAt })),
+          scheduleSlots: scheduleSlots.map(s => ({ id: s.id, status: s.status, scheduledDate: s.scheduledDate, scheduledTime: s.scheduledTime })),
+          settings,
+          templates: templates.map(t => ({ id: t.id, updatedAt: t.updatedAt })),
+          defaultTemplate: defaultTemplate?.id,
+          instagramCredentials: instagramCredentials?.accountId,
+          deletedIds,
+        });
         
         // Update local state with the merged result
         // This ensures local state reflects the smart merge (cloud + local combined)
@@ -184,10 +202,27 @@ export function useCloudinarySync({
       return;
     }
 
+    // Create a hash of the current data to detect actual changes
+    const currentHash = JSON.stringify({
+      drafts: drafts.map(d => ({ id: d.id, updatedAt: d.updatedAt })),
+      scheduleSlots: scheduleSlots.map(s => ({ id: s.id, status: s.status, scheduledDate: s.scheduledDate, scheduledTime: s.scheduledTime })),
+      settings,
+      templates: templates.map(t => ({ id: t.id, updatedAt: t.updatedAt })),
+      defaultTemplate: defaultTemplate?.id,
+      instagramCredentials: instagramCredentials?.accountId,
+      deletedIds,
+    });
+    
+    // Skip if nothing actually changed
+    if (currentHash === dataHashRef.current) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
-      // Double-check we didn't just sync
-      if (!justSyncedRef.current) {
+      // Double-check we didn't just sync and data actually changed
+      if (!justSyncedRef.current && currentHash !== dataHashRef.current) {
         console.log('🔄 Auto-syncing changes...');
+        dataHashRef.current = currentHash; // Update hash before sync
         syncToCloudinary();
       }
     }, 5000); // 5 second debounce

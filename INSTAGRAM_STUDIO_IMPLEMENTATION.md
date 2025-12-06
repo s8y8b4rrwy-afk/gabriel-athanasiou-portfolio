@@ -755,7 +755,10 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
 
 **Auto-sync (when enabled):**
 - Debounced (5 seconds) upload after local changes
+- Uses content-based hash comparison to detect actual changes
+- Only syncs when data content actually changes (not on every render)
 - Uses smart merge to combine with cloud data
+- 10-second cooldown after each sync to prevent loops
 
 **Advanced Options:**
 - "Download from Cloud": Force-replaces local with cloud (for troubleshooting)
