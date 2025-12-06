@@ -1642,5 +1642,25 @@ git push origin main
 
 ---
 
-*Last Updated: 6 December 2025*
-*Version: 1.4.0 - Smart Merge: Local and cloud data are now intelligently merged during sync*
+## Changelog
+
+### Version 1.4.1 (7 January 2025)
+**UI/UX Improvements & Bug Fixes**
+
+- **Removed unnecessary header buttons** - Refresh and Instagram link buttons removed from header for cleaner UI
+- **Added Reschedule button to edit view** - When editing a scheduled post, you can now click "Reschedule" next to the date/time display to pick a new date from the calendar
+- **Fixed Save vs Save & Close behavior** - "Save" now saves draft and stays in editing mode; "Save & Close" saves and exits edit mode
+- **Fixed critical bug: Reschedule from edit view** - Reschedule button in PostPreview now correctly passes real slot/draft IDs instead of placeholder values, enabling proper rescheduling without errors
+
+**Files Changed:**
+- `Header.tsx` - Removed onRefresh prop and header action buttons
+- `Layout.tsx` - Removed onRefresh prop from interface
+- `App.tsx` - Added pendingRescheduleTarget state, real slot/draft IDs in editingScheduleInfo, reschedule target callbacks
+- `PostPreview.tsx` - Added Reschedule button, fixed Save button behavior, updated EditingScheduleInfo interface with slotId/draftId
+- `PostPreview.css` - Added .reschedule-button styling
+- `SchedulePanel.tsx` - Added initialRescheduleTarget prop and useEffect to consume target
+
+---
+
+*Last Updated: 7 January 2025*
+*Version: 1.4.1 - UI cleanup and reschedule from edit view fix*
