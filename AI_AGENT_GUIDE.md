@@ -55,6 +55,37 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 
 ### 🎉 Recent Major Changes
 
+### Dec 6 2025 - Instagram Studio Fill/Fit Mode Toggle
+**What Changed:** Added Fill/Fit toggle for controlling how images are cropped for Instagram carousels.
+
+**The Problem:**
+- Landscape images were being forced to 4:5 portrait in FILL mode
+- No way to toggle between preserving full image (letterbox) vs filling frame (crop)
+- Overlay buttons on image were cluttering the preview
+
+**The Solution:**
+1. **Fill/Fit Mode Toggle:**
+   - **FIT mode:** Preserves full image with letterbox bars (black bars top/bottom for landscape, or sides for portrait)
+   - **FILL mode:** Crops to fill the frame completely (no bars, but loses some image content)
+   - Both modes respect **majority orientation** - if most images are landscape, uses 1.91:1 ratio; if portrait, uses 4:5
+
+2. **Moved Controls Below Preview:**
+   - 📷 Preview/Original toggle and FIT/FILL button moved to a control bar below the post preview
+   - No longer overlaying the image, cleaner UI
+
+3. **Persistence:**
+   - `imageMode` saved with each scheduled post
+   - When editing a scheduled post, the saved mode is restored
+
+**Files Changed:**
+- `scripts/instagram-studio/src/components/PostPreview/PostPreview.tsx` - UI changes
+- `scripts/instagram-studio/src/components/PostPreview/PostPreview.css` - New control bar styles
+- `scripts/instagram-studio/src/utils/imageUtils.ts` - FILL mode now respects orientation
+- `scripts/instagram-studio/src/types/post.ts` - Added imageMode to ScheduledPost type
+- `scripts/instagram-studio/src/hooks/useSchedule.ts` - Save/restore imageMode
+
+---
+
 ### Dec 6 2025 - Instagram Studio Airtable URL Fix
 **What Changed:** Fixed 135 Airtable URLs in Instagram Studio cloud data by replacing them with correct Cloudinary URLs.
 
