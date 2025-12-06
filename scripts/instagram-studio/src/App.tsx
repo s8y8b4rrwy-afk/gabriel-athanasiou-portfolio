@@ -28,7 +28,7 @@ interface EditingState {
 }
 
 function App() {
-  const { projects, isLoading, error, filters, refetch } = useProjects({
+  const { projects, isLoading, error, filters } = useProjects({
     showOnlyWithImages: true,
   });
   
@@ -168,6 +168,9 @@ function App() {
 
   // Schedule panel sub-view state (persists when switching main tabs)
   const [scheduleViewMode, setScheduleViewMode] = useState<'calendar' | 'queue' | 'published'>('calendar');
+
+  // Pending reschedule target (set from edit view, consumed by SchedulePanel)
+  const [pendingRescheduleTarget, setPendingRescheduleTarget] = useState<ScheduledPost | null>(null);
 
   // Instagram OAuth callback check
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
@@ -339,6 +342,33 @@ function App() {
     reschedulePost(slotId, newDate, newTime);
   }, [reschedulePost]);
 
+  // Handle reschedule from edit view (switches to schedule view with target set)
+  const handleRescheduleFromEdit = useCallback((post: ScheduledPost) => {
+    // Save current edits first (but don't exit editing mode yet)
+    if (editingPost) {
+      updateDraft(editingPost.draftId, {
+        caption: post.caption,
+        hashtags: post.hashtags,
+        selectedImages: post.selectedImages,
+        imageMode: post.imageMode,
+      });
+    }
+    // Clear editing state
+    setEditingPost(null);
+    setCurrentDraft(null);
+    setSelectedProject(null);
+    // Set the pending reschedule target (SchedulePanel will pick this up)
+    setPendingRescheduleTarget(post);
+    // Switch to schedule view in calendar mode
+    setScheduleViewMode('calendar');
+    setViewMode('schedule');
+  }, [editingPost, updateDraft]);
+
+  // Callback to clear the pending reschedule target (memoized to avoid useEffect re-runs)
+  const handleRescheduleTargetConsumed = useCallback(() => {
+    setPendingRescheduleTarget(null);
+  }, []);
+
   // Handle publish success from SchedulePanel/Queue - mark post as published
   const handleSchedulePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
     markAsPublished(slotId, instagramPostId, permalink);
@@ -487,7 +517,6 @@ function App() {
   return (
     <DndContext>
       <Layout 
-        onRefresh={refetch}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         pendingCount={pendingCount}
@@ -530,6 +559,8 @@ function App() {
               onScheduleClick={() => setViewMode('schedule')}
               isEditing={!!editingPost}
               editingScheduleInfo={editingPost ? {
+                slotId: editingPost.slotId,
+                draftId: editingPost.draftId,
                 scheduledDate: editingPost.scheduledDate,
                 scheduledTime: editingPost.scheduledTime,
               } : null}
@@ -538,6 +569,7 @@ function App() {
               scheduledPostsForProject={scheduledPostsForProject}
               onEditScheduledPost={handleEditPost}
               onUnschedulePost={unschedulePost}
+              onReschedulePost={handleRescheduleFromEdit}
               onPublishSuccess={handlePreviewPublishSuccess}
               templates={templates}
               defaultTemplate={defaultTemplate}
@@ -561,6 +593,8 @@ function App() {
               defaultTemplate={defaultTemplate}
               subViewMode={scheduleViewMode}
               onSubViewModeChange={setScheduleViewMode}
+              initialRescheduleTarget={pendingRescheduleTarget}
+              onRescheduleTargetConsumed={handleRescheduleTargetConsumed}
             />
           )}
           {viewMode === 'templates' && (

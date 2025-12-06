@@ -1,10 +1,8 @@
-import React from 'react';
 import './Header.css';
 
 type ViewMode = 'create' | 'schedule' | 'templates' | 'sync' | 'settings';
 
 interface HeaderProps {
-  onRefresh?: () => void;
   viewMode?: ViewMode;
   onViewModeChange?: (mode: ViewMode) => void;
   pendingCount?: number;
@@ -18,7 +16,6 @@ interface HeaderProps {
 }
 
 export function Header({ 
-  onRefresh, 
   viewMode, 
   onViewModeChange, 
   pendingCount = 0, 
@@ -120,23 +117,6 @@ export function Header({
           </button>
         </nav>
       )}
-      
-      <div className="header-actions">
-        {onRefresh && (
-          <button className="header-button" onClick={onRefresh} title="Refresh Projects">
-            🔄
-          </button>
-        )}
-        <a
-          href="https://www.instagram.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="header-button"
-          title="Open Instagram"
-        >
-          📱
-        </a>
-      </div>
     </header>
   );
 }

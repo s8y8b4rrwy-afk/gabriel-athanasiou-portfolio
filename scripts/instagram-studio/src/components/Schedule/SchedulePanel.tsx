@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDragLayer } from 'react-dnd';
 import styles from './Schedule.module.css';
 import { Calendar, TimeSlotPicker } from '../Calendar';
@@ -28,6 +28,8 @@ interface SchedulePanelProps {
   defaultTemplate?: RecurringTemplate;
   subViewMode?: ScheduleViewMode;
   onSubViewModeChange?: (mode: ScheduleViewMode) => void;
+  initialRescheduleTarget?: ScheduledPost | null;
+  onRescheduleTargetConsumed?: () => void;
 }
 
 type ScheduleViewMode = 'calendar' | 'queue' | 'published';
@@ -49,6 +51,8 @@ export function SchedulePanel({
   defaultTemplate,
   subViewMode: controlledViewMode,
   onSubViewModeChange,
+  initialRescheduleTarget,
+  onRescheduleTargetConsumed,
 }: SchedulePanelProps) {
   // Use controlled mode if provided, otherwise use internal state
   const [internalViewMode, setInternalViewMode] = useState<ScheduleViewMode>('calendar');
@@ -57,6 +61,18 @@ export function SchedulePanel({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>(settings.defaultTimes[0] || '11:00');
   const [rescheduleTarget, setRescheduleTarget] = useState<ScheduledPost | null>(null);
+  
+  // When an initial reschedule target is passed in (from edit view), use it
+  useEffect(() => {
+    if (initialRescheduleTarget) {
+      setRescheduleTarget(initialRescheduleTarget);
+      setSelectedDate(new Date(initialRescheduleTarget.scheduleSlot.scheduledDate));
+      setSelectedTime(initialRescheduleTarget.scheduleSlot.scheduledTime);
+      // Notify parent that we've consumed the target
+      onRescheduleTargetConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRescheduleTarget]); // Only depend on the target, not the callback
   
   // Quick schedule defaults (applied when dragging projects to calendar)
   const [quickScheduleTime, setQuickScheduleTime] = useState<string>(settings.defaultTimes[0] || '11:00');

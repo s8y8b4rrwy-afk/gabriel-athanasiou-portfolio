@@ -18,6 +18,8 @@ interface ScheduledPost extends PostDraft {
 }
 
 interface EditingScheduleInfo {
+  slotId: string;
+  draftId: string;
   scheduledDate: string;
   scheduledTime: string;
 }
@@ -34,6 +36,7 @@ interface PostPreviewProps {
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
   onUnschedulePost?: (slotId: string) => void;
+  onReschedulePost?: (post: ScheduledPost) => void;
   onPublishSuccess?: (result: PublishResult) => void;
   templates?: RecurringTemplate[];
   defaultTemplate?: RecurringTemplate;
@@ -51,6 +54,7 @@ export function PostPreview({
   scheduledPostsForProject = [],
   onEditScheduledPost,
   onUnschedulePost,
+  onReschedulePost,
   onPublishSuccess,
   templates = [],
   defaultTemplate,
@@ -445,6 +449,36 @@ export function PostPreview({
                   day: 'numeric', 
                   month: 'short' 
                 })}
+                {onReschedulePost && project && (
+                  <button 
+                    className="reschedule-button"
+                    onClick={() => {
+                      // Create a ScheduledPost object using the real IDs from editingScheduleInfo
+                      const scheduledPost: ScheduledPost = {
+                        id: editingScheduleInfo.draftId,
+                        projectId: project.id,
+                        project,
+                        caption,
+                        hashtags,
+                        selectedImages,
+                        imageMode,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        scheduleSlot: {
+                          id: editingScheduleInfo.slotId,
+                          postDraftId: editingScheduleInfo.draftId,
+                          scheduledDate: editingScheduleInfo.scheduledDate,
+                          scheduledTime: editingScheduleInfo.scheduledTime,
+                          status: 'pending'
+                        }
+                      };
+                      onReschedulePost(scheduledPost);
+                    }}
+                    title="Pick a new date for this post"
+                  >
+                    📅 Reschedule
+                  </button>
+                )}
               </div>
               <TimeSlotPicker
                 selectedTime={editingTime}
@@ -537,7 +571,7 @@ export function PostPreview({
                   onClick={() => {
                     const draft = { caption, hashtags, selectedImages, imageMode };
                     onSaveDraft?.(draft);
-                    onSaveEdit?.(draft, editingTime);
+                    // Only save the draft, don't call onSaveEdit which exits editing mode
                     setShowSaved(true);
                     setTimeout(() => setShowSaved(false), 2000);
                   }}
@@ -565,9 +599,16 @@ export function PostPreview({
                 )}
                 <button 
                   className="final-action final-action--cancel" 
-                  onClick={onCancelEdit}
+                  onClick={() => {
+                    // Save before closing
+                    const draft = { caption, hashtags, selectedImages, imageMode };
+                    onSaveDraft?.(draft);
+                    onSaveEdit?.(draft, editingTime);
+                    // Then close
+                    onCancelEdit?.();
+                  }}
                 >
-                  ✕ Close
+                  💾 Save & Close
                 </button>
               </>
             ) : (
