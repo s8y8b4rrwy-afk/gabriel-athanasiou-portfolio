@@ -11,11 +11,27 @@
   overflow: hidden;
   max-width: 2200px;
   margin: 0 auto;
+  position: relative;
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Collapsed sidebar state */
+.layout-main--collapsed {
+  grid-template-columns: 0px 1fr;
+}
+
+.layout-main--collapsed > *:first-child {
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  width: 0;
+  min-width: 0;
 }
 
 .layout-main > *:first-child {
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   overflow-y: auto;
+  transition: opacity 0.3s ease, width 0.3s ease;
 }
 
 .layout-main > *:last-child {
@@ -38,5 +54,22 @@
 @media (max-width: 1024px) {
   .layout-main {
     grid-template-columns: 1fr;
+    position: relative;
+  }
+  
+  /* On mobile, sidebar overlays content when visible */
+  .layout-main > *:first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background: #0f0f1a;
+  }
+  
+  /* Hide sidebar on mobile when collapsed */
+  .layout-main--collapsed > *:first-child {
+    display: none;
   }
 }

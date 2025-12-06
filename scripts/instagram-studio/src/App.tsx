@@ -149,7 +149,7 @@ function App() {
   });
   
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('create');
+  const [viewMode, setViewMode] = useState<ViewMode>('schedule');
   const [previousViewMode, setPreviousViewMode] = useState<ViewMode>('schedule');
   const [currentDraft, setCurrentDraft] = useState<{
     project: Project;
@@ -162,6 +162,12 @@ function App() {
   
   // Track if we're editing an existing scheduled post
   const [editingPost, setEditingPost] = useState<EditingState | null>(null);
+
+  // Sidebar collapsed state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Schedule panel sub-view state (persists when switching main tabs)
+  const [scheduleViewMode, setScheduleViewMode] = useState<'calendar' | 'queue' | 'published'>('calendar');
 
   // Instagram OAuth callback check
   const [isOAuthCallback, setIsOAuthCallback] = useState(false);
@@ -473,20 +479,27 @@ function App() {
 
   const pendingCount = scheduledPosts.filter(p => p.scheduleSlot.status === 'pending').length;
 
+  // Handle view mode change - simple setter now, sidebar toggle handled by Projects button
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+  }, []);
+
   return (
     <DndContext>
       <Layout 
         onRefresh={refetch}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
         pendingCount={pendingCount}
         isConnected={instagramCredentials?.connected}
         isSyncing={isSyncing}
         syncSuccess={syncSuccess}
         syncError={syncError}
         lastSyncedAt={lastSyncedAt}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
       >
-        <div className="app-sidebar">
+        <div className={`app-sidebar ${sidebarCollapsed ? 'app-sidebar--collapsed' : ''}`}>
           <ProjectList
             projects={projects}
             isLoading={isLoading}
@@ -498,6 +511,10 @@ function App() {
               setEditingPost(null);
               setCurrentDraft(null);
               setViewMode('create');
+              // On mobile, collapse sidebar to show Create view full-screen
+              if (window.innerWidth <= 1024) {
+                setSidebarCollapsed(true);
+              }
             }}
             scheduledCountByProject={scheduledCountByProject}
             publishedCountByProject={publishedCountByProject}
@@ -542,6 +559,8 @@ function App() {
               enableDragDrop={true}
               templates={templates}
               defaultTemplate={defaultTemplate}
+              subViewMode={scheduleViewMode}
+              onSubViewModeChange={setScheduleViewMode}
             />
           )}
           {viewMode === 'templates' && (

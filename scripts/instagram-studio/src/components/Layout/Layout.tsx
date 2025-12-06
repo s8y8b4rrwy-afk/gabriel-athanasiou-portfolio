@@ -15,6 +15,8 @@ interface LayoutProps {
   syncSuccess?: string | null;
   syncError?: string | null;
   lastSyncedAt?: Date | string | null;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export function Layout({ 
@@ -28,6 +30,8 @@ export function Layout({
   syncSuccess,
   syncError,
   lastSyncedAt,
+  sidebarCollapsed = false,
+  onToggleSidebar,
 }: LayoutProps) {
   return (
     <div className="layout">
@@ -41,8 +45,10 @@ export function Layout({
         syncSuccess={syncSuccess}
         syncError={syncError}
         lastSyncedAt={lastSyncedAt}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={onToggleSidebar}
       />
-      <main className="layout-main">
+      <main className={`layout-main ${sidebarCollapsed ? 'layout-main--collapsed' : ''}`}>
         {children}
       </main>
     </div>

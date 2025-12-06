@@ -26,9 +26,11 @@ interface SchedulePanelProps {
   enableDragDrop?: boolean;
   templates?: RecurringTemplate[];
   defaultTemplate?: RecurringTemplate;
+  subViewMode?: ScheduleViewMode;
+  onSubViewModeChange?: (mode: ScheduleViewMode) => void;
 }
 
-type ViewMode = 'calendar' | 'queue' | 'published';
+type ScheduleViewMode = 'calendar' | 'queue' | 'published';
 
 export function SchedulePanel({
   scheduledPosts,
@@ -45,8 +47,13 @@ export function SchedulePanel({
   enableDragDrop = false,
   templates = [],
   defaultTemplate,
+  subViewMode: controlledViewMode,
+  onSubViewModeChange,
 }: SchedulePanelProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  // Use controlled mode if provided, otherwise use internal state
+  const [internalViewMode, setInternalViewMode] = useState<ScheduleViewMode>('calendar');
+  const viewMode = controlledViewMode ?? internalViewMode;
+  const setViewMode = onSubViewModeChange ?? setInternalViewMode;
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>(settings.defaultTimes[0] || '11:00');
   const [rescheduleTarget, setRescheduleTarget] = useState<ScheduledPost | null>(null);
@@ -73,6 +80,33 @@ export function SchedulePanel({
   };
 
   const handleDateSelect = (date: Date) => {
+    // If we're rescheduling, immediately reschedule to the clicked date
+    if (rescheduleTarget) {
+      // Use the original time from the post being rescheduled
+      onReschedulePost(rescheduleTarget.scheduleSlot.id, date, rescheduleTarget.scheduleSlot.scheduledTime);
+      setRescheduleTarget(null);
+      setSelectedDate(null);
+      return;
+    }
+    
+    // If there's a draft ready, immediately schedule it
+    if (currentDraft && onSchedulePost) {
+      const dateKey = date.toISOString().split('T')[0];
+      const postsOnDate = scheduledPosts.filter(p => p.scheduleSlot.scheduledDate === dateKey);
+      
+      // Check if we're at the limit
+      if (postsOnDate.length >= settings.maxPostsPerDay) {
+        // Still select the date to show the limit warning
+        setSelectedDate(date);
+        return;
+      }
+      
+      // Schedule immediately with the quick schedule time
+      onSchedulePost(date, quickScheduleTime);
+      // Don't select the date since we've already scheduled
+      return;
+    }
+    
     setSelectedDate(date);
   };
 

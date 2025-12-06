@@ -396,37 +396,6 @@ export function PostPreview({
               <span>🔖</span>
             </div>
 
-            {/* Image Controls - Below the preview */}
-            {selectedImages.length > 0 && (
-              <div className="instagram-image-controls">
-                {/* Original view toggle */}
-                <button 
-                  className={`instagram-control-btn ${showOriginal ? 'instagram-control-btn--active' : ''}`}
-                  onClick={() => setShowOriginal(!showOriginal)}
-                  title={showOriginal 
-                    ? "Showing original - Click to see Instagram view" 
-                    : "Click to see original image"
-                  }
-                >
-                  📷 {showOriginal ? 'Original' : 'Preview'}
-                </button>
-                
-                {/* Image Mode Toggle - Fill vs Fit */}
-                {carouselMode.mode !== 'none' && (
-                  <button 
-                    className={`instagram-control-btn ${imageMode === 'fill' ? 'instagram-control-btn--fill' : 'instagram-control-btn--fit'}`}
-                    onClick={() => setImageMode(imageMode === 'fit' ? 'fill' : 'fit')}
-                    title={imageMode === 'fit' 
-                      ? "FIT: Full image with letterbox bars - Click for FILL mode" 
-                      : "FILL: Cropped to fill frame - Click for FIT mode"
-                    }
-                  >
-                    {imageMode === 'fit' ? '▬ FIT' : '✂️ FILL'}
-                  </button>
-                )}
-              </div>
-            )}
-
             <div className="instagram-caption-preview">
               <span className="instagram-caption-username">lemonpost.studio</span>{' '}
               <span className="instagram-caption-text">
@@ -435,6 +404,37 @@ export function PostPreview({
               </span>
             </div>
           </div>
+
+          {/* Image Controls - Below the Instagram mockup */}
+          {selectedImages.length > 0 && (
+            <div className="instagram-image-controls">
+              {/* Original view toggle */}
+              <button 
+                className={`instagram-control-btn ${showOriginal ? 'instagram-control-btn--active' : ''}`}
+                onClick={() => setShowOriginal(!showOriginal)}
+                title={showOriginal 
+                  ? "Showing original - Click to see Instagram view" 
+                  : "Click to see original image"
+                }
+              >
+                📷 {showOriginal ? 'Original' : 'Preview'}
+              </button>
+              
+              {/* Image Mode Toggle - Fill vs Fit */}
+              {carouselMode.mode !== 'none' && (
+                <button 
+                  className={`instagram-control-btn ${imageMode === 'fill' ? 'instagram-control-btn--fill' : 'instagram-control-btn--fit'}`}
+                  onClick={() => setImageMode(imageMode === 'fit' ? 'fill' : 'fit')}
+                  title={imageMode === 'fit' 
+                    ? "FIT: Full image with letterbox bars - Click for FILL mode" 
+                    : "FILL: Cropped to fill frame - Click for FIT mode"
+                  }
+                >
+                  {imageMode === 'fit' ? '▬ FIT' : '✂️ FILL'}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Time picker shown under preview when editing */}
           {isEditing && editingScheduleInfo && (

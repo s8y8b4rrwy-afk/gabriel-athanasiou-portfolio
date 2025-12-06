@@ -13,6 +13,8 @@ interface HeaderProps {
   syncSuccess?: string | null;
   syncError?: string | null;
   lastSyncedAt?: Date | string | null;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export function Header({ 
@@ -25,6 +27,8 @@ export function Header({
   syncSuccess = null,
   syncError = null,
   lastSyncedAt = null,
+  sidebarCollapsed = false,
+  onToggleSidebar,
 }: HeaderProps) {
   // Format last synced time
   const formatLastSynced = () => {
@@ -54,6 +58,17 @@ export function Header({
 
   const syncStatus = getSyncStatus();
 
+  // Helper to handle view changes - collapses sidebar on mobile
+  const handleViewChange = (mode: 'create' | 'schedule' | 'templates' | 'sync') => {
+    if (onViewModeChange) {
+      onViewModeChange(mode);
+      // On mobile, collapse the sidebar when switching to a non-projects view
+      if (window.innerWidth <= 1024 && onToggleSidebar && !sidebarCollapsed) {
+        onToggleSidebar();
+      }
+    }
+  };
+
   return (
     <header className="header">
       <div className="header-brand">
@@ -64,26 +79,33 @@ export function Header({
       {onViewModeChange && (
         <nav className="header-nav">
           <button 
-            className={`nav-button ${viewMode === 'create' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('create')}
+            className={`nav-toggle ${!sidebarCollapsed ? 'expanded' : ''}`}
+            onClick={() => {
+              if (onToggleSidebar) {
+                onToggleSidebar();
+              }
+            }}
+            title={sidebarCollapsed ? 'Show projects' : 'Hide projects'}
           >
-            ✏️ Create
+            <span className="toggle-icon">{sidebarCollapsed ? '▶' : '▼'}</span>
+            <span className="toggle-text">Projects</span>
           </button>
+          <div className="nav-divider"></div>
           <button 
             className={`nav-button ${viewMode === 'schedule' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('schedule')}
+            onClick={() => handleViewChange('schedule')}
           >
             📅 Schedule {pendingCount > 0 && <span className="nav-badge">{pendingCount}</span>}
           </button>
           <button 
             className={`nav-button ${viewMode === 'templates' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('templates')}
+            onClick={() => handleViewChange('templates')}
           >
             📝 Templates
           </button>
           <button 
             className={`nav-button ${viewMode === 'sync' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('sync')}
+            onClick={() => handleViewChange('sync')}
           >
             <span className={`sync-nav-icon ${isSyncing ? 'spinning' : ''}`}>☁️</span> 
             <span className="sync-nav-text">{syncStatus.text}</span>
