@@ -696,6 +696,40 @@ export async function syncBothPortfolios(config) {
       currentTimestamps.Settings?.forEach(({ id, lastModified }) => { timestampMap.Settings[id] = lastModified; });
     }
 
+    // **CRITICAL: Upload images to Cloudinary BEFORE processing portfolios**
+    // This ensures processProjectRecords and processJournalRecords use the updated cloudinaryMapping
+    if (verbose) console.log('[sync-core] 🔄 Uploading new/changed images to Cloudinary...');
+    
+    // Determine changed IDs for incremental Cloudinary sync
+    let changedProjectIds = null;
+    let changedJournalIds = null;
+    if (changes) {
+      changedProjectIds = new Set([...changes.Projects.new, ...changes.Projects.changed]);
+      changedJournalIds = new Set([...changes.Journal.new, ...changes.Journal.changed]);
+    }
+    
+    let updatedCloudinaryMapping = cloudinaryMapping;
+    const projectsToUpload = rawRecords.Projects || [];
+    const journalToUpload = rawRecords.Journal || [];
+    
+    updatedCloudinaryMapping = await syncImagesToCloudinary(
+      projectsToUpload,
+      journalToUpload,
+      cloudinaryMapping,
+      verbose,
+      changedProjectIds,
+      changedJournalIds
+    );
+    
+    // Save updated mapping
+    if (updatedCloudinaryMapping && !skipFileWrites) {
+      saveCloudinaryMapping(outputDir, updatedCloudinaryMapping);
+      if (verbose) console.log(`[sync-core] ✅ Saved updated Cloudinary mapping`);
+    }
+    
+    // Use the updated mapping for all portfolio processing
+    const cloudinaryMappingForProcessing = updatedCloudinaryMapping || cloudinaryMapping;
+
     // Process and write EACH portfolio file
     for (const portfolioMode of portfolioModes) {
       if (verbose) console.log(`\n[sync-core] 📂 Processing portfolio: ${portfolioMode}`);
@@ -703,26 +737,26 @@ export async function syncBothPortfolios(config) {
       const outputFileName = `portfolio-data-${portfolioMode}.json`;
       const outputFile = path.join(outputDir, outputFileName);
       
-      // Process config for this portfolio
-      const portfolioConfig = processConfigRecords(rawRecords.Settings || [], cloudinaryMapping, verbose, portfolioMode);
+      // Process config for this portfolio (using updated Cloudinary mapping)
+      const portfolioConfig = processConfigRecords(rawRecords.Settings || [], cloudinaryMappingForProcessing, verbose, portfolioMode);
       if (verbose) console.log(`[sync-core] ✅ Processed config for ${portfolioMode}`);
       
-      // Process projects for this portfolio
+      // Process projects for this portfolio (using updated Cloudinary mapping)
       const portfolioProjects = await processProjectRecords(
         rawRecords.Projects || [],
         festivalsMap,
         clientsMap,
-        cloudinaryMapping,
+        cloudinaryMappingForProcessing,
         portfolioConfig,
         verbose,
         portfolioMode
       );
       if (verbose) console.log(`[sync-core] ✅ Processed ${portfolioProjects.length} projects for ${portfolioMode}`);
       
-      // Process journal (only for directing or if hasJournal is true)
+      // Process journal (only for directing or if hasJournal is true) (using updated Cloudinary mapping)
       let portfolioJournal = [];
       if (portfolioConfig.hasJournal) {
-        portfolioJournal = processJournalRecords(rawRecords.Journal || [], cloudinaryMapping, verbose);
+        portfolioJournal = processJournalRecords(rawRecords.Journal || [], cloudinaryMappingForProcessing, verbose);
         if (verbose) console.log(`[sync-core] ✅ Processed ${portfolioJournal.length} journal posts for ${portfolioMode}`);
       } else {
         if (verbose) console.log(`[sync-core] ⏭️ Skipped journal for ${portfolioMode} (hasJournal=false)`);
@@ -759,46 +793,6 @@ export async function syncBothPortfolios(config) {
       } else if (verbose) {
         console.log(`[sync-core] ⏭️ Skipped writing ${outputFileName} (serverless mode)`);
       }
-    }
-
-    // Sync images to Cloudinary (once, covering all projects from both portfolios)
-    // Combine project IDs from both portfolios for Cloudinary sync
-    const allProjects = [
-      ...combinedResults.portfolios.directing.projects,
-      ...combinedResults.portfolios.postproduction.projects
-    ];
-    // Deduplicate by project ID (some projects appear in both portfolios)
-    const uniqueProjects = [];
-    const seenIds = new Set();
-    for (const project of allProjects) {
-      if (!seenIds.has(project.id)) {
-        seenIds.add(project.id);
-        uniqueProjects.push(project);
-      }
-    }
-    
-    const allJournal = combinedResults.portfolios.directing.journal; // Journal only on directing
-    
-    // Determine changed IDs for incremental Cloudinary sync
-    let changedProjectIds = null;
-    let changedJournalIds = null;
-    if (changes) {
-      changedProjectIds = new Set([...changes.Projects.new, ...changes.Projects.changed]);
-      changedJournalIds = new Set([...changes.Journal.new, ...changes.Journal.changed]);
-    }
-    
-    const updatedMapping = await syncImagesToCloudinary(
-      uniqueProjects,
-      allJournal,
-      cloudinaryMapping,
-      verbose,
-      changedProjectIds,
-      changedJournalIds
-    );
-    
-    if (updatedMapping && !skipFileWrites) {
-      saveCloudinaryMapping(outputDir, updatedMapping);
-      if (verbose) console.log(`[sync-core] ✅ Saved Cloudinary mapping`);
     }
 
     combinedResults.success = true;
@@ -1321,7 +1315,15 @@ async function processProjectRecords(rawRecords, festivalsMap, clientsMap, cloud
     const galleryAttachments = f['Gallery'] || f['Gallery (Image)'] || [];
     const gallery = galleryAttachments.map((att, idx) => {
       const cloudinaryImg = cloudinaryMap[r.id]?.[idx];
-      return cloudinaryImg?.cloudinaryUrl || att.url;
+      // MUST use Cloudinary URL if available, never fallback to Airtable
+      if (cloudinaryImg?.cloudinaryUrl) {
+        return cloudinaryImg.cloudinaryUrl;
+      }
+      // Log warning if Cloudinary URL is missing (indicates sync issue)
+      if (verbose) {
+        console.warn(`[sync-core] ⚠️ Missing Cloudinary URL for ${title} gallery[${idx}] - using Airtable fallback`);
+      }
+      return att.url;
     });
     
     // Combine Video URL field with any additional videos from External Links
@@ -1433,7 +1435,12 @@ function processJournalRecords(rawRecords, cloudinaryMapping, verbose) {
     
     // Use Cloudinary URL if available, otherwise fall back to Airtable URL
     const cloudinaryImage = cloudinaryMap[r.id]?.[0];
-    const imageUrl = cloudinaryImage?.cloudinaryUrl || airtableImageUrl;
+    let imageUrl = cloudinaryImage?.cloudinaryUrl || airtableImageUrl;
+    
+    // Log warning if Cloudinary URL is missing (indicates sync issue)
+    if (!cloudinaryImage?.cloudinaryUrl && airtableImageUrl && verbose) {
+      console.warn(`[sync-core] ⚠️ Missing Cloudinary URL for journal "${title}" - using Airtable fallback`);
+    }
     
     // Get tags
     const tags = f['Tags'] || [];
