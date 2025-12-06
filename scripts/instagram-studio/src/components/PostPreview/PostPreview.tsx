@@ -8,7 +8,7 @@ import { TimeSlotPicker } from '../Calendar';
 import { PublishButton } from '../Schedule/PublishButton';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import { useCloudinaryMappingReady } from '../../hooks';
-import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle } from '../../utils/imageUtils';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle, getCarouselTransformMode } from '../../utils/imageUtils';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
@@ -161,15 +161,22 @@ export function PostPreview({
           continue;
         }
         
+        // Use Cloudinary URL for loading (more reliable than Airtable URLs which can expire)
+        const cloudinaryUrl = getCloudinaryUrl(src);
+        
         const dims = await new Promise<{ width: number; height: number }>((resolve) => {
           const img = new Image();
           img.onload = () => {
             const d = { width: img.naturalWidth, height: img.naturalHeight };
             loadedDimensionsRef.current.set(src, d);
+            console.log(`📐 Loaded dimensions for image: ${d.width}x${d.height} (ratio: ${(d.width/d.height).toFixed(2)})`);
             resolve(d);
           };
-          img.onerror = () => resolve({ width: 4, height: 5 }); // Default on error
-          img.src = src;
+          img.onerror = () => {
+            console.warn(`❌ Failed to load image dimensions from: ${cloudinaryUrl.substring(0, 80)}...`);
+            resolve({ width: 16, height: 9 }); // Default to landscape on error (more common for film stills)
+          };
+          img.src = cloudinaryUrl;
         });
         newDimensions.set(src, dims);
       }
@@ -178,12 +185,17 @@ export function PostPreview({
     };
 
     loadDimensions();
-  }, [selectedImages]);
+  }, [selectedImages, getCloudinaryUrl]);
 
-  // Get Instagram preview style for current image
-  // This simulates how Cloudinary will transform the image:
-  // - WIDER images: letterbox with black bars (object-fit: contain)
-  // - TALLER images: crop to fill width (object-fit: cover)
+  // Get Instagram preview style for the ENTIRE CAROUSEL
+  // Uses "majority rule" - all images use the same transform mode for consistency
+  // - If majority of images are WIDE → letterbox all (object-fit: contain)
+  // - If majority of images are TALL → crop all (object-fit: cover)
+  const carouselMode = useMemo(() => {
+    return getCarouselTransformMode(imageDimensions, selectedImages);
+  }, [imageDimensions, selectedImages]);
+
+  // For backwards compatibility, also get per-image style (used for indicator)
   const getCurrentImagePreviewStyle = useCallback(() => {
     const currentImage = selectedImages[currentPreviewIndex];
     if (!currentImage) {
@@ -194,7 +206,7 @@ export function PostPreview({
     return getInstagramPreviewStyle(dims?.width, dims?.height);
   }, [selectedImages, currentPreviewIndex, imageDimensions]);
 
-  const currentPreviewStyle = getCurrentImagePreviewStyle();
+  const currentImageStyle = getCurrentImagePreviewStyle();
 
   // Reset preview index if it goes out of bounds
   useEffect(() => {
@@ -321,14 +333,14 @@ export function PostPreview({
               aspectRatio: showOriginal 
                 ? (imageDimensions.get(selectedImages[currentPreviewIndex])?.width || 4) / 
                   (imageDimensions.get(selectedImages[currentPreviewIndex])?.height || 5)
-                : currentPreviewStyle.targetAspectRatio 
+                : carouselMode.targetAspectRatio 
             }}>
               {selectedImages.length > 0 ? (
                 <>
                   <img 
                     src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} 
                     alt={project.title}
-                    style={{ objectFit: showOriginal ? 'contain' : currentPreviewStyle.objectFit }}
+                    style={{ objectFit: showOriginal ? 'contain' : carouselMode.objectFit }}
                   />
                   {selectedImages.length > 1 && (
                     <>
@@ -348,19 +360,20 @@ export function PostPreview({
                       </button>
                     </>
                   )}
-                  {/* Transform indicator - click to toggle original vs cropped */}
-                  {(currentPreviewStyle.willCrop || currentPreviewStyle.willLetterbox) && (
+                  {/* Transform indicator - shows carousel mode (majority rule) */}
+                  {/* Click to toggle original vs Instagram view */}
+                  {carouselMode.mode !== 'none' && (
                     <button 
                       className={`instagram-transform-indicator ${showOriginal ? 'instagram-transform-indicator--active' : ''}`}
                       onClick={() => setShowOriginal(!showOriginal)}
                       title={showOriginal 
-                        ? "Showing original - Click to see Instagram crop" 
-                        : (currentPreviewStyle.willLetterbox 
-                          ? "Wide image: black bars will be added - Click to see original" 
-                          : "Tall image: will be cropped - Click to see original")
+                        ? "Showing original - Click to see Instagram view" 
+                        : (carouselMode.mode === 'letterbox' 
+                          ? `Majority letterbox (${carouselMode.letterboxCount}▬ ${carouselMode.cropCount}✂️) - Click to see original` 
+                          : `Majority crop (${carouselMode.cropCount}✂️ ${carouselMode.letterboxCount}▬) - Click to see original`)
                       }
                     >
-                      {showOriginal ? '📷' : (currentPreviewStyle.willLetterbox ? '▬' : '✂️')}
+                      {showOriginal ? '📷' : (carouselMode.mode === 'letterbox' ? '▬' : '✂️')}
                     </button>
                   )}
                 </>

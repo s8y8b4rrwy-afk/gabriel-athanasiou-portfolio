@@ -227,6 +227,124 @@ export function getClosestInstagramAspectRatio(width: number, height: number): s
 }
 
 /**
+ * Carousel Transform Mode
+ * Determines whether the entire carousel should use letterbox or crop based on majority
+ */
+export type CarouselTransformMode = 'letterbox' | 'crop' | 'none';
+
+export interface CarouselModeResult {
+  /** The mode to apply to all images in the carousel */
+  mode: CarouselTransformMode;
+  /** The target aspect ratio to use for all images */
+  targetAspectRatio: number;
+  /** CSS object-fit value */
+  objectFit: 'contain' | 'cover';
+  /** Count of images that would naturally letterbox */
+  letterboxCount: number;
+  /** Count of images that would naturally crop */
+  cropCount: number;
+  /** Count of images that fit naturally (no transform) */
+  noneCount: number;
+}
+
+/**
+ * Analyze all images in a carousel and determine the majority transform mode.
+ * All images in the carousel will then use this same mode for visual consistency.
+ * 
+ * The logic is based on how Cloudinary transforms images for Instagram:
+ * - LANDSCAPE images (ratio > 1.0) → displayed in landscape container, full width
+ * - PORTRAIT images taller than 4:5 (ratio < 0.8) → cropped to 4:5
+ * - Images between 0.8 and 1.0 → fit naturally into Instagram's 4:5 format
+ * 
+ * @param dimensions - Map of image URLs to their dimensions
+ * @param selectedImages - Array of selected image URLs in order
+ * @returns The carousel mode to apply to all images
+ */
+export function getCarouselTransformMode(
+  dimensions: Map<string, { width: number; height: number }>,
+  selectedImages: string[]
+): CarouselModeResult {
+  let landscapeCount = 0;
+  let cropCount = 0;
+  let noneCount = 0;
+  
+  // Track average aspect ratio of landscape images
+  let totalLandscapeRatio = 0;
+  
+  // Default to 4:5 portrait if no images
+  if (selectedImages.length === 0) {
+    return {
+      mode: 'none',
+      targetAspectRatio: 0.8,
+      objectFit: 'cover',
+      letterboxCount: 0,
+      cropCount: 0,
+      noneCount: 0,
+    };
+  }
+  
+  // Analyze each image based on orientation
+  // Instagram's standard is 4:5 (0.8 ratio) - anything outside this range gets transformed
+  for (const imageUrl of selectedImages) {
+    const dims = dimensions.get(imageUrl);
+    if (!dims) {
+      // Unknown dimensions, default to none (will be determined at publish time)
+      noneCount++;
+      continue;
+    }
+    
+    const originalRatio = dims.width / dims.height;
+    
+    // LANDSCAPE: ratio > 1.0 (wider than square)
+    if (originalRatio > 1.0) {
+      landscapeCount++;
+      totalLandscapeRatio += originalRatio;
+    }
+    // VERY TALL PORTRAIT: ratio < 0.8 (taller than 4:5)
+    // These get cropped to fit 4:5
+    else if (originalRatio < 0.8) {
+      cropCount++;
+    }
+    // FITS NATURALLY: ratio between 0.8 and 1.0 (portrait or square-ish)
+    // These fit Instagram's 4:5 format without transformation
+    else {
+      noneCount++;
+    }
+  }
+  
+  // Determine majority mode
+  // Ties: prefer letterbox (more cinematic, preserves full image)
+  let mode: CarouselTransformMode;
+  let objectFit: 'contain' | 'cover';
+  let targetAspectRatio: number;
+  
+  if (landscapeCount >= cropCount && landscapeCount >= noneCount) {
+    mode = 'letterbox';
+    objectFit = 'contain'; // Show full image without cropping
+    // Use average landscape ratio (clamped to Instagram's max 1.91)
+    const avgRatio = landscapeCount > 0 ? totalLandscapeRatio / landscapeCount : 1.78;
+    targetAspectRatio = Math.min(avgRatio, 1.91);
+  } else if (cropCount > landscapeCount && cropCount >= noneCount) {
+    mode = 'crop';
+    objectFit = 'cover';
+    targetAspectRatio = 0.8;
+  } else {
+    mode = 'none';
+    objectFit = 'cover';
+    targetAspectRatio = 0.8;
+  }
+  
+  return {
+    mode,
+    targetAspectRatio,
+    objectFit,
+    letterboxCount: landscapeCount, // renamed for clarity
+    cropCount,
+    noneCount,
+  };
+}
+
+/**
  * Instagram Preview Transform Info
  * Returns CSS styles to locally simulate Cloudinary's Instagram transformations
  * 
@@ -613,15 +731,15 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
 
 /**
  * Get original quality Cloudinary URLs for Instagram publishing
- * Automatically crops each image to the closest Instagram-acceptable aspect ratio
+ * Uses MAJORITY RULE: All carousel images use the same aspect ratio for consistency
  * 
  * Instagram accepts aspect ratios from 4:5 (0.8) to 1.91:1 (1.91)
  * 
- * IMPORTANT: 
- * - Use this for publishing to Instagram API, not for preview!
- * - Only adds letterboxing (black bars) on TOP/BOTTOM, never on LEFT/RIGHT
- * - For images wider than target ratio → uses c_pad (top/bottom bars)
- * - For images taller than target ratio → uses c_lfill (crops height, no side bars)
+ * MAJORITY RULE LOGIC:
+ * 1. Analyze all images to determine if they're landscape (ratio > 1.0) or portrait (ratio < 0.8)
+ * 2. If majority are LANDSCAPE → all use 1.91:1 with c_lfill (fill, crop height)
+ * 3. If majority are PORTRAIT (taller than 4:5) → all use 4:5 with c_lfill (fill, crop height)
+ * 4. c_lfill always fills width and crops height - NEVER adds side bars
  */
 export async function getInstagramPublishUrls(
   urls: string[],
@@ -629,48 +747,108 @@ export async function getInstagramPublishUrls(
 ): Promise<string[]> {
   await loadCloudinaryMapping();
   
-  // Get dimensions for each image to determine correct aspect ratio
-  // IMPORTANT: Preserve the order of urls (user's selected order for carousel)
-  const results: string[] = [];
+  // First pass: Get dimensions for all images and determine their categories
+  const imageData: Array<{
+    url: string;
+    imageIndex: number;
+    dimensions: { width: number; height: number } | null;
+  }> = [];
+  
+  let landscapeCount = 0;
+  let portraitCount = 0;
+  let normalCount = 0;
   
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     
     // Find the actual image index from the URL
-    // If it's a Cloudinary URL, extract the index from the public ID pattern
-    let imageIndex = i; // default to position in array
-    
+    let imageIndex = i;
     if (url.includes('res.cloudinary.com')) {
       const match = url.match(/portfolio-projects-[^-]+-([\d]+)/);
       if (match) {
         imageIndex = parseInt(match[1], 10);
       }
-    } else {
-      // For Airtable URLs, we need to look up the mapping or use the position
-      // In this case, we use the findImageIndex function if we have the gallery
-      // But since we don't have gallery here, we'll use the position
-      // The caller should ensure urls are in the correct order
     }
     
-    // Get the preview URL to check dimensions (using the actual image index)
+    // Get dimensions
     const previewUrl = buildCloudinaryUrl(projectId, imageIndex, 'fine');
     const dimensions = await getImageDimensions(previewUrl);
     
+    imageData.push({ url, imageIndex, dimensions });
+    
     if (dimensions) {
-      // Build URL with the correct aspect ratio AND dimensions for crop/pad decision
-      // The dimensions are passed so buildCloudinaryUrl knows whether to use c_pad or c_lfill
-      const aspectRatio = getClosestInstagramAspectRatio(dimensions.width, dimensions.height);
-      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
-      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio, dimensions.width, dimensions.height));
-    } else {
-      // Fallback to default 0.8 (4:5) if dimensions couldn't be loaded
-      // Without dimensions, defaults to c_lfill (fill width, no side bars)
-      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): using default 4:5 ratio`);
-      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', '0.8'));
+      const ratio = dimensions.width / dimensions.height;
+      if (ratio > 1.0) {
+        landscapeCount++;
+      } else if (ratio < 0.8) {
+        portraitCount++;
+      } else {
+        normalCount++;
+      }
     }
   }
   
+  // Determine majority mode (same logic as getCarouselTransformMode)
+  let targetAspectRatio: string;
+  let description: string;
+  
+  if (landscapeCount >= portraitCount && landscapeCount >= normalCount) {
+    // Majority landscape → use 1.91:1
+    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
+    description = `landscape (${landscapeCount} landscape, ${portraitCount} portrait, ${normalCount} normal)`;
+  } else if (portraitCount > landscapeCount && portraitCount >= normalCount) {
+    // Majority portrait → use 4:5
+    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    description = `portrait (${portraitCount} portrait, ${landscapeCount} landscape, ${normalCount} normal)`;
+  } else {
+    // Majority normal or tie → use 4:5 (default Instagram)
+    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    description = `normal/default (${normalCount} normal, ${landscapeCount} landscape, ${portraitCount} portrait)`;
+  }
+  
+  console.log(`📐 Carousel majority: ${description} → using ${targetAspectRatio} for all images`);
+  
+  // Second pass: Build URLs with consistent aspect ratio
+  // All images use c_lfill (fill width, crop height) - NEVER adds side bars
+  const results: string[] = [];
+  
+  for (let i = 0; i < imageData.length; i++) {
+    const { imageIndex, dimensions } = imageData[i];
+    
+    console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} (majority rule)`);
+    
+    // Build URL with majority aspect ratio
+    // Pass dimensions for logging, but the crop mode will be c_lfill for all (fill width)
+    results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio));
+  }
+  
   return results;
+}
+
+/**
+ * Build Cloudinary URL for carousel with consistent aspect ratio
+ * Always uses c_lfill (fill width, crop height) - NEVER adds side bars
+ */
+function buildCloudinaryUrlForCarousel(
+  projectId: string,
+  imageIndex: number,
+  aspectRatio: string
+): string {
+  const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
+  
+  // Instagram transformation - always c_lfill to fill width and avoid side bars
+  const igTransforms = [
+    `ar_${aspectRatio}`,  // Consistent aspect ratio for all carousel images
+    'c_lfill',            // Fill width, crop height - NO side bars ever
+    'g_center',           // Center the image
+    'q_95',               // High quality
+    'f_jpg'               // JPEG format for compatibility
+  ].join(',');
+  
+  // Chain a second transformation to limit width
+  const widthLimit = 'w_1440,c_limit';
+  
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${igTransforms}/${widthLimit}/${publicId}.jpg`;
 }
 
 /**
