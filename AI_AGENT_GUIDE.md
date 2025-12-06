@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** December 2025  
+> **Last Updated:** December 6, 2025  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 
@@ -54,6 +54,37 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 > **All major changes documented in reverse chronological order (newest first)**
 
 ### 🎉 Recent Major Changes
+
+### Dec 6 2025 - Instagram Studio Airtable URL Fix
+**What Changed:** Fixed 135 Airtable URLs in Instagram Studio cloud data by replacing them with correct Cloudinary URLs.
+
+**The Problem:**
+- Instagram Studio data stored in Cloudinary contained old Airtable attachment URLs
+- These URLs expire and break after some time
+- Images should use the permanent Cloudinary URLs from `cloudinary-mapping.json`
+
+**The Solution:**
+1. **Created Fix Script** (`scripts/fix-instagram-studio-urls.mjs`):
+   - Fetches Instagram Studio data from Cloudinary
+   - Loads `cloudinary-mapping.json` to build record ID → Cloudinary URL lookup
+   - Replaces Airtable URLs in `heroImage`, `gallery`, and `selectedImages` fields
+   - Uploads fixed data back to Cloudinary with cache invalidation
+
+2. **Fixed Data:**
+   - 135 Airtable URLs replaced with Cloudinary URLs
+   - 0 remaining Airtable URLs
+   - 337 total Cloudinary URLs now in the data
+
+**Usage:**
+```bash
+node scripts/fix-instagram-studio-urls.mjs
+```
+
+**Files Created:**
+- `scripts/fix-instagram-studio-urls.mjs` - Fix script for Instagram Studio data
+- `public/instagram-studio-data-backup.json` - Backup of fixed data
+
+---
 
 ### Dec 3 2025 - Multi-Portfolio Static Files Architecture
 **What Changed:** Complete rewrite of static file generation to support two portfolio sites (directing & post-production) from a single codebase.
