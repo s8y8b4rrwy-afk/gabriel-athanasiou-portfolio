@@ -1,5 +1,5 @@
 import { Project, BlogPost, HomeConfig } from '../types';
-import { calculateReadingTime } from '../utils/textHelpers';
+import { calculateReadingTime } from '../utils/helpers/textHelpers';
 
 // Re-export commonly used utilities for backwards compatibility
 export { getEmbedUrl } from '../utils/videoHelpers';

@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
-import { ThumbnailVariant, getVariantsForType } from '../../utils/thumbnailGenerator';
+import { ThumbnailVariant, getVariantsForType } from '../../utils/generators/thumbnailGenerator';
 import { THEME } from '../../theme';
 import { CloseButton } from '../common/CloseButton';
 

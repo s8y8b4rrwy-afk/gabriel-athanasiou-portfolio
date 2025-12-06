@@ -11,7 +11,7 @@ import { SEO } from '../SEO';
 import { analyticsService } from '../../services/analyticsService';
 import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
-import { generateProceduralThumbnail } from '../../utils/thumbnailGenerator';
+import { generateProceduralThumbnail } from '../../utils/generators/thumbnailGenerator';
 import { saveScrollPosition } from '../../utils/scrollRestoration';
 
 interface ProjectDetailViewProps { 

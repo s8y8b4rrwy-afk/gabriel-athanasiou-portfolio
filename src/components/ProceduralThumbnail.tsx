@@ -8,7 +8,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { generateProceduralThumbnail, ThumbnailVariant } from '../utils/thumbnailGenerator';
+import { generateProceduralThumbnail, ThumbnailVariant } from '../utils/generators/thumbnailGenerator';
 
 export interface ProceduralThumbnailProps {
   /** Project title (required for generation) */

@@ -1,0 +1,176 @@
+name: Smart Netlify Deploy (Code + Content)
+
+on:
+  # Daily check for content changes at 2 AM UTC - DISABLED (now handled by scheduled-sync.mjs chain reaction)
+  # schedule:
+  #   - cron: '0 2 * * *'
+  
+  # Weekly check for code changes on Sunday at 3 AM UTC  
+  schedule:
+    - cron: '0 3 * * 0'
+  
+  # Manual trigger for emergencies
+  workflow_dispatch:
+
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Determine run type
+        id: run_type
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "cron_expr=${{ github.event.schedule }}" >> $GITHUB_OUTPUT
+            echo "Scheduled run triggered by cron: ${{ github.event.schedule }}"
+          else
+            echo "cron_expr=manual" >> $GITHUB_OUTPUT
+            echo "Manual or dispatch run."
+          fi
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gh
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for code changes
+        id: check_code
+        run: |
+          # Skip code diff on daily (content-only) cron
+          if [ "${{ steps.run_type.outputs.cron_expr }}" = "0 2 * * *" ]; then
+            echo "Daily content cron - skipping code change detection."
+            echo "code_changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          LAST_DEPLOY_SHA=$(gh run list --workflow=scheduled-deploy.yml --status=success --limit=1 --json headSha --jq '.[0].headSha' || echo "")
+          
+          if [ -z "$LAST_DEPLOY_SHA" ]; then
+            echo "No previous deploy found. Will check content."
+            echo "code_changed=false" >> $GITHUB_OUTPUT
+          else
+            CURRENT_SHA=$(git rev-parse HEAD)
+            # Exclude manifest-only commits (marked with [ci skip])
+            CHANGES=$(git log $LAST_DEPLOY_SHA..$CURRENT_SHA --oneline --grep="\[ci skip\]" --invert-grep || echo "")
+            if [ -n "$CHANGES" ]; then
+              echo "Code changes detected since last deploy."
+              echo "code_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "No code changes (only manifest updates)."
+              echo "code_changed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate share manifest
+        id: generate
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          node scripts/generate-share-meta.mjs
+          echo "Manifest generated. Checking for diff..."
+          if [ ! -f public/share-meta.json ] || [ ! -f public/share-meta.hash ]; then
+            echo "No manifest files found; treating as no content change."
+            echo "content_changed=false" >> $GITHUB_OUTPUT
+          else
+            if git diff --quiet -- public/share-meta.json public/share-meta.hash; then
+              echo "content_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "content_changed=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Commit updated manifest
+        if: steps.generate.outputs.content_changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add public/share-meta.json public/share-meta.hash
+          git commit -m "chore: update share-meta manifest [deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "commit_created=true" >> $GITHUB_OUTPUT
+
+      - name: Ensure deploy marker commit
+        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          if ! git log -1 --pretty=%B | grep -Eq "\[deploy\]|\[force-deploy\]"; then
+            echo "Latest commit lacks deploy marker. Creating empty deploy commit."
+            git pull --rebase origin main
+            git commit --allow-empty -m "chore: scheduled deploy [deploy]"
+            git push origin HEAD:main
+            echo "commit_created=true" >> $GITHUB_OUTPUT
+          else
+            echo "Deploy marker already present in latest commit."
+            echo "commit_created=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for Netlify deployment
+        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          echo "⏳ Waiting for Netlify deployment to complete..."
+          
+          # Get the commit SHA we just pushed
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "Watching for deployment of commit: $COMMIT_SHA"
+          
+          # Poll Netlify API for up to 10 minutes
+          MAX_ATTEMPTS=60
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # Get latest deployment for this commit
+            DEPLOY_STATUS=$(curl -s -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?commit_sha=$COMMIT_SHA" \
+              | jq -r '.[0].state // "not_found"')
+            
+            echo "Deployment status: $DEPLOY_STATUS"
+            
+            if [ "$DEPLOY_STATUS" = "ready" ]; then
+              echo "✅ Deployment complete!"
+              exit 0
+            elif [ "$DEPLOY_STATUS" = "error" ]; then
+              echo "⚠️ Deployment error detected (may be expected if no changes)"
+              echo "Continuing to cache warming anyway..."
+              exit 0
+            fi
+            
+            # Wait 10 seconds before next check
+            sleep 10
+          done
+          
+          echo "⚠️ Timeout waiting for deployment (non-critical)"
+          exit 0
+
+      - name: Warm CDN cache
+        if: steps.check_code.outputs.code_changed == 'true' || steps.generate.outputs.content_changed == 'true'
+        run: |
+          echo "🔥 Warming CDN cache after deployment..."
+          curl -f --max-time 30 "https://directedbygabriel.com/.netlify/functions/get-data" || echo "⚠️ Cache warming failed (non-critical)"
+          echo "✅ CDN cache warming complete"
+
+      - name: Skip Deploy
+        if: github.event_name != 'workflow_dispatch' && steps.check_code.outputs.code_changed == 'false' && steps.generate.outputs.content_changed == 'false'
+        run: echo "✅ No changes detected. Skipping deploy to save build credits."

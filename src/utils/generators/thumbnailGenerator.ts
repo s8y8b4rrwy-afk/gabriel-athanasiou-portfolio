@@ -13,7 +13,7 @@
  *  - Multiple variants: geometric, minimal, film-strip, grid, radial
  */
 
-import { THEME } from '../theme';
+import { THEME } from '../../theme';
 
 // ==========================================
 // TYPES & CONFIG
