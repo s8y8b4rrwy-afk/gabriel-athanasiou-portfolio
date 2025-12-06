@@ -43,30 +43,14 @@ Step-by-step Netlify deployment guide
 
 These guides provide additional context but **all critical information is in AI_AGENT_GUIDE.md**:
 
-### Core Systems
-- `docs/CDN_CACHE_FINAL_IMPLEMENTATION.md` - CDN architecture details
-- `docs/CLOUDINARY_INTEGRATION.md` - Image optimization system
-- `IMAGE_OPTIMIZATION.md` - Build-time image processing
-- **`docs/INCREMENTAL_SYNC_OPTIMIZATION.md`** - 90% API usage reduction guide ⭐
-- **`SHARED_HELPERS_REFACTORING.md`** - Shared utilities library and unit tests ⭐ **NEW**
-- `docs/INCREMENTAL_SYNC_QUICK_REF.md` - Quick reference for incremental sync
-
-### Setup & Configuration
-- `docs/ENV_SETUP.md` - Environment variables reference
-- `docs/ANALYTICS_SETUP.md` - Google Analytics configuration
+### [Configuration & Architecture](./docs/)
+- `docs/config/` - Configuration documentation
+- `docs/architecture/` - System architecture and design
+- `docs/CDN_CACHE_FINAL_IMPLEMENTATION.md` - CDN caching strategy
+- `docs/CLOUDINARY_INTEGRATION.md` - Image CDN integration
+- `docs/ANALYTICS_SETUP.md` - Analytics configuration
 - `docs/SEO_GUIDE.md` - SEO and meta tags
-
-### Features
 - `docs/PROCEDURAL_THUMBNAILS.md` - SVG artwork generation
-- `docs/SCROLL_RESTORATION.md` - Scroll position handling
-- `docs/HOVER_ANIMATIONS.md` - Interactive animations
-
-### CI/CD & Sync
-- `.github/SCHEDULED_DEPLOY_SETUP.md` - GitHub Actions workflows
-- `SYNC_DEPLOY_GUIDE.md` - Manual sync workflow
-- `STATIC_BUILD_ARCHITECTURE.md` - Build-time data architecture
-- `docs/COMPRESSION_COMPARISON.md` - Image compression analysis
-- **`docs/NETLIFY_SYNC_FUNCTION.md`** - Netlify serverless function limitations ⭐ **NEW**
 
 ---
 
@@ -87,20 +71,12 @@ These files exist for compatibility but redirect to the master guide.
 
 ## 📊 Legacy/Archive Files
 
-These files contain historical information but are superseded by the master guide:
+Files marked as deprecated have been moved to `docs/deprecated/`. These contain historical information but are superseded by the master guide:
 
-- `IMPLEMENTATION_LOG.md` - Original implementation notes (content now in AI_AGENT_GUIDE.md)
-- ~~`IMPLEMENTATION_LOG 2.md`~~ ✅ Deleted
-- ~~`SPEED_IMPROVEMENTS_SUMMARY 2.md`~~ ✅ Deleted  
-- ~~`docs/CDN_CACHE_ARCHITECTURE 2.md`~~ ✅ Deleted
-- `docs/CDN_CACHE_ARCHITECTURE.md` - Draft version (superseded by FINAL_IMPLEMENTATION)
-
-**Additional cleaned files:**
-- ~~`components/views/ImageCompressionView 2.tsx`~~ ✅ Deleted
-- ~~`components/views/ThumbnailPreviewView 2.tsx`~~ ✅ Deleted
-- ~~`config/compressionPresets 2.json`~~ ✅ Deleted
-- ~~`hooks/useBackgroundDataSync 2.ts`~~ ✅ Deleted
-- ~~`scripts/generate-compression-samples 2.mjs`~~ ✅ Deleted
+- `docs/deprecated/INCREMENTAL_SYNC*.md` - Original incremental sync documentation (content now in AI_AGENT_GUIDE.md)
+- `docs/deprecated/DATA_SYNC_FIX.md` - Original data sync fixes
+- `docs/deprecated/OWNER_CREDITS_FIX.md` - Original credits formatting fixes
+- `docs/deprecated/REFACTORING_SUMMARY.md` - Original refactoring notes
 
 All content from these files has been consolidated into `AI_AGENT_GUIDE.md`.
 
@@ -111,26 +87,58 @@ All content from these files has been consolidated into `AI_AGENT_GUIDE.md`.
 ```
 gabriel-athanasiou-portfolio--TEST/
 │
-├── AI_AGENT_GUIDE.md            ⭐ PRIMARY - Start here
-├── README.md                    📖 Quick start
-├── DEPLOYMENT_GUIDE.md          🚀 Deployment guide
-├── IMAGE_OPTIMIZATION.md        🖼️ Image system
-├── DOCUMENTATION_INDEX.md       📚 This file
+├── src/                         ⭐ ALL SOURCE CODE (organized)
+│   ├── components/              Components organized logically
+│   ├── hooks/                   Custom React hooks
+│   ├── services/                External API integrations
+│   ├── utils/                   Utilities organized by purpose
+│   │   ├── helpers/             Text, file, network utilities
+│   │   ├── cloudinary/          Cloudinary image handling
+│   │   ├── generators/          Sitemap, thumbnails, slugs
+│   │   └── __tests__/           Unit tests
+│   ├── config/                  Configuration files (JSON)
+│   ├── data/                    Static data
+│   ├── App.tsx                  Main app component
+│   ├── index.tsx                React entry point
+│   ├── types.ts                 Global TypeScript types
+│   └── theme.ts                 Design tokens and theme
 │
-├── copilot-instructions.md      🔗 Alias → AI_AGENT_GUIDE.md
-├── COPILOT.md                   🔗 Alias → AI_AGENT_GUIDE.md
+├── public/                      Static assets and files
+├── scripts/                     Build and utility scripts
+│   ├── instagram-studio/        Instagram posting app (separate)
+│   └── tests/                   Test utilities and fixtures
+├── netlify/                     Netlify functions and edge functions
 │
-├── docs/                        📁 Supplementary guides
-│   ├── CDN_CACHE_FINAL_IMPLEMENTATION.md
-│   ├── CLOUDINARY_INTEGRATION.md
-│   ├── ENV_SETUP.md
-│   ├── ANALYTICS_SETUP.md
-│   ├── SEO_GUIDE.md
-│   ├── PROCEDURAL_THUMBNAILS.md
-│   └── ...
+├── docs/                        📚 ALL DOCUMENTATION
+│   ├── README.md                Getting started
+│   ├── DOCUMENTATION_INDEX.md   This file
+│   ├── AI_AGENT_GUIDE.md        Master technical reference ⭐
+│   ├── DEPLOYMENT_GUIDE.md      Production deployment
+│   ├── IMAGE_OPTIMIZATION.md    Image system details
+│   ├── config/                  Configuration documentation
+│   │   └── CONFIG_IMAGES_CLOUDINARY.md
+│   ├── architecture/            System architecture
+│   │   └── STATIC_BUILD.md
+│   ├── guides/                  How-to guides
+│   │   ├── SYNC_DEPLOY.md
+│   │   └── MANUAL_REFRESH.md
+│   ├── features/                Feature documentation
+│   │   ├── GAME_IMPLEMENTATION.md
+│   │   ├── MULTI_PORTFOLIO.md
+│   │   ├── INSTAGRAM_STUDIO.md
+│   │   └── SHARED_HELPERS.md
+│   ├── deprecated/              Archived/obsolete documentation
+│   │   ├── INCREMENTAL_SYNC.md
+│   │   ├── DATA_SYNC_FIX.md
+│   │   └── ... (8 more archived docs)
+│   └── testing/                 Test results and logs
+│       └── TEST_RESULTS.md
 │
-└── .github/                     🔧 CI/CD workflows
-    └── SCHEDULED_DEPLOY_SETUP.md
+├── CODEBASE_ORGANIZATION_PLAN.md  Reference for this reorganization
+├── vite.config.ts               Build configuration
+├── tsconfig.json                TypeScript configuration
+├── package.json                 Dependencies
+└── index.html                   HTML entry point (Vite)
 ```
 
 ---
@@ -191,4 +199,4 @@ gabriel-athanasiou-portfolio--TEST/
 
 ---
 
-**Last Updated:** November 27, 2025
+**Last Updated:** December 6, 2025
