@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Project, PortfolioData } from '../types';
 
-const PORTFOLIO_DATA_URL = '/portfolio-data-postproduction.json';
+// Fetch from Cloudinary CDN for fresh data (not stale Netlify-deployed files)
+const PORTFOLIO_DATA_URL = 'https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-postproduction.json';
 
 interface UseProjectsOptions {
   filterType?: string;
