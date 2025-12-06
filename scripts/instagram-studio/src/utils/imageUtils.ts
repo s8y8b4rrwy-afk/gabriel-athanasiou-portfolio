@@ -234,31 +234,57 @@ export function getClosestInstagramAspectRatio(width: number, height: number): s
  * @param imageIndex - The image's index in the gallery
  * @param preset - Image quality preset ('fine' for preview, 'instagram' for publishing)
  * @param aspectRatio - Optional aspect ratio for Instagram (e.g., '0.8', '1.0', '1.91' - use decimals to avoid colons in URL)
+ * @param originalWidth - Optional original image width (for smart crop/pad decision)
+ * @param originalHeight - Optional original image height (for smart crop/pad decision)
  */
 export function buildCloudinaryUrl(
   projectId: string,
   imageIndex: number,
   preset: ImagePreset = 'fine',
-  aspectRatio?: string
+  aspectRatio?: string,
+  originalWidth?: number,
+  originalHeight?: number
 ): string {
   // Build public ID in the same format as main site
   const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
   
   const presetConfig = IMAGE_PRESETS[preset];
   
-  // For Instagram preset, fit to aspect ratio with letterboxing (no cropping)
+  // For Instagram preset, fit to aspect ratio
+  // IMPORTANT: Only allow letterboxing on TOP/BOTTOM (vertical bars), never on LEFT/RIGHT
+  // - If image is WIDER than target ratio → use c_pad (adds top/bottom black bars) ✓
+  // - If image is TALLER than target ratio → use c_lfill (crops top/bottom to fill width) 
   if (preset === 'instagram' || !presetConfig.format || !presetConfig.width) {
     // Use provided aspect ratio or default to 4:5
     const ar = aspectRatio || INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    const targetRatio = parseFloat(ar);
     
-    // Instagram transformation: fit image with letterboxing (black bars)
-    // Using c_pad to add padding instead of cropping
-    // IMPORTANT: Must use chained transformations - first pad to ratio, then limit width
+    // Determine crop mode based on original image dimensions
+    // Default to c_lfill (fill width, crop height) to avoid side bars
+    // Only use c_pad if we have dimensions AND image is wider than target
+    let cropMode = 'c_lfill'; // Fill width, crop height if needed (no side bars)
+    
+    if (originalWidth && originalHeight) {
+      const originalRatio = originalWidth / originalHeight;
+      
+      // If image is WIDER than target ratio, use c_pad (adds top/bottom bars only)
+      // Example: 21:9 image (2.33) going to 1.91:1 → needs top/bottom padding
+      if (originalRatio > targetRatio) {
+        cropMode = 'c_pad';
+      }
+      // If image is TALLER than target, use c_lfill (crops top/bottom, fills width)
+      // Example: 9:16 image (0.56) going to 4:5 (0.8) → crops to fill width, no side bars
+    }
+    
+    // Instagram transformation
+    // c_pad: adds padding (only used when image is wider than target - top/bottom bars)
+    // c_lfill: fills width, crops height (used when image is taller - no side bars)
+    // IMPORTANT: Must use chained transformations - first fit to ratio, then limit width
     // Instagram limits: max 1440px width, ratio between 4:5 (0.8) and 1.91:1
     const igTransforms = [
       `ar_${ar}`,     // Aspect ratio (dynamic based on original image)
-      'c_pad',        // Pad to fit - adds letterboxing instead of cropping
-      'b_black',      // Black background for letterboxing
+      cropMode,       // Crop mode: c_pad (top/bottom bars) or c_lfill (fill width, crop height)
+      'b_black',      // Black background for letterboxing (only applies with c_pad)
       'g_center',     // Center the image
       'q_95',         // High quality
       'f_jpg'         // JPEG format for compatibility
@@ -285,6 +311,9 @@ export function buildCloudinaryUrl(
  * Build Cloudinary URL for Instagram with automatic aspect ratio detection
  * Fetches image dimensions and crops to the closest acceptable ratio
  * 
+ * IMPORTANT: Passes original dimensions to buildCloudinaryUrl so it can decide
+ * whether to use c_pad (for wider images - top/bottom bars) or c_lfill (for taller images - no side bars)
+ * 
  * @param projectId - The project's record ID
  * @param imageIndex - The image's index in the gallery
  * @param width - Original image width (optional - will use default if not provided)
@@ -296,13 +325,13 @@ export function buildInstagramUrlWithRatio(
   width?: number,
   height?: number
 ): string {
-  // If dimensions provided, calculate closest ratio
+  // If dimensions provided, calculate closest ratio and pass dimensions for crop/pad decision
   if (width && height) {
     const aspectRatio = getClosestInstagramAspectRatio(width, height);
-    return buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio);
+    return buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio, width, height);
   }
   
-  // Default to 4:5 portrait if no dimensions
+  // Default to 4:5 portrait if no dimensions (will use c_lfill to avoid side bars)
   return buildCloudinaryUrl(projectId, imageIndex, 'instagram', INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5);
 }
 
@@ -520,7 +549,11 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
  * 
  * Instagram accepts aspect ratios from 4:5 (0.8) to 1.91:1 (1.91)
  * 
- * IMPORTANT: Use this for publishing to Instagram API, not for preview!
+ * IMPORTANT: 
+ * - Use this for publishing to Instagram API, not for preview!
+ * - Only adds letterboxing (black bars) on TOP/BOTTOM, never on LEFT/RIGHT
+ * - For images wider than target ratio → uses c_pad (top/bottom bars)
+ * - For images taller than target ratio → uses c_lfill (crops height, no side bars)
  */
 export async function getInstagramPublishUrls(
   urls: string[],
@@ -556,12 +589,14 @@ export async function getInstagramPublishUrls(
     const dimensions = await getImageDimensions(previewUrl);
     
     if (dimensions) {
-      // Build URL with the correct aspect ratio
+      // Build URL with the correct aspect ratio AND dimensions for crop/pad decision
+      // The dimensions are passed so buildCloudinaryUrl knows whether to use c_pad or c_lfill
       const aspectRatio = getClosestInstagramAspectRatio(dimensions.width, dimensions.height);
       console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions.width}x${dimensions.height} → aspect ratio ${aspectRatio}`);
-      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio));
+      results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', aspectRatio, dimensions.width, dimensions.height));
     } else {
       // Fallback to default 0.8 (4:5) if dimensions couldn't be loaded
+      // Without dimensions, defaults to c_lfill (fill width, no side bars)
       console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): using default 4:5 ratio`);
       results.push(buildCloudinaryUrl(projectId, imageIndex, 'instagram', '0.8'));
     }

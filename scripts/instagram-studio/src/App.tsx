@@ -32,7 +32,7 @@ function App() {
   });
   
   const {
-    scheduledPosts,
+    scheduledPosts: rawScheduledPosts,
     drafts,
     scheduleSlots,
     settings,
@@ -45,6 +45,23 @@ function App() {
     importScheduleData,
     markAsPublished,
   } = useSchedule();
+
+  // Enhance scheduled posts with project data lookup (for cloud-synced posts missing project info)
+  const scheduledPosts = useMemo(() => {
+    return rawScheduledPosts.map(post => {
+      // If project data is already present, return as-is
+      if (post.project?.title) {
+        return post;
+      }
+      // Look up project by projectId
+      const projectFromList = projects.find(p => p.id === post.projectId);
+      if (projectFromList) {
+        return { ...post, project: projectFromList };
+      }
+      // Return as-is if project not found
+      return post;
+    });
+  }, [rawScheduledPosts, projects]);
 
   // Template management
   const {
@@ -427,6 +444,10 @@ function App() {
         onViewModeChange={setViewMode}
         pendingCount={pendingCount}
         isConnected={instagramCredentials?.connected}
+        isSyncing={isSyncing}
+        syncSuccess={syncSuccess}
+        syncError={syncError}
+        lastSyncedAt={lastSyncedAt}
       >
         <div className="app-sidebar">
           <ProjectList

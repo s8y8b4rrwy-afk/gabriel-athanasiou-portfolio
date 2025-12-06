@@ -7,7 +7,10 @@
  * Posts are considered "due" if their scheduled time is within the last hour
  * (giving a 1-hour window to catch any posts that should have been published).
  * 
- * Schedule: Every hour at minute 0
+ * Schedule: Every hour at minute 0 (0 * * * *)
+ * 
+ * SMART MERGE: Uses fetch-merge-save pattern to avoid overwriting user edits.
+ * Only applies status updates to fresh cloud data before saving.
  * 
  * Notifications: Sends email via Resend when posts are published or fail
  */
@@ -150,8 +153,10 @@ export const handler = async (event) => {
     
     console.log(`📬 Found ${duePosts.length} post(s) to publish`);
     
-    // 4. Publish each due post
+    // 4. Publish each due post and collect status updates for smart merge
     const results = [];
+    const statusUpdates = new Map(); // slot.id -> { status, publishedAt?, instagramMediaId?, error? }
+    
     for (const { slot, draft } of duePosts) {
       try {
         console.log(`📤 Publishing post: ${draft.projectId}`);
@@ -171,26 +176,34 @@ export const handler = async (event) => {
         
         const result = await publishPost({ imageUrls, caption: fullCaption }, accessToken, accountId);
         
-        // Update slot status
-        slot.status = 'published';
-        slot.publishedAt = new Date().toISOString();
-        slot.instagramMediaId = result.mediaId;
+        // Collect status update for smart merge
+        statusUpdates.set(slot.id, {
+          status: 'published',
+          publishedAt: new Date().toISOString(),
+          instagramMediaId: result.mediaId
+        });
         
         results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId });
         console.log(`✅ Published: ${draft.projectId}`);
       } catch (error) {
         console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
-        slot.status = 'failed';
-        slot.error = error.message;
+        
+        // Collect failure status for smart merge
+        statusUpdates.set(slot.id, {
+          status: 'failed',
+          error: error.message
+        });
+        
         results.push({ postId: slot.id, projectId: draft.projectId, success: false, error: error.message });
       }
     }
     
-    // 5. Save updated schedule data back to Cloudinary
-    await saveScheduleData(scheduleData);
+    // 5. Save with smart merge (fetch fresh data, apply updates, save)
+    await saveWithSmartMerge(statusUpdates);
     
-    // 6. Send notification email
-    await sendNotification(results, scheduleData);
+    // 6. Send notification email (fetch fresh data for email)
+    const freshDataForEmail = await fetchScheduleData();
+    await sendNotification(results, freshDataForEmail || scheduleData);
     
     console.log('✅ Scheduled publish complete:', results);
     return {
@@ -230,9 +243,51 @@ async function fetchScheduleData() {
 }
 
 /**
- * Save schedule data to Cloudinary using signed upload
+ * Smart Merge: Apply status updates to fresh cloud data
+ * 
+ * This ensures we don't overwrite any changes made by the user while
+ * the scheduled function was running. We only update the specific
+ * schedule slots that we published/failed.
+ * 
+ * @param statusUpdates - Map of slot ID to status update object
+ * @returns The merged data that was saved
  */
-async function saveScheduleData(data) {
+async function saveWithSmartMerge(statusUpdates) {
+  console.log('🔄 Smart merge: Fetching fresh cloud data before save...');
+  
+  // Fetch the latest data from cloud
+  const freshData = await fetchScheduleData();
+  
+  if (!freshData) {
+    throw new Error('Cannot save: failed to fetch fresh data for merge');
+  }
+  
+  // Apply our status updates to the fresh data
+  let updatedCount = 0;
+  for (const slot of (freshData.scheduleSlots || [])) {
+    const update = statusUpdates.get(slot.id);
+    if (update) {
+      // Apply the status update
+      slot.status = update.status;
+      if (update.publishedAt) slot.publishedAt = update.publishedAt;
+      if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
+      if (update.error) slot.error = update.error;
+      slot.updatedAt = new Date().toISOString();
+      updatedCount++;
+      console.log(`  ✓ Applied status update to slot ${slot.id}: ${update.status}`);
+    }
+  }
+  
+  console.log(`🔄 Smart merge: Applied ${updatedCount} status updates to fresh data`);
+  
+  // Now save the merged data
+  return await uploadToCloudinary(freshData);
+}
+
+/**
+ * Upload data to Cloudinary using signed upload
+ */
+async function uploadToCloudinary(data) {
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
   if (!apiSecret) {
     throw new Error('CLOUDINARY_API_SECRET not configured');
@@ -240,6 +295,7 @@ async function saveScheduleData(data) {
   
   // Update metadata
   data.lastUpdated = new Date().toISOString();
+  data.lastMergedAt = new Date().toISOString();
   
   const timestamp = Math.floor(Date.now() / 1000);
   const publicId = 'instagram-studio/schedule-data';
@@ -284,6 +340,11 @@ const ASPECT_LANDSCAPE = '1.91'; // 1.91:1
 /**
  * Convert image URLs to Cloudinary Instagram-ready URLs
  * Uses the same pattern as the client: portfolio-projects-{projectId}-{index}
+ * 
+ * IMPORTANT: Only allows letterboxing (black bars) on TOP/BOTTOM, never on LEFT/RIGHT
+ * - Uses c_lfill (fill width, crop height) as default to avoid side bars
+ * - Server-side we don't have image dimensions, so we default to c_lfill which
+ *   fills the width and crops the height if needed (no side bars ever)
  */
 async function getInstagramUrls(imageUrls, projectId) {
   const results = [];
@@ -304,8 +365,9 @@ async function getInstagramUrls(imageUrls, projectId) {
     
     // Build Instagram-optimized Cloudinary URL
     // Default to portrait (0.8) ratio - most common for Instagram
+    // Using c_lfill: fills width and crops height if needed (no side bars)
     const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
-    const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_pad,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
+    const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_lfill,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
     
     results.push(instagramUrl);
   }

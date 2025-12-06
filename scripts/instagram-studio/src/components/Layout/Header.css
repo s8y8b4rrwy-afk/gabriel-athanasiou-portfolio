@@ -118,3 +118,57 @@
     font-size: 0.75rem;
   }
 }
+
+/* Sync status in nav button */
+.sync-nav-icon {
+  display: inline-block;
+}
+
+.sync-nav-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.sync-nav-text {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.sync-status-dot {
+  font-size: 0.5rem;
+  margin-left: 0.25rem;
+}
+
+.sync-status-dot.success {
+  color: #22c55e;
+}
+
+.sync-status-dot.error {
+  color: #ef4444;
+}
+
+.sync-status-dot.syncing {
+  color: #fcd34d;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.sync-status-dot.idle {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Hide sync text on very small screens */
+@media (max-width: 700px) {
+  .sync-nav-text {
+    display: none;
+  }
+}

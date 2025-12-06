@@ -11,9 +11,24 @@ interface LayoutProps {
   onViewModeChange?: (mode: ViewMode) => void;
   pendingCount?: number;
   isConnected?: boolean;
+  isSyncing?: boolean;
+  syncSuccess?: string | null;
+  syncError?: string | null;
+  lastSyncedAt?: Date | string | null;
 }
 
-export function Layout({ children, onRefresh, viewMode, onViewModeChange, pendingCount, isConnected }: LayoutProps) {
+export function Layout({ 
+  children, 
+  onRefresh, 
+  viewMode, 
+  onViewModeChange, 
+  pendingCount, 
+  isConnected,
+  isSyncing,
+  syncSuccess,
+  syncError,
+  lastSyncedAt,
+}: LayoutProps) {
   return (
     <div className="layout">
       <Header 
@@ -22,6 +37,10 @@ export function Layout({ children, onRefresh, viewMode, onViewModeChange, pendin
         onViewModeChange={onViewModeChange}
         pendingCount={pendingCount}
         isConnected={isConnected}
+        isSyncing={isSyncing}
+        syncSuccess={syncSuccess}
+        syncError={syncError}
+        lastSyncedAt={lastSyncedAt}
       />
       <main className="layout-main">
         {children}
