@@ -115,7 +115,11 @@ export function useCloudinarySync({
         
         // Mark that we just synced to prevent auto-sync loop
         justSyncedRef.current = true;
-        setTimeout(() => { justSyncedRef.current = false; }, 10000); // Reset after 10s
+        console.log('🔒 justSyncedRef set to true (will reset in 10s)');
+        setTimeout(() => { 
+          justSyncedRef.current = false; 
+          console.log('🔓 justSyncedRef reset to false - auto-sync now allowed');
+        }, 10000); // Reset after 10s
         
         // Update the data hash after successful sync
         dataHashRef.current = JSON.stringify({
@@ -198,7 +202,15 @@ export function useCloudinarySync({
   // Auto-sync on changes (debounced) - only for user-initiated changes
   useEffect(() => {
     // Skip if auto-sync is disabled, no data, or we just synced
-    if (!autoSync || drafts.length === 0 || justSyncedRef.current) {
+    if (!autoSync) {
+      // Only log once on mount, not every render
+      return;
+    }
+    if (drafts.length === 0) {
+      return;
+    }
+    if (justSyncedRef.current) {
+      console.log('⏭️ Auto-sync skipped: just synced (will reset in a few seconds)');
       return;
     }
 
@@ -217,14 +229,22 @@ export function useCloudinarySync({
     if (currentHash === dataHashRef.current) {
       return;
     }
+    
+    console.log('⏳ Data changed! Auto-sync scheduled in 5 seconds...');
 
     const timeoutId = setTimeout(() => {
       // Double-check we didn't just sync and data actually changed
-      if (!justSyncedRef.current && currentHash !== dataHashRef.current) {
-        console.log('🔄 Auto-syncing changes...');
-        dataHashRef.current = currentHash; // Update hash before sync
-        syncToCloudinary();
+      if (justSyncedRef.current) {
+        console.log('⏭️ Auto-sync cancelled: a sync just happened');
+        return;
       }
+      if (currentHash === dataHashRef.current) {
+        console.log('⏭️ Auto-sync cancelled: data unchanged');
+        return;
+      }
+      console.log('🔄 Auto-syncing changes now...');
+      dataHashRef.current = currentHash; // Update hash before sync
+      syncToCloudinary();
     }, 5000); // 5 second debounce
 
     return () => clearTimeout(timeoutId);

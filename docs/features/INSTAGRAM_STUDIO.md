@@ -1649,6 +1649,24 @@ git push origin main
 
 ## Changelog
 
+### Version 1.4.2 (6 December 2025)
+**Duplicate Post Auto-Sync & Logging**
+
+- **Duplicate post triggers auto-sync** - When Option+dragging to duplicate a post, the auto-sync now properly triggers after 5 seconds
+- **Improved sync logging** - Added detailed console logs to track sync flow:
+  - `📋 Duplicated post to YYYY-MM-DD - auto-sync will trigger in 5s` - Shown when duplicating
+  - `🔒 justSyncedRef set to true (will reset in 10s)` - After any sync completes
+  - `🔓 justSyncedRef reset to false - auto-sync now allowed` - When sync lock expires
+  - `⏳ Data changed! Auto-sync scheduled in 5 seconds...` - When changes are detected
+  - `🔄 Auto-syncing changes now...` - When sync actually fires
+- **10-second sync lock** - After any sync, a 10-second cooldown prevents sync loops
+
+**Files Changed:**
+- `useSchedule.ts` - Added duplicate confirmation log
+- `useCloudinarySync.ts` - Added detailed sync flow logging with lock status
+
+---
+
 ### Version 1.4.1 (7 January 2025)
 **UI/UX Improvements & Bug Fixes**
 
@@ -1667,5 +1685,5 @@ git push origin main
 
 ---
 
-*Last Updated: 7 January 2025*
-*Version: 1.4.1 - UI cleanup and reschedule from edit view fix*
+*Last Updated: 6 December 2025*
+*Version: 1.4.2 - Duplicate post auto-sync and logging improvements*

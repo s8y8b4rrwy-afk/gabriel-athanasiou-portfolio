@@ -209,6 +209,8 @@ export function useSchedule(): UseScheduleReturn {
       updatedAt: now,
     };
     setScheduleSlots(prev => [...prev, newSlot]);
+    
+    console.log('📋 Duplicated post to', formatDateKey(newDate), '- auto-sync will trigger in 5s');
   }, [scheduleSlots, drafts, setDrafts, setScheduleSlots]);
 
   // Get posts for a specific date
