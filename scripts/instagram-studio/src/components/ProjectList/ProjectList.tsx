@@ -37,6 +37,7 @@ export function ProjectList({
   const [filterYear, setFilterYear] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Enhanced search function that searches all metadata
   const matchesSearchQuery = useMemo(() => {
@@ -91,6 +92,16 @@ export function ProjectList({
     return true;
   });
 
+  // Sort projects by year (and maintain original order within same year)
+  const sortedProjects = useMemo(() => {
+    const sorted = [...filteredProjects].sort((a, b) => {
+      const yearA = parseInt(a.year) || 0;
+      const yearB = parseInt(b.year) || 0;
+      return sortOrder === 'newest' ? yearB - yearA : yearA - yearB;
+    });
+    return sorted;
+  }, [filteredProjects, sortOrder]);
+
   return (
     <div className="project-list">
       <ProjectFilters
@@ -128,12 +139,19 @@ export function ProjectList({
           <>
             <div className="project-list-header">
               <span className="project-list-count">
-                {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
+                {sortedProjects.length} project{sortedProjects.length !== 1 ? 's' : ''}
               </span>
+              <button 
+                className="sort-toggle"
+                onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+                title={`Sorted by ${sortOrder === 'newest' ? 'newest first' : 'oldest first'}`}
+              >
+                {sortOrder === 'newest' ? '↓ Newest' : '↑ Oldest'}
+              </button>
             </div>
 
             <div className="project-list-items">
-              {filteredProjects.map((project) => 
+              {sortedProjects.map((project) => 
                 enableDragDrop ? (
                   <DraggableProjectCard
                     key={project.id}
@@ -153,7 +171,7 @@ export function ProjectList({
                 )
               )}
 
-              {filteredProjects.length === 0 && (
+              {sortedProjects.length === 0 && (
                 <div className="project-list-empty">
                   <span>🔍</span>
                   <p>No projects match your filters</p>

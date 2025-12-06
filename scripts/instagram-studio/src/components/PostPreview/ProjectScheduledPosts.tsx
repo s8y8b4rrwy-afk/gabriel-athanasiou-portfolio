@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { PostDraft, ScheduleSlot } from '../../types';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import './PostPreview.css';
@@ -11,6 +11,32 @@ interface ProjectScheduledPostsProps {
   posts: ScheduledPost[];
   onEditPost: (post: ScheduledPost) => void;
   onUnschedulePost: (slotId: string) => void;
+  currentlyEditing?: string; // scheduledDate of the post being edited
+}
+
+// Confirmation dialog component
+function DeleteConfirmDialog({
+  onConfirm,
+  onCancel,
+  date,
+  time
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+  date: string;
+  time: string;
+}) {
+  return (
+    <div className="delete-confirm-overlay" onClick={onCancel}>
+      <div className="delete-confirm-dialog" onClick={(e) => e.stopPropagation()}>
+        <p>Remove scheduled post for <strong>{date}</strong> at <strong>{time}</strong>?</p>
+        <div className="delete-confirm-actions">
+          <button className="delete-confirm-cancel" onClick={onCancel}>Cancel</button>
+          <button className="delete-confirm-yes" onClick={onConfirm}>Remove</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Sub-component for rendering a scheduled post item
@@ -21,7 +47,8 @@ function ScheduledPostItem({
   getStatusClass,
   getStatusLabel,
   formatDate,
-  formatTime
+  formatTime,
+  isCurrentlyEditing
 }: {
   post: ScheduledPost;
   onEditPost: (post: ScheduledPost) => void;
@@ -30,7 +57,10 @@ function ScheduledPostItem({
   getStatusLabel: (status: ScheduleSlot['status']) => string;
   formatDate: (dateStr: string) => string;
   formatTime: (timeStr: string) => string;
+  isCurrentlyEditing?: boolean;
 }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
   const cloudinaryThumbnail = useMemo(() => {
     const thumbnailUrl = post.selectedImages[0] || '';
     if (!thumbnailUrl) return '';
@@ -55,7 +85,9 @@ function ScheduledPostItem({
 
   return (
     <div 
-      className={`scheduled-post-item ${getStatusClass(post.scheduleSlot.status)}`}
+      className={`scheduled-post-item ${getStatusClass(post.scheduleSlot.status)} ${isCurrentlyEditing ? 'scheduled-post--editing' : ''}`}
+      onClick={() => post.scheduleSlot.status === 'pending' && onEditPost(post)}
+      style={{ cursor: post.scheduleSlot.status === 'pending' ? 'pointer' : 'default' }}
     >
       <div className="scheduled-post-thumbnail">
         {hasThumbnail ? (
@@ -85,20 +117,27 @@ function ScheduledPostItem({
       {post.scheduleSlot.status === 'pending' && (
         <div className="scheduled-post-actions">
           <button 
-            className="scheduled-post-action scheduled-post-action--edit"
-            onClick={() => onEditPost(post)}
-            title="Edit post"
-          >
-            ✏️
-          </button>
-          <button 
             className="scheduled-post-action scheduled-post-action--remove"
-            onClick={() => onUnschedulePost(post.scheduleSlot.id)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent triggering edit when clicking remove
+              setShowDeleteConfirm(true);
+            }}
             title="Remove from schedule"
           >
             ✕
           </button>
         </div>
+      )}
+      {showDeleteConfirm && (
+        <DeleteConfirmDialog
+          date={formatDate(post.scheduleSlot.scheduledDate)}
+          time={formatTime(post.scheduleSlot.scheduledTime)}
+          onConfirm={() => {
+            onUnschedulePost(post.scheduleSlot.id);
+            setShowDeleteConfirm(false);
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
     </div>
   );
@@ -107,7 +146,8 @@ function ScheduledPostItem({
 export function ProjectScheduledPosts({ 
   posts, 
   onEditPost, 
-  onUnschedulePost 
+  onUnschedulePost,
+  currentlyEditing 
 }: ProjectScheduledPostsProps) {
   if (posts.length === 0) {
     return null;
@@ -175,6 +215,7 @@ export function ProjectScheduledPosts({
             getStatusLabel={getStatusLabel}
             formatDate={formatDate}
             formatTime={formatTime}
+            isCurrentlyEditing={currentlyEditing === post.scheduleSlot.scheduledDate}
           />
         ))}
       </div>

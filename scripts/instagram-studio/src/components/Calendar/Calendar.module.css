@@ -414,16 +414,31 @@
   margin-bottom: 12px;
 }
 
+/* Compact grid in side panel on large screens */
+@media (min-width: 1400px) {
+  .suggestedTimes {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .suggestedTimes {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .timeSlot {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
-  padding: 10px 8px;
+  padding: 10px 6px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   transition: all 0.2s ease;
   position: relative;
+  text-align: center;
 }
 
 .timeSlot:hover {

@@ -19,6 +19,7 @@ interface SchedulePanelProps {
   onReschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
   onEditPost: (post: ScheduledPost) => void;
   onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
+  onMarkAsPublished?: (slotId: string) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
   onDropProject?: (project: Project, date: Date, time: string, template?: RecurringTemplate) => void;
@@ -37,6 +38,7 @@ export function SchedulePanel({
   onReschedulePost,
   onEditPost,
   onPublishSuccess,
+  onMarkAsPublished,
   currentDraft,
   onClearDraft,
   onDropProject,
@@ -82,6 +84,10 @@ export function SchedulePanel({
   };
 
   const handleReschedule = (post: ScheduledPost) => {
+    // Don't allow rescheduling published posts
+    if (post.scheduleSlot.status === 'published') {
+      return;
+    }
     setRescheduleTarget(post);
     setSelectedDate(new Date(post.scheduleSlot.scheduledDate));
     setSelectedTime(post.scheduleSlot.scheduledTime);
@@ -164,35 +170,40 @@ export function SchedulePanel({
               💡 Drag projects or scheduled posts to reschedule them
             </div>
           )}
-          <Calendar
-            scheduledPosts={scheduledPosts}
-            selectedDate={selectedDate}
-            onDateSelect={handleDateSelect}
-            onPostClick={(post) => {
-              handleReschedule(post);
-            }}
-            onDropProject={handleDropProjectWithSettings}
-            onReschedulePost={handleDragReschedule}
-            enableDragDrop={enableDragDrop}
-          />
           
-          {/* Consolidated Settings Panel - context-aware */}
-          <div className={styles.settingsPanel}>
-            {selectedDate ? (
-              <>
-                {/* Date-specific header */}
-                <div className={styles.selectedDateHeader}>
-                  <h3>{formatSelectedDate()}</h3>
-                  <button 
-                    className={styles.closeButton}
-                    onClick={() => {
-                      setSelectedDate(null);
-                      setRescheduleTarget(null);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
+          <div className={styles.calendarLayout}>
+            {/* Calendar - main area */}
+            <div className={styles.calendarMain}>
+              <Calendar
+                scheduledPosts={scheduledPosts}
+                selectedDate={selectedDate}
+                onDateSelect={handleDateSelect}
+                onPostClick={(post) => {
+                  handleReschedule(post);
+                }}
+                onDropProject={handleDropProjectWithSettings}
+                onReschedulePost={handleDragReschedule}
+                enableDragDrop={enableDragDrop}
+              />
+            </div>
+          
+            {/* Settings Panel - sidebar on large screens */}
+            <div className={styles.settingsPanel}>
+              {selectedDate ? (
+                <>
+                  {/* Date-specific header */}
+                  <div className={styles.selectedDateHeader}>
+                    <h3>{formatSelectedDate()}</h3>
+                    <button 
+                      className={styles.closeButton}
+                      onClick={() => {
+                        setSelectedDate(null);
+                        setRescheduleTarget(null);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
 
                 {/* Show existing posts for this date */}
                 {existingPostsOnDate.length > 0 && (
@@ -228,55 +239,61 @@ export function SchedulePanel({
                   </div>
                 )}
 
-                {/* Time picker for scheduling/rescheduling */}
-                {(currentDraft || rescheduleTarget) && (
-                  <TimeSlotPicker
-                    selectedTime={selectedTime}
-                    onTimeSelect={setSelectedTime}
-                    defaultTimes={settings.defaultTimes}
-                  />
-                )}
+                {/* Time picker and action section - horizontal layout */}
+                {(currentDraft || rescheduleTarget) ? (
+                  <div className={styles.schedulingRow}>
+                    <div className={styles.timePickerColumn}>
+                      <TimeSlotPicker
+                        selectedTime={selectedTime}
+                        onTimeSelect={setSelectedTime}
+                        defaultTimes={settings.defaultTimes}
+                      />
+                    </div>
 
-                {rescheduleTarget ? (
-                  <div className={styles.rescheduleInfo}>
-                    <p>Rescheduling: <strong>{rescheduleTarget.project.title}</strong></p>
-                    <div className={styles.rescheduleActions}>
-                      <button 
-                        onClick={confirmReschedule}
-                        className={styles.confirmButton}
-                      >
-                        Confirm Reschedule
-                      </button>
-                      <button 
-                        onClick={cancelReschedule}
-                        className={styles.cancelButton}
-                      >
-                        Cancel
-                      </button>
+                    <div className={styles.actionColumn}>
+                      {rescheduleTarget ? (
+                        <div className={styles.rescheduleInfo}>
+                          <p>Rescheduling: <strong>{rescheduleTarget.project.title}</strong></p>
+                          <div className={styles.rescheduleActions}>
+                            <button 
+                              onClick={confirmReschedule}
+                              className={styles.confirmButton}
+                            >
+                              Confirm Reschedule
+                            </button>
+                            <button 
+                              onClick={cancelReschedule}
+                              className={styles.cancelButton}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={styles.scheduleAction}>
+                          <div className={styles.draftPreview}>
+                            <strong>READY TO SCHEDULE:</strong>
+                            <p>{currentDraft!.project.title}</p>
+                            <span className={styles.imageCount}>
+                              {currentDraft!.selectedImages.length} images
+                            </span>
+                          </div>
+                          <button
+                            onClick={handleSchedule}
+                            className={styles.scheduleButton}
+                            disabled={!canSchedule || isOverLimit}
+                          >
+                            📅 Schedule Post
+                          </button>
+                          <button
+                            onClick={onClearDraft}
+                            className={styles.clearButton}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ) : currentDraft ? (
-                  <div className={styles.scheduleAction}>
-                    <div className={styles.draftPreview}>
-                      <strong>Ready to schedule:</strong>
-                      <p>{currentDraft.project.title}</p>
-                      <span className={styles.imageCount}>
-                        {currentDraft.selectedImages.length} images
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleSchedule}
-                      className={styles.scheduleButton}
-                      disabled={!canSchedule || isOverLimit}
-                    >
-                      📅 Schedule Post
-                    </button>
-                    <button
-                      onClick={onClearDraft}
-                      className={styles.clearButton}
-                    >
-                      Clear
-                    </button>
                   </div>
                 ) : (
                   <div className={styles.noDraft}>
@@ -323,6 +340,7 @@ export function SchedulePanel({
               </>
             ) : null}
           </div>
+          </div>
         </div>
       ) : viewMode === 'queue' ? (
         <ScheduleQueue
@@ -331,6 +349,7 @@ export function SchedulePanel({
           onUnschedulePost={onUnschedulePost}
           onReschedulePost={handleReschedule}
           onPublishSuccess={onPublishSuccess}
+          onMarkAsPublished={onMarkAsPublished}
           showTitle={false}
         />
       ) : (

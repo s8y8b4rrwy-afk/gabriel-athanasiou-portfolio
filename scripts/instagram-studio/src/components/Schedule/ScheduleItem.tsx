@@ -3,7 +3,10 @@ import { PublishButton } from './PublishButton';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import type { ScheduleSlot, PostDraft } from '../../types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+// Debug mode: hold Shift and double-click on status badge to toggle
+const DEBUG_ENABLED = true;
 
 interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
@@ -15,6 +18,7 @@ interface ScheduleItemProps {
   onUnschedule: () => void;
   onReschedule: () => void;
   onPublishSuccess?: (instagramPostId?: string, permalink?: string) => void;
+  onMarkAsPublished?: (slotId: string) => void;
   compact?: boolean;
 }
 
@@ -24,10 +28,12 @@ export function ScheduleItem({
   onUnschedule, 
   onReschedule,
   onPublishSuccess,
+  onMarkAsPublished,
   compact = false 
 }: ScheduleItemProps) {
   const { scheduleSlot, project } = post;
   const credentials = getCredentialsLocally();
+  const [showDebugConfirm, setShowDebugConfirm] = useState(false);
   
   // Get thumbnail with Cloudinary conversion
   const thumbnail = useMemo(() => {
@@ -72,13 +78,28 @@ export function ScheduleItem({
   };
 
   const getStatusBadge = () => {
+    const handleDebugClick = (e: React.MouseEvent) => {
+      // Shift + double-click to toggle debug mode
+      if (DEBUG_ENABLED && e.shiftKey && onMarkAsPublished && scheduleSlot.status === 'pending') {
+        setShowDebugConfirm(true);
+      }
+    };
+
     switch (scheduleSlot.status) {
       case 'published':
         return <span className={`${styles.badge} ${styles.published}`}>Published</span>;
       case 'failed':
         return <span className={`${styles.badge} ${styles.failed}`}>Failed</span>;
       default:
-        return <span className={`${styles.badge} ${styles.pending}`}>Pending</span>;
+        return (
+          <span 
+            className={`${styles.badge} ${styles.pending}`}
+            onDoubleClick={handleDebugClick}
+            title={DEBUG_ENABLED ? "Shift+double-click to mark as published" : undefined}
+          >
+            Pending
+          </span>
+        );
     }
   };
 
@@ -147,6 +168,33 @@ export function ScheduleItem({
           <button onClick={onUnschedule} className={`${styles.actionButton} ${styles.danger}`}>
             ✕ Remove
           </button>
+        </div>
+      )}
+
+      {/* Debug: Mark as published confirmation */}
+      {showDebugConfirm && (
+        <div className={styles.debugOverlay} onClick={() => setShowDebugConfirm(false)}>
+          <div className={styles.debugDialog} onClick={(e) => e.stopPropagation()}>
+            <p>🔧 <strong>Debug:</strong> Mark this post as published?</p>
+            <p className={styles.debugNote}>This will update the status without actually publishing to Instagram.</p>
+            <div className={styles.debugActions}>
+              <button 
+                className={styles.debugCancel}
+                onClick={() => setShowDebugConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.debugConfirm}
+                onClick={() => {
+                  onMarkAsPublished?.(scheduleSlot.id);
+                  setShowDebugConfirm(false);
+                }}
+              >
+                Mark as Published
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

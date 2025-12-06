@@ -9,6 +9,8 @@
   grid-template-columns: 350px 1fr;
   height: calc(100vh - 65px);
   overflow: hidden;
+  max-width: 2200px;
+  margin: 0 auto;
 }
 
 .layout-main > *:first-child {
@@ -18,6 +20,19 @@
 
 .layout-main > *:last-child {
   overflow-y: auto;
+}
+
+/* Responsive adjustments for large screens */
+@media (min-width: 1600px) {
+  .layout-main {
+    grid-template-columns: 380px 1fr;
+  }
+}
+
+@media (min-width: 1920px) {
+  .layout-main {
+    grid-template-columns: 420px 1fr;
+  }
 }
 
 @media (max-width: 1024px) {

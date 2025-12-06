@@ -12,6 +12,7 @@ interface ScheduleQueueProps {
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (post: ScheduledPost) => void;
   onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
+  onMarkAsPublished?: (slotId: string) => void;
   maxItems?: number;
   showTitle?: boolean;
 }
@@ -22,6 +23,7 @@ export function ScheduleQueue({
   onUnschedulePost, 
   onReschedulePost,
   onPublishSuccess,
+  onMarkAsPublished,
   maxItems,
   showTitle = true
 }: ScheduleQueueProps) {
@@ -69,6 +71,7 @@ export function ScheduleQueue({
             onUnschedule={() => onUnschedulePost(post.scheduleSlot.id)}
             onReschedule={() => onReschedulePost(post)}
             onPublishSuccess={onPublishSuccess ? (instagramPostId, permalink) => onPublishSuccess(post.scheduleSlot.id, instagramPostId, permalink) : undefined}
+            onMarkAsPublished={onMarkAsPublished}
           />
         ))}
       </div>

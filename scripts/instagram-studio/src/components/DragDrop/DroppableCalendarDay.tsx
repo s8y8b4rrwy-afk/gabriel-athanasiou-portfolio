@@ -44,14 +44,27 @@ export function DroppableCalendarDay({
 }: DroppableCalendarDayProps) {
   const [{ isOver, canDrop }, drop] = useDrop<DragItem, void, { isOver: boolean; canDrop: boolean }>(() => ({
     accept: [ITEM_TYPES.PROJECT, ITEM_TYPES.SCHEDULED_POST],
-    canDrop: () => date !== null && date >= new Date(new Date().setHours(0, 0, 0, 0)),
+    canDrop: (item) => {
+      // Don't allow dropping on past dates
+      if (date === null || date < new Date(new Date().setHours(0, 0, 0, 0))) {
+        return false;
+      }
+      // Don't allow rescheduling published posts
+      if (item.type === ITEM_TYPES.SCHEDULED_POST && item.post.scheduleSlot.status === 'published') {
+        return false;
+      }
+      return true;
+    },
     drop: (item) => {
       if (!date) return;
       
       if (item.type === ITEM_TYPES.PROJECT && onDropProject) {
         onDropProject(item.project, date);
       } else if (item.type === ITEM_TYPES.SCHEDULED_POST && onReschedulePost) {
-        onReschedulePost(item.post.scheduleSlot.id, date);
+        // Double-check: don't reschedule published posts
+        if (item.post.scheduleSlot.status !== 'published') {
+          onReschedulePost(item.post.scheduleSlot.id, date);
+        }
       }
     },
     collect: (monitor) => ({

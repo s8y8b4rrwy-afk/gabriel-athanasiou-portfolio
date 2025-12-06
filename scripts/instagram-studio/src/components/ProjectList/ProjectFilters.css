@@ -1,57 +1,108 @@
 .project-filters {
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .filter-search {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .filter-input {
   width: 100%;
-  padding: 0.625rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  padding-left: 2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   transition: all 0.2s;
 }
 
 .filter-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .filter-input:focus {
   outline: none;
-  border-color: #fcd34d;
-  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(252, 211, 77, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-search {
+  position: relative;
+}
+
+.filter-search::before {
+  content: '🔍';
+  position: absolute;
+  left: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.filter-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+}
+
+.filter-clear:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .filter-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .filter-select {
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 0.75rem;
+  padding: 0.375rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.6875rem;
   cursor: pointer;
   transition: all 0.2s;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.375rem center;
+  padding-right: 1.25rem;
+}
+
+.filter-select:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #fcd34d;
+  border-color: rgba(252, 211, 77, 0.5);
 }
 
 .filter-select option {
@@ -60,11 +111,15 @@
 }
 
 .filter-select-schedule {
-  background: rgba(252, 211, 77, 0.1);
-  border-color: rgba(252, 211, 77, 0.3);
+  background-color: rgba(252, 211, 77, 0.08);
+  border-color: rgba(252, 211, 77, 0.2);
+  color: #fcd34d;
+}
+
+.filter-select-schedule:hover {
+  background-color: rgba(252, 211, 77, 0.12);
 }
 
 .filter-select-schedule:focus {
-  border-color: #fcd34d;
-  background: rgba(252, 211, 77, 0.2);
+  border-color: rgba(252, 211, 77, 0.5);
 }

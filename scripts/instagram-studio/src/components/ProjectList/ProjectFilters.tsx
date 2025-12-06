@@ -38,11 +38,20 @@ export function ProjectFilters({
       <div className="filter-search">
         <input
           type="text"
-          placeholder="🔍 Search projects..."
+          placeholder="Search projects..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="filter-input"
         />
+        {searchQuery && (
+          <button 
+            className="filter-clear"
+            onClick={() => onSearchChange('')}
+            title="Clear search"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       <div className="filter-row">
@@ -51,7 +60,7 @@ export function ProjectFilters({
           onChange={(e) => onTypeChange(e.target.value)}
           className="filter-select"
         >
-          <option value="">All Types</option>
+          <option value="">Type</option>
           {types.map((type) => (
             <option key={type} value={type}>
               {type}
@@ -64,7 +73,7 @@ export function ProjectFilters({
           onChange={(e) => onKindChange(e.target.value)}
           className="filter-select"
         >
-          <option value="">All Kinds</option>
+          <option value="">Kind</option>
           {kinds.map((kind) => (
             <option key={kind} value={kind}>
               {kind}
@@ -77,7 +86,7 @@ export function ProjectFilters({
           onChange={(e) => onYearChange(e.target.value)}
           className="filter-select"
         >
-          <option value="">All Years</option>
+          <option value="">Year</option>
           {years.map((year) => (
             <option key={year} value={year}>
               {year}
@@ -90,7 +99,7 @@ export function ProjectFilters({
           onChange={(e) => onScheduleStatusChange(e.target.value as ScheduleStatus)}
           className="filter-select filter-select-schedule"
         >
-          <option value="all">📋 All Status</option>
+          <option value="all">Status</option>
           <option value="scheduled">📅 Scheduled</option>
           <option value="published">✅ Published</option>
           <option value="unscheduled">⏳ Unscheduled</option>

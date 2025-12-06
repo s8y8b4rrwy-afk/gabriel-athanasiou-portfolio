@@ -218,12 +218,13 @@ function App() {
   }, [currentDraft, editingPost, saveDraft, schedulePost, updateDraft, reschedulePost]);
 
   // Handle saving changes to an edited post (with optional time change)
-  const handleSaveEditedPost = useCallback((newTime?: string) => {
-    if (editingPost && currentDraft) {
+  // Saves and exits editing mode
+  const handleSaveEditedPost = useCallback((draft: { caption: string; hashtags: string[]; selectedImages: string[] }, newTime?: string) => {
+    if (editingPost) {
       updateDraft(editingPost.draftId, {
-        caption: currentDraft.caption,
-        hashtags: currentDraft.hashtags,
-        selectedImages: currentDraft.selectedImages,
+        caption: draft.caption,
+        hashtags: draft.hashtags,
+        selectedImages: draft.selectedImages,
       });
       // If time changed, reschedule the post
       if (newTime && newTime !== editingPost.scheduledTime) {
@@ -233,12 +234,19 @@ function App() {
           newTime
         );
       }
+      // Exit editing mode and go back to previous view
+      const projectToKeep = editingPost.project;
       setEditingPost(null);
       setCurrentDraft(null);
-      setSelectedProject(null);
-      setViewMode(previousViewMode);
+      // If we came from create view, keep the project selected
+      if (previousViewMode === 'create') {
+        setSelectedProject(projectToKeep);
+      } else {
+        setSelectedProject(null);
+        setViewMode(previousViewMode);
+      }
     }
-  }, [editingPost, currentDraft, updateDraft, reschedulePost, previousViewMode]);
+  }, [editingPost, updateDraft, reschedulePost, previousViewMode]);
 
   // Handle editing a scheduled post
   const handleEditPost = useCallback((post: ScheduledPost) => {
@@ -271,19 +279,31 @@ function App() {
   // Handle publish success from SchedulePanel/Queue - mark post as published
   const handleSchedulePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
     markAsPublished(slotId, instagramPostId, permalink);
-  }, [markAsPublished]);
+    // Always sync to Cloudinary after successful publish
+    syncToCloudinary();
+  }, [markAsPublished, syncToCloudinary]);
 
   // Handle publish success from PostPreview (when editing a scheduled post)
   const handlePreviewPublishSuccess = useCallback((result: { instagramPostId?: string; permalink?: string }) => {
     // If we're editing a scheduled post, mark it as published
     if (editingPost?.slotId) {
       markAsPublished(editingPost.slotId, result.instagramPostId, result.permalink);
+      // Always sync to Cloudinary after successful publish
+      syncToCloudinary();
       setEditingPost(null);
       setCurrentDraft(null);
       setSelectedProject(null);
       setViewMode(previousViewMode);
     }
-  }, [editingPost, markAsPublished, previousViewMode]);
+  }, [editingPost, markAsPublished, syncToCloudinary, previousViewMode]);
+
+  // Debug: Manual mark as published (for fixing out-of-sync data)
+  const handleDebugMarkAsPublished = useCallback((slotId: string) => {
+    markAsPublished(slotId, `debug-${Date.now()}`, undefined);
+    // Sync immediately
+    syncToCloudinary();
+    console.log('🔧 Debug: Marked slot as published:', slotId);
+  }, [markAsPublished, syncToCloudinary]);
 
   // Clear current draft and editing state
   const handleClearDraft = useCallback(() => {
@@ -293,11 +313,20 @@ function App() {
 
   // Cancel editing and go back to previous view
   const handleCancelEdit = useCallback(() => {
+    const projectToKeep = editingPost?.project;
     setEditingPost(null);
     setCurrentDraft(null);
-    setSelectedProject(null);
-    setViewMode(previousViewMode);
-  }, [previousViewMode]);
+    
+    // If we came from create view (viewing a project), keep that project selected
+    // Otherwise (came from schedule/queue), clear selection and go back
+    if (previousViewMode === 'create' && projectToKeep) {
+      setSelectedProject(projectToKeep);
+      // Stay in create view, but now viewing the project (not editing)
+    } else {
+      setSelectedProject(null);
+      setViewMode(previousViewMode);
+    }
+  }, [previousViewMode, editingPost]);
 
   // Handle dropping a project onto a calendar day (drag & drop)
   const handleDropProjectOnDate = useCallback((project: Project, date: Date, time: string, template?: RecurringTemplate) => {
@@ -313,9 +342,14 @@ function App() {
       hashtags = generateHashtags(project);
     }
     
-    const selectedImages = project.heroImage 
-      ? [project.heroImage] 
-      : project.gallery.slice(0, 1);
+    // Include all available images (hero + gallery), up to Instagram's limit of 10
+    const allImages = [
+      ...(project.heroImage ? [project.heroImage] : []),
+      ...project.gallery
+    ];
+    // Remove duplicates (in case hero is also in gallery) and limit to 10
+    const uniqueImages = [...new Set(allImages)].slice(0, 10);
+    const selectedImages = uniqueImages.length > 0 ? uniqueImages : project.gallery.slice(0, 1);
     
     const savedDraft = saveDraft(project, caption, hashtags, selectedImages);
     schedulePost(savedDraft, date, time);
@@ -377,43 +411,18 @@ function App() {
     );
   }
 
+  const pendingCount = scheduledPosts.filter(p => p.scheduleSlot.status === 'pending').length;
+
   return (
     <DndContext>
-      <Layout onRefresh={refetch}>
+      <Layout 
+        onRefresh={refetch}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        pendingCount={pendingCount}
+        isConnected={instagramCredentials?.connected}
+      >
         <div className="app-sidebar">
-          <div className="view-mode-toggle">
-            <button 
-              className={`view-mode-button ${viewMode === 'create' ? 'active' : ''}`}
-              onClick={() => setViewMode('create')}
-            >
-              ✏️ Create
-            </button>
-            <button 
-              className={`view-mode-button ${viewMode === 'schedule' ? 'active' : ''}`}
-              onClick={() => setViewMode('schedule')}
-            >
-              📅 Schedule ({scheduledPosts.filter(p => p.scheduleSlot.status === 'pending').length})
-            </button>
-            <button 
-              className={`view-mode-button ${viewMode === 'templates' ? 'active' : ''}`}
-              onClick={() => setViewMode('templates')}
-            >
-              📝 Templates
-            </button>
-            <button 
-              className={`view-mode-button ${viewMode === 'sync' ? 'active' : ''}`}
-              onClick={() => setViewMode('sync')}
-            >
-              ☁️ Sync
-            </button>
-            <button 
-              className={`view-mode-button ${viewMode === 'settings' ? 'active' : ''}`}
-              onClick={() => setViewMode('settings')}
-            >
-              ⚙️ Settings
-              {instagramCredentials?.connected && <span className="connected-dot">●</span>}
-            </button>
-          </div>
           <ProjectList
             projects={projects}
             isLoading={isLoading}
@@ -462,6 +471,7 @@ function App() {
               onReschedulePost={handleReschedulePost}
               onEditPost={handleEditPost}
               onPublishSuccess={handleSchedulePublishSuccess}
+              onMarkAsPublished={handleDebugMarkAsPublished}
               currentDraft={currentDraft}
               onClearDraft={handleClearDraft}
               onDropProject={handleDropProjectOnDate}

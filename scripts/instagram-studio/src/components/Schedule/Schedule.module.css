@@ -61,6 +61,57 @@
   overflow-y: auto;
 }
 
+.calendarLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.calendarMain {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Side-by-side layout on larger screens */
+@media (min-width: 1400px) {
+  .calendarLayout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  
+  .calendarMain {
+    flex: 1;
+  }
+  
+  .settingsPanel {
+    width: 340px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1600px) {
+  .settingsPanel {
+    width: 380px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .calendarLayout {
+    gap: 32px;
+  }
+  
+  .settingsPanel {
+    width: 420px;
+  }
+}
+
 .dragDropHint {
   background: rgba(252, 211, 77, 0.1);
   border: 1px dashed rgba(252, 211, 77, 0.3);
@@ -74,10 +125,9 @@
 
 /* Unified Settings Panel - context-aware */
 .settingsPanel {
-  margin-top: 20px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -165,11 +215,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .selectedDateHeader h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #fcd34d;
 }
@@ -279,14 +331,33 @@
 .rescheduleActions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Horizontal layout for time picker + action */
+.schedulingRow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.timePickerColumn {
+  min-width: 0;
+}
+
+.actionColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Schedule Action */
 .scheduleAction {
-  margin-top: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;
 }
 
 .draftPreview {
@@ -684,4 +755,77 @@
   letter-spacing: 0.5px;
   display: block;
   margin-bottom: 2px;
+}
+
+/* Debug overlay and dialog */
+.debugOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.debugDialog {
+  background: #1e1e2e;
+  border: 1px solid rgba(255, 200, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  max-width: 360px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.debugDialog p {
+  margin: 0 0 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.debugNote {
+  font-size: 0.8rem !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.debugActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.debugCancel,
+.debugConfirm {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.debugCancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.debugCancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.debugConfirm {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.debugConfirm:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
 }

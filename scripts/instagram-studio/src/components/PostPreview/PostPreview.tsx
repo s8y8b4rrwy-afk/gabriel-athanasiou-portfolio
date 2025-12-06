@@ -29,7 +29,7 @@ interface PostPreviewProps {
   onScheduleClick?: () => void;
   isEditing?: boolean;
   editingScheduleInfo?: EditingScheduleInfo | null;
-  onSaveEdit?: (newTime?: string) => void;
+  onSaveEdit?: (draft: { caption: string; hashtags: string[]; selectedImages: string[] }, newTime?: string) => void;
   onCancelEdit?: () => void;
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
@@ -62,6 +62,7 @@ export function PostPreview({
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
+  const [showSaved, setShowSaved] = useState(false);
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
   
   // Check if Instagram is connected
@@ -310,6 +311,7 @@ export function PostPreview({
   return (
     <div className="post-preview">
       <div className="post-preview-container">
+        {/* Column 1: Instagram Preview */}
         <div className="post-preview-instagram">
           <div className="instagram-mockup">
             <div className="instagram-header">
@@ -404,12 +406,14 @@ export function PostPreview({
           )}
         </div>
 
-        <div className="post-preview-editor">
+        {/* Column 2: Project Info + Images + Templates + Caption + Actions */}
+        <div className="post-preview-content-column">
           {isEditing && (
             <div className="editing-banner">
               ✏️ Editing scheduled post
             </div>
           )}
+          
           <div className="post-preview-project-info">
             <h2>{project.title}</h2>
             <div className="project-info-meta">
@@ -421,7 +425,17 @@ export function PostPreview({
             </div>
           </div>
 
-          {/* Template Selector - available in both create and edit modes */}
+          <ImageCarousel
+            images={allImages}
+            selectedImages={selectedImages}
+            projectId={project.id}
+            onToggleImage={handleToggleImage}
+            onReorderImages={handleReorderImages}
+            onSelectAll={handleSelectAllImages}
+            onDeselectAll={handleDeselectAllImages}
+          />
+
+          {/* Template Selector */}
           <div className="template-selector">
             <label>Apply Template:</label>
             <div className="template-buttons">
@@ -431,7 +445,6 @@ export function PostPreview({
                   if (defaultTemplate) {
                     handleApplyTemplate(defaultTemplate);
                   } else {
-                    // Fallback to old behavior if no default template
                     const generatedHashtags = generateHashtags(project);
                     setHashtags(generatedHashtags);
                     setCaption(generateCaption(project, { includeHashtags: true, customHashtags: generatedHashtags }));
@@ -454,25 +467,6 @@ export function PostPreview({
             </div>
           </div>
 
-          {/* Show scheduled posts for this project */}
-          {!isEditing && scheduledPostsForProject.length > 0 && onEditScheduledPost && onUnschedulePost && (
-            <ProjectScheduledPosts
-              posts={scheduledPostsForProject}
-              onEditPost={onEditScheduledPost}
-              onUnschedulePost={onUnschedulePost}
-            />
-          )}
-
-          <ImageCarousel
-            images={allImages}
-            selectedImages={selectedImages}
-            projectId={project.id}
-            onToggleImage={handleToggleImage}
-            onReorderImages={handleReorderImages}
-            onSelectAll={handleSelectAllImages}
-            onDeselectAll={handleDeselectAllImages}
-          />
-
           <CaptionEditor
             caption={caption}
             hashtags={hashtags}
@@ -484,20 +478,23 @@ export function PostPreview({
 
           <div className="post-preview-final-actions">
             <button className="final-action" onClick={handleDownloadImages} disabled={selectedImages.length === 0}>
-              📥 Download Images ({selectedImages.length})
+              📥 Download ({selectedImages.length})
             </button>
             
             {isEditing ? (
               <>
                 <button 
-                  className="final-action final-action--save" 
+                  className={`final-action final-action--save ${showSaved ? 'final-action--saved' : ''}`}
                   onClick={() => {
-                    onSaveDraft?.({ caption, hashtags, selectedImages });
-                    onSaveEdit?.(editingTime);
+                    const draft = { caption, hashtags, selectedImages };
+                    onSaveDraft?.(draft);
+                    onSaveEdit?.(draft, editingTime);
+                    setShowSaved(true);
+                    setTimeout(() => setShowSaved(false), 2000);
                   }}
                   disabled={selectedImages.length === 0}
                 >
-                  ✅ Save Changes
+                  {showSaved ? '✓ Saved!' : '✅ Save'}
                 </button>
                 {isInstagramConnected && project && (
                   <PublishButton
@@ -520,7 +517,7 @@ export function PostPreview({
                   className="final-action final-action--cancel" 
                   onClick={onCancelEdit}
                 >
-                  ✕ Cancel
+                  ✕ Close
                 </button>
               </>
             ) : (
@@ -533,7 +530,7 @@ export function PostPreview({
                   }}
                   disabled={selectedImages.length === 0}
                 >
-                  📅 Schedule Post
+                  📅 Schedule
                 </button>
                 {isInstagramConnected && project ? (
                   <PublishButton
@@ -557,12 +554,29 @@ export function PostPreview({
                     disabled
                     title="Connect Instagram in Settings to publish"
                   >
-                    📱 Publish Now
+                    📱 Publish
                   </button>
                 )}
               </>
             )}
           </div>
+        </div>
+
+        {/* Column 3: Scheduled Posts */}
+        <div className="post-preview-scheduled-column">
+          {scheduledPostsForProject.length > 0 && onEditScheduledPost && onUnschedulePost ? (
+            <ProjectScheduledPosts
+              posts={scheduledPostsForProject}
+              onEditPost={onEditScheduledPost}
+              onUnschedulePost={onUnschedulePost}
+              currentlyEditing={isEditing ? editingScheduleInfo?.scheduledDate : undefined}
+            />
+          ) : (
+            <div className="no-scheduled-posts">
+              <span>📅</span>
+              <p>No scheduled posts for this project</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
