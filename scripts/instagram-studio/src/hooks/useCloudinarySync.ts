@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   fetchScheduleFromCloudinary,
   uploadScheduleToCloudinary,
@@ -61,6 +61,11 @@ export function useCloudinarySync({
   const [autoSync, setAutoSyncState] = useState<boolean>(() => {
     return localStorage.getItem('instagram-studio-auto-sync') === 'true';
   });
+  
+  // Track when we just synced to prevent auto-sync loop
+  const justSyncedRef = useRef(false);
+  // Track the last sync timestamp to debounce properly
+  const lastSyncTimeRef = useRef(0);
 
   const setAutoSync = useCallback((value: boolean) => {
     setAutoSyncState(value);
@@ -76,9 +81,17 @@ export function useCloudinarySync({
   }, [syncSuccess]);
 
   const syncToCloudinary = useCallback(async (): Promise<boolean> => {
+    // Prevent concurrent syncs and rapid re-syncs
+    const now = Date.now();
+    if (now - lastSyncTimeRef.current < 3000) {
+      console.log('⏳ Skipping sync - too soon after last sync');
+      return true; // Return true to prevent error handling
+    }
+    
     setIsSyncing(true);
     setSyncError(null);
     setSyncSuccess(null);
+    lastSyncTimeRef.current = now;
 
     try {
       // Smart merge: fetch cloud data, merge with local, upload merged result
@@ -93,13 +106,19 @@ export function useCloudinarySync({
       );
       
       if (result.success) {
-        const now = new Date().toISOString();
-        setLastSyncedAt(now);
-        localStorage.setItem('instagram-studio-last-sync', now);
+        const syncTime = new Date().toISOString();
+        setLastSyncedAt(syncTime);
+        localStorage.setItem('instagram-studio-last-sync', syncTime);
         
         // If we have merged data, update local state with it
         if (result.mergedData) {
+          // Set flag to prevent auto-sync from triggering on this import
+          justSyncedRef.current = true;
           onImport(result.mergedData);
+          // Reset flag after a short delay to allow state to settle
+          setTimeout(() => {
+            justSyncedRef.current = false;
+          }, 1000);
           setSyncSuccess(`✅ Synced & merged! ${result.mergeStats || 'Data is in sync'}`);
         } else {
           setSyncSuccess('✅ Data synced to cloud successfully!');
@@ -160,12 +179,19 @@ export function useCloudinarySync({
     return false;
   }, [onImport]);
 
-  // Auto-sync on changes (debounced)
+  // Auto-sync on changes (debounced) - only for user-initiated changes
   useEffect(() => {
-    if (!autoSync || drafts.length === 0) return;
+    // Skip if auto-sync is disabled, no data, or we just synced
+    if (!autoSync || drafts.length === 0 || justSyncedRef.current) {
+      return;
+    }
 
     const timeoutId = setTimeout(() => {
-      syncToCloudinary();
+      // Double-check we didn't just sync
+      if (!justSyncedRef.current) {
+        console.log('🔄 Auto-syncing changes...');
+        syncToCloudinary();
+      }
     }, 5000); // 5 second debounce
 
     return () => clearTimeout(timeoutId);

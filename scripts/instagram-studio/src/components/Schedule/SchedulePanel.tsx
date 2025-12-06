@@ -219,7 +219,7 @@ export function SchedulePanel({
                           onClick={() => onEditPost(post)}
                           title="Click to edit"
                         >
-                          {post.project.title}
+                          {post.project?.title || 'Untitled'}
                         </span>
                         <button
                           className={styles.deletePostButton}
@@ -253,7 +253,7 @@ export function SchedulePanel({
                     <div className={styles.actionColumn}>
                       {rescheduleTarget ? (
                         <div className={styles.rescheduleInfo}>
-                          <p>Rescheduling: <strong>{rescheduleTarget.project.title}</strong></p>
+                          <p>Rescheduling: <strong>{rescheduleTarget.project?.title || 'Untitled'}</strong></p>
                           <div className={styles.rescheduleActions}>
                             <button 
                               onClick={confirmReschedule}
@@ -273,7 +273,7 @@ export function SchedulePanel({
                         <div className={styles.scheduleAction}>
                           <div className={styles.draftPreview}>
                             <strong>READY TO SCHEDULE:</strong>
-                            <p>{currentDraft!.project.title}</p>
+                            <p>{currentDraft!.project?.title || 'Untitled'}</p>
                             <span className={styles.imageCount}>
                               {currentDraft!.selectedImages.length} images
                             </span>

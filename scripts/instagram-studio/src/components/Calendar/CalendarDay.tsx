@@ -71,7 +71,7 @@ export function CalendarDay({
                 post={post}
                 onClick={() => onPostClick?.(post)}
                 statusClass={getStatusClass(post.scheduleSlot.status)}
-                truncatedTitle={post.project.title}
+                truncatedTitle={post.project?.title || 'Untitled'}
               />
             ))
           ) : (
@@ -83,7 +83,7 @@ export function CalendarDay({
                   post={post}
                   onClick={() => onPostClick?.(post)}
                   statusClass={getStatusClass(post.scheduleSlot.status)}
-                  truncatedTitle={truncateTitle(post.project.title, 18)}
+                  truncatedTitle={truncateTitle(post.project?.title || 'Untitled', 18)}
                 />
               ))}
               {posts.length > 2 && (

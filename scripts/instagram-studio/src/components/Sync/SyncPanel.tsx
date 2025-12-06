@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import styles from './Sync.module.css';
 
 interface SyncPanelProps {
@@ -29,6 +29,7 @@ export function SyncPanel({
   onToggleAutoSync,
 }: SyncPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,7 +59,7 @@ export function SyncPanel({
   return (
     <div className={styles.syncPanel}>
       <div className={styles.header}>
-        <h3>☁️ Sync & Export</h3>
+        <h3>☁️ Cloud Sync</h3>
         {isSyncing && <span className={styles.syncing}>Syncing...</span>}
       </div>
 
@@ -79,6 +80,18 @@ export function SyncPanel({
         <span className={styles.statusValue}>{formatLastSync(lastSyncedAt)}</span>
       </div>
 
+      {/* Main Sync Button */}
+      <button
+        className={styles.mainSyncButton}
+        onClick={onSyncToCloud}
+        disabled={isSyncing}
+      >
+        {isSyncing ? '🔄 Syncing...' : '🔄 Sync Now'}
+      </button>
+      <p className={styles.syncHint}>
+        Merges your local changes with cloud data
+      </p>
+
       <div className={styles.autoSync}>
         <label className={styles.toggle}>
           <input
@@ -88,60 +101,66 @@ export function SyncPanel({
           />
           <span className={styles.slider}></span>
         </label>
-        <span>Auto-sync to Cloudinary</span>
+        <span>Auto-sync on changes</span>
       </div>
 
-      <div className={styles.section}>
-        <h4>Cloudinary</h4>
-        <div className={styles.buttons}>
-          <button
-            className={styles.primaryButton}
-            onClick={onSyncToCloud}
-            disabled={isSyncing}
-          >
-            ⬆️ Upload to Cloud
-          </button>
-          <button
-            className={styles.secondaryButton}
-            onClick={onFetchFromCloud}
-            disabled={isSyncing}
-          >
-            ⬇️ Fetch from Cloud
-          </button>
-        </div>
-      </div>
+      {/* Advanced Options Toggle */}
+      <button 
+        className={styles.advancedToggle}
+        onClick={() => setShowAdvanced(!showAdvanced)}
+      >
+        {showAdvanced ? '▼' : '▶'} Advanced Options
+      </button>
 
-      <div className={styles.section}>
-        <h4>Export</h4>
-        <div className={styles.buttons}>
-          <button className={styles.exportButton} onClick={onExportJson}>
-            📄 Export JSON
-          </button>
-          <button className={styles.exportButton} onClick={onExportCsv}>
-            📊 Export CSV
-          </button>
-        </div>
-      </div>
+      {showAdvanced && (
+        <>
+          <div className={styles.section}>
+            <h4>Force Refresh</h4>
+            <button
+              className={styles.secondaryButton}
+              onClick={onFetchFromCloud}
+              disabled={isSyncing}
+            >
+              ⬇️ Replace with Cloud Data
+            </button>
+            <p className={styles.hint}>
+              Overwrites local data with cloud version (no merge)
+            </p>
+          </div>
 
-      <div className={styles.section}>
-        <h4>Import</h4>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleFileSelect}
-          style={{ display: 'none' }}
-        />
-        <button
-          className={styles.importButton}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          📥 Import from File
-        </button>
-        <p className={styles.hint}>
-          Import a previously exported JSON schedule file
-        </p>
-      </div>
+          <div className={styles.section}>
+            <h4>Export</h4>
+            <div className={styles.buttons}>
+              <button className={styles.exportButton} onClick={onExportJson}>
+                📄 Export JSON
+              </button>
+              <button className={styles.exportButton} onClick={onExportCsv}>
+                📊 Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h4>Import</h4>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+            <button
+              className={styles.importButton}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              📥 Import from File
+            </button>
+            <p className={styles.hint}>
+              Import a previously exported JSON schedule file
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Layout, ProjectList, PostPreview, SchedulePanel, DndContext, SyncPanel, TemplateList, TemplateEditor, AuthCallback, InstagramConnect } from './components';
 import { useProjects, useSchedule, useCloudinarySync, useTemplates } from './hooks';
 import { generateCaption } from './utils/generateCaption';
@@ -114,7 +114,7 @@ function App() {
     hashtags: string[];
     selectedImages: string[];
   } | null>(null);
-  const [hasInitializedFromCloud, setHasInitializedFromCloud] = useState(false);
+  const hasInitializedFromCloudRef = useRef(false);
   
   // Track if we're editing an existing scheduled post
   const [editingPost, setEditingPost] = useState<EditingState | null>(null);
@@ -131,28 +131,29 @@ function App() {
   }, []);
 
   // Fetch from Cloudinary on initial load - ALWAYS fetch to ensure we're up to date
+  // Use ref to prevent re-running when callbacks are recreated
   useEffect(() => {
-    if (!hasInitializedFromCloud) {
-      setHasInitializedFromCloud(true);
-      // Always fetch fresh data from cloud on app open to ensure we're up to date
-      console.log('🔄 Fetching fresh data from Cloudinary on boot...');
-      syncToCloudinary().then(success => {
-        if (success) {
-          console.log('✅ Successfully synced with Cloudinary');
-        } else {
-          // If sync failed, try just fetching
-          console.log('⚠️ Sync failed, trying fetch only...');
-          fetchFromCloudinary().then(fetchSuccess => {
-            if (fetchSuccess) {
-              console.log('✅ Successfully loaded data from Cloudinary');
-            } else {
-              console.log('ℹ️ No data found in Cloudinary or fetch failed');
-            }
-          });
-        }
-      });
-    }
-  }, [hasInitializedFromCloud, syncToCloudinary, fetchFromCloudinary]);
+    if (hasInitializedFromCloudRef.current) return;
+    hasInitializedFromCloudRef.current = true;
+    
+    // Always fetch fresh data from cloud on app open to ensure we're up to date
+    console.log('🔄 Fetching fresh data from Cloudinary on boot...');
+    syncToCloudinary().then(success => {
+      if (success) {
+        console.log('✅ Successfully synced with Cloudinary');
+      } else {
+        // If sync failed, try just fetching
+        console.log('⚠️ Sync failed, trying fetch only...');
+        fetchFromCloudinary().then(fetchSuccess => {
+          if (fetchSuccess) {
+            console.log('✅ Successfully loaded data from Cloudinary');
+          } else {
+            console.log('ℹ️ No data found in Cloudinary or fetch failed');
+          }
+        });
+      }
+    });
+  }, []); // Empty deps - only run once on mount
 
   // Get scheduled posts for the selected project
   const scheduledPostsForProject = useMemo(() => {

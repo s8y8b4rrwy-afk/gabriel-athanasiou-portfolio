@@ -49,7 +49,7 @@ export function DraggableMiniCard({
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${post.project.title} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}`}
+      title={`${post.project?.title || 'Untitled'} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}`}
     >
       <span className={styles.miniTitle}>{truncatedTitle}</span>
     </div>

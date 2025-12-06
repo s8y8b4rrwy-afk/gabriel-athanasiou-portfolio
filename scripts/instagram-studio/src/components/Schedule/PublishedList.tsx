@@ -64,8 +64,14 @@ export function PublishedList({ posts }: PublishedListProps) {
   };
 
   const getThumbnail = (post: ScheduledPost) => {
-    const rawThumbnail = post.selectedImages[0] || post.project.gallery?.[0] || '';
-    if (!rawThumbnail) return '';
+    const rawThumbnail = post.selectedImages?.[0] || post.project?.gallery?.[0] || '';
+    if (!rawThumbnail) {
+      // Fallback: build Cloudinary URL from projectId with index 0
+      if (post.projectId) {
+        return buildCloudinaryUrl(post.projectId, 0);
+      }
+      return '';
+    }
     
     // If already Cloudinary, just optimize it
     if (rawThumbnail.includes('res.cloudinary.com')) {
@@ -73,10 +79,15 @@ export function PublishedList({ posts }: PublishedListProps) {
     }
     
     // Find the index in the gallery
-    const allImages = post.project.gallery || [];
+    const allImages = post.project?.gallery || [];
     const index = findImageIndex(rawThumbnail, allImages);
     if (index !== -1) {
       return buildCloudinaryUrl(post.projectId, index);
+    }
+    
+    // Fallback: use projectId with index 0
+    if (post.projectId) {
+      return buildCloudinaryUrl(post.projectId, 0);
     }
     
     return rawThumbnail;
@@ -117,15 +128,15 @@ export function PublishedList({ posts }: PublishedListProps) {
                 {thumbnail && (
                   <img 
                     src={thumbnail} 
-                    alt={post.project.title} 
+                    alt={post.project?.title || 'Project'} 
                     className={styles.thumbnail} 
                   />
                 )}
                 <div className={styles.itemDetails}>
-                  <h4 className={styles.projectTitle}>{post.project.title}</h4>
-                  <p className={styles.projectYear}>{post.project.year}</p>
+                  <h4 className={styles.projectTitle}>{post.project?.title || 'Unknown Project'}</h4>
+                  <p className={styles.projectYear}>{post.project?.year || ''}</p>
                   <div className={styles.imageCount}>
-                    📷 {post.selectedImages.length || post.project.gallery?.length || 0} images
+                    📷 {post.selectedImages?.length || post.project?.gallery?.length || 0} images
                   </div>
                 </div>
               </div>
