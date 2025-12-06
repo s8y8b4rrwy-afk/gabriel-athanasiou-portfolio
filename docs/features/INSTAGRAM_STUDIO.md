@@ -14,12 +14,13 @@
 6. [Implementation Phases](#implementation-phases)
 7. [Cloud Sync](#cloud-sync)
 8. [Cloudinary Image URLs](#cloudinary-image-urls)
-9. [Technical Specifications](#technical-specifications)
-10. [Post Format & Templates](#post-format--templates)
-11. [Hashtag Strategy](#hashtag-strategy)
-12. [API Integration](#api-integration)
-13. [Rate Limits & Best Practices](#rate-limits--best-practices)
-14. [Future Enhancements](#future-enhancements)
+9. [Instagram Preview Simulation](#instagram-preview-simulation)
+10. [Technical Specifications](#technical-specifications)
+11. [Post Format & Templates](#post-format--templates)
+12. [Hashtag Strategy](#hashtag-strategy)
+13. [API Integration](#api-integration)
+14. [Rate Limits & Best Practices](#rate-limits--best-practices)
+15. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -472,6 +473,9 @@ scripts/
 - [x] Drag-to-delete: drop scheduled posts outside calendar to delete
 - [x] Published posts are non-draggable (shown with ✓ indicator)
 - [x] Consolidated settings panel (context-aware UI)
+- [x] Accurate Instagram preview simulation (shows exact Cloudinary transform result)
+- [x] Visual transform indicator (▬ letterbox / ✂️ crop / 📷 original toggle)
+- [x] Click-to-toggle preview between original and Instagram-transformed view
 
 #### Deliverables:
 - ✅ Visual calendar with scheduled posts showing titles
@@ -488,6 +492,8 @@ scripts/
 - ✅ Quick Schedule Defaults: pre-select time & template for drag-drop
 - ✅ Drag scheduled posts to delete zone to remove them
 - ✅ Smart UI: shows Quick Defaults or Date Panel based on context
+- ✅ Preview shows exactly how images will appear on Instagram after Cloudinary transforms
+- ✅ Toggle between original image and Instagram-cropped/letterboxed view
 
 ---
 
@@ -911,6 +917,105 @@ The main site generates a `cloudinary-mapping.json` file that maps project IDs t
 ```
 
 This mapping is fetched from `https://lemonpost.studio/cloudinary-mapping.json` and used for validation.
+
+---
+
+## Instagram Preview Simulation
+
+### Why Local Preview Simulation?
+
+When publishing to Instagram, images are transformed by Cloudinary to fit Instagram's aspect ratio requirements:
+- **Wide images** (wider than 1.91:1) get letterboxed with black bars on top/bottom
+- **Tall images** (taller than 4:5) get cropped to fill the width
+
+The preview in Instagram Studio **simulates these transforms locally** using CSS `object-fit`, so you can see exactly how your image will appear on Instagram *before* publishing—without making a Cloudinary transformation request.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Original Image                                │
+│              (e.g., 21:9 ultrawide, 9:16 vertical)              │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      │ getInstagramPreviewStyle(width, height)
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Determines Transform Type                     │
+│                                                                  │
+│   Image WIDER than target ratio (1.91:1)?                       │
+│   → objectFit: 'contain' (letterbox with black bars)            │
+│   → Cloudinary will use: c_pad                                  │
+│                                                                  │
+│   Image TALLER than target ratio (4:5)?                         │
+│   → objectFit: 'cover' (crops top/bottom, fills width)          │
+│   → Cloudinary will use: c_lfill                                │
+│                                                                  │
+│   Image matches target ratio?                                    │
+│   → No transformation needed                                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Visual Indicators
+
+The preview shows a small indicator in the corner:
+
+| Indicator | Meaning | CSS object-fit | Cloudinary Transform |
+|-----------|---------|----------------|----------------------|
+| ▬ | Letterbox (black bars top/bottom) | `contain` | `c_pad,b_black` |
+| ✂️ | Crop (fills width, crops height) | `cover` | `c_lfill` |
+| 📷 | Showing original (toggle active) | `contain` | None |
+
+### Toggle Between Original and Transformed
+
+Click the indicator icon to toggle between:
+1. **Instagram View** (default) - Shows how the image will appear after Cloudinary transforms
+2. **Original View** (📷) - Shows the full original image without cropping/letterboxing
+
+This helps you verify what parts of the image might be cropped before publishing.
+
+### Key Functions
+
+```typescript
+// Get the preview style for an image based on its dimensions
+interface InstagramPreviewStyle {
+  objectFit: 'contain' | 'cover';
+  targetAspectRatio: number;
+  willLetterbox: boolean;
+  willCrop: boolean;
+}
+
+getInstagramPreviewStyle(
+  originalWidth: number | undefined,
+  originalHeight: number | undefined
+): InstagramPreviewStyle
+```
+
+### Implementation Files
+
+| File | Purpose |
+|------|---------|
+| `src/utils/imageUtils.ts` | `getInstagramPreviewStyle()` function |
+| `src/components/PostPreview/PostPreview.tsx` | Preview component with toggle |
+| `src/components/PostPreview/PostPreview.css` | Styling for indicator button |
+
+### Instagram Aspect Ratios
+
+| Name | Ratio | Decimal | Use Case |
+|------|-------|---------|----------|
+| Portrait | 4:5 | 0.8 | Default for tall images |
+| Square | 1:1 | 1.0 | Square images |
+| Landscape | 1.91:1 | 1.91 | Maximum width for feeds |
+
+Images outside these ratios are automatically adjusted:
+- **Ultra-wide** (>1.91:1) → Letterboxed to 1.91:1
+- **Very tall** (<4:5, like 9:16) → Cropped to 4:5 (fills width, crops top/bottom)
+
+### Why Only Top/Bottom Bars?
+
+Instagram Studio is designed to **never add black bars on the left/right sides**, as this looks unprofessional on Instagram. Instead:
+- Wide images get subtle top/bottom letterboxing (looks cinematic)
+- Tall images are cropped to fill the width (avoids pillarboxing)
 
 ---
 
