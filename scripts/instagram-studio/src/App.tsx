@@ -172,20 +172,28 @@ function App() {
     setIsOAuthCallback(hasCode || hasError);
   }, []);
 
-  // Fetch from Cloudinary on initial load - ALWAYS fetch to ensure we're up to date
+  // Sync with Cloudinary on initial load - smart merge to get latest data
   // Use ref to prevent re-running when callbacks are recreated
   useEffect(() => {
     if (hasInitializedFromCloudRef.current) return;
     hasInitializedFromCloudRef.current = true;
     
-    // Always FETCH (download) fresh data from cloud on app open
-    // This ensures we're using the latest cloud state, not stale localStorage
-    console.log('🔄 Fetching fresh data from Cloudinary on boot...');
-    fetchFromCloudinary().then(success => {
+    // Smart merge sync: fetches cloud, merges with local, uploads merged, updates local
+    // This ensures we're up to date with cloud while preserving any local changes
+    console.log('🔄 Smart sync with Cloudinary on boot...');
+    syncToCloudinary().then(success => {
       if (success) {
-        console.log('✅ Successfully loaded data from Cloudinary');
+        console.log('✅ Successfully synced with Cloudinary');
       } else {
-        console.log('ℹ️ No data found in Cloudinary or fetch failed, using local data');
+        // If sync failed, try just fetching
+        console.log('⚠️ Sync failed, trying fetch only...');
+        fetchFromCloudinary().then(fetchSuccess => {
+          if (fetchSuccess) {
+            console.log('✅ Successfully loaded data from Cloudinary');
+          } else {
+            console.log('ℹ️ No data found in Cloudinary or fetch failed, using local data');
+          }
+        });
       }
     });
   }, []); // Empty deps - only run once on mount

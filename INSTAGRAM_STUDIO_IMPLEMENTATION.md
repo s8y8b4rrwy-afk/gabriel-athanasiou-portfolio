@@ -736,24 +736,30 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
 
 | Button | Location | Action |
 |--------|----------|--------|
-| **Sync Now** | Sync panel (main) | Downloads latest data from cloud |
-| **Download from Cloud** | Advanced options | Same as Sync Now - replaces local with cloud data |
-| **Upload to Cloud** | Advanced options | Merges local changes to cloud (smart merge) |
+| **Sync Now** | Sync panel (main) | Bidirectional smart merge (fetches cloud → merges → uploads → updates local) |
+| **Download from Cloud** | Advanced options | Replaces local with cloud data (no merge) |
+| **Upload to Cloud** | Advanced options | Merges local to cloud with smart merge |
 | **Auto-sync toggle** | Sync panel | When enabled, uploads local changes to cloud automatically (5s debounce) |
 
 ### Sync Behavior
 
 **On App Boot:**
-- App always fetches (downloads) fresh data from Cloudinary
-- This ensures you see the latest cloud state, not stale localStorage
+- App performs a smart merge sync with Cloudinary
+- Fetches cloud data, merges with local (by timestamp), uploads merged result
+- Local state is updated with the merged data
 
-**When You Make Changes (with Auto-sync ON):**
-- Changes are debounced (5 seconds) then uploaded to cloud
-- Uses smart merge to combine local changes with cloud data
+**"Sync Now" Button:**
+- Same as boot: bidirectional smart merge
+- Local changes are preserved and merged with cloud
+- Cloud data is also merged into local
 
-**Manual Sync:**
-- "Sync Now" downloads cloud data to replace local state
-- Use "Upload to Cloud" (in Advanced) to push local changes up
+**Auto-sync (when enabled):**
+- Debounced (5 seconds) upload after local changes
+- Uses smart merge to combine with cloud data
+
+**Advanced Options:**
+- "Download from Cloud": Force-replaces local with cloud (for troubleshooting)
+- "Upload to Cloud": Force smart merge upload (same as auto-sync but manual)
 
 ### Netlify Function
 

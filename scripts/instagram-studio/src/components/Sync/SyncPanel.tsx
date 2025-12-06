@@ -80,16 +80,16 @@ export function SyncPanel({
         <span className={styles.statusValue}>{formatLastSync(lastSyncedAt)}</span>
       </div>
 
-      {/* Main Sync Button - Downloads fresh data from cloud */}
+      {/* Main Sync Button - Bidirectional smart merge */}
       <button
         className={styles.mainSyncButton}
-        onClick={onFetchFromCloud}
+        onClick={onSyncToCloud}
         disabled={isSyncing}
       >
         {isSyncing ? '🔄 Syncing...' : '🔄 Sync Now'}
       </button>
       <p className={styles.syncHint}>
-        Downloads latest data from cloud
+        Smart merge: combines local + cloud data
       </p>
 
       <div className={styles.autoSync}>
