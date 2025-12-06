@@ -179,14 +179,17 @@
 
 .instagram-image {
   position: relative;
-  background: #1a1a1a;
-  /* aspect-ratio is now set dynamically via inline style */
+  background: #000;
+  /* aspect-ratio is set dynamically via inline style */
+  /* background is black for letterboxing when object-fit: contain is used */
 }
 
 .instagram-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* object-fit is set dynamically via inline style:
+     - contain: for wider images (letterbox with black bars)
+     - cover: for taller images (crop to fill) */
   background: #000;
 }
 
@@ -237,6 +240,33 @@
 
 .instagram-nav--next {
   right: 8px;
+}
+
+/* Transform indicator (shows if image will be cropped or letterboxed) */
+.instagram-transform-indicator {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  z-index: 5;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.instagram-transform-indicator:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.instagram-transform-indicator--active {
+  background: rgba(59, 130, 246, 0.8);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Carousel dots */

@@ -227,6 +227,74 @@ export function getClosestInstagramAspectRatio(width: number, height: number): s
 }
 
 /**
+ * Instagram Preview Transform Info
+ * Returns CSS styles to locally simulate Cloudinary's Instagram transformations
+ * 
+ * This matches the Cloudinary logic:
+ * - If image is WIDER than target ratio → use c_pad (adds top/bottom black bars) → object-fit: contain
+ * - If image is TALLER than target ratio → use c_lfill (crops to fill width) → object-fit: cover
+ */
+export interface InstagramPreviewStyle {
+  /** CSS object-fit value: 'contain' for letterbox, 'cover' for crop */
+  objectFit: 'contain' | 'cover';
+  /** The target aspect ratio (numeric) */
+  targetAspectRatio: number;
+  /** Whether black bars will be added (letterboxing) */
+  willLetterbox: boolean;
+  /** Whether the image will be cropped */
+  willCrop: boolean;
+}
+
+/**
+ * Get the CSS styles needed to preview how an image will look on Instagram
+ * after Cloudinary transformations are applied.
+ * 
+ * @param originalWidth - Original image width
+ * @param originalHeight - Original image height
+ * @returns Style info for accurate Instagram preview
+ */
+export function getInstagramPreviewStyle(
+  originalWidth: number | undefined,
+  originalHeight: number | undefined
+): InstagramPreviewStyle {
+  // Default when dimensions unknown - assume portrait 4:5, use cover (c_lfill default)
+  if (!originalWidth || !originalHeight) {
+    return {
+      objectFit: 'cover',
+      targetAspectRatio: 0.8,
+      willLetterbox: false,
+      willCrop: true,
+    };
+  }
+  
+  const originalRatio = originalWidth / originalHeight;
+  
+  // Determine target aspect ratio (same logic as getClosestInstagramAspectRatio)
+  const targetRatioStr = getClosestInstagramAspectRatio(originalWidth, originalHeight);
+  const targetRatio = parseFloat(targetRatioStr);
+  
+  // If image is WIDER than target ratio, use c_pad (letterbox with top/bottom bars)
+  // Example: 21:9 image (2.33) going to 1.91:1 → needs top/bottom padding
+  if (originalRatio > targetRatio) {
+    return {
+      objectFit: 'contain',
+      targetAspectRatio: targetRatio,
+      willLetterbox: true,
+      willCrop: false,
+    };
+  }
+  
+  // If image is TALLER than target (or same), use c_lfill (crops top/bottom, fills width)
+  // Example: 9:16 image (0.56) going to 4:5 (0.8) → crops to fill width, no side bars
+  return {
+    objectFit: 'cover',
+    targetAspectRatio: targetRatio,
+    willLetterbox: false,
+    willCrop: originalRatio < targetRatio,
+  };
+}
+
+/**
  * Build a Cloudinary URL directly from project ID and image index
  * This is the core function - matches main site pattern: portfolio-projects-{recordId}-{index}
  * 

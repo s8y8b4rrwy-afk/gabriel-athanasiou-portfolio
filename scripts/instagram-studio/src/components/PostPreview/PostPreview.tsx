@@ -8,7 +8,7 @@ import { TimeSlotPicker } from '../Calendar';
 import { PublishButton } from '../Schedule/PublishButton';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import { useCloudinaryMappingReady } from '../../hooks';
-import { buildCloudinaryUrl, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle } from '../../utils/imageUtils';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
@@ -63,6 +63,7 @@ export function PostPreview({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
   const [showSaved, setShowSaved] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false); // Toggle between original and Instagram crop
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
   
   // Check if Instagram is connected
@@ -179,27 +180,21 @@ export function PostPreview({
     loadDimensions();
   }, [selectedImages]);
 
-  // Get Instagram aspect ratio for current image
-  // Default to landscape (1.91:1) unless image is clearly portrait
-  const getCurrentImageAspectRatio = useCallback(() => {
+  // Get Instagram preview style for current image
+  // This simulates how Cloudinary will transform the image:
+  // - WIDER images: letterbox with black bars (object-fit: contain)
+  // - TALLER images: crop to fill width (object-fit: cover)
+  const getCurrentImagePreviewStyle = useCallback(() => {
     const currentImage = selectedImages[currentPreviewIndex];
-    if (!currentImage) return 1.91; // Default to landscape
-    
-    const dims = imageDimensions.get(currentImage);
-    if (!dims) return 1.91; // Default to landscape when dimensions unknown
-    
-    const originalRatio = dims.width / dims.height;
-    
-    // If portrait (ratio < 1), use 4:5
-    if (originalRatio < 1) {
-      return 4 / 5;
+    if (!currentImage) {
+      return getInstagramPreviewStyle(undefined, undefined);
     }
     
-    // Otherwise use landscape 1.91:1 (Instagram's max landscape)
-    return 1.91;
+    const dims = imageDimensions.get(currentImage);
+    return getInstagramPreviewStyle(dims?.width, dims?.height);
   }, [selectedImages, currentPreviewIndex, imageDimensions]);
 
-  const currentAspectRatio = getCurrentImageAspectRatio();
+  const currentPreviewStyle = getCurrentImagePreviewStyle();
 
   // Reset preview index if it goes out of bounds
   useEffect(() => {
@@ -322,10 +317,19 @@ export function PostPreview({
               <span className="instagram-more">•••</span>
             </div>
             
-            <div className="instagram-image" style={{ aspectRatio: currentAspectRatio }}>
+            <div className="instagram-image" style={{ 
+              aspectRatio: showOriginal 
+                ? (imageDimensions.get(selectedImages[currentPreviewIndex])?.width || 4) / 
+                  (imageDimensions.get(selectedImages[currentPreviewIndex])?.height || 5)
+                : currentPreviewStyle.targetAspectRatio 
+            }}>
               {selectedImages.length > 0 ? (
                 <>
-                  <img src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} alt={project.title} />
+                  <img 
+                    src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} 
+                    alt={project.title}
+                    style={{ objectFit: showOriginal ? 'contain' : currentPreviewStyle.objectFit }}
+                  />
                   {selectedImages.length > 1 && (
                     <>
                       <button 
@@ -344,9 +348,24 @@ export function PostPreview({
                       </button>
                     </>
                   )}
+                  {/* Transform indicator - click to toggle original vs cropped */}
+                  {(currentPreviewStyle.willCrop || currentPreviewStyle.willLetterbox) && (
+                    <button 
+                      className={`instagram-transform-indicator ${showOriginal ? 'instagram-transform-indicator--active' : ''}`}
+                      onClick={() => setShowOriginal(!showOriginal)}
+                      title={showOriginal 
+                        ? "Showing original - Click to see Instagram crop" 
+                        : (currentPreviewStyle.willLetterbox 
+                          ? "Wide image: black bars will be added - Click to see original" 
+                          : "Tall image: will be cropped - Click to see original")
+                      }
+                    >
+                      {showOriginal ? '📷' : (currentPreviewStyle.willLetterbox ? '▬' : '✂️')}
+                    </button>
+                  )}
                 </>
               ) : allImages.length > 0 ? (
-                <img src={getCloudinaryUrl(allImages[0])} alt={project.title} />
+                <img src={getCloudinaryUrl(allImages[0])} alt={project.title} style={{ objectFit: 'cover' }} />
               ) : (
                 <div className="instagram-no-image">🎬</div>
               )}
