@@ -8,7 +8,7 @@ import { TimeSlotPicker } from '../Calendar';
 import { PublishButton } from '../Schedule/PublishButton';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import { useCloudinaryMappingReady } from '../../hooks';
-import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle, getCarouselTransformMode } from '../../utils/imageUtils';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle, getCarouselTransformMode, getCloudinaryUrlForImage } from '../../utils/imageUtils';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
@@ -31,6 +31,7 @@ interface PostPreviewProps {
   onScheduleClick?: () => void;
   isEditing?: boolean;
   editingScheduleInfo?: EditingScheduleInfo | null;
+  onPersistEdit?: (draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode: ImageDisplayMode }) => void;
   onSaveEdit?: (draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode: ImageDisplayMode }, newTime?: string) => void;
   onCancelEdit?: () => void;
   scheduledPostsForProject?: ScheduledPost[];
@@ -40,6 +41,9 @@ interface PostPreviewProps {
   onPublishSuccess?: (result: PublishResult) => void;
   templates?: RecurringTemplate[];
   defaultTemplate?: RecurringTemplate;
+  // Navigation between posts in edit mode
+  allPendingPosts?: ScheduledPost[];
+  onNavigateToPost?: (post: ScheduledPost, saveCurrent: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode }) => void;
 }
 
 export function PostPreview({ 
@@ -49,6 +53,7 @@ export function PostPreview({
   onScheduleClick,
   isEditing = false,
   editingScheduleInfo,
+  onPersistEdit,
   onSaveEdit,
   onCancelEdit,
   scheduledPostsForProject = [],
@@ -58,6 +63,8 @@ export function PostPreview({
   onPublishSuccess,
   templates = [],
   defaultTemplate,
+  allPendingPosts = [],
+  onNavigateToPost,
 }: PostPreviewProps) {
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -79,11 +86,13 @@ export function PostPreview({
   useCloudinaryMappingReady();
 
   // Get all available images for the project (use original URLs directly)
-  const allImages = project
-    ? [...(project.heroImage ? [project.heroImage] : []), ...project.gallery].filter(
-        (img, idx, arr) => arr.indexOf(img) === idx // Remove duplicates
-      )
-    : [];
+  // IMPORTANT: Memoize to prevent infinite re-renders in dependent effects
+  const allImages = useMemo(() => {
+    if (!project) return [];
+    return [...(project.heroImage ? [project.heroImage] : []), ...project.gallery].filter(
+      (img, idx, arr) => arr.indexOf(img) === idx // Remove duplicates
+    );
+  }, [project?.id, project?.heroImage, project?.gallery]);
     
   // Build a map of original URL -> Cloudinary URL for fast lookups
   const cloudinaryUrlMap = useMemo(() => {
@@ -100,9 +109,25 @@ export function PostPreview({
   }, [allImages, project?.id]);
   
   // Helper to get Cloudinary URL for any image
+  // Handles URLs from saved drafts that might not be in current project's allImages
   const getCloudinaryUrl = useCallback((url: string): string => {
-    return cloudinaryUrlMap.get(url) || url;
-  }, [cloudinaryUrlMap]);
+    // First check the map (fastest path)
+    const mapped = cloudinaryUrlMap.get(url);
+    if (mapped) return mapped;
+    
+    // If already a Cloudinary URL, just optimize it
+    if (url.includes('res.cloudinary.com')) {
+      return getOptimizedCloudinaryUrl(url);
+    }
+    
+    // For Airtable URLs, try to find the index from current project and build Cloudinary URL
+    if (project && (url.includes('airtable.com') || url.includes('airtableusercontent.com'))) {
+      return getCloudinaryUrlForImage(url, project.id, allImages);
+    }
+    
+    // Fallback: return original URL
+    return url;
+  }, [cloudinaryUrlMap, project, allImages]);
 
   // Set editing time when schedule info is provided
   useEffect(() => {
@@ -309,6 +334,29 @@ export function PostPreview({
     );
   }, [selectedImages.length]);
 
+  // Post navigation in edit mode (next/previous scheduled post)
+  const currentPostIndex = useMemo(() => {
+    if (!isEditing || !editingScheduleInfo) return -1;
+    return allPendingPosts.findIndex(p => p.scheduleSlot.id === editingScheduleInfo.slotId);
+  }, [isEditing, editingScheduleInfo, allPendingPosts]);
+
+  const prevPost = currentPostIndex > 0 ? allPendingPosts[currentPostIndex - 1] : null;
+  const nextPost = currentPostIndex >= 0 && currentPostIndex < allPendingPosts.length - 1 
+    ? allPendingPosts[currentPostIndex + 1] 
+    : null;
+
+  const handleNavigatePrev = useCallback(() => {
+    if (prevPost && onNavigateToPost) {
+      onNavigateToPost(prevPost, { caption, hashtags, selectedImages, imageMode });
+    }
+  }, [prevPost, onNavigateToPost, caption, hashtags, selectedImages, imageMode]);
+
+  const handleNavigateNext = useCallback(() => {
+    if (nextPost && onNavigateToPost) {
+      onNavigateToPost(nextPost, { caption, hashtags, selectedImages, imageMode });
+    }
+  }, [nextPost, onNavigateToPost, caption, hashtags, selectedImages, imageMode]);
+
   if (!project) {
     return (
       <div className="post-preview-empty">
@@ -323,6 +371,53 @@ export function PostPreview({
 
   return (
     <div className="post-preview">
+      {/* Post Navigation Bar - shown when editing a scheduled post */}
+      {isEditing && allPendingPosts.length > 1 && (
+        <div className="post-navigation-bar">
+          <button 
+            className="post-nav-btn post-nav-btn--prev"
+            onClick={handleNavigatePrev}
+            disabled={!prevPost}
+            title={prevPost ? `Previous: ${prevPost.project?.title || 'Unknown'}` : 'No previous post'}
+          >
+            <span className="post-nav-arrow">←</span>
+            <span className="post-nav-label">
+              {prevPost ? (
+                <>
+                  <span className="post-nav-hint">Save & go to</span>
+                  <span className="post-nav-title">{prevPost.project?.title?.substring(0, 20) || 'Previous'}{(prevPost.project?.title?.length || 0) > 20 ? '...' : ''}</span>
+                </>
+              ) : (
+                <span className="post-nav-hint">No previous</span>
+              )}
+            </span>
+          </button>
+          
+          <div className="post-nav-position">
+            {currentPostIndex + 1} / {allPendingPosts.length}
+          </div>
+          
+          <button 
+            className="post-nav-btn post-nav-btn--next"
+            onClick={handleNavigateNext}
+            disabled={!nextPost}
+            title={nextPost ? `Next: ${nextPost.project?.title || 'Unknown'}` : 'No next post'}
+          >
+            <span className="post-nav-label">
+              {nextPost ? (
+                <>
+                  <span className="post-nav-hint">Save & go to</span>
+                  <span className="post-nav-title">{nextPost.project?.title?.substring(0, 20) || 'Next'}{(nextPost.project?.title?.length || 0) > 20 ? '...' : ''}</span>
+                </>
+              ) : (
+                <span className="post-nav-hint">No next</span>
+              )}
+            </span>
+            <span className="post-nav-arrow">→</span>
+          </button>
+        </div>
+      )}
+      
       <div className="post-preview-container">
         {/* Column 1: Instagram Preview */}
         <div className="post-preview-instagram">
@@ -570,8 +665,9 @@ export function PostPreview({
                   className={`final-action final-action--save ${showSaved ? 'final-action--saved' : ''}`}
                   onClick={() => {
                     const draft = { caption, hashtags, selectedImages, imageMode };
+                    // Persist the changes to localStorage (triggers auto-sync)
+                    onPersistEdit?.(draft);
                     onSaveDraft?.(draft);
-                    // Only save the draft, don't call onSaveEdit which exits editing mode
                     setShowSaved(true);
                     setTimeout(() => setShowSaved(false), 2000);
                   }}

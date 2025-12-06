@@ -1,7 +1,7 @@
 {
   "version": "1.4.0",
-  "exportedAt": "2025-12-06T11:16:41.209Z",
-  "lastMergedAt": "2025-12-06T11:11:09.559Z",
+  "exportedAt": "2025-12-06T13:54:17.776Z",
+  "lastMergedAt": "2025-12-06T13:50:45.634Z",
   "profileId": "default",
   "settings": {
     "defaultTimes": [
@@ -1900,7 +1900,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764603745/portfolio-projects-recfCKTEcmpkSWxsg-0.jpg"
       ],
       "createdAt": "2025-12-05T23:26:38.946Z",
-      "updatedAt": "2025-12-05T23:30:05.366Z"
+      "updatedAt": "2025-12-06T13:42:40.147Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764977744284-naheqrjk3",
@@ -2100,7 +2101,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764715939/portfolio-projects-rec9d8M9kuWPnzbmt-3.heic"
       ],
       "createdAt": "2025-12-05T23:39:18.017Z",
-      "updatedAt": "2025-12-06T01:49:24.326Z"
+      "updatedAt": "2025-12-06T13:46:03.369Z",
+      "imageMode": "fill"
     },
     {
       "id": "1764978161685-dp5cslquz",
@@ -2184,7 +2186,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764603774/portfolio-projects-recC9iL5Z1deoxc30-0.jpg"
       ],
       "createdAt": "2025-12-05T23:42:41.685Z",
-      "updatedAt": "2025-12-05T23:43:01.082Z"
+      "updatedAt": "2025-12-06T13:42:45.087Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764978295434-isve4qeim",
@@ -4127,7 +4130,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764603780/portfolio-projects-recYknDnapMT18OhZ-1.jpg"
       ],
       "createdAt": "2025-12-06T01:48:38.885Z",
-      "updatedAt": "2025-12-06T01:48:38.885Z"
+      "updatedAt": "2025-12-06T13:42:40.823Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985754283-zpfs7vv9f",
@@ -4201,7 +4205,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804926/portfolio-projects-reczKSwzalWyR9bgf-2.jpg"
       ],
       "createdAt": "2025-12-06T01:49:14.283Z",
-      "updatedAt": "2025-12-06T01:49:14.283Z"
+      "updatedAt": "2025-12-06T13:46:07.902Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985789907-gd6yh9na8",
@@ -4277,7 +4282,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804929/portfolio-projects-rec4tWleeVSuiUacx-3.jpg"
       ],
       "createdAt": "2025-12-06T01:49:49.907Z",
-      "updatedAt": "2025-12-06T01:49:49.907Z"
+      "updatedAt": "2025-12-06T13:42:46.222Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985794453-fwnk4244p",
@@ -4355,7 +4361,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804932/portfolio-projects-recsPIqnUyq78jfyv-2.jpg"
       ],
       "createdAt": "2025-12-06T01:49:54.453Z",
-      "updatedAt": "2025-12-06T01:50:52.816Z"
+      "updatedAt": "2025-12-06T13:46:25.928Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985808032-tmvszckxz",
@@ -4434,7 +4441,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804935/portfolio-projects-recFJA1FvBOL9VwA6-2.jpg"
       ],
       "createdAt": "2025-12-06T01:50:08.032Z",
-      "updatedAt": "2025-12-06T01:50:18.030Z"
+      "updatedAt": "2025-12-06T13:42:39.221Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985856324-xhii09wta",
@@ -4578,7 +4586,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804919/portfolio-projects-recGZlDTuUXG8Iq6K-3.jpg"
       ],
       "createdAt": "2025-12-06T01:51:39.190Z",
-      "updatedAt": "2025-12-06T01:51:39.190Z"
+      "updatedAt": "2025-12-06T13:42:44.246Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985925466-sazxzk7fm",
@@ -4694,7 +4703,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764603768/portfolio-projects-recP0DyB35ZBY85Kb-2.tiff"
       ],
       "createdAt": "2025-12-06T01:52:05.466Z",
-      "updatedAt": "2025-12-06T01:52:05.466Z"
+      "updatedAt": "2025-12-06T13:42:38.929Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764985979210-i1c3mwo0w",
@@ -4773,7 +4783,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804921/portfolio-projects-recxq79R8VQJGMsvp-1.jpg"
       ],
       "createdAt": "2025-12-06T01:52:59.210Z",
-      "updatedAt": "2025-12-06T01:53:17.675Z"
+      "updatedAt": "2025-12-06T13:42:38.604Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764986024047-ou3gtr2q5",
@@ -4853,7 +4864,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764804921/portfolio-projects-recxq79R8VQJGMsvp-2.jpg"
       ],
       "createdAt": "2025-12-06T01:53:44.047Z",
-      "updatedAt": "2025-12-06T01:54:09.634Z"
+      "updatedAt": "2025-12-06T13:44:27.351Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764986263144-g1jpaysg9",
@@ -5007,7 +5019,8 @@
         "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
       ],
       "createdAt": "2025-12-06T01:57:43.144Z",
-      "updatedAt": "2025-12-06T01:58:42.735Z"
+      "updatedAt": "2025-12-06T13:42:38.190Z",
+      "imageMode": "fit"
     },
     {
       "id": "1764986343172-wppaga6p6",
@@ -5202,6 +5215,1093 @@
       ],
       "createdAt": "2025-12-05T15:03:05.668Z",
       "updatedAt": "2025-12-05T15:03:05.668Z"
+    },
+    {
+      "id": "1765024087526-ztpoae1no",
+      "projectId": "recSAbOWE8DjJzcTA",
+      "project": {
+        "id": "recSAbOWE8DjJzcTA",
+        "slug": "dye-lon-riverside-investors-pitch",
+        "title": "Dye Lon Riverside Investors Pitch",
+        "type": "Commercial",
+        "kinds": [
+          "Corporate"
+        ],
+        "genre": [],
+        "productionCompany": "Storyflow Entertainment Limited",
+        "client": "",
+        "year": "2025",
+        "releaseDate": "",
+        "workDate": "2025-07-04",
+        "description": "",
+        "isFeatured": false,
+        "isHero": false,
+        "heroImage": "https://i.vimeocdn.com/video/2091375304-09f5bb6ff013384d9593912847051e537966fe2182febf15c86417a3125f4429-d_295x166?region=us",
+        "gallery": [],
+        "videoUrl": "https://vimeo.com/1143256279/0ffc646a64",
+        "additionalVideos": [],
+        "awards": [],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Dye Lon Riverside Investors Pitch (2025)\n\nProduction: Storyflow Entertainment Limited\n\n—\nEdit by @lemonpoststudio\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio\n\n#postproduction #colorgrading #colourgrading #filmmaker #cinematography #davinciresolve #ukfilm #londonfilm #britishfilm #londoncreatives #ukproduction #shortfilm #indiefilm #filmmaking #director #cinema #commercial #brandfilm #advertising #corporatevideo #branded #linkinbio #newwork #projectspotlight #creativeprocess",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://i.vimeocdn.com/video/2091375304-09f5bb6ff013384d9593912847051e537966fe2182febf15c86417a3125f4429-d_295x166?region=us"
+      ],
+      "imageMode": "fit",
+      "createdAt": "2025-12-06T12:28:07.526Z",
+      "updatedAt": "2025-12-06T12:28:07.526Z"
+    },
+    {
+      "id": "1765024159458-8z7plvhip",
+      "projectId": "rec01thlhC4hHGRlS",
+      "project": {
+        "id": "rec01thlhC4hHGRlS",
+        "slug": "medicus-wilmslow-health-centre-testimonials",
+        "title": "Medicus Wilmslow Health Centre Testimonials",
+        "type": "Commercial",
+        "kinds": [
+          "Corporate"
+        ],
+        "genre": [],
+        "productionCompany": "Storyflow Entertainment Limited",
+        "client": "",
+        "year": "2025",
+        "releaseDate": "",
+        "workDate": "2025-07-02",
+        "description": "",
+        "isFeatured": false,
+        "isHero": false,
+        "heroImage": "https://img.youtube.com/vi/eGPZfFFydPQ/maxresdefault.jpg",
+        "gallery": [],
+        "videoUrl": "https://www.youtube.com/watch?v=eGPZfFFydPQ&t=2s",
+        "additionalVideos": [],
+        "awards": [],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Medicus Wilmslow Health Centre Testimonials (2025)\n\nProduction: Storyflow Entertainment Limited\n\n—\nEdit, Colour Grading by @lemonpoststudio\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio\n\n#postproduction #colorgrading #colourgrading #filmmaker #cinematography #davinciresolve #ukfilm #londonfilm #britishfilm #londoncreatives #ukproduction #shortfilm #indiefilm #filmmaking #director #cinema #commercial #brandfilm #advertising #corporatevideo #branded #linkinbio #newwork #projectspotlight #creativeprocess",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://img.youtube.com/vi/eGPZfFFydPQ/maxresdefault.jpg"
+      ],
+      "imageMode": "fit",
+      "createdAt": "2025-12-06T12:29:19.458Z",
+      "updatedAt": "2025-12-06T12:29:19.458Z"
+    },
+    {
+      "id": "1765024950362-qx8cfo7i0",
+      "projectId": "recnbZVXssWnqzk63",
+      "project": {
+        "id": "recnbZVXssWnqzk63",
+        "slug": "kitt-medical-x-medical-tracker-partnership-video",
+        "title": "Kitt Medical X Medical Tracker Partnership Video",
+        "type": "Commercial",
+        "kinds": [
+          "Corporate"
+        ],
+        "genre": [],
+        "productionCompany": "Storyflow Entertainment Limited",
+        "client": "Kitt Medical, Medical Tracker",
+        "year": "2025",
+        "releaseDate": "",
+        "workDate": "2025-09-29",
+        "description": "A video announcing the partnership bewteen Kitt Medical, a defibralator but for allergies, and Medical Tracker, a digital accident book for schools and more.",
+        "isFeatured": false,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-1.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715881/portfolio-projects-recnbZVXssWnqzk63-2.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715882/portfolio-projects-recnbZVXssWnqzk63-3.heic"
+        ],
+        "videoUrl": "https://vimeo.com/1142566993/aebf7a6fc6?share=copy&fl=sv&fe=ci",
+        "additionalVideos": [],
+        "awards": [],
+        "credits": [
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Kitt Medical X Medical Tracker Partnership Video (2025)\n\nClient: Kitt Medical, Medical Tracker\nProduction: Storyflow Entertainment Limited\n\n—\nColour Grading, Edit by @lemonpoststudio\nDirected by @gab.ath\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio\n\n#postproduction #colorgrading #colourgrading #filmmaker #cinematography #davinciresolve #ukfilm #londonfilm #britishfilm #londoncreatives #ukproduction #shortfilm #indiefilm #filmmaking #director #cinema #commercial #brandfilm #advertising #corporatevideo #branded #linkinbio #newwork #projectspotlight #creativeprocess",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-1.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715881/portfolio-projects-recnbZVXssWnqzk63-2.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715882/portfolio-projects-recnbZVXssWnqzk63-3.heic"
+      ],
+      "imageMode": "fit",
+      "createdAt": "2025-12-06T12:42:30.362Z",
+      "updatedAt": "2025-12-06T12:42:30.362Z"
+    },
+    {
+      "id": "1765026178518-ecrj5kdz3",
+      "projectId": "recnbZVXssWnqzk63",
+      "project": {
+        "id": "recnbZVXssWnqzk63",
+        "slug": "kitt-medical-x-medical-tracker-partnership-video",
+        "title": "Kitt Medical X Medical Tracker Partnership Video",
+        "type": "Commercial",
+        "kinds": [
+          "Corporate"
+        ],
+        "genre": [],
+        "productionCompany": "Storyflow Entertainment Limited",
+        "client": "Kitt Medical, Medical Tracker",
+        "year": "2025",
+        "releaseDate": "",
+        "workDate": "2025-09-29",
+        "description": "A video announcing the partnership bewteen Kitt Medical, a defibralator but for allergies, and Medical Tracker, a digital accident book for schools and more.",
+        "isFeatured": false,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-1.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715881/portfolio-projects-recnbZVXssWnqzk63-2.heic",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764715882/portfolio-projects-recnbZVXssWnqzk63-3.heic"
+        ],
+        "videoUrl": "https://vimeo.com/1142566993/aebf7a6fc6?share=copy&fl=sv&fe=ci",
+        "additionalVideos": [],
+        "awards": [],
+        "credits": [
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Kitt Medical X Medical Tracker Partnership Video (2025)\n\nClient: Kitt Medical, Medical Tracker\nProduction: Storyflow Entertainment Limited\n\n—\nColour Grading, Edit by @lemonpoststudio\nDirected by @gab.ath\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-1.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715881/portfolio-projects-recnbZVXssWnqzk63-2.heic",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764715882/portfolio-projects-recnbZVXssWnqzk63-3.heic"
+      ],
+      "imageMode": "fit",
+      "createdAt": "2025-12-06T13:02:58.518Z",
+      "updatedAt": "2025-12-06T13:02:58.518Z"
+    },
+    {
+      "id": "1765027251568-x4q84b9ka",
+      "projectId": "recwmX7kG05YjKDPm",
+      "project": {
+        "id": "recwmX7kG05YjKDPm",
+        "slug": "before-the-rooster-crows",
+        "title": "Before The Rooster Crows",
+        "type": "Narrative",
+        "kinds": [
+          "Short Film"
+        ],
+        "genre": [
+          "Crime",
+          "Drama"
+        ],
+        "productionCompany": "Film Lemon",
+        "client": "",
+        "year": "2020",
+        "releaseDate": "",
+        "workDate": "2020-02-26",
+        "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+        "isFeatured": true,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+        ],
+        "videoUrl": "https://vimeo.com/athanasiou/rooster",
+        "additionalVideos": [],
+        "awards": [
+          "Best Director - Arizona Short Film Festival",
+          "Best Short Film Nomination - Hollywood Verge Film Awards",
+          "Best Drama Film Nomination - Hollywood Verge Film Awards",
+          " Symi International Film Festival 2021"
+        ],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          },
+          {
+            "role": "Written by",
+            "name": "Ioanna Kaltsidou"
+          },
+          {
+            "role": "Produced by",
+            "name": "Film Lemon"
+          },
+          {
+            "role": "Production Manager",
+            "name": "Jim Kallifatidis"
+          },
+          {
+            "role": "DOP",
+            "name": "Theologos Vavdinoudis"
+          },
+          {
+            "role": "Art Director",
+            "name": "Angelika Mouchsiadou"
+          },
+          {
+            "role": "Costumes",
+            "name": "Christina Sarri"
+          },
+          {
+            "role": "Sound Mixer",
+            "name": "Pelagia Xatzinikita"
+          },
+          {
+            "role": "Make-up",
+            "name": "Dimitra Avramidou"
+          },
+          {
+            "role": "Production Assistant",
+            "name": "Anna Antaboufi"
+          },
+          {
+            "role": "Original Score",
+            "name": "Petros Apostolidis"
+          },
+          {
+            "role": "Anna",
+            "name": "Georgia Toufa"
+          },
+          {
+            "role": "Makis",
+            "name": "Spiros Dimou"
+          },
+          {
+            "role": "Argiris",
+            "name": "Spiros Parisis"
+          },
+          {
+            "role": "Vasilis",
+            "name": "Vangelis Anastasiou"
+          },
+          {
+            "role": "Lia",
+            "name": "Despina Antoniou"
+          },
+          {
+            "role": "Doctor",
+            "name": "Nikos Mertzanidis"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Before The Rooster Crows (2020)\n\nProduction: Film Lemon\n\n🏆 Best Director - Arizona Short Film Festival | Best Short Film Nomination - Hollywood Verge Film Awards | Best Drama Film Nomination - Hollywood Verge Film Awards |  Symi International Film Festival 2021\n\n—\nEdit, Colour Grading by @lemonpoststudio\nDirected by @gab.ath\nWritten by Ioanna Kaltsidou\nProduction Manager by Jim Kallifatidis\nCinematography by Theologos Vavdinoudis\nArt Director by Angelika Mouchsiadou\nCostumes by Christina Sarri\nSound Mixer by Pelagia Xatzinikita\nMake-up by Dimitra Avramidou\nProduction Assistant by Anna Antaboufi\nOriginal Score by Petros Apostolidis\nAnna by Georgia Toufa\nMakis by Spiros Dimou\nArgiris by Spiros Parisis\nVasilis by Vangelis Anastasiou\nLia by Despina Antoniou\nDoctor by Nikos Mertzanidis\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+      ],
+      "createdAt": "2025-12-06T13:20:51.568Z",
+      "updatedAt": "2025-12-06T13:20:51.568Z"
+    },
+    {
+      "id": "1765027418041-wqdcg94bf",
+      "projectId": "recwmX7kG05YjKDPm",
+      "project": {
+        "id": "recwmX7kG05YjKDPm",
+        "slug": "before-the-rooster-crows",
+        "title": "Before The Rooster Crows",
+        "type": "Narrative",
+        "kinds": [
+          "Short Film"
+        ],
+        "genre": [
+          "Crime",
+          "Drama"
+        ],
+        "productionCompany": "Film Lemon",
+        "client": "",
+        "year": "2020",
+        "releaseDate": "",
+        "workDate": "2020-02-26",
+        "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+        "isFeatured": true,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+        ],
+        "videoUrl": "https://vimeo.com/athanasiou/rooster",
+        "additionalVideos": [],
+        "awards": [
+          "Best Director - Arizona Short Film Festival",
+          "Best Short Film Nomination - Hollywood Verge Film Awards",
+          "Best Drama Film Nomination - Hollywood Verge Film Awards",
+          " Symi International Film Festival 2021"
+        ],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          },
+          {
+            "role": "Written by",
+            "name": "Ioanna Kaltsidou"
+          },
+          {
+            "role": "Produced by",
+            "name": "Film Lemon"
+          },
+          {
+            "role": "Production Manager",
+            "name": "Jim Kallifatidis"
+          },
+          {
+            "role": "DOP",
+            "name": "Theologos Vavdinoudis"
+          },
+          {
+            "role": "Art Director",
+            "name": "Angelika Mouchsiadou"
+          },
+          {
+            "role": "Costumes",
+            "name": "Christina Sarri"
+          },
+          {
+            "role": "Sound Mixer",
+            "name": "Pelagia Xatzinikita"
+          },
+          {
+            "role": "Make-up",
+            "name": "Dimitra Avramidou"
+          },
+          {
+            "role": "Production Assistant",
+            "name": "Anna Antaboufi"
+          },
+          {
+            "role": "Original Score",
+            "name": "Petros Apostolidis"
+          },
+          {
+            "role": "Anna",
+            "name": "Georgia Toufa"
+          },
+          {
+            "role": "Makis",
+            "name": "Spiros Dimou"
+          },
+          {
+            "role": "Argiris",
+            "name": "Spiros Parisis"
+          },
+          {
+            "role": "Vasilis",
+            "name": "Vangelis Anastasiou"
+          },
+          {
+            "role": "Lia",
+            "name": "Despina Antoniou"
+          },
+          {
+            "role": "Doctor",
+            "name": "Nikos Mertzanidis"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Before The Rooster Crows (2020)\n\nProduction: Film Lemon\n\n🏆 Best Director - Arizona Short Film Festival | Best Short Film Nomination - Hollywood Verge Film Awards | Best Drama Film Nomination - Hollywood Verge Film Awards |  Symi International Film Festival 2021\n\n—\nEdit, Colour Grading by @lemonpoststudio\nDirected by @gab.ath\nWritten by Ioanna Kaltsidou\nProduction Manager by Jim Kallifatidis\nCinematography by Theologos Vavdinoudis\nArt Director by Angelika Mouchsiadou\nCostumes by Christina Sarri\nSound Mixer by Pelagia Xatzinikita\nMake-up by Dimitra Avramidou\nProduction Assistant by Anna Antaboufi\nOriginal Score by Petros Apostolidis\nAnna by Georgia Toufa\nMakis by Spiros Dimou\nArgiris by Spiros Parisis\nVasilis by Vangelis Anastasiou\nLia by Despina Antoniou\nDoctor by Nikos Mertzanidis\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+      ],
+      "createdAt": "2025-12-06T13:23:38.041Z",
+      "updatedAt": "2025-12-06T13:23:38.041Z"
+    },
+    {
+      "id": "1765027516980-w5b7zpcdc",
+      "projectId": "recwmX7kG05YjKDPm",
+      "project": {
+        "id": "recwmX7kG05YjKDPm",
+        "slug": "before-the-rooster-crows",
+        "title": "Before The Rooster Crows",
+        "type": "Narrative",
+        "kinds": [
+          "Short Film"
+        ],
+        "genre": [
+          "Crime",
+          "Drama"
+        ],
+        "productionCompany": "Film Lemon",
+        "client": "",
+        "year": "2020",
+        "releaseDate": "",
+        "workDate": "2020-02-26",
+        "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+        "isFeatured": true,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+        ],
+        "videoUrl": "https://vimeo.com/athanasiou/rooster",
+        "additionalVideos": [],
+        "awards": [
+          "Best Director - Arizona Short Film Festival",
+          "Best Short Film Nomination - Hollywood Verge Film Awards",
+          "Best Drama Film Nomination - Hollywood Verge Film Awards",
+          " Symi International Film Festival 2021"
+        ],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          },
+          {
+            "role": "Written by",
+            "name": "Ioanna Kaltsidou"
+          },
+          {
+            "role": "Produced by",
+            "name": "Film Lemon"
+          },
+          {
+            "role": "Production Manager",
+            "name": "Jim Kallifatidis"
+          },
+          {
+            "role": "DOP",
+            "name": "Theologos Vavdinoudis"
+          },
+          {
+            "role": "Art Director",
+            "name": "Angelika Mouchsiadou"
+          },
+          {
+            "role": "Costumes",
+            "name": "Christina Sarri"
+          },
+          {
+            "role": "Sound Mixer",
+            "name": "Pelagia Xatzinikita"
+          },
+          {
+            "role": "Make-up",
+            "name": "Dimitra Avramidou"
+          },
+          {
+            "role": "Production Assistant",
+            "name": "Anna Antaboufi"
+          },
+          {
+            "role": "Original Score",
+            "name": "Petros Apostolidis"
+          },
+          {
+            "role": "Anna",
+            "name": "Georgia Toufa"
+          },
+          {
+            "role": "Makis",
+            "name": "Spiros Dimou"
+          },
+          {
+            "role": "Argiris",
+            "name": "Spiros Parisis"
+          },
+          {
+            "role": "Vasilis",
+            "name": "Vangelis Anastasiou"
+          },
+          {
+            "role": "Lia",
+            "name": "Despina Antoniou"
+          },
+          {
+            "role": "Doctor",
+            "name": "Nikos Mertzanidis"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Before The Rooster Crows (2020)\n\nProduction: Film Lemon\n\n🏆 Best Director - Arizona Short Film Festival | Best Short Film Nomination - Hollywood Verge Film Awards | Best Drama Film Nomination - Hollywood Verge Film Awards |  Symi International Film Festival 2021\n\n—\nEdit, Colour Grading by @lemonpoststudio\nDirected by @gab.ath\nWritten by Ioanna Kaltsidou\nProduction Manager by Jim Kallifatidis\nCinematography by Theologos Vavdinoudis\nArt Director by Angelika Mouchsiadou\nCostumes by Christina Sarri\nSound Mixer by Pelagia Xatzinikita\nMake-up by Dimitra Avramidou\nProduction Assistant by Anna Antaboufi\nOriginal Score by Petros Apostolidis\nAnna by Georgia Toufa\nMakis by Spiros Dimou\nArgiris by Spiros Parisis\nVasilis by Vangelis Anastasiou\nLia by Despina Antoniou\nDoctor by Nikos Mertzanidis\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+      ],
+      "createdAt": "2025-12-06T13:25:16.980Z",
+      "updatedAt": "2025-12-06T13:25:16.980Z"
+    },
+    {
+      "id": "1765027603316-c97e7d7pm",
+      "projectId": "recwmX7kG05YjKDPm",
+      "project": {
+        "id": "recwmX7kG05YjKDPm",
+        "slug": "before-the-rooster-crows",
+        "title": "Before The Rooster Crows",
+        "type": "Narrative",
+        "kinds": [
+          "Short Film"
+        ],
+        "genre": [
+          "Crime",
+          "Drama"
+        ],
+        "productionCompany": "Film Lemon",
+        "client": "",
+        "year": "2020",
+        "releaseDate": "",
+        "workDate": "2020-02-26",
+        "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+        "isFeatured": true,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+        ],
+        "videoUrl": "https://vimeo.com/athanasiou/rooster",
+        "additionalVideos": [],
+        "awards": [
+          "Best Director - Arizona Short Film Festival",
+          "Best Short Film Nomination - Hollywood Verge Film Awards",
+          "Best Drama Film Nomination - Hollywood Verge Film Awards",
+          " Symi International Film Festival 2021"
+        ],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          },
+          {
+            "role": "Written by",
+            "name": "Ioanna Kaltsidou"
+          },
+          {
+            "role": "Produced by",
+            "name": "Film Lemon"
+          },
+          {
+            "role": "Production Manager",
+            "name": "Jim Kallifatidis"
+          },
+          {
+            "role": "DOP",
+            "name": "Theologos Vavdinoudis"
+          },
+          {
+            "role": "Art Director",
+            "name": "Angelika Mouchsiadou"
+          },
+          {
+            "role": "Costumes",
+            "name": "Christina Sarri"
+          },
+          {
+            "role": "Sound Mixer",
+            "name": "Pelagia Xatzinikita"
+          },
+          {
+            "role": "Make-up",
+            "name": "Dimitra Avramidou"
+          },
+          {
+            "role": "Production Assistant",
+            "name": "Anna Antaboufi"
+          },
+          {
+            "role": "Original Score",
+            "name": "Petros Apostolidis"
+          },
+          {
+            "role": "Anna",
+            "name": "Georgia Toufa"
+          },
+          {
+            "role": "Makis",
+            "name": "Spiros Dimou"
+          },
+          {
+            "role": "Argiris",
+            "name": "Spiros Parisis"
+          },
+          {
+            "role": "Vasilis",
+            "name": "Vangelis Anastasiou"
+          },
+          {
+            "role": "Lia",
+            "name": "Despina Antoniou"
+          },
+          {
+            "role": "Doctor",
+            "name": "Nikos Mertzanidis"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Before The Rooster Crows (2020)\n\nProduction: Film Lemon\n\n🏆 Best Director - Arizona Short Film Festival | Best Short Film Nomination - Hollywood Verge Film Awards | Best Drama Film Nomination - Hollywood Verge Film Awards |  Symi International Film Festival 2021\n\n—\nEdit, Colour Grading by @lemonpoststudio\nDirected by @gab.ath\nWritten by Ioanna Kaltsidou\nProduction Manager by Jim Kallifatidis\nCinematography by Theologos Vavdinoudis\nArt Director by Angelika Mouchsiadou\nCostumes by Christina Sarri\nSound Mixer by Pelagia Xatzinikita\nMake-up by Dimitra Avramidou\nProduction Assistant by Anna Antaboufi\nOriginal Score by Petros Apostolidis\nAnna by Georgia Toufa\nMakis by Spiros Dimou\nArgiris by Spiros Parisis\nVasilis by Vangelis Anastasiou\nLia by Despina Antoniou\nDoctor by Nikos Mertzanidis\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+      ],
+      "createdAt": "2025-12-06T13:26:43.316Z",
+      "updatedAt": "2025-12-06T13:26:43.316Z"
+    },
+    {
+      "id": "1765027707839-e1c5coj17",
+      "projectId": "recwmX7kG05YjKDPm",
+      "project": {
+        "id": "recwmX7kG05YjKDPm",
+        "slug": "before-the-rooster-crows",
+        "title": "Before The Rooster Crows",
+        "type": "Narrative",
+        "kinds": [
+          "Short Film"
+        ],
+        "genre": [
+          "Crime",
+          "Drama"
+        ],
+        "productionCompany": "Film Lemon",
+        "client": "",
+        "year": "2020",
+        "releaseDate": "",
+        "workDate": "2020-02-26",
+        "description": "In a small Greek village a frustrated woman in her 40s, Anna, can not handle her husbands' cheating anymore and decides to take revenge.",
+        "isFeatured": true,
+        "isHero": false,
+        "heroImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "gallery": [
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+          "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+        ],
+        "videoUrl": "https://vimeo.com/athanasiou/rooster",
+        "additionalVideos": [],
+        "awards": [
+          "Best Director - Arizona Short Film Festival",
+          "Best Short Film Nomination - Hollywood Verge Film Awards",
+          "Best Drama Film Nomination - Hollywood Verge Film Awards",
+          " Symi International Film Festival 2021"
+        ],
+        "credits": [
+          {
+            "role": "Editor",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Colourist",
+            "name": "Lemon Post"
+          },
+          {
+            "role": "Director",
+            "name": "Gabriel Athanasiou",
+            "isCrossSite": true,
+            "externalUrl": "https://directedbygabriel.com"
+          },
+          {
+            "role": "Written by",
+            "name": "Ioanna Kaltsidou"
+          },
+          {
+            "role": "Produced by",
+            "name": "Film Lemon"
+          },
+          {
+            "role": "Production Manager",
+            "name": "Jim Kallifatidis"
+          },
+          {
+            "role": "DOP",
+            "name": "Theologos Vavdinoudis"
+          },
+          {
+            "role": "Art Director",
+            "name": "Angelika Mouchsiadou"
+          },
+          {
+            "role": "Costumes",
+            "name": "Christina Sarri"
+          },
+          {
+            "role": "Sound Mixer",
+            "name": "Pelagia Xatzinikita"
+          },
+          {
+            "role": "Make-up",
+            "name": "Dimitra Avramidou"
+          },
+          {
+            "role": "Production Assistant",
+            "name": "Anna Antaboufi"
+          },
+          {
+            "role": "Original Score",
+            "name": "Petros Apostolidis"
+          },
+          {
+            "role": "Anna",
+            "name": "Georgia Toufa"
+          },
+          {
+            "role": "Makis",
+            "name": "Spiros Dimou"
+          },
+          {
+            "role": "Argiris",
+            "name": "Spiros Parisis"
+          },
+          {
+            "role": "Vasilis",
+            "name": "Vangelis Anastasiou"
+          },
+          {
+            "role": "Lia",
+            "name": "Despina Antoniou"
+          },
+          {
+            "role": "Doctor",
+            "name": "Nikos Mertzanidis"
+          }
+        ],
+        "externalLinks": [],
+        "relatedArticleId": null
+      },
+      "caption": "🎬 Before The Rooster Crows (2020)\n\nProduction: Film Lemon\n\n🏆 Best Director - Arizona Short Film Festival | Best Short Film Nomination - Hollywood Verge Film Awards | Best Drama Film Nomination - Hollywood Verge Film Awards |  Symi International Film Festival 2021\n\n—\nEdit, Colour Grading by @lemonpoststudio\nDirected by @gab.ath\nWritten by Ioanna Kaltsidou\nProduction Manager by Jim Kallifatidis\nCinematography by Theologos Vavdinoudis\nArt Director by Angelika Mouchsiadou\nCostumes by Christina Sarri\nSound Mixer by Pelagia Xatzinikita\nMake-up by Dimitra Avramidou\nProduction Assistant by Anna Antaboufi\nOriginal Score by Petros Apostolidis\nAnna by Georgia Toufa\nMakis by Spiros Dimou\nArgiris by Spiros Parisis\nVasilis by Vangelis Anastasiou\nLia by Despina Antoniou\nDoctor by Nikos Mertzanidis\n\n—\nLemon Post is a post-production studio specialising in \ncolour grading and editing for film, commercials, and \nbranded content.\n\n🔗 lemonpost.studio | Link in bio",
+      "hashtags": [
+        "#postproduction",
+        "#colorgrading",
+        "#colourgrading",
+        "#filmmaker",
+        "#cinematography",
+        "#davinciresolve",
+        "#ukfilm",
+        "#londonfilm",
+        "#britishfilm",
+        "#londoncreatives",
+        "#ukproduction",
+        "#shortfilm",
+        "#indiefilm",
+        "#filmmaking",
+        "#director",
+        "#cinema",
+        "#commercial",
+        "#brandfilm",
+        "#advertising",
+        "#corporatevideo",
+        "#branded",
+        "#linkinbio",
+        "#newwork",
+        "#projectspotlight",
+        "#creativeprocess"
+      ],
+      "selectedImages": [
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603770/portfolio-projects-recwmX7kG05YjKDPm-0.jpg",
+        "https://res.cloudinary.com/date24ay6/image/upload/v1764603771/portfolio-projects-recwmX7kG05YjKDPm-1.jpg"
+      ],
+      "createdAt": "2025-12-06T13:28:27.839Z",
+      "updatedAt": "2025-12-06T13:42:37.245Z",
+      "imageMode": "fit"
     }
   ],
   "scheduleSlots": [
@@ -5226,10 +6326,10 @@
     {
       "id": "1764977958017-uifmmum8j",
       "postDraftId": "1764977958017-e91fxo1md",
-      "scheduledDate": "2025-12-08",
+      "scheduledDate": "2025-12-07",
       "scheduledTime": "19:00",
       "status": "pending",
-      "updatedAt": "2025-12-06T01:49:24.327Z"
+      "updatedAt": "2025-12-06T13:15:29.821Z"
     },
     {
       "id": "1764978161686-nec3pio6v",
@@ -5295,10 +6395,10 @@
       "id": "1764985718886-3n51oci4g",
       "postDraftId": "1764985718885-zp9ak5lva",
       "scheduledDate": "2025-12-10",
-      "scheduledTime": "11:00",
+      "scheduledTime": "13:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:48:38.886Z",
-      "updatedAt": "2025-12-06T01:59:45.682Z"
+      "updatedAt": "2025-12-06T13:38:21.841Z"
     },
     {
       "id": "1764985754283-pyw7zkn6r",
@@ -5312,11 +6412,11 @@
     {
       "id": "1764985789908-qb2bqjpcz",
       "postDraftId": "1764985789907-gd6yh9na8",
-      "scheduledDate": "2025-12-07",
+      "scheduledDate": "2025-12-08",
       "scheduledTime": "11:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:49:49.908Z",
-      "updatedAt": "2025-12-06T02:00:03.746Z"
+      "updatedAt": "2025-12-06T13:13:33.758Z"
     },
     {
       "id": "1764985794454-ns3tj0r77",
@@ -5325,7 +6425,7 @@
       "scheduledTime": "11:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:49:54.454Z",
-      "updatedAt": "2025-12-06T02:00:02.343Z"
+      "updatedAt": "2025-12-06T12:55:52.947Z"
     },
     {
       "id": "1764985808033-fx9hdso3o",
@@ -5334,7 +6434,7 @@
       "scheduledTime": "11:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:50:08.033Z",
-      "updatedAt": "2025-12-06T01:50:08.033Z"
+      "updatedAt": "2025-12-06T12:46:38.133Z"
     },
     {
       "id": "1764985899191-1nyaouyxk",
@@ -5343,7 +6443,7 @@
       "scheduledTime": "19:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:51:39.191Z",
-      "updatedAt": "2025-12-06T01:51:39.191Z"
+      "updatedAt": "2025-12-06T13:15:17.650Z"
     },
     {
       "id": "1764985925467-e9y0ih25w",
@@ -5366,45 +6466,29 @@
     {
       "id": "1764986024048-msnkb3cwq",
       "postDraftId": "1764986024047-ou3gtr2q5",
-      "scheduledDate": "2025-12-16",
+      "scheduledDate": "2025-12-06",
       "scheduledTime": "11:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:53:44.048Z",
-      "updatedAt": "2025-12-06T01:54:24.589Z"
+      "updatedAt": "2025-12-06T13:14:53.887Z"
     },
     {
       "id": "1764986263145-aid6j7062",
       "postDraftId": "1764986263144-g1jpaysg9",
-      "scheduledDate": "2025-12-15",
+      "scheduledDate": "2025-12-17",
       "scheduledTime": "11:00",
       "status": "pending",
       "createdAt": "2025-12-06T01:57:43.145Z",
-      "updatedAt": "2025-12-06T01:57:43.145Z"
+      "updatedAt": "2025-12-06T13:23:23.177Z"
     },
     {
-      "id": "1764986343173-ql9o20uim",
-      "postDraftId": "1764986343172-wppaga6p6",
-      "scheduledDate": "2025-12-17",
+      "id": "1765027707840-w6970ws4k",
+      "postDraftId": "1765027707839-e1c5coj17",
+      "scheduledDate": "2025-12-23",
       "scheduledTime": "11:00",
       "status": "pending",
-      "createdAt": "2025-12-06T01:59:03.173Z",
-      "updatedAt": "2025-12-06T01:59:03.173Z"
-    },
-    {
-      "id": "1764986523735-553qj72um",
-      "postDraftId": "1764986523734-8chxpa3n2",
-      "scheduledDate": "2025-12-18",
-      "scheduledTime": "11:00",
-      "status": "pending",
-      "createdAt": "2025-12-06T02:02:03.735Z",
-      "updatedAt": "2025-12-06T02:02:43.969Z"
-    },
-    {
-      "id": "1764946985668-aasspff7e",
-      "postDraftId": "1764946985668-59zqhf0h8",
-      "scheduledDate": "2025-12-17",
-      "scheduledTime": "11:00",
-      "status": "pending"
+      "createdAt": "2025-12-06T13:28:27.839Z",
+      "updatedAt": "2025-12-06T13:28:27.839Z"
     }
   ],
   "templates": [
@@ -5549,9 +6633,53 @@
       {
         "id": "1764985856325-msbees6o2",
         "deletedAt": "2025-12-06T01:51:08.084Z"
+      },
+      {
+        "id": "1765024087527-cywexd7kq",
+        "deletedAt": "2025-12-06T12:28:40.050Z"
+      },
+      {
+        "id": "1764946985668-aasspff7e",
+        "deletedAt": "2025-12-06T12:28:47.751Z"
+      },
+      {
+        "id": "1764986523735-553qj72um",
+        "deletedAt": "2025-12-06T12:28:49.633Z"
+      },
+      {
+        "id": "1764986343173-ql9o20uim",
+        "deletedAt": "2025-12-06T12:28:51.359Z"
+      },
+      {
+        "id": "1765024159459-613o3a50c",
+        "deletedAt": "2025-12-06T12:41:22.920Z"
+      },
+      {
+        "id": "1765024950363-nsscv90ld",
+        "deletedAt": "2025-12-06T12:52:33.166Z"
+      },
+      {
+        "id": "1765026178519-8sx482f0k",
+        "deletedAt": "2025-12-06T13:03:01.591Z"
+      },
+      {
+        "id": "1765027251568-ayxiono2h",
+        "deletedAt": "2025-12-06T13:20:53.071Z"
+      },
+      {
+        "id": "1765027418041-ysik9pfrd",
+        "deletedAt": "2025-12-06T13:25:05.831Z"
+      },
+      {
+        "id": "1765027603317-1p679tf3g",
+        "deletedAt": "2025-12-06T13:26:58.274Z"
+      },
+      {
+        "id": "1765027516981-xczok3prm",
+        "deletedAt": "2025-12-06T13:27:50.174Z"
       }
     ],
     "templates": []
   },
-  "lastFixedAt": "2025-12-06T11:16:41.215Z"
+  "lastFixedAt": "2025-12-06T13:54:17.782Z"
 }

@@ -184,28 +184,20 @@ function App() {
     setIsOAuthCallback(hasCode || hasError);
   }, []);
 
-  // Sync with Cloudinary on initial load - smart merge to get latest data
-  // Use ref to prevent re-running when callbacks are recreated
+  // Fetch from Cloudinary on initial load - download only, no upload
+  // This ensures we get the latest cloud data without overwriting it with stale local data
   useEffect(() => {
     if (hasInitializedFromCloudRef.current) return;
     hasInitializedFromCloudRef.current = true;
     
-    // Smart merge sync: fetches cloud, merges with local, uploads merged, updates local
-    // This ensures we're up to date with cloud while preserving any local changes
-    console.log('🔄 Smart sync with Cloudinary on boot...');
-    syncToCloudinary().then(success => {
+    // On boot: ONLY download from cloud, never upload
+    // This prevents stale local data from overwriting fixed cloud data
+    console.log('📥 Fetching data from Cloudinary on boot (download only)...');
+    fetchFromCloudinary().then(success => {
       if (success) {
-        console.log('✅ Successfully synced with Cloudinary');
+        console.log('✅ Successfully loaded data from Cloudinary');
       } else {
-        // If sync failed, try just fetching
-        console.log('⚠️ Sync failed, trying fetch only...');
-        fetchFromCloudinary().then(fetchSuccess => {
-          if (fetchSuccess) {
-            console.log('✅ Successfully loaded data from Cloudinary');
-          } else {
-            console.log('ℹ️ No data found in Cloudinary or fetch failed, using local data');
-          }
-        });
+        console.log('ℹ️ No data found in Cloudinary or fetch failed, using local data');
       }
     });
   }, []); // Empty deps - only run once on mount
@@ -215,6 +207,17 @@ function App() {
     if (!selectedProject) return [];
     return scheduledPosts.filter(post => post.projectId === selectedProject.id);
   }, [selectedProject, scheduledPosts]);
+
+  // Get sorted list of all pending posts for navigation in edit mode
+  const sortedPendingPosts = useMemo(() => {
+    return [...scheduledPosts]
+      .filter(p => p.scheduleSlot.status === 'pending')
+      .sort((a, b) => {
+        const dateA = new Date(`${a.scheduleSlot.scheduledDate}T${a.scheduleSlot.scheduledTime}`);
+        const dateB = new Date(`${b.scheduleSlot.scheduledDate}T${b.scheduleSlot.scheduledTime}`);
+        return dateA.getTime() - dateB.getTime();
+      });
+  }, [scheduledPosts]);
 
   // Compute scheduled count by project for badges
   const scheduledCountByProject = useMemo(() => {
@@ -281,6 +284,25 @@ function App() {
     }
   }, [currentDraft, editingPost, saveDraft, schedulePost, updateDraft, reschedulePost]);
 
+  // Handle persisting changes to an edited post WITHOUT exiting editing mode
+  // This is called when user clicks "Save" button while editing
+  const handlePersistEditedPost = useCallback((draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode }) => {
+    if (editingPost) {
+      updateDraft(editingPost.draftId, {
+        caption: draft.caption,
+        hashtags: draft.hashtags,
+        selectedImages: draft.selectedImages,
+        imageMode: draft.imageMode,
+      });
+      // Update currentDraft to keep UI in sync
+      setCurrentDraft({
+        project: editingPost.project,
+        ...draft,
+      });
+      console.log('💾 Changes persisted to draft (auto-sync will trigger in 5s if enabled)');
+    }
+  }, [editingPost, updateDraft]);
+
   // Handle saving changes to an edited post (with optional time change)
   // Saves and exits editing mode
   const handleSaveEditedPost = useCallback((draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode }, newTime?: string) => {
@@ -342,6 +364,40 @@ function App() {
   const handleReschedulePost = useCallback((slotId: string, newDate: Date, newTime: string) => {
     reschedulePost(slotId, newDate, newTime);
   }, [reschedulePost]);
+
+  // Handle navigating to next/previous post in edit mode (with auto-save)
+  const handleNavigateToPost = useCallback((targetPost: ScheduledPost, saveCurrent: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode }) => {
+    // Save current post first
+    if (editingPost) {
+      updateDraft(editingPost.draftId, {
+        caption: saveCurrent.caption,
+        hashtags: saveCurrent.hashtags,
+        selectedImages: saveCurrent.selectedImages,
+        imageMode: saveCurrent.imageMode,
+      });
+      console.log('💾 Saved current post before navigating');
+    }
+    // Navigate to target post
+    setSelectedProject(targetPost.project);
+    setCurrentDraft({
+      project: targetPost.project,
+      caption: targetPost.caption,
+      hashtags: targetPost.hashtags,
+      selectedImages: targetPost.selectedImages,
+      imageMode: targetPost.imageMode,
+    });
+    setEditingPost({
+      draftId: targetPost.id,
+      slotId: targetPost.scheduleSlot.id,
+      project: targetPost.project,
+      caption: targetPost.caption,
+      hashtags: targetPost.hashtags,
+      selectedImages: targetPost.selectedImages,
+      imageMode: targetPost.imageMode,
+      scheduledDate: targetPost.scheduleSlot.scheduledDate,
+      scheduledTime: targetPost.scheduleSlot.scheduledTime,
+    });
+  }, [editingPost, updateDraft]);
 
   // Handle reschedule from edit view (switches to schedule view with target set)
   const handleRescheduleFromEdit = useCallback((post: ScheduledPost) => {
@@ -565,6 +621,7 @@ function App() {
                 scheduledDate: editingPost.scheduledDate,
                 scheduledTime: editingPost.scheduledTime,
               } : null}
+              onPersistEdit={handlePersistEditedPost}
               onSaveEdit={handleSaveEditedPost}
               onCancelEdit={handleCancelEdit}
               scheduledPostsForProject={scheduledPostsForProject}
@@ -574,6 +631,8 @@ function App() {
               onPublishSuccess={handlePreviewPublishSuccess}
               templates={templates}
               defaultTemplate={defaultTemplate}
+              allPendingPosts={sortedPendingPosts}
+              onNavigateToPost={handleNavigateToPost}
             />
           )}
           {viewMode === 'schedule' && (

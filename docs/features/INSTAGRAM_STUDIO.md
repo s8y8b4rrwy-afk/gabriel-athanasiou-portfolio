@@ -499,6 +499,7 @@ scripts/
 - ✅ Calendar entries have hover feedback and double-click to edit
 - ✅ Option+drag to duplicate scheduled posts to new dates
 - ✅ Toggle between original image and Instagram-cropped/letterboxed view
+- ✅ Queue mode: navigate between scheduled posts with prev/next buttons (auto-saves)
 
 ---
 
@@ -755,12 +756,13 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
 ### Sync Behavior
 
 **On App Boot:**
-- App performs a smart merge sync with Cloudinary
-- Fetches cloud data, merges with local (by timestamp), uploads merged result
-- Local state is updated with the merged data
+- App performs a **download-only** sync from Cloudinary
+- Fetches cloud data and loads it into local state
+- Does NOT upload to cloud (prevents stale local data from overwriting cloud)
+- Ensures cloud remains the source of truth
 
 **"Sync Now" Button:**
-- Same as boot: bidirectional smart merge
+- Bidirectional smart merge (fetch → merge → upload → update local)
 - Local changes are preserved and merged with cloud
 - Cloud data is also merged into local
 
