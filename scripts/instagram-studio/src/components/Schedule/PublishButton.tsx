@@ -80,8 +80,8 @@ export function PublishButton({
       // CRITICAL: Get ORIGINAL quality Cloudinary URLs for Instagram publishing
       // - Airtable URLs expire after a few hours
       // - Instagram API needs permanent, publicly accessible URLs
-      // - We use original files (no transformations) for best quality on Instagram
-      const instagramUrls = await getInstagramPublishUrls(draft.selectedImages, draft.projectId);
+      // - imageMode: 'fill' = crop to fill, 'fit' = letterbox with bars
+      const instagramUrls = await getInstagramPublishUrls(draft.selectedImages, draft.projectId, draft.imageMode || 'fit');
       
       // Check if any URLs failed to convert (still contain airtable)
       const failedUrls = instagramUrls.filter(url => 

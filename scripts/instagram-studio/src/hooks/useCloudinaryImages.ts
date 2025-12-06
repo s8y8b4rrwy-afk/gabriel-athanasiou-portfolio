@@ -105,10 +105,11 @@ export function useEnsureCloudinaryUrls() {
 
 /**
  * Hook to get original quality Cloudinary URLs for Instagram publishing
- * Returns async function - no transformations, full quality
+ * Returns async function with imageMode support
+ * @param imageMode - 'fill' = crop to fill (no bars), 'fit' = letterbox (preserve full image)
  */
 export function useInstagramPublishUrls() {
-  return useCallback(async (urls: string[], projectId: string): Promise<string[]> => {
-    return getInstagramPublishUrls(urls, projectId);
+  return useCallback(async (urls: string[], projectId: string, imageMode: 'fill' | 'fit' = 'fit'): Promise<string[]> => {
+    return getInstagramPublishUrls(urls, projectId, imageMode);
   }, []);
 }

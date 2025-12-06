@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
+import type { PostDraft, ScheduleSlot, ScheduleSettings, ImageDisplayMode } from '../types';
 import type { Project } from '../types';
 
 interface ScheduledPost extends PostDraft {
@@ -27,7 +27,7 @@ interface UseScheduleReturn {
   schedulePost: (draft: PostDraft, date: Date, time: string) => void;
   unschedulePost: (slotId: string) => void;
   reschedulePost: (slotId: string, newDate: Date, newTime: string) => void;
-  saveDraft: (project: Project, caption: string, hashtags: string[], selectedImages: string[]) => PostDraft;
+  saveDraft: (project: Project, caption: string, hashtags: string[], selectedImages: string[], imageMode?: ImageDisplayMode) => PostDraft;
   deleteDraft: (draftId: string) => void;
   updateDraft: (draftId: string, updates: Partial<PostDraft>) => void;
   updateSettings: (updates: Partial<ScheduleSettings>) => void;
@@ -97,7 +97,8 @@ export function useSchedule(): UseScheduleReturn {
     project: Project,
     caption: string,
     hashtags: string[],
-    selectedImages: string[]
+    selectedImages: string[],
+    imageMode?: ImageDisplayMode
   ): PostDraft => {
     const now = new Date().toISOString();
     const draft: PostDraft = {
@@ -107,6 +108,7 @@ export function useSchedule(): UseScheduleReturn {
       caption,
       hashtags,
       selectedImages,
+      imageMode: imageMode || 'fit', // Default to 'fit' (preserve original aspect with letterbox)
       createdAt: now,
       updatedAt: now,
     };

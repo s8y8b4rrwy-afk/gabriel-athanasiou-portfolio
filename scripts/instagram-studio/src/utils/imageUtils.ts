@@ -731,19 +731,25 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
 
 /**
  * Get original quality Cloudinary URLs for Instagram publishing
- * Uses MAJORITY RULE: All carousel images use the same aspect ratio for consistency
  * 
- * Instagram accepts aspect ratios from 4:5 (0.8) to 1.91:1 (1.91)
+ * @param urls - Array of image URLs
+ * @param projectId - Project ID for Cloudinary mapping
+ * @param imageMode - 'fill' = crop to fill (no bars), 'fit' = letterbox (preserve full image)
  * 
- * MAJORITY RULE LOGIC:
- * 1. Analyze all images to determine if they're landscape (ratio > 1.0) or portrait (ratio < 0.8)
- * 2. If majority are LANDSCAPE → all use 1.91:1 with c_lfill (fill, crop height)
- * 3. If majority are PORTRAIT (taller than 4:5) → all use 4:5 with c_lfill (fill, crop height)
- * 4. c_lfill always fills width and crops height - NEVER adds side bars
+ * When imageMode is 'fill':
+ * - Uses c_lfill (fill crop) for all images with 4:5 ratio
+ * - Crops to fill the frame, no letterbox bars
+ * 
+ * When imageMode is 'fit':
+ * - Uses MAJORITY RULE: All carousel images use the same aspect ratio for consistency
+ * - Landscape majority → 1.91:1 with c_pad (letterbox top/bottom)
+ * - Portrait majority → 4:5 with c_lfill (crop height)
+ * - c_pad adds letterbox bars to preserve full image
  */
 export async function getInstagramPublishUrls(
   urls: string[],
-  projectId: string
+  projectId: string,
+  imageMode: 'fill' | 'fit' = 'fit'
 ): Promise<string[]> {
   await loadCloudinaryMapping();
   
@@ -788,38 +794,57 @@ export async function getInstagramPublishUrls(
     }
   }
   
-  // Determine majority mode (same logic as getCarouselTransformMode)
+  // Determine majority orientation
+  const isLandscapeMajority = landscapeCount >= portraitCount && landscapeCount >= normalCount;
+  
+  // FILL MODE: Crop to fill (no letterbox), respecting majority orientation
+  if (imageMode === 'fill') {
+    const targetAspectRatio = isLandscapeMajority 
+      ? INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100 
+      : INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    
+    console.log(`📐 FILL mode: Cropping all images to ${isLandscapeMajority ? '1.91:1 (landscape)' : '4:5 (portrait)'} (no letterbox)`);
+    
+    return imageData.map(({ imageIndex }) => {
+      return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'lfill');
+    });
+  }
+  
+  // FIT MODE: Use majority rule to determine aspect ratio and use c_pad for letterboxing
+  
+  // Determine crop type based on majority
   let targetAspectRatio: string;
+  let cropMode: 'lfill' | 'pad';
   let description: string;
   
-  if (landscapeCount >= portraitCount && landscapeCount >= normalCount) {
-    // Majority landscape → use 1.91:1
+  if (isLandscapeMajority) {
+    // Majority landscape → use actual ratio (capped at 1.91:1) with c_pad (letterbox)
     targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
-    description = `landscape (${landscapeCount} landscape, ${portraitCount} portrait, ${normalCount} normal)`;
+    cropMode = 'pad'; // Letterbox to preserve full image
+    description = `landscape FIT (${landscapeCount} landscape, ${portraitCount} portrait, ${normalCount} normal)`;
   } else if (portraitCount > landscapeCount && portraitCount >= normalCount) {
-    // Majority portrait → use 4:5
+    // Majority portrait → use 4:5 with c_lfill (crop height, no side bars)
     targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    cropMode = 'lfill'; // Fill to avoid side bars
     description = `portrait (${portraitCount} portrait, ${landscapeCount} landscape, ${normalCount} normal)`;
   } else {
     // Majority normal or tie → use 4:5 (default Instagram)
     targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+    cropMode = 'lfill';
     description = `normal/default (${normalCount} normal, ${landscapeCount} landscape, ${portraitCount} portrait)`;
   }
   
-  console.log(`📐 Carousel majority: ${description} → using ${targetAspectRatio} for all images`);
+  console.log(`📐 FIT mode carousel majority: ${description} → using ${targetAspectRatio} with c_${cropMode}`);
   
   // Second pass: Build URLs with consistent aspect ratio
-  // All images use c_lfill (fill width, crop height) - NEVER adds side bars
   const results: string[] = [];
   
   for (let i = 0; i < imageData.length; i++) {
     const { imageIndex, dimensions } = imageData[i];
     
-    console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} (majority rule)`);
+    console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} c_${cropMode}`);
     
-    // Build URL with majority aspect ratio
-    // Pass dimensions for logging, but the crop mode will be c_lfill for all (fill width)
-    results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio));
+    results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, cropMode));
   }
   
   return results;
@@ -827,17 +852,29 @@ export async function getInstagramPublishUrls(
 
 /**
  * Build Cloudinary URL for carousel with consistent aspect ratio
- * Always uses c_lfill (fill width, crop height) - NEVER adds side bars
+ * 
+ * @param projectId - Project ID
+ * @param imageIndex - Image index
+ * @param aspectRatio - Target aspect ratio (e.g., "4:5", "1.91:1")
+ * @param cropMode - 'lfill' = fill and crop (no bars), 'pad' = letterbox (preserve full image)
  */
 function buildCloudinaryUrlForCarousel(
   projectId: string,
   imageIndex: number,
-  aspectRatio: string
+  aspectRatio: string,
+  cropMode: 'lfill' | 'pad' = 'lfill'
 ): string {
   const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
   
-  // Instagram transformation - always c_lfill to fill width and avoid side bars
-  const igTransforms = [
+  // Instagram transformation
+  const igTransforms = cropMode === 'pad' ? [
+    `ar_${aspectRatio}`,  // Consistent aspect ratio for all carousel images
+    'c_pad',              // Pad to fit (adds letterbox bars)
+    'b_black',            // Black letterbox bars
+    'g_center',           // Center the image
+    'q_95',               // High quality
+    'f_jpg'               // JPEG format for compatibility
+  ].join(',') : [
     `ar_${aspectRatio}`,  // Consistent aspect ratio for all carousel images
     'c_lfill',            // Fill width, crop height - NO side bars ever
     'g_center',           // Center the image

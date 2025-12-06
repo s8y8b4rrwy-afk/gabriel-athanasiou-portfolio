@@ -5,7 +5,7 @@ import { generateCaption } from './utils/generateCaption';
 import { generateHashtags } from './utils/generateHashtags';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from './types/template';
 import { getCredentialsLocally, saveCredentialsLocally } from './services/instagramApi';
-import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials } from './types';
+import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials, ImageDisplayMode } from './types';
 import type { ScheduleData } from './services/cloudinarySync';
 import './App.css';
 
@@ -22,6 +22,7 @@ interface EditingState {
   caption: string;
   hashtags: string[];
   selectedImages: string[];
+  imageMode?: ImageDisplayMode;
   scheduledDate: string;
   scheduledTime: string;
 }
@@ -155,6 +156,7 @@ function App() {
     caption: string;
     hashtags: string[];
     selectedImages: string[];
+    imageMode?: ImageDisplayMode;
   } | null>(null);
   const hasInitializedFromCloudRef = useRef(false);
   
@@ -229,6 +231,7 @@ function App() {
     caption: string;
     hashtags: string[];
     selectedImages: string[];
+    imageMode?: ImageDisplayMode;
   }) => {
     if (selectedProject) {
       setCurrentDraft({
@@ -241,11 +244,12 @@ function App() {
   // Handle scheduling a post (new or update existing)
   const handleSchedulePost = useCallback((date: Date, time: string) => {
     if (editingPost) {
-      // Update existing draft
+      // Update existing draft (including imageMode if changed)
       updateDraft(editingPost.draftId, {
         caption: currentDraft?.caption || editingPost.caption,
         hashtags: currentDraft?.hashtags || editingPost.hashtags,
         selectedImages: currentDraft?.selectedImages || editingPost.selectedImages,
+        imageMode: currentDraft?.imageMode,
       });
       // Reschedule to the new date/time
       reschedulePost(editingPost.slotId, date, time);
@@ -258,7 +262,8 @@ function App() {
         currentDraft.project,
         currentDraft.caption,
         currentDraft.hashtags,
-        currentDraft.selectedImages
+        currentDraft.selectedImages,
+        currentDraft.imageMode
       );
       schedulePost(savedDraft, date, time);
       setCurrentDraft(null);
@@ -268,12 +273,13 @@ function App() {
 
   // Handle saving changes to an edited post (with optional time change)
   // Saves and exits editing mode
-  const handleSaveEditedPost = useCallback((draft: { caption: string; hashtags: string[]; selectedImages: string[] }, newTime?: string) => {
+  const handleSaveEditedPost = useCallback((draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode }, newTime?: string) => {
     if (editingPost) {
       updateDraft(editingPost.draftId, {
         caption: draft.caption,
         hashtags: draft.hashtags,
         selectedImages: draft.selectedImages,
+        imageMode: draft.imageMode,
       });
       // If time changed, reschedule the post
       if (newTime && newTime !== editingPost.scheduledTime) {
@@ -306,6 +312,7 @@ function App() {
       caption: post.caption,
       hashtags: post.hashtags,
       selectedImages: post.selectedImages,
+      imageMode: post.imageMode,
     });
     setEditingPost({
       draftId: post.id,
@@ -314,6 +321,7 @@ function App() {
       caption: post.caption,
       hashtags: post.hashtags,
       selectedImages: post.selectedImages,
+      imageMode: post.imageMode,
       scheduledDate: post.scheduleSlot.scheduledDate,
       scheduledTime: post.scheduleSlot.scheduledTime,
     });

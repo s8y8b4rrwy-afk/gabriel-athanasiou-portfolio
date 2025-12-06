@@ -1,5 +1,10 @@
 import type { Project } from './project';
 
+// Image display mode for Instagram posts
+// - 'fill': Crop/punch in to fill the container (no letterbox bars)
+// - 'fit': Keep original aspect ratio with letterbox bars (top/bottom for landscape)
+export type ImageDisplayMode = 'fill' | 'fit';
+
 export interface PostDraft {
   id: string;
   projectId: string;
@@ -7,6 +12,7 @@ export interface PostDraft {
   caption: string;
   hashtags: string[];
   selectedImages: string[];
+  imageMode?: ImageDisplayMode; // Default: 'fit' (preserve original with letterbox)
   createdAt: string;
   updatedAt: string;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { Project, PostDraft, ScheduleSlot, RecurringTemplate } from '../../types';
+import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ImageDisplayMode } from '../../types';
 import type { PublishResult } from '../../types/instagram';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
@@ -24,12 +24,12 @@ interface EditingScheduleInfo {
 
 interface PostPreviewProps {
   project: Project | null;
-  onSaveDraft?: (draft: { caption: string; hashtags: string[]; selectedImages: string[] }) => void;
-  currentDraft?: { caption: string; hashtags: string[]; selectedImages: string[] } | null;
+  onSaveDraft?: (draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode: ImageDisplayMode }) => void;
+  currentDraft?: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode } | null;
   onScheduleClick?: () => void;
   isEditing?: boolean;
   editingScheduleInfo?: EditingScheduleInfo | null;
-  onSaveEdit?: (draft: { caption: string; hashtags: string[]; selectedImages: string[] }, newTime?: string) => void;
+  onSaveEdit?: (draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode: ImageDisplayMode }, newTime?: string) => void;
   onCancelEdit?: () => void;
   scheduledPostsForProject?: ScheduledPost[];
   onEditScheduledPost?: (post: ScheduledPost) => void;
@@ -64,6 +64,7 @@ export function PostPreview({
   const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
   const [showSaved, setShowSaved] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false); // Toggle between original and Instagram crop
+  const [imageMode, setImageMode] = useState<ImageDisplayMode>('fit'); // 'fit' = letterbox, 'fill' = crop
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
   
   // Check if Instagram is connected
@@ -114,6 +115,7 @@ export function PostPreview({
         setCaption(currentDraft.caption);
         setHashtags(currentDraft.hashtags);
         setSelectedImages(currentDraft.selectedImages.length > 0 ? currentDraft.selectedImages : allImages.slice(0, 10));
+        setImageMode(currentDraft.imageMode || 'fit'); // Load saved image mode
       } else {
         // Generate fresh content using the default template if available
         if (defaultTemplate) {
@@ -333,14 +335,14 @@ export function PostPreview({
               aspectRatio: showOriginal 
                 ? (imageDimensions.get(selectedImages[currentPreviewIndex])?.width || 4) / 
                   (imageDimensions.get(selectedImages[currentPreviewIndex])?.height || 5)
-                : carouselMode.targetAspectRatio 
+                : carouselMode.targetAspectRatio // Both Fill and Fit modes respect majority orientation
             }}>
               {selectedImages.length > 0 ? (
                 <>
                   <img 
                     src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} 
                     alt={project.title}
-                    style={{ objectFit: showOriginal ? 'contain' : carouselMode.objectFit }}
+                    style={{ objectFit: showOriginal ? 'contain' : (imageMode === 'fill' ? 'cover' : carouselMode.objectFit) }}
                   />
                   {selectedImages.length > 1 && (
                     <>
@@ -359,22 +361,6 @@ export function PostPreview({
                         ›
                       </button>
                     </>
-                  )}
-                  {/* Transform indicator - shows carousel mode (majority rule) */}
-                  {/* Click to toggle original vs Instagram view */}
-                  {carouselMode.mode !== 'none' && (
-                    <button 
-                      className={`instagram-transform-indicator ${showOriginal ? 'instagram-transform-indicator--active' : ''}`}
-                      onClick={() => setShowOriginal(!showOriginal)}
-                      title={showOriginal 
-                        ? "Showing original - Click to see Instagram view" 
-                        : (carouselMode.mode === 'letterbox' 
-                          ? `Majority letterbox (${carouselMode.letterboxCount}▬ ${carouselMode.cropCount}✂️) - Click to see original` 
-                          : `Majority crop (${carouselMode.cropCount}✂️ ${carouselMode.letterboxCount}▬) - Click to see original`)
-                      }
-                    >
-                      {showOriginal ? '📷' : (carouselMode.mode === 'letterbox' ? '▬' : '✂️')}
-                    </button>
                   )}
                 </>
               ) : allImages.length > 0 ? (
@@ -409,6 +395,37 @@ export function PostPreview({
               </div>
               <span>🔖</span>
             </div>
+
+            {/* Image Controls - Below the preview */}
+            {selectedImages.length > 0 && (
+              <div className="instagram-image-controls">
+                {/* Original view toggle */}
+                <button 
+                  className={`instagram-control-btn ${showOriginal ? 'instagram-control-btn--active' : ''}`}
+                  onClick={() => setShowOriginal(!showOriginal)}
+                  title={showOriginal 
+                    ? "Showing original - Click to see Instagram view" 
+                    : "Click to see original image"
+                  }
+                >
+                  📷 {showOriginal ? 'Original' : 'Preview'}
+                </button>
+                
+                {/* Image Mode Toggle - Fill vs Fit */}
+                {carouselMode.mode !== 'none' && (
+                  <button 
+                    className={`instagram-control-btn ${imageMode === 'fill' ? 'instagram-control-btn--fill' : 'instagram-control-btn--fit'}`}
+                    onClick={() => setImageMode(imageMode === 'fit' ? 'fill' : 'fit')}
+                    title={imageMode === 'fit' 
+                      ? "FIT: Full image with letterbox bars - Click for FILL mode" 
+                      : "FILL: Cropped to fill frame - Click for FIT mode"
+                    }
+                  >
+                    {imageMode === 'fit' ? '▬ FIT' : '✂️ FILL'}
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="instagram-caption-preview">
               <span className="instagram-caption-username">lemonpost.studio</span>{' '}
@@ -518,7 +535,7 @@ export function PostPreview({
                 <button 
                   className={`final-action final-action--save ${showSaved ? 'final-action--saved' : ''}`}
                   onClick={() => {
-                    const draft = { caption, hashtags, selectedImages };
+                    const draft = { caption, hashtags, selectedImages, imageMode };
                     onSaveDraft?.(draft);
                     onSaveEdit?.(draft, editingTime);
                     setShowSaved(true);
@@ -537,6 +554,7 @@ export function PostPreview({
                       caption,
                       hashtags,
                       selectedImages,
+                      imageMode,
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
                     }}
@@ -557,7 +575,7 @@ export function PostPreview({
                 <button 
                   className="final-action final-action--schedule" 
                   onClick={() => {
-                    onSaveDraft?.({ caption, hashtags, selectedImages });
+                    onSaveDraft?.({ caption, hashtags, selectedImages, imageMode });
                     onScheduleClick?.();
                   }}
                   disabled={selectedImages.length === 0}
@@ -573,6 +591,7 @@ export function PostPreview({
                       caption,
                       hashtags,
                       selectedImages,
+                      imageMode,
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
                     }}
