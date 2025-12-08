@@ -81,7 +81,7 @@ export function PublishButton({
       // - Airtable URLs expire after a few hours
       // - Instagram API needs permanent, publicly accessible URLs
       // - imageMode: 'fill' = crop to fill, 'fit' = letterbox with bars
-      const instagramUrls = await getInstagramPublishUrls(draft.selectedImages, draft.projectId, draft.imageMode || 'fit');
+      const instagramUrls = await getInstagramPublishUrls(draft.selectedImages, draft.projectId, draft.imageMode || 'fill');
       
       // Check if any URLs failed to convert (still contain airtable)
       const failedUrls = instagramUrls.filter(url => 

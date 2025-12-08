@@ -8,7 +8,7 @@ import { TimeSlotPicker } from '../Calendar';
 import { PublishButton } from '../Schedule/PublishButton';
 import { generateCaption, generateHashtags, formatHashtagsForCaption } from '../../utils';
 import { useCloudinaryMappingReady } from '../../hooks';
-import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle, getCarouselTransformMode, getCloudinaryUrlForImage } from '../../utils/imageUtils';
+import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle, getCarouselTransformMode, getCloudinaryUrlForImage, getInstagramPublishUrls } from '../../utils/imageUtils';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
@@ -75,7 +75,10 @@ export function PostPreview({
   const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
   const [showSaved, setShowSaved] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false); // Toggle between original and Instagram crop
-  const [imageMode, setImageMode] = useState<ImageDisplayMode>('fit'); // 'fit' = letterbox, 'fill' = crop
+  const [imageMode, setImageMode] = useState<ImageDisplayMode>('fill'); // 'fill' = crop, 'fit' = letterbox
+  const [debugPreview, setDebugPreview] = useState(false); // Toggle to show actual Cloudinary-transformed URLs
+  const [debugUrls, setDebugUrls] = useState<string[]>([]); // Cached debug URLs from getInstagramPublishUrls
+  const [debugLoading, setDebugLoading] = useState(false); // Loading state for debug URLs
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
   
   // Check if Instagram is connected
@@ -162,7 +165,7 @@ export function PostPreview({
             })
           : allImages.slice(0, 10);
         setSelectedImages(convertedImages);
-        setImageMode(currentDraft.imageMode || 'fit'); // Load saved image mode
+        setImageMode(currentDraft.imageMode || 'fill'); // Load saved image mode
       } else {
         // Generate fresh content using the default template if available
         if (defaultTemplate) {
@@ -243,6 +246,36 @@ export function PostPreview({
   const carouselMode = useMemo(() => {
     return getCarouselTransformMode(imageDimensions, selectedImages);
   }, [imageDimensions, selectedImages]);
+
+  // Load debug URLs when debug mode is enabled - fetches actual Cloudinary-transformed URLs
+  useEffect(() => {
+    if (!debugPreview || !project || selectedImages.length === 0) {
+      setDebugUrls([]);
+      return;
+    }
+
+    let cancelled = false;
+    setDebugLoading(true);
+
+    getInstagramPublishUrls(selectedImages, project.id, imageMode)
+      .then((urls) => {
+        if (!cancelled) {
+          setDebugUrls(urls);
+          setDebugLoading(false);
+          console.log('🔍 Debug preview URLs loaded:', urls);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('Failed to load debug URLs:', err);
+          setDebugLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debugPreview, project?.id, selectedImages, imageMode]);
 
   // For backwards compatibility, also get per-image style (used for indicator)
   const getCurrentImagePreviewStyle = useCallback(() => {
@@ -452,15 +485,30 @@ export function PostPreview({
               aspectRatio: showOriginal 
                 ? (imageDimensions.get(selectedImages[currentPreviewIndex])?.width || 4) / 
                   (imageDimensions.get(selectedImages[currentPreviewIndex])?.height || 5)
-                : carouselMode.targetAspectRatio // Both Fill and Fit modes respect majority orientation
+                : debugPreview && debugUrls.length > 0
+                  ? undefined // Let the actual transformed image dictate aspect ratio
+                  : carouselMode.targetAspectRatio // Both Fill and Fit modes respect majority orientation
             }}>
               {selectedImages.length > 0 ? (
                 <>
-                  <img 
-                    src={getCloudinaryUrl(selectedImages[currentPreviewIndex])} 
-                    alt={project.title}
-                    style={{ objectFit: showOriginal ? 'contain' : (imageMode === 'fill' ? 'cover' : carouselMode.objectFit) }}
-                  />
+                  {debugLoading ? (
+                    <div className="instagram-debug-loading">🔄 Loading debug preview...</div>
+                  ) : (
+                    <img 
+                      src={debugPreview && debugUrls[currentPreviewIndex] 
+                        ? debugUrls[currentPreviewIndex] 
+                        : getCloudinaryUrl(selectedImages[currentPreviewIndex])
+                      } 
+                      alt={project.title}
+                      style={{ 
+                        objectFit: debugPreview && debugUrls.length > 0 
+                          ? 'contain' // Show the actual transformed image as-is
+                          : showOriginal 
+                            ? 'contain' 
+                            : (imageMode === 'fill' ? 'cover' : carouselMode.objectFit) 
+                      }}
+                    />
+                  )}
                   {selectedImages.length > 1 && (
                     <>
                       <button 
@@ -550,6 +598,18 @@ export function PostPreview({
                   {imageMode === 'fit' ? '▬ FIT' : '✂️ FILL'}
                 </button>
               )}
+              
+              {/* Debug Preview Toggle - Shows actual Cloudinary-transformed images */}
+              <button 
+                className={`instagram-control-btn ${debugPreview ? 'instagram-control-btn--debug-active' : 'instagram-control-btn--debug'}`}
+                onClick={() => setDebugPreview(!debugPreview)}
+                title={debugPreview 
+                  ? "DEBUG ON: Showing actual Cloudinary URLs that Instagram will receive - Click to disable" 
+                  : "Click to show actual Cloudinary-transformed images (what Instagram will receive)"
+                }
+              >
+                {debugLoading ? '⏳' : debugPreview ? '🔍 DEBUG' : '🔍'}
+              </button>
             </div>
           )}
 

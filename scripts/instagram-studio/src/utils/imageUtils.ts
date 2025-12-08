@@ -749,7 +749,7 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
 export async function getInstagramPublishUrls(
   urls: string[],
   projectId: string,
-  imageMode: 'fill' | 'fit' = 'fit'
+  imageMode: 'fill' | 'fit' = 'fill'
 ): Promise<string[]> {
   await loadCloudinaryMapping();
   

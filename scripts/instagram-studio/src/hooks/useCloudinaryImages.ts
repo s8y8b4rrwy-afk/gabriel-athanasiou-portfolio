@@ -109,7 +109,7 @@ export function useEnsureCloudinaryUrls() {
  * @param imageMode - 'fill' = crop to fill (no bars), 'fit' = letterbox (preserve full image)
  */
 export function useInstagramPublishUrls() {
-  return useCallback(async (urls: string[], projectId: string, imageMode: 'fill' | 'fit' = 'fit'): Promise<string[]> => {
+  return useCallback(async (urls: string[], projectId: string, imageMode: 'fill' | 'fit' = 'fill'): Promise<string[]> => {
     return getInstagramPublishUrls(urls, projectId, imageMode);
   }, []);
 }

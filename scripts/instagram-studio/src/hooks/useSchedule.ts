@@ -110,7 +110,7 @@ export function useSchedule(): UseScheduleReturn {
       caption,
       hashtags,
       selectedImages,
-      imageMode: imageMode || 'fit', // Default to 'fit' (preserve original aspect with letterbox)
+      imageMode: imageMode || 'fill', // Default to 'fill' (crop to fill frame)
       createdAt: now,
       updatedAt: now,
     };
