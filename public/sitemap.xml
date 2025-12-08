@@ -1,549 +1,285 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lemonpost.studio/</loc>
-    <lastmod>2025-12-03</lastmod>
+    <loc>https://directedbygabriel.com/</loc>
+    <lastmod>2025-12-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work</loc>
-    <lastmod>2025-12-03</lastmod>
+    <loc>https://directedbygabriel.com/work</loc>
+    <lastmod>2025-12-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/about</loc>
-    <lastmod>2025-12-03</lastmod>
+    <loc>https://directedbygabriel.com/journal</loc>
+    <lastmod>2025-12-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/about</loc>
+    <lastmod>2025-12-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/kitt-medical-x-medical-tracker-partnership-video</loc>
+    <loc>https://directedbygabriel.com/game</loc>
+    <lastmod>2025-12-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/kitt-medical-x-medical-tracker-partnership-video</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/dye-lon-riverside-investors-pitch</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/medicus-wilmslow-health-centre-testimonials</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/aru-london-postgrad-25</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/la-fosse-rebranding</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/uclan-videos</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/hello-sunday</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/the-newspaper</loc>
+    <loc>https://directedbygabriel.com/work/the-newspaper</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/squid-campaign-2025</loc>
+    <loc>https://directedbygabriel.com/work/talon-pipesnug-fluesnug</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/neigbourly</loc>
+    <loc>https://directedbygabriel.com/work/squid-campaign-2025</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/the-big-mini-adventure-challenge</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/clientearth-in-asia-coperate-video</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/aru-open-day-videos</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/kitt-medical-training-courses</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/the-big-mini-adventure-challenge</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/fashion-film-02</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/abbey-quay</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/fashion-film</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/rap-in-paper-bz-rap-in-paper-freestyle-live</loc>
+    <loc>https://directedbygabriel.com/work/squid-campaign-2024</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/shifting-tides</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/squid-campaign-2024</loc>
+    <loc>https://directedbygabriel.com/work/health-lottery-whish</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/uobm-aw23</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/shire-homecare</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/brand-storytelling-event</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/cordex-x-polymateria-agritechnica</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/bugzy-malone-lean-official-video</loc>
+    <loc>https://directedbygabriel.com/work/gilley-uk</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/fashion-film-03</loc>
+    <loc>https://directedbygabriel.com/work/restspace</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/aru-3-words-video</loc>
+    <loc>https://directedbygabriel.com/work/anglia-ruskin-university-london</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/rap-in-paper-introduction</loc>
+    <loc>https://directedbygabriel.com/work/sports-analytics-school-launch-video</loc>
+    <lastmod>2023-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/fraqua-vive</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/jk-events</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/easol-podcast-01</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/embrace-building-wraps</loc>
+    <loc>https://directedbygabriel.com/work/i-look-at-the-times</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/gilley-uk</loc>
+    <loc>https://directedbygabriel.com/work/greenwich-peninsula-investor-s-pitch-video</loc>
+    <lastmod>2023-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/lanique-raise-your-spirits</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/restspace</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/anglia-ruskin-university-london</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/aru-courses-23-edit</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/sports-analytics-school-launch-video</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/fraqua-vive</loc>
+    <loc>https://directedbygabriel.com/work/losbros-impossible-to-resist</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/i-look-at-the-times</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/greenwich-peninsula-investor-s-pitch-video</loc>
+    <loc>https://directedbygabriel.com/work/let-s-get-ready-to-rumble-energy</loc>
     <lastmod>2023-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/reebok-spec</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/lanique-raise-your-spirits</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/losbros-impossible-to-resist</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/let-s-get-ready-to-rumble-energy</loc>
-    <lastmod>2023-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/the-textile-building-investors-pitch-video</loc>
+    <loc>https://directedbygabriel.com/work/the-textile-building-investors-pitch-video</loc>
     <lastmod>2022-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/the-5th-generation</loc>
+    <loc>https://directedbygabriel.com/work/daughters-united</loc>
     <lastmod>2022-01-01</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/mask</loc>
-    <lastmod>2022-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/raw-gods</loc>
-    <lastmod>2022-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/curiouser</loc>
-    <lastmod>2022-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/wakecup-a-serene-autumn-escape</loc>
+    <loc>https://directedbygabriel.com/work/diesel-express-yourself</loc>
     <lastmod>2022-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/the-dyas-juna</loc>
+    <loc>https://directedbygabriel.com/work/curiouser</loc>
+    <lastmod>2022-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/wakecup-a-serene-autumn-escape</loc>
+    <lastmod>2022-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/the-dyas-juna</loc>
     <lastmod>2022-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/ayra-pepsi</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/lola-audreys-diamond-acoustic</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/lola-audreys-diamond</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/lily-xander-james-paige-wedding-videos</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/i-saw-it-first</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/birkin</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/pike</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/laura-mvula-got-me</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/budica</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/hurt-by-paradise-trailer</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/rydal-gym</loc>
-    <lastmod>2021-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/choked</loc>
-    <lastmod>2020-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/astoria</loc>
+    <loc>https://directedbygabriel.com/work/astoria</loc>
     <lastmod>2020-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/hidden-drummers-of-india</loc>
-    <lastmod>2020-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/before-the-rooster-crows</loc>
+    <loc>https://directedbygabriel.com/work/before-the-rooster-crows</loc>
     <lastmod>2020-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/suckadick</loc>
-    <lastmod>2020-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/oberlo</loc>
-    <lastmod>2020-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/goalkeepers-media-films</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/oneid-tvc</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/virgin-media-it-s-a-steal</loc>
+    <loc>https://directedbygabriel.com/work/virgin-media-it-s-a-steal</loc>
     <lastmod>2019-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/ey-audit-promo</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/pink-taxi</loc>
+    <loc>https://directedbygabriel.com/work/pink-taxi</loc>
     <lastmod>2019-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/erin-music-video</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/blue-story-epk</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/ey-audit-automation-bad</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/blinded-by-the-light-epk</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/dona-vixen</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/compartment-33</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/coming-home</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/the-solution</loc>
-    <lastmod>2019-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/natural-love</loc>
-    <lastmod>2018-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/material-life</loc>
+    <loc>https://directedbygabriel.com/work/material-life</loc>
     <lastmod>2018-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/dorreh</loc>
-    <lastmod>2018-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://lemonpost.studio/work/gettin-lost</loc>
+    <loc>https://directedbygabriel.com/work/gettin-lost</loc>
     <lastmod>2018-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/tedx-university-of-macedonia</loc>
+    <loc>https://directedbygabriel.com/work/kim</loc>
+    <lastmod>2017-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/tedx-university-of-macedonia</loc>
     <lastmod>2017-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/justify-my-night</loc>
+    <loc>https://directedbygabriel.com/work/crossroads</loc>
     <lastmod>2017-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/frosstrom-leister-videos</loc>
-    <lastmod>2012-01-01</lastmod>
+    <loc>https://directedbygabriel.com/work/justify-my-night</loc>
+    <lastmod>2017-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lemonpost.studio/work/wago</loc>
-    <lastmod>2025-12-03</lastmod>
+    <loc>https://directedbygabriel.com/work/aiz-eitz</loc>
+    <lastmod>2017-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/liveloula</loc>
+    <lastmod>2017-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/earth-my-love</loc>
+    <lastmod>2017-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/the-big-thirst</loc>
+    <lastmod>2016-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/pure-souls</loc>
+    <lastmod>2016-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/the-secret-of-life</loc>
+    <lastmod>2016-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/project-michalis</loc>
+    <lastmod>2014-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/rose</loc>
+    <lastmod>2014-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://directedbygabriel.com/work/it-s-a-matter-of-time</loc>
+    <lastmod>2014-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

@@ -5,9 +5,9 @@
  * Used by build scripts and Netlify functions to avoid code duplication.
  */
 
-import { getVideoId } from '../../utils/videoHelpers.mjs';
-import { parseCreditsText as parseCreditsTextShared } from '../../utils/textHelpers.mjs';
-import { slugify } from '../../utils/slugify.mjs';
+import { getVideoId } from '../../src/utils/videoHelpers.mjs';
+import { parseCreditsText as parseCreditsTextShared } from '../../src/utils/helpers/textHelpers.mjs';
+import { slugify } from '../../src/utils/generators/slugify.mjs';
 
 /**
  * Fetch all records from an Airtable table with pagination support

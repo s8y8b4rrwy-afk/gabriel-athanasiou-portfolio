@@ -11,9 +11,9 @@
 import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
-import { getVideoThumbnail } from '../../utils/videoHelpers.mjs';
-import { normalizeTitle, calculateReadingTime, parseCreditsText } from '../../utils/textHelpers.mjs';
-import { uploadToCloudinary as uploadToCloudinaryHelper, checkImageExists } from '../../utils/cloudinaryHelpers.mjs';
+import { getVideoThumbnail } from '../../src/utils/videoHelpers.mjs';
+import { normalizeTitle, calculateReadingTime, parseCreditsText } from '../../src/utils/helpers/textHelpers.mjs';
+import { uploadToCloudinary as uploadToCloudinaryHelper, checkImageExists } from '../../src/utils/cloudinary/cloudinaryHelpers.mjs';
 import {
   fetchAirtableTable,
   fetchTimestamps,

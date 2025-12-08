@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2025-12-03T16:56:50.187Z",
-  "portfolioId": "postproduction",
-  "domain": "lemonpost.studio",
+  "generatedAt": "2025-12-08T12:33:50.755Z",
+  "portfolioId": "directing",
+  "domain": "directedbygabriel.com",
   "projects": [
     {
       "id": "recnbZVXssWnqzk63",
@@ -9,60 +9,6 @@
       "title": "Kitt Medical X Medical Tracker Partnership Video",
       "description": "A video announcing the partnership bewteen Kitt Medical, a defibralator but for allergies, and Medical Tracker, a digital accident book for schools and more.",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715880/portfolio-projects-recnbZVXssWnqzk63-0.heic",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "recSAbOWE8DjJzcTA",
-      "slug": "dye-lon-riverside-investors-pitch",
-      "title": "Dye Lon Riverside Investors Pitch",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "rec01thlhC4hHGRlS",
-      "slug": "medicus-wilmslow-health-centre-testimonials",
-      "title": "Medicus Wilmslow Health Centre Testimonials",
-      "description": "",
-      "image": "https://img.youtube.com/vi/eGPZfFFydPQ/maxresdefault.jpg",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "rec4QdaV0qLrTR8fh",
-      "slug": "aru-london-postgrad-25",
-      "title": "Aru London Postgrad 25",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804873/portfolio-projects-rec4QdaV0qLrTR8fh-0.jpg",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "rechz42bB1Oc27kkw",
-      "slug": "la-fosse-rebranding",
-      "title": "La Fosse Rebranding",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "rec6QJGR1TLkMdoyA",
-      "slug": "uclan-videos",
-      "title": "Uclan Videos",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2025"
-    },
-    {
-      "id": "recq6VrQjKJKs9zkw",
-      "slug": "hello-sunday",
-      "title": "Hello Sunday",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804875/portfolio-projects-recq6VrQjKJKs9zkw-0.jpg",
       "type": "Commercial",
       "year": "2025"
     },
@@ -76,6 +22,15 @@
       "year": "2025"
     },
     {
+      "id": "recvC2kbUF9Dh5h6f",
+      "slug": "talon-pipesnug-fluesnug",
+      "title": "Talon: Pipesnug & Fluesnug",
+      "description": "For this animated project, Talon challenged me to create a unique and engaging way to showcase their Pipe Snug and Flue Snug sealing products. Instead of a conventional demonstration, I developed a game-inspired adventur",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603734/portfolio-projects-recvC2kbUF9Dh5h6f-0.jpg",
+      "type": "Commercial",
+      "year": "2025"
+    },
+    {
       "id": "recryV8jTtQDWLB9B",
       "slug": "squid-campaign-2025",
       "title": "Squid Campaign 2025",
@@ -83,42 +38,6 @@
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715884/portfolio-projects-recryV8jTtQDWLB9B-0.heic",
       "type": "Commercial",
       "year": "2025"
-    },
-    {
-      "id": "recrN5Q2SUgDfQDSG",
-      "slug": "neigbourly",
-      "title": "Neigbourly",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "rectyZOMbe7eQSKbA",
-      "slug": "clientearth-in-asia-coperate-video",
-      "title": "Clientearth In Asia Coperate Video",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804878/portfolio-projects-rectyZOMbe7eQSKbA-0.jpg",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "recd04nWeAvqRXQwL",
-      "slug": "aru-open-day-videos",
-      "title": "Aru: Open Day Videos",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804882/portfolio-projects-recd04nWeAvqRXQwL-0.jpg",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "rec8E1EdrkPNVbB6B",
-      "slug": "kitt-medical-training-courses",
-      "title": "Kitt Medical: Training Courses",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2024"
     },
     {
       "id": "recEt255eoOGfQFij",
@@ -130,51 +49,6 @@
       "year": "2024"
     },
     {
-      "id": "recZd48J4F3vskvhv",
-      "slug": "fashion-film-02",
-      "title": "Fashion Film 02",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1808711790-3f38e1d182af6c79fd810dd8d43b899338c83b4a651daf0a4751d6d675e5cbe1-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "recQ1KNF9qX94IbJm",
-      "slug": "abbey-quay",
-      "title": "Abbey Quay",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "rec19YGt9NenvsOem",
-      "slug": "fashion-film",
-      "title": "Fashion Film",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804884/portfolio-projects-rec19YGt9NenvsOem-0.jpg",
-      "type": "Commercial",
-      "year": "2024"
-    },
-    {
-      "id": "rectXO9dEji8WQuQM",
-      "slug": "rap-in-paper-bz-rap-in-paper-freestyle-live",
-      "title": "Rap In Paper: Bz Rap In Paper Freestyle [Live]",
-      "description": "",
-      "image": "https://img.youtube.com/vi/ku-XAWCDjJE/maxresdefault.jpg",
-      "type": "Music Video",
-      "year": "2023"
-    },
-    {
-      "id": "recysqHltPj6bRNFD",
-      "slug": "shifting-tides",
-      "title": "Shifting Tides",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Narrative",
-      "year": "2023"
-    },
-    {
       "id": "recGacwW665mArUly",
       "slug": "squid-campaign-2024",
       "title": "Squid Campaign 2024",
@@ -184,101 +58,11 @@
       "year": "2023"
     },
     {
-      "id": "recWobs12nEl6SX1A",
-      "slug": "uobm-aw23",
-      "title": "Uobm Aw23",
-      "description": "",
-      "image": "https://vumbnail.com/1021318638.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "rec6xJwCFvFpCPMgZ",
-      "slug": "shire-homecare",
-      "title": "Shire Homecare",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1940196926-9b66f184e8d7c90bbac8b54a37d867a02c37e70ec34ec30c63fe57e282ead619-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recxSNlQVhqiz1ftt",
-      "slug": "brand-storytelling-event",
-      "title": "Brand Storytelling Event",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1761190324-a7fca645b3e56ea2603566fce521361e0d54073f6c797cc127e6b3dced8db8f4-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recg8GIk3yfhudveK",
-      "slug": "cordex-x-polymateria-agritechnica",
-      "title": "Cordex X Polymateria Agritechnica",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804889/portfolio-projects-recg8GIk3yfhudveK-0.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recf9Th67D1qxRCzp",
-      "slug": "bugzy-malone-lean-official-video",
-      "title": "Bugzy Malone Lean (Official Video)",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804890/portfolio-projects-recf9Th67D1qxRCzp-0.jpg",
-      "type": "Music Video",
-      "year": "2023"
-    },
-    {
-      "id": "recCP2gkpSwNqhI5P",
-      "slug": "fashion-film-03",
-      "title": "Fashion Film 03",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1778240287-e521f43d1869a1d6be4516f492c91061c88e13d5f2d54c9b4fe986836b2bc55a-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "rec3po7P6S00cGYXX",
-      "slug": "aru-3-words-video",
-      "title": "Aru 3 Words Video",
-      "description": "This is a 3 word video and stuff.",
-      "image": "https://img.youtube.com/vi/TejbwNWk5JI/maxresdefault.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recRpwAmdmVWoal66",
-      "slug": "rap-in-paper-introduction",
-      "title": "Rap In Paper: Introduction",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1751706597-0a5b842baff9e02970e022bbd8f9341192f3d8ad7ffd18308f18a9599453b29d-d_295x166?region=us",
-      "type": "Music Video",
-      "year": "2023"
-    },
-    {
-      "id": "recYwYlViCcm2tzd5",
-      "slug": "jk-events",
-      "title": "Jk Events",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "rectMqCkoDwqS9qks",
-      "slug": "easol-podcast-01",
-      "title": "Easol: Podcast 01",
-      "description": "",
-      "image": "https://vumbnail.com/1021317464.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recF2eOIxvOnQtunI",
-      "slug": "embrace-building-wraps",
-      "title": "Embrace Building Wraps",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
+      "id": "recURzloIju3xMoDR",
+      "slug": "health-lottery-whish",
+      "title": "Health Lottery Whish",
+      "description": "WHISH (Whitby Hidden Impairment Supported Help) is a wonderful space where parents and children with hidden impairments can engage in various activities together.\n\nFor this project, we took a documentary-style approach, ",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715892/portfolio-projects-recURzloIju3xMoDR-0.heic",
       "type": "Commercial",
       "year": "2023"
     },
@@ -306,15 +90,6 @@
       "title": "Anglia Ruskin University London",
       "description": "For Anglia Ruskin University London, we led a large-scale campaign to capture the essence of student life and academic excellence. The project included producing many testimonial videos for individual courses, three hero",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715898/portfolio-projects-recloUQzk1n5hFU57-0.jpg",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
-      "id": "recgkaJdMxZRAQ7b4",
-      "slug": "aru-courses-23-edit",
-      "title": "Aru Courses 23 Edit",
-      "description": "",
-      "image": "https://vumbnail.com/871956303.jpg",
       "type": "Commercial",
       "year": "2023"
     },
@@ -355,15 +130,6 @@
       "year": "2023"
     },
     {
-      "id": "recF9b18dtG1DnFYy",
-      "slug": "reebok-spec",
-      "title": "Reebok Spec",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1940194428-3c3deeefd7e9ab5491873d22235d59f3fa2c8444ec4921196bd8af7bc48bafd4-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2023"
-    },
-    {
       "id": "recUyEFIYQJpikSMf",
       "slug": "lanique-raise-your-spirits",
       "title": "Lanique Raise Your Spirits",
@@ -400,30 +166,21 @@
       "year": "2022"
     },
     {
-      "id": "recbj3XB6u7xf13Rn",
-      "slug": "the-5th-generation",
-      "title": "The 5th Generation",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1693118802-13967644d8c7983baa8ecd55efa2356475adf01aa76052139df60a96371d7815-d_295x166?region=us",
-      "type": "Narrative",
+      "id": "recoaqKTgrqmy2gsW",
+      "slug": "daughters-united",
+      "title": "Daughters United",
+      "description": "I was commissioned to direct a docu-style testimonial video for Daughters United, a UK-based charity dedicated to empowering women who have faced marginalization or mistreatment. The film captures the raw and powerful st",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715924/portfolio-projects-recoaqKTgrqmy2gsW-0.heic",
+      "type": "Commercial",
       "year": "2022"
     },
     {
-      "id": "recjSsXRCXyvCswZm",
-      "slug": "mask",
-      "title": "Mask",
+      "id": "recEegt54sIu0M5ib",
+      "slug": "diesel-express-yourself",
+      "title": "Diesel: Express Yourself",
       "description": "",
-      "image": "https://img.youtube.com/vi/BaBytXILPcY/maxresdefault.jpg",
-      "type": "Narrative",
-      "year": "2022"
-    },
-    {
-      "id": "recVRARMRQf13RCRG",
-      "slug": "raw-gods",
-      "title": "Raw Gods",
-      "description": "",
-      "image": "https://img.youtube.com/vi/P_qPypdtv8w/maxresdefault.jpg",
-      "type": "Narrative",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603755/portfolio-projects-recEegt54sIu0M5ib-0.jpg",
+      "type": "Commercial",
       "year": "2022"
     },
     {
@@ -454,129 +211,12 @@
       "year": "2022"
     },
     {
-      "id": "recFxq0Le1WMdP2ep",
-      "slug": "ayra-pepsi",
-      "title": "Ayra Pepsi",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804895/portfolio-projects-recFxq0Le1WMdP2ep-0.jpg",
-      "type": "Commercial",
-      "year": "2021"
-    },
-    {
-      "id": "recyp0hR6vDnp5XnI",
-      "slug": "lola-audreys-diamond-acoustic",
-      "title": "Lola Audreys Diamond (Acoustic)",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Music Video",
-      "year": "2021"
-    },
-    {
-      "id": "recUDHJ7OvLgreTzJ",
-      "slug": "lola-audreys-diamond",
-      "title": "Lola Audreys Diamond",
-      "description": "",
-      "image": "https://img.youtube.com/vi/jwMprpVgdfs/maxresdefault.jpg",
-      "type": "Music Video",
-      "year": "2021"
-    },
-    {
-      "id": "rec6jaU8b7hRGM7Jq",
-      "slug": "lily-xander-james-paige-wedding-videos",
-      "title": "Lily & Xander, James & Paige Wedding Videos",
-      "description": "",
-      "image": "https://vumbnail.com/568909917.jpg",
-      "type": "Documentary",
-      "year": "2021"
-    },
-    {
-      "id": "recmNqLKmAF2kneZI",
-      "slug": "i-saw-it-first",
-      "title": "I Saw It First",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804897/portfolio-projects-recmNqLKmAF2kneZI-0.jpg",
-      "type": "Music Video",
-      "year": "2021"
-    },
-    {
-      "id": "receJPGJko0JfrlK2",
-      "slug": "birkin",
-      "title": "Birkin",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804901/portfolio-projects-receJPGJko0JfrlK2-0.jpg",
-      "type": "Music Video",
-      "year": "2021"
-    },
-    {
-      "id": "recLaSNV1Qeiw7OI0",
-      "slug": "pike",
-      "title": "Pike",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1150254918-f6d3578a32e082df981068c6c7659f55b729a57084f13165af9103b61e3064d5-d_295x166?region=us",
-      "type": "Narrative",
-      "year": "2021"
-    },
-    {
-      "id": "recRdMBhsBIiFGId1",
-      "slug": "laura-mvula-got-me",
-      "title": "Laura Mvula Got Me",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Music Video",
-      "year": "2021"
-    },
-    {
-      "id": "recriTofURKR8oiTd",
-      "slug": "budica",
-      "title": "Budica",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804913/portfolio-projects-recriTofURKR8oiTd-0.jpg",
-      "type": "Narrative",
-      "year": "2021"
-    },
-    {
-      "id": "rec16dgn28eBuONpT",
-      "slug": "hurt-by-paradise-trailer",
-      "title": "Hurt By Paradise Trailer",
-      "description": "",
-      "image": "https://vumbnail.com/387799717.jpg",
-      "type": "Narrative",
-      "year": "2021"
-    },
-    {
-      "id": "rec2RIXmewgEo0XD0",
-      "slug": "rydal-gym",
-      "title": "Rydal Gym",
-      "description": "",
-      "image": "https://i.vimeocdn.com/video/1039903366-1b3b834cd6045c01e45fd45985dc859ba9c9d45fa6c5f1915e903fb2594ab78e-d_295x166?region=us",
-      "type": "Commercial",
-      "year": "2021"
-    },
-    {
-      "id": "recGZlDTuUXG8Iq6K",
-      "slug": "choked",
-      "title": "Choked",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804917/portfolio-projects-recGZlDTuUXG8Iq6K-0.jpg",
-      "type": "Music Video",
-      "year": "2020"
-    },
-    {
       "id": "recP0DyB35ZBY85Kb",
       "slug": "astoria",
       "title": "Astoria",
       "description": "Three years after a traumatic event that changed her life Kelly, a young girl, returns to her hometown Kastoria and to her friends whom she has left behind. At the same time, a curious case of a hit-and-run accident, tha",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603764/portfolio-projects-recP0DyB35ZBY85Kb-0.jpg",
       "type": "Narrative",
-      "year": "2020"
-    },
-    {
-      "id": "recxq79R8VQJGMsvp",
-      "slug": "hidden-drummers-of-india",
-      "title": "Hidden Drummers Of India",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804920/portfolio-projects-recxq79R8VQJGMsvp-0.jpg",
-      "type": "Documentary",
       "year": "2020"
     },
     {
@@ -589,56 +229,11 @@
       "year": "2020"
     },
     {
-      "id": "recIvlU6n8XkuxtDu",
-      "slug": "suckadick",
-      "title": "Suckadick",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Narrative",
-      "year": "2020"
-    },
-    {
-      "id": "recjDdmMqkGSPz7in",
-      "slug": "oberlo",
-      "title": "Oberlo",
-      "description": "",
-      "image": "https://img.youtube.com/vi/1yuiqnYVF4c/maxresdefault.jpg",
-      "type": "Commercial",
-      "year": "2020"
-    },
-    {
-      "id": "recSYCVcEAVReXUAR",
-      "slug": "goalkeepers-media-films",
-      "title": "Goalkeepers Media Films",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2019"
-    },
-    {
-      "id": "recDzAsNgKtkHvOMC",
-      "slug": "oneid-tvc",
-      "title": "Oneid Tvc",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2019"
-    },
-    {
       "id": "recC9iL5Z1deoxc30",
       "slug": "virgin-media-it-s-a-steal",
       "title": "Virgin Media It's A Steal",
       "description": "A fast-paced, comedic ad where a burglar’s night takes an unexpected turn – instead of making a getaway, they end up securing an incredible Virgin Media deal for their friends. A playful take on how irresistible the offe",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603774/portfolio-projects-recC9iL5Z1deoxc30-0.jpg",
-      "type": "Commercial",
-      "year": "2019"
-    },
-    {
-      "id": "recm8sKYg0C7hM67L",
-      "slug": "ey-audit-promo",
-      "title": "Ey Audit Promo",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
       "type": "Commercial",
       "year": "2019"
     },
@@ -652,102 +247,12 @@
       "year": "2019"
     },
     {
-      "id": "rec8AuJkcqKruETnG",
-      "slug": "erin-music-video",
-      "title": "Erin Music Video",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Music Video",
-      "year": "2019"
-    },
-    {
-      "id": "reczKSwzalWyR9bgf",
-      "slug": "blue-story-epk",
-      "title": "Blue Story Epk",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804924/portfolio-projects-reczKSwzalWyR9bgf-0.jpg",
-      "type": "Documentary",
-      "year": "2019"
-    },
-    {
-      "id": "recNeKSxNg888tGAU",
-      "slug": "ey-audit-automation-bad",
-      "title": "Ey Audit Automation Bad",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": "2019"
-    },
-    {
-      "id": "rec4tWleeVSuiUacx",
-      "slug": "blinded-by-the-light-epk",
-      "title": "Blinded By The Light Epk",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804927/portfolio-projects-rec4tWleeVSuiUacx-0.jpg",
-      "type": "Documentary",
-      "year": "2019"
-    },
-    {
-      "id": "recsPIqnUyq78jfyv",
-      "slug": "dona-vixen",
-      "title": "Dona & Vixen",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804930/portfolio-projects-recsPIqnUyq78jfyv-0.jpg",
-      "type": "Narrative",
-      "year": "2019"
-    },
-    {
-      "id": "recFJA1FvBOL9VwA6",
-      "slug": "compartment-33",
-      "title": "Compartment 33",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804933/portfolio-projects-recFJA1FvBOL9VwA6-0.jpg",
-      "type": "Narrative",
-      "year": "2019"
-    },
-    {
-      "id": "recCqY66yVPyTJGW7",
-      "slug": "coming-home",
-      "title": "Coming Home",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Narrative",
-      "year": "2019"
-    },
-    {
-      "id": "recLo8YartaVx3psp",
-      "slug": "the-solution",
-      "title": "The Solution",
-      "description": "",
-      "image": "https://img.youtube.com/vi/g0bS79EejuU/maxresdefault.jpg",
-      "type": "Narrative",
-      "year": "2019"
-    },
-    {
-      "id": "recDg1Cbd2uysnsm5",
-      "slug": "natural-love",
-      "title": "Natural Love",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Narrative",
-      "year": "2018"
-    },
-    {
       "id": "rec9d8M9kuWPnzbmt",
       "slug": "material-life",
       "title": "Material Life",
       "description": "The second film in the futuristic distopian universe of Underhill West.",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715936/portfolio-projects-rec9d8M9kuWPnzbmt-0.heic",
       "type": "Music Video",
-      "year": "2018"
-    },
-    {
-      "id": "recguuPSslic51sIH",
-      "slug": "dorreh",
-      "title": "Dorreh",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Narrative",
       "year": "2018"
     },
     {
@@ -760,12 +265,30 @@
       "year": "2018"
     },
     {
+      "id": "recn0dqWz39TpCHNV",
+      "slug": "kim",
+      "title": "Kim",
+      "description": "",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715942/portfolio-projects-recn0dqWz39TpCHNV-0.heic",
+      "type": "Narrative",
+      "year": "2017"
+    },
+    {
       "id": "recATtGUGhcvzTcvf",
       "slug": "tedx-university-of-macedonia",
       "title": "Tedx University Of Macedonia",
       "description": "I was commissioned to create a promotion video for the TEDx event happening at the University of Macedonia, Thessaloniki, Greece.",
       "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715943/portfolio-projects-recATtGUGhcvzTcvf-0.heic",
       "type": "Commercial",
+      "year": "2017"
+    },
+    {
+      "id": "recd275WjHjPT0I5L",
+      "slug": "crossroads",
+      "title": "Crossroads",
+      "description": "",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715945/portfolio-projects-recd275WjHjPT0I5L-0.heic",
+      "type": "Music Video",
       "year": "2017"
     },
     {
@@ -778,29 +301,92 @@
       "year": "2017"
     },
     {
-      "id": "recbclwtLtPMCuO9a",
-      "slug": "frosstrom-leister-videos",
-      "title": "Frosstrom & Leister Videos",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764804936/portfolio-projects-recbclwtLtPMCuO9a-0.jpg",
-      "type": "Commercial",
-      "year": "2012"
+      "id": "recXjyQW0bFtMSlM0",
+      "slug": "aiz-eitz",
+      "title": "Aiz Eitz",
+      "description": "Two students struggle to survive the new ICE AGE.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603782/portfolio-projects-recXjyQW0bFtMSlM0-0.jpg",
+      "type": "Narrative",
+      "year": "2017"
     },
     {
-      "id": "recLH9BnqHsx42zaS",
-      "slug": "wago",
-      "title": "Wago",
-      "description": "",
-      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-      "type": "Commercial",
-      "year": ""
+      "id": "reco9orD0pc1Afn1g",
+      "slug": "liveloula",
+      "title": "Liveloula",
+      "description": "A brother and a sister struggle in order to find money for their mothers chemotherapy.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603786/portfolio-projects-reco9orD0pc1Afn1g-0.jpg",
+      "type": "Narrative",
+      "year": "2017"
+    },
+    {
+      "id": "recdMqD8kOcLfYIK5",
+      "slug": "earth-my-love",
+      "title": "Earth, My Love",
+      "description": "Earth and the forces of nature are fighting to survive from human demolition.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715955/portfolio-projects-recdMqD8kOcLfYIK5-0.heic",
+      "type": "Music Video",
+      "year": "2017"
+    },
+    {
+      "id": "recyk2RUZUY2LRoYy",
+      "slug": "the-big-thirst",
+      "title": "The Big Thirst",
+      "description": "Young Odysseus discovers that something is going terribly wrong when he decides to visit his father's village for the first time.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603790/portfolio-projects-recyk2RUZUY2LRoYy-0.jpg",
+      "type": "Narrative",
+      "year": "2016"
+    },
+    {
+      "id": "recbu0Ed9jwyB5Y5G",
+      "slug": "pure-souls",
+      "title": "Pure Souls",
+      "description": "What happens when a suicidal man makes friends at his ultimate moment?",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715958/portfolio-projects-recbu0Ed9jwyB5Y5G-0.heic",
+      "type": "Music Video",
+      "year": "2016"
+    },
+    {
+      "id": "rec3gxVcxcaIaaamx",
+      "slug": "the-secret-of-life",
+      "title": "The Secret Of Life",
+      "description": "Aris finds out the secret of life, written in a small pink notebook.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715961/portfolio-projects-rec3gxVcxcaIaaamx-0.heic",
+      "type": "Narrative",
+      "year": "2016"
+    },
+    {
+      "id": "recPht2mguhMzxI9j",
+      "slug": "project-michalis",
+      "title": "Project Michalis",
+      "description": "'Project Michalis' is the story of a young adult named Michalis. He is living a difficult life, with no job nor family. His greatest struggle is keeping up with all the robberies he is facing. However, soon his life will",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603797/portfolio-projects-recPht2mguhMzxI9j-0.jpg",
+      "type": "Narrative",
+      "year": "2014"
+    },
+    {
+      "id": "reclNk7d4VrkyeuIQ",
+      "slug": "rose",
+      "title": "Rose",
+      "description": "A lonely rose gets separated from its tree.",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764603801/portfolio-projects-reclNk7d4VrkyeuIQ-0.jpg",
+      "type": "Narrative",
+      "year": "2014"
+    },
+    {
+      "id": "recg9WSEULv8TImuh",
+      "slug": "it-s-a-matter-of-time",
+      "title": "It’s A Matter Of Time",
+      "description": "My first short film from when I was at the second year of highschool. ",
+      "image": "https://res.cloudinary.com/date24ay6/image/upload/v1764715963/portfolio-projects-recg9WSEULv8TImuh-0.heic",
+      "type": "Narrative",
+      "year": "2014"
     }
   ],
   "posts": [],
   "config": {
     "defaultOgImage": "https://res.cloudinary.com/date24ay6/image/upload/v1764603236/portfolio-config-defaultOgImage.jpg",
-    "siteTitle": "Lemon Post",
-    "seoTitle": "LEMON POST | Freelance Colorist & Editor | London",
-    "seoDescription": "Fresh post-production services. Specializing in DaVinci Resolve Colour Grading and Creative Editing. Elevate your footage with Lemon Post. Watch the portfolio."
+    "siteTitle": "Gabriel Athanasiou",
+    "seoTitle": "GABRIEL ATHANASIOU | Director",
+    "seoDescription": "Director based in London & Athens. Narrative, Commercial, Music Video."
   }
 }
