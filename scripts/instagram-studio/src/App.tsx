@@ -46,6 +46,7 @@ function App() {
     updateDraft,
     importScheduleData,
     markAsPublished,
+    revertToScheduled,
   } = useSchedule();
 
   // Enhance scheduled posts with project data lookup
@@ -433,34 +434,33 @@ function App() {
   // Handle publish success from SchedulePanel/Queue - mark post as published
   const handleSchedulePublishSuccess = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
     markAsPublished(slotId, instagramPostId, permalink);
-    // Always sync to Cloudinary after successful publish
-    syncToCloudinary();
-  }, [markAsPublished, syncToCloudinary]);
+    // Auto-sync will detect the status change and sync after 5 seconds
+    // This avoids race conditions with React state updates
+    console.log('✅ Marked as published - auto-sync will handle cloud update:', slotId);
+  }, [markAsPublished]);
 
   // Handle publish success from PostPreview (when editing a scheduled post)
   const handlePreviewPublishSuccess = useCallback((result: { instagramPostId?: string; permalink?: string }) => {
     // If we're editing a scheduled post, mark it as published
     if (editingPost?.slotId) {
       markAsPublished(editingPost.slotId, result.instagramPostId, result.permalink);
-      // Always sync to Cloudinary after successful publish
-      syncToCloudinary();
+      // Auto-sync will detect the status change and sync after 5 seconds
+      // This avoids race conditions with React state updates
+      console.log('✅ Marked as published from preview - auto-sync will handle cloud update');
       setEditingPost(null);
       setCurrentDraft(null);
       setSelectedProject(null);
       setViewMode(previousViewMode);
     }
-  }, [editingPost, markAsPublished, syncToCloudinary, previousViewMode]);
+  }, [editingPost, markAsPublished, previousViewMode]);
 
   // Debug: Manual mark as published (for fixing out-of-sync data)
   const handleDebugMarkAsPublished = useCallback((slotId: string) => {
     markAsPublished(slotId, `debug-${Date.now()}`, undefined);
-    // Delay sync to allow React state to update first
-    // The auto-sync will handle it, but we also trigger a manual sync after delay
-    setTimeout(() => {
-      syncToCloudinary();
-      console.log('🔧 Debug: Marked slot as published and synced:', slotId);
-    }, 100);
-  }, [markAsPublished, syncToCloudinary]);
+    // Auto-sync will detect the status change and sync after 5 seconds
+    // This avoids race conditions with React state updates
+    console.log('🔧 Debug: Marked slot as published - auto-sync will handle cloud update:', slotId);
+  }, [markAsPublished]);
 
   // Clear current draft and editing state
   const handleClearDraft = useCallback(() => {
@@ -650,6 +650,7 @@ function App() {
               onEditPost={handleEditPost}
               onPublishSuccess={handleSchedulePublishSuccess}
               onMarkAsPublished={handleDebugMarkAsPublished}
+              onRevertToScheduled={revertToScheduled}
               currentDraft={currentDraft}
               onClearDraft={handleClearDraft}
               onDropProject={handleDropProjectOnDate}

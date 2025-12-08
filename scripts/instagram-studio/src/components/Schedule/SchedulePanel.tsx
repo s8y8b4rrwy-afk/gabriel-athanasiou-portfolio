@@ -21,6 +21,7 @@ interface SchedulePanelProps {
   onEditPost: (post: ScheduledPost) => void;
   onPublishSuccess?: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   onMarkAsPublished?: (slotId: string) => void;
+  onRevertToScheduled?: (slotId: string) => void;
   currentDraft?: { project: Project; caption: string; hashtags: string[]; selectedImages: string[] } | null;
   onClearDraft?: () => void;
   onDropProject?: (project: Project, date: Date, time: string, template?: RecurringTemplate) => void;
@@ -45,6 +46,7 @@ export function SchedulePanel({
   onEditPost,
   onPublishSuccess,
   onMarkAsPublished,
+  onRevertToScheduled,
   currentDraft,
   onClearDraft,
   onDropProject,
@@ -409,7 +411,7 @@ export function SchedulePanel({
           showTitle={false}
         />
       ) : (
-        <PublishedList posts={publishedPosts} />
+        <PublishedList posts={publishedPosts} onRevertToScheduled={onRevertToScheduled} />
       )}
       
       {/* Delete zone appears when dragging scheduled posts */}

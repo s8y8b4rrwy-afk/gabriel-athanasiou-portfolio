@@ -9,9 +9,10 @@ interface ScheduledPost extends PostDraft {
 
 interface PublishedListProps {
   posts: ScheduledPost[];
+  onRevertToScheduled?: (slotId: string) => void;
 }
 
-export function PublishedList({ posts }: PublishedListProps) {
+export function PublishedList({ posts, onRevertToScheduled }: PublishedListProps) {
   // Sort by published date, most recent first
   const sortedPosts = useMemo(() => {
     return [...posts].sort((a, b) => {
@@ -121,7 +122,19 @@ export function PublishedList({ posts }: PublishedListProps) {
                   <span className={styles.publishedLabel}>Published on</span>
                   <span className={styles.date}>{formatDate(post.scheduleSlot.publishedAt)}</span>
                 </div>
-                <span className={`${styles.badge} ${styles.published}`}>✓</span>
+                <span 
+                  className={`${styles.badge} ${styles.published} ${onRevertToScheduled ? styles.clickable : ''}`}
+                  onDoubleClick={() => {
+                    if (onRevertToScheduled) {
+                      if (window.confirm('Revert this post back to scheduled? (Debug feature)')) {
+                        onRevertToScheduled(post.scheduleSlot.id);
+                      }
+                    }
+                  }}
+                  title={onRevertToScheduled ? 'Double-click to revert to scheduled (debug)' : undefined}
+                >
+                  ✓
+                </span>
               </div>
 
               <div className={styles.itemContent}>

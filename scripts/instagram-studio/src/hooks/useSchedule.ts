@@ -36,6 +36,7 @@ interface UseScheduleReturn {
   getPostsForMonth: (year: number, month: number) => Map<string, ScheduledPost[]>;
   markAsPublished: (slotId: string, instagramPostId?: string, permalink?: string) => void;
   markAsFailed: (slotId: string, error: string) => void;
+  revertToScheduled: (slotId: string) => void;
   importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings, deletedIds?: DeletedIds) => void;
 }
 
@@ -266,6 +267,23 @@ export function useSchedule(): UseScheduleReturn {
     }));
   }, [setScheduleSlots]);
 
+  // Revert a published/failed post back to scheduled (debug feature)
+  const revertToScheduled = useCallback((slotId: string) => {
+    setScheduleSlots(prev => prev.map(slot => {
+      if (slot.id === slotId) {
+        // Remove publish-related fields and set back to pending
+        const { instagramPostId, instagramPermalink, publishedAt, ...rest } = slot;
+        return { 
+          ...rest, 
+          status: 'pending' as const,
+          updatedAt: new Date().toISOString(), // Important for smart merge!
+        };
+      }
+      return slot;
+    }));
+    console.log('🔄 Reverted slot to scheduled:', slotId);
+  }, [setScheduleSlots]);
+
   // Update settings
   const updateSettings = useCallback((updates: Partial<ScheduleSettings>) => {
     setSettings(prev => ({ ...prev, ...updates }));
@@ -305,6 +323,7 @@ export function useSchedule(): UseScheduleReturn {
     getPostsForMonth,
     markAsPublished,
     markAsFailed,
+    revertToScheduled,
     importScheduleData,
   };
 }
