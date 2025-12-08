@@ -763,6 +763,7 @@ export async function getInstagramPublishUrls(
   let landscapeCount = 0;
   let portraitCount = 0;
   let normalCount = 0;
+  let totalLandscapeRatio = 0; // Track for FIT mode average calculation
   
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
@@ -784,8 +785,10 @@ export async function getInstagramPublishUrls(
     
     if (dimensions) {
       const ratio = dimensions.width / dimensions.height;
+      // MUST use SAME categorization as getCarouselTransformMode() for consistency
       if (ratio > 1.0) {
         landscapeCount++;
+        totalLandscapeRatio += ratio; // Track for FIT mode calculation
       } else if (ratio < 0.8) {
         portraitCount++;
       } else {
@@ -803,51 +806,71 @@ export async function getInstagramPublishUrls(
       ? INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100 
       : INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
     
-    console.log(`📐 FILL mode: Cropping all images to ${isLandscapeMajority ? '1.91:1 (landscape)' : '4:5 (portrait)'} (no letterbox)`);
+    console.log(`📐 FILL mode: Cropping to ${isLandscapeMajority ? '1.91:1 (landscape)' : '4:5 (portrait)'} with c_lfill (${landscapeCount}L, ${portraitCount}P, ${normalCount}N)`);
     
     return imageData.map(({ imageIndex }) => {
       return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'lfill');
     });
   }
   
-  // FIT MODE: Use majority rule to determine aspect ratio and use c_pad for letterboxing
-  
-  // Determine crop type based on majority
-  let targetAspectRatio: string;
-  let cropMode: 'lfill' | 'pad';
-  let description: string;
+  // FIT MODE: Preserve original images with same logic as preview
+  // CRITICAL: MUST match getCarouselTransformMode() exactly
+  // - Landscape majority: objectFit='contain' → use c_fill for ALL images (letterbox ONLY top/bottom, no side bars)
+  // - Portrait/crop majority: objectFit='cover' → use c_lfill for ALL images (crop to fill)
   
   if (isLandscapeMajority) {
-    // Majority landscape → use actual ratio (capped at 1.91:1) with c_pad (letterbox)
-    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100;
-    cropMode = 'pad'; // Letterbox to preserve full image
-    description = `landscape FIT (${landscapeCount} landscape, ${portraitCount} portrait, ${normalCount} normal)`;
+    // Landscape majority: ALL images use c_fill with calculated average landscape ratio
+    // c_fill adds letterbox ONLY where needed (top/bottom for landscape), NO side bars
+    // Matches preview's objectFit='contain' which preserves full image
+    const avgRatio = landscapeCount > 0 ? totalLandscapeRatio / landscapeCount : 1.78;
+    const clampedRatio = Math.min(avgRatio, 1.91);
+    const landscapeAspectRatio = clampedRatio.toFixed(2);
+    
+    console.log(`📐 FIT mode landscape majority (avg ${landscapeAspectRatio}): ALL images → c_fill (top/bottom letterbox ONLY, no side bars)`);
+    
+    const results: string[] = [];
+    
+    for (let i = 0; i < imageData.length; i++) {
+      const { imageIndex, dimensions } = imageData[i];
+      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${landscapeAspectRatio} c_fill`);
+      results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, landscapeAspectRatio, 'fill'));
+    }
+    
+    return results;
+    
   } else if (portraitCount > landscapeCount && portraitCount >= normalCount) {
-    // Majority portrait → use 4:5 with c_lfill (crop height, no side bars)
-    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
-    cropMode = 'lfill'; // Fill to avoid side bars
-    description = `portrait (${portraitCount} portrait, ${landscapeCount} landscape, ${normalCount} normal)`;
+    // Portrait majority: ALL images use c_lfill with 4:5
+    // Matches preview's objectFit='cover' which crops all images
+    const portraitAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5; // "0.8"
+    
+    console.log(`📐 FIT mode portrait majority: ALL images → 4:5 c_lfill (crop to fill, matches preview objectFit='cover')`);
+    
+    const results: string[] = [];
+    
+    for (let i = 0; i < imageData.length; i++) {
+      const { imageIndex } = imageData[i];
+      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): → 4:5 c_lfill`);
+      results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, portraitAspectRatio, 'lfill'));
+    }
+    
+    return results;
+    
   } else {
-    // Majority normal or tie → use 4:5 (default Instagram)
-    targetAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
-    cropMode = 'lfill';
-    description = `normal/default (${normalCount} normal, ${landscapeCount} landscape, ${portraitCount} portrait)`;
-  }
-  
-  console.log(`📐 FIT mode carousel majority: ${description} → using ${targetAspectRatio} with c_${cropMode}`);
-  
-  // Second pass: Build URLs with consistent aspect ratio
-  const results: string[] = [];
-  
-  for (let i = 0; i < imageData.length; i++) {
-    const { imageIndex, dimensions } = imageData[i];
+    // Normal/tie: Default to 4:5 crop (same as portrait majority)
+    const portraitAspectRatio = INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
     
-    console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} c_${cropMode}`);
+    console.log(`📐 FIT mode normal/default: ALL images → 4:5 c_lfill`);
     
-    results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, cropMode));
+    const results: string[] = [];
+    
+    for (let i = 0; i < imageData.length; i++) {
+      const { imageIndex } = imageData[i];
+      console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): → 4:5 c_lfill`);
+      results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, portraitAspectRatio, 'lfill'));
+    }
+    
+    return results;
   }
-  
-  return results;
 }
 
 /**
@@ -862,14 +885,21 @@ function buildCloudinaryUrlForCarousel(
   projectId: string,
   imageIndex: number,
   aspectRatio: string,
-  cropMode: 'lfill' | 'pad' = 'lfill'
+  cropMode: 'lfill' | 'pad' | 'fill' = 'lfill'
 ): string {
   const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
   
   // Instagram transformation
-  const igTransforms = cropMode === 'pad' ? [
+  const igTransforms = cropMode === 'fill' ? [
     `ar_${aspectRatio}`,  // Consistent aspect ratio for all carousel images
-    'c_pad',              // Pad to fit (adds letterbox bars)
+    'c_fill',             // Fill to aspect ratio, letterbox ONLY where needed (not all sides)
+    'b_black',            // Black letterbox bars (if any)
+    'g_center',           // Center the image
+    'q_95',               // High quality
+    'f_jpg'               // JPEG format for compatibility
+  ].join(',') : cropMode === 'pad' ? [
+    `ar_${aspectRatio}`,  // Consistent aspect ratio for all carousel images
+    'c_pad',              // Pad to fit (adds letterbox bars on all sides)
     'b_black',            // Black letterbox bars
     'g_center',           // Center the image
     'q_95',               // High quality
