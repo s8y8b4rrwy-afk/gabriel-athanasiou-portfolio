@@ -1,18 +1,11 @@
 /**
- * Instagram Scheduled Publish - Netlify Scheduled Function
+ * Instagram Scheduled Publish - Manual Trigger
  * 
- * Runs every hour to check for scheduled posts that are due
- * and publishes them automatically.
+ * This is a manual HTTP endpoint to trigger the scheduled publish logic.
+ * Useful for testing and manual publishing when the cron doesn't run.
  * 
- * Posts are considered "due" if their scheduled time is within the last hour
- * (giving a 1-hour window to catch any posts that should have been published).
- * 
- * Schedule: Every hour at minute 0 (0 * * * *)
- * 
- * SMART MERGE: Uses fetch-merge-save pattern to avoid overwriting user edits.
- * Only applies status updates to fresh cloud data before saving.
- * 
- * Notifications: Sends email via Resend when posts are published or fail
+ * Can be called manually:
+ * curl -X POST https://lemonpost.studio/.netlify/functions/instagram-publish-now
  */
 
 import crypto from 'crypto';
@@ -22,21 +15,12 @@ const GRAPH_API_VERSION = 'v21.0';
 const CLOUDINARY_CLOUD = 'date24ay6';
 const CLOUDINARY_API_KEY = '889494878498498';
 
-// Maximum wait time for media processing
 const MAX_PROCESSING_WAIT = 30000;
 const POLL_INTERVAL = 2000;
-
-// Window for catching scheduled posts (1 hour in milliseconds)
-const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-// Netlify scheduled function config
-export const config = {
-  schedule: '0 * * * *', // Every hour at minute 0
-};
+const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
 
 /**
  * Send notification email about publish results
- * Uses Resend API (set RESEND_API_KEY and NOTIFICATION_EMAIL in env)
  */
 async function sendNotification(results, scheduleData) {
   const resendApiKey = process.env.RESEND_API_KEY;
@@ -51,11 +35,10 @@ async function sendNotification(results, scheduleData) {
   const failed = results.filter(r => !r.success);
   
   const subject = failed.length > 0 
-    ? `⚠️ Instagram: ${successful.length} published, ${failed.length} failed`
-    : `✅ Instagram: ${successful.length} post(s) published`;
+    ? `⚠️ Instagram Manual Publish: ${successful.length} published, ${failed.length} failed`
+    : `✅ Instagram Manual Publish: ${successful.length} post(s) published`;
   
-  // Build HTML email
-  let html = `<h2>Instagram Scheduled Publish Report</h2>`;
+  let html = `<h2>Instagram Manual Publish Report</h2>`;
   html += `<p>Time: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>`;
   
   if (successful.length > 0) {
@@ -105,107 +88,87 @@ async function sendNotification(results, scheduleData) {
 }
 
 export const handler = async (event) => {
-  console.log('⏰ Scheduled publish check started at:', new Date().toISOString());
+  console.log('🔫 Manual Instagram publish triggered at:', new Date().toISOString());
   
   try {
     // 1. Fetch schedule data from Cloudinary
     const scheduleData = await fetchScheduleData();
     
     if (!scheduleData) {
-      console.log('📭 No schedule data found in Cloudinary');
-      return { statusCode: 200, body: JSON.stringify({ message: 'No schedule data' }) };
+      return { 
+        statusCode: 200, 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, message: 'No schedule data found' }) 
+      };
     }
     
-    console.log('📊 Schedule data structure:', {
+    console.log('📊 Schedule data loaded:', {
       hasInstagram: !!scheduleData.instagram,
       instagramConnected: scheduleData.instagram?.connected,
       hasAccessToken: !!scheduleData.instagram?.accessToken,
       draftsCount: scheduleData.drafts?.length || 0,
       slotsCount: scheduleData.scheduleSlots?.length || 0,
-      version: scheduleData.version,
     });
     
     // 2. Check Instagram connection
     if (!scheduleData.instagram?.connected || !scheduleData.instagram?.accessToken) {
-      console.log('🔌 Instagram not connected or no access token');
-      console.log('   instagram.connected:', scheduleData.instagram?.connected);
-      console.log('   instagram.accessToken exists:', !!scheduleData.instagram?.accessToken);
-      return { statusCode: 200, body: JSON.stringify({ message: 'Instagram not connected' }) };
+      console.log('🔌 Instagram not connected');
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Instagram not connected',
+          details: {
+            connected: scheduleData.instagram?.connected,
+            hasAccessToken: !!scheduleData.instagram?.accessToken,
+          }
+        }),
+      };
     }
     
     const { accessToken, accountId } = scheduleData.instagram;
     
-    // 3. Find posts that are due (scheduled time within the last hour, status = 'pending')
-    // Data structure: scheduleSlots links to drafts via postDraftId
-    // scheduleSlot: { id, postDraftId, scheduledDate, scheduledTime, status }
-    // draft: { id, projectId, caption, hashtags, selectedImages }
+    // 3. Find posts that are due
     const now = new Date();
     const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
     
     const draftsMap = new Map((scheduleData.drafts || []).map(d => [d.id, d]));
     const allSlots = scheduleData.scheduleSlots || [];
     
-    console.log(`📋 Total schedule slots: ${allSlots.length}`);
-    
-    // Log status distribution
-    const statusDist = {};
-    for (const slot of allSlots) {
-      statusDist[slot.status] = (statusDist[slot.status] || 0) + 1;
-    }
-    console.log('   Status distribution:', statusDist);
-    
     const duePosts = allSlots.filter(slot => {
       if (slot.status !== 'pending') return false;
-      
-      // Combine date and time into a proper datetime
       const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-      
-      // Post is due if scheduled time is between (now - 1 hour) and now
       return scheduledDateTime <= now && scheduledDateTime >= windowStart;
     }).map(slot => {
       const draft = draftsMap.get(slot.postDraftId);
-      if (!draft) {
-        console.warn(`⚠️  Draft not found for slot ${slot.id} (postDraftId: ${slot.postDraftId})`);
-      }
       return { slot, draft };
     }).filter(({ draft }) => draft !== undefined);
     
     if (duePosts.length === 0) {
-      console.log('📭 No posts due for publishing in the current window');
-      
-      // Log upcoming posts for debugging
-      const upcomingPosts = allSlots
-        .filter(slot => slot.status === 'pending')
-        .map(slot => {
-          const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-          return {
-            slotId: slot.id.substring(0, 8),
-            scheduledTime: `${slot.scheduledDate} ${slot.scheduledTime}`,
-            minutesFromNow: Math.round((scheduledDateTime.getTime() - now.getTime()) / 1000 / 60),
-          };
-        })
-        .sort((a, b) => a.minutesFromNow - b.minutesFromNow)
-        .slice(0, 3); // Show next 3
-      
-      if (upcomingPosts.length > 0) {
-        console.log('   Upcoming pending posts:');
-        upcomingPosts.forEach(p => console.log(`     - ${p.slotId}: ${p.scheduledTime} (${p.minutesFromNow}min)`));
-      }
-      
-      return { statusCode: 200, body: JSON.stringify({ message: 'No posts due' }) };
+      console.log('📭 No posts due for publishing');
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          success: false,
+          message: 'No posts due for publishing',
+          slotsCount: allSlots.length,
+          pendingCount: allSlots.filter(s => s.status === 'pending').length,
+        }),
+      };
     }
     
     console.log(`📬 Found ${duePosts.length} post(s) to publish`);
     
-    // 4. Publish each due post and collect status updates for smart merge
+    // 4. Publish each due post
     const results = [];
-    const statusUpdates = new Map(); // slot.id -> { status, publishedAt?, instagramMediaId?, error? }
+    const statusUpdates = new Map();
     
     for (const { slot, draft } of duePosts) {
       try {
         console.log(`📤 Publishing post: ${draft.projectId}`);
         
-        // Build full caption with hashtags (limit to 30 hashtags - Instagram max)
         let hashtags = draft.hashtags || [];
         if (hashtags.length > 30) {
           console.log(`⚠️ Trimming hashtags from ${hashtags.length} to 30`);
@@ -215,12 +178,9 @@ export const handler = async (event) => {
           ? `${draft.caption}\n\n${hashtags.join(' ')}`
           : draft.caption;
         
-        // Get Cloudinary URLs for images (convert from Airtable URLs if needed)
         const imageUrls = await getInstagramUrls(draft.selectedImages, draft.projectId);
-        
         const result = await publishPost({ imageUrls, caption: fullCaption }, accessToken, accountId);
         
-        // Collect status update for smart merge
         statusUpdates.set(slot.id, {
           status: 'published',
           publishedAt: new Date().toISOString(),
@@ -232,7 +192,6 @@ export const handler = async (event) => {
       } catch (error) {
         console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
         
-        // Collect failure status for smart merge
         statusUpdates.set(slot.id, {
           status: 'failed',
           error: error.message
@@ -242,26 +201,29 @@ export const handler = async (event) => {
       }
     }
     
-    // 5. Save with smart merge (fetch fresh data, apply updates, save)
+    // 5. Save with smart merge
     await saveWithSmartMerge(statusUpdates);
     
-    // 6. Send notification email (fetch fresh data for email)
+    // 6. Send notification
     const freshDataForEmail = await fetchScheduleData();
     await sendNotification(results, freshDataForEmail || scheduleData);
     
-    console.log('✅ Scheduled publish complete:', results);
+    console.log('✅ Manual publish complete:', results);
     return {
       statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        message: 'Scheduled publish complete',
+        success: true,
+        message: 'Manual publish completed',
         results 
       }),
     };
   } catch (error) {
-    console.error('❌ Scheduled publish error:', error);
+    console.error('❌ Manual publish error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: false, error: error.message }),
     };
   }
 };
@@ -270,7 +232,6 @@ export const handler = async (event) => {
  * Fetch schedule data from Cloudinary
  */
 async function fetchScheduleData() {
-  // Note: The file is stored without .json extension
   const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
   
   try {
@@ -288,30 +249,20 @@ async function fetchScheduleData() {
 
 /**
  * Smart Merge: Apply status updates to fresh cloud data
- * 
- * This ensures we don't overwrite any changes made by the user while
- * the scheduled function was running. We only update the specific
- * schedule slots that we published/failed.
- * 
- * @param statusUpdates - Map of slot ID to status update object
- * @returns The merged data that was saved
  */
 async function saveWithSmartMerge(statusUpdates) {
   console.log('🔄 Smart merge: Fetching fresh cloud data before save...');
   
-  // Fetch the latest data from cloud
   const freshData = await fetchScheduleData();
   
   if (!freshData) {
     throw new Error('Cannot save: failed to fetch fresh data for merge');
   }
   
-  // Apply our status updates to the fresh data
   let updatedCount = 0;
   for (const slot of (freshData.scheduleSlots || [])) {
     const update = statusUpdates.get(slot.id);
     if (update) {
-      // Apply the status update
       slot.status = update.status;
       if (update.publishedAt) slot.publishedAt = update.publishedAt;
       if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
@@ -322,9 +273,8 @@ async function saveWithSmartMerge(statusUpdates) {
     }
   }
   
-  console.log(`🔄 Smart merge: Applied ${updatedCount} status updates to fresh data`);
+  console.log(`🔄 Smart merge: Applied ${updatedCount} status updates`);
   
-  // Now save the merged data
   return await uploadToCloudinary(freshData);
 }
 
@@ -337,18 +287,15 @@ async function uploadToCloudinary(data) {
     throw new Error('CLOUDINARY_API_SECRET not configured');
   }
   
-  // Update metadata
   data.lastUpdated = new Date().toISOString();
   data.lastMergedAt = new Date().toISOString();
   
   const timestamp = Math.floor(Date.now() / 1000);
   const publicId = 'instagram-studio/schedule-data';
   
-  // Create signature (must match Cloudinary's expected format)
   const signatureString = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
   
-  // Use URLSearchParams for form data (works in all Node.js versions)
   const formData = new URLSearchParams();
   formData.append('file', `data:application/json;base64,${Buffer.from(JSON.stringify(data, null, 2)).toString('base64')}`);
   formData.append('public_id', publicId);
@@ -376,40 +323,24 @@ async function uploadToCloudinary(data) {
 }
 
 /**
- * Instagram aspect ratios (Instagram accepts 0.8 to 1.91)
- */
-const ASPECT_PORTRAIT = '0.8';  // 4:5
-const ASPECT_LANDSCAPE = '1.91'; // 1.91:1
-
-/**
  * Convert image URLs to Cloudinary Instagram-ready URLs
- * Uses the same pattern as the client: portfolio-projects-{projectId}-{index}
- * 
- * IMPORTANT: Only allows letterboxing (black bars) on TOP/BOTTOM, never on LEFT/RIGHT
- * - Uses c_lfill (fill width, crop height) as default to avoid side bars
- * - Server-side we don't have image dimensions, so we default to c_lfill which
- *   fills the width and crops the height if needed (no side bars ever)
  */
 async function getInstagramUrls(imageUrls, projectId) {
   const results = [];
+  const ASPECT_PORTRAIT = '0.8';
+  const CLOUDINARY_CLOUD = 'date24ay6';
   
   for (let i = 0; i < imageUrls.length; i++) {
     const url = imageUrls[i];
-    
-    // Find the image index from the URL
     let imageIndex = i;
     
     if (url.includes('res.cloudinary.com')) {
-      // Already a Cloudinary URL - extract index
       const match = url.match(/portfolio-projects-[^-]+-(\d+)/);
       if (match) {
         imageIndex = parseInt(match[1], 10);
       }
     }
     
-    // Build Instagram-optimized Cloudinary URL
-    // Default to portrait (0.8) ratio - most common for Instagram
-    // Using c_lfill: fills width and crops height if needed (no side bars)
     const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
     const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_lfill,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
     
@@ -429,7 +360,6 @@ async function publishPost(post, accessToken, accountId) {
     throw new Error('No images to publish');
   }
   
-  // Single image or carousel?
   if (imageUrls.length === 1) {
     return await publishSingleImage(imageUrls[0], caption, accessToken, accountId);
   } else {
@@ -441,7 +371,6 @@ async function publishPost(post, accessToken, accountId) {
  * Publish a single image post
  */
 async function publishSingleImage(imageUrl, caption, accessToken, accountId) {
-  // Create container
   const containerResponse = await fetch(
     `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
     {
@@ -461,11 +390,8 @@ async function publishSingleImage(imageUrl, caption, accessToken, accountId) {
   }
   
   const containerId = containerData.id;
-  
-  // Wait for processing
   await waitForMediaReady(containerId, accessToken);
   
-  // Publish
   const publishResponse = await fetch(
     `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
     {
@@ -490,40 +416,30 @@ async function publishSingleImage(imageUrl, caption, accessToken, accountId) {
  * Publish a carousel post
  */
 async function publishCarousel(imageUrls, caption, accessToken, accountId) {
-  // Create child containers (one at a time to avoid rate limits)
   const childIds = [];
-  for (const imageUrl of imageUrls.slice(0, 10)) {
-    const response = await fetch(
+  
+  for (const imageUrl of imageUrls) {
+    const childResponse = await fetch(
       `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_url: imageUrl,
-          is_carousel_item: true,
           access_token: accessToken,
         }),
       }
     );
     
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(`Child container error: ${data.error.message}`);
+    const childData = await childResponse.json();
+    if (childData.error) {
+      throw new Error(`Failed to create carousel item: ${childData.error.message}`);
     }
     
-    childIds.push(data.id);
-    
-    // Small delay between children
-    await new Promise(r => setTimeout(r, 500));
+    childIds.push(childData.id);
   }
   
-  // Wait for all children to be ready
-  for (const childId of childIds) {
-    await waitForMediaReady(childId, accessToken);
-  }
-  
-  // Create carousel container
-  const carouselResponse = await fetch(
+  const containerResponse = await fetch(
     `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
     {
       method: 'POST',
@@ -537,22 +453,21 @@ async function publishCarousel(imageUrls, caption, accessToken, accountId) {
     }
   );
   
-  const carouselData = await carouselResponse.json();
-  if (carouselData.error) {
-    throw new Error(carouselData.error.message);
+  const containerData = await containerResponse.json();
+  if (containerData.error) {
+    throw new Error(containerData.error.message);
   }
   
-  // Wait for carousel to be ready
-  await waitForMediaReady(carouselData.id, accessToken);
+  const containerId = containerData.id;
+  await waitForMediaReady(containerId, accessToken);
   
-  // Publish
   const publishResponse = await fetch(
     `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        creation_id: carouselData.id,
+        creation_id: containerId,
         access_token: accessToken,
       }),
     }
@@ -567,27 +482,30 @@ async function publishCarousel(imageUrls, caption, accessToken, accountId) {
 }
 
 /**
- * Wait for media container to be ready
+ * Wait for Instagram media to be processed
  */
-async function waitForMediaReady(containerId, accessToken) {
+async function waitForMediaReady(mediaId, accessToken) {
   const startTime = Date.now();
   
   while (Date.now() - startTime < MAX_PROCESSING_WAIT) {
     const response = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=status_code,status&access_token=${accessToken}`
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${mediaId}?fields=status&access_token=${accessToken}`
     );
     
     const data = await response.json();
-    
-    if (data.status_code === 'FINISHED') {
-      return true;
+    if (data.error) {
+      throw new Error(`Failed to check media status: ${data.error.message}`);
     }
     
-    if (data.status_code === 'ERROR') {
-      throw new Error(`Media processing error: ${data.status || 'Unknown error'}`);
+    if (data.status === 'READY') {
+      return;
     }
     
-    await new Promise(r => setTimeout(r, POLL_INTERVAL));
+    if (data.status === 'ERROR') {
+      throw new Error('Instagram media processing failed');
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
   }
   
   throw new Error('Media processing timeout');
