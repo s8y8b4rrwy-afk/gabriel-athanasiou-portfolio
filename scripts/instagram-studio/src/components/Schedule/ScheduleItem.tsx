@@ -172,6 +172,30 @@ export function ScheduleItem({
         </div>
       )}
 
+      {scheduleSlot.status === 'failed' && (
+        <div className={styles.itemActions}>
+          {scheduleSlot.error && (
+            <div className={styles.errorMessage}>
+              ⚠️ {scheduleSlot.error}
+            </div>
+          )}
+          {credentials?.connected && (
+            <PublishButton
+              draft={post}
+              onPublishSuccess={(result) => onPublishSuccess?.(result.instagramPostId, result.permalink)}
+              variant="small"
+              label="🔄 Retry Now"
+            />
+          )}
+          <button onClick={onReschedule} className={styles.actionButton}>
+            📅 Reschedule
+          </button>
+          <button onClick={onUnschedule} className={`${styles.actionButton} ${styles.danger}`}>
+            ✕ Remove
+          </button>
+        </div>
+      )}
+
       {/* Debug: Mark as published confirmation */}
       {showDebugConfirm && (
         <div className={styles.debugOverlay} onClick={() => setShowDebugConfirm(false)}>

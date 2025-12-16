@@ -18,6 +18,7 @@ interface PublishButtonProps {
   onPublishError?: (error: string) => void;
   variant?: 'primary' | 'secondary' | 'small';
   disabled?: boolean;
+  label?: string; // Custom button label (e.g., 'Retry Now' for failed posts)
 }
 
 export function PublishButton({ 
@@ -26,6 +27,7 @@ export function PublishButton({
   onPublishError,
   variant = 'primary',
   disabled = false,
+  label,
 }: PublishButtonProps) {
   const [status, setStatus] = useState<PostPublishStatus>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +155,7 @@ export function PublishButton({
       case 'error':
         return 'Try Again';
       default:
-        return 'Publish Now';
+        return label || 'Publish Now';
     }
   };
 

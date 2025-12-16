@@ -165,14 +165,17 @@ export function useSchedule(): UseScheduleReturn {
     setScheduleSlots(prev => prev.filter(slot => slot.id !== slotId));
   }, [setScheduleSlots, setDeletedIds]);
 
-  // Reschedule a post
+  // Reschedule a post (also resets status to pending if it was failed)
   const reschedulePost = useCallback((slotId: string, newDate: Date, newTime: string) => {
     setScheduleSlots(prev => prev.map(slot => {
       if (slot.id === slotId) {
+        // Remove error field and reset status to pending when rescheduling
+        const { error, ...rest } = slot;
         return {
-          ...slot,
+          ...rest,
           scheduledDate: formatDateKey(newDate),
           scheduledTime: newTime,
+          status: 'pending' as const, // Reset to pending so it can be retried
           updatedAt: new Date().toISOString(),
         };
       }

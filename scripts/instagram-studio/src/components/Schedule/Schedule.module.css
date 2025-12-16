@@ -868,3 +868,15 @@
 .debugConfirm:hover {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
 }
+
+
+/* Error message for failed posts */
+.errorMessage {
+  font-size: 12px;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  width: 100%;
+}
