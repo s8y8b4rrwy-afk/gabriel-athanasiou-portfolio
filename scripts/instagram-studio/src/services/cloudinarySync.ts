@@ -28,9 +28,10 @@ const CLOUDINARY_FOLDER = 'instagram-studio';
 const DEFAULT_PROFILE_ID = 'default';
 
 // Netlify function endpoint for signed uploads
-// In dev, use the main portfolio's function; in prod, use environment variable
-const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
-  'https://lemonpost.studio/.netlify/functions/instagram-studio-sync';
+// Prefer relative URLs so deploy previews + local `netlify dev` just work.
+// Can be overridden with `VITE_SYNC_FUNCTION_URL` for emergency fallback.
+const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL ||
+	'/.netlify/functions/instagram-studio-sync';
 
 interface ScheduleData {
   version: string;

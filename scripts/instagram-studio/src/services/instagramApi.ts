@@ -25,17 +25,14 @@ const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID || '1386961439465
 const INSTAGRAM_REDIRECT_URI = import.meta.env.VITE_INSTAGRAM_REDIRECT_URI || 
   'https://studio.lemonpost.studio/auth/callback';
 
-// Auth function URL (on main site)
-const AUTH_FUNCTION_URL = import.meta.env.VITE_AUTH_FUNCTION_URL ||
-  'https://lemonpost.studio/.netlify/functions/instagram-auth';
+// Netlify Functions base URL
+// Prefer relative URLs so deploy previews + local `netlify dev` just work.
+// For production, the app is hosted on `studio.lemonpost.studio`.
+const FUNCTIONS_BASE_URL = import.meta.env.VITE_FUNCTIONS_BASE_URL || '';
 
-// Sync function URL (for storing/retrieving credentials)
-const SYNC_FUNCTION_URL = import.meta.env.VITE_SYNC_FUNCTION_URL || 
-  'https://lemonpost.studio/.netlify/functions/instagram-studio-sync';
-
-// Publish function URL (server-side proxy to avoid CORS)
-const PUBLISH_FUNCTION_URL = import.meta.env.VITE_PUBLISH_FUNCTION_URL ||
-  'https://studio.lemonpost.studio/.netlify/functions/instagram-publish';
+const AUTH_FUNCTION_URL = `${FUNCTIONS_BASE_URL}/.netlify/functions/instagram-auth`;
+const SYNC_FUNCTION_URL = `${FUNCTIONS_BASE_URL}/.netlify/functions/instagram-studio-sync`;
+const PUBLISH_FUNCTION_URL = `${FUNCTIONS_BASE_URL}/.netlify/functions/instagram-publish`;
 
 // Local storage keys
 const CREDENTIALS_KEY = 'instagram-studio-ig-credentials';

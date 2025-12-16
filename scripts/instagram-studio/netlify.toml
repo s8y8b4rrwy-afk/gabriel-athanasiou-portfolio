@@ -9,6 +9,11 @@
   port = 8888
   autoLaunch = false
 
+# Studio-owned serverless functions bundle
+# Copy-first migration: these functions are independent from the repo root.
+[functions]
+  directory = "netlify/functions"
+
 # SPA routing - all routes go to index.html
 [[redirects]]
   from = "/*"
