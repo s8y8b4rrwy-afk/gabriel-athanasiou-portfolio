@@ -331,7 +331,8 @@ async function uploadToCloudinary(data) {
 	const timestamp = Math.floor(Date.now() / 1000);
 	const publicId = 'instagram-studio/schedule-data';
 
-	const signatureString = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+	// Cloudinary requires ALL parameters to be included in signature (alphabetically sorted)
+	const signatureString = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
 	const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
 
 	const formData = new URLSearchParams();
