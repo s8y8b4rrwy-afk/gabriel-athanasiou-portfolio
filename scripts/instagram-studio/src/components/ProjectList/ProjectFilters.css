@@ -123,3 +123,24 @@
 .filter-select-schedule:focus {
   border-color: rgba(252, 211, 77, 0.5);
 }
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-toggle input {
+  width: 14px;
+  height: 14px;
+  accent-color: #fcd34d;
+}
+
+.filter-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+}

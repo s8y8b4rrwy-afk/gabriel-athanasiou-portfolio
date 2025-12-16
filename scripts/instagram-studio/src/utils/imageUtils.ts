@@ -799,39 +799,37 @@ export async function getInstagramPublishUrls(
   
   // Determine majority orientation
   const isLandscapeMajority = landscapeCount >= portraitCount && landscapeCount >= normalCount;
+
+  // Instagram feed allows 4:5 (0.8) through 1.91:1. In practice, carousels look
+  // best when every slide uses the same ratio. We keep this consistent across
+  // both FILL and FIT modes.
+  const targetAspectRatio = isLandscapeMajority
+    ? INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100
+    : INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
   
   // FILL MODE: Crop to fill (no letterbox), respecting majority orientation
   if (imageMode === 'fill') {
-    const targetAspectRatio = isLandscapeMajority 
-      ? INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100 
-      : INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
-    
     console.log(`📐 FILL mode: Cropping to ${isLandscapeMajority ? '1.91:1 (landscape)' : '4:5 (portrait)'} with c_lfill (${landscapeCount}L, ${portraitCount}P, ${normalCount}N)`);
     
     return imageData.map(({ imageIndex }) => {
       return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'lfill');
     });
   }
-  
-  // FIT MODE: Preserve full images and avoid side bars by padding only on the short side
-  // Strategy: use c_pad with a target ratio that is <= every image's ratio, so padding only appears top/bottom
-  const ratios = imageData
-    .filter(d => d.dimensions)
-    .map(d => d.dimensions!.width / d.dimensions!.height);
-  const minRatio = ratios.length > 0 ? Math.min(...ratios) : 1.0;
-  const targetFitRatio = Math.min(1.91, minRatio); // Never exceed Instagram landscape max
-  const fitAspect = targetFitRatio.toFixed(2);
 
-  console.log(`📐 FIT mode: padding with c_pad at aspect ${fitAspect} (min ratio ${minRatio.toFixed(2)}, ${landscapeCount}L, ${portraitCount}P, ${normalCount}N)`);
+  // FIT MODE: Preserve full images with Instagram-native framing.
+  // Use c_pad to letterbox into the chosen target ratio (4:5 or 1.91:1).
+  // This avoids the previous "minRatio" strategy, which could create awkward
+  // ultra-tall frames if any single slide was very portrait.
+  console.log(
+    `📐 FIT mode: Padding to ${isLandscapeMajority ? '1.91:1 (landscape)' : '4:5 (portrait)'} with c_pad (${landscapeCount}L, ${portraitCount}P, ${normalCount}N)`
+  );
 
-  const results: string[] = [];
-  for (let i = 0; i < imageData.length; i++) {
-    const { imageIndex, dimensions } = imageData[i];
-    console.log(`📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${fitAspect} c_pad`);
-    results.push(buildCloudinaryUrlForCarousel(projectId, imageIndex, fitAspect, 'pad'));
-  }
-
-  return results;
+  return imageData.map(({ imageIndex, dimensions }, i) => {
+    console.log(
+      `📐 Image ${i + 1}/${urls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} c_pad`
+    );
+    return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'pad');
+  });
 }
 
 /**

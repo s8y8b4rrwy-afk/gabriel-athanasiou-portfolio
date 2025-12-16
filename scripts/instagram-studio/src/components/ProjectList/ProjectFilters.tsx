@@ -11,11 +11,13 @@ interface ProjectFiltersProps {
   selectedYear: string;
   searchQuery: string;
   scheduleStatus: ScheduleStatus;
+  hideProjectsWithoutGallery: boolean;
   onTypeChange: (type: string) => void;
   onKindChange: (kind: string) => void;
   onYearChange: (year: string) => void;
   onSearchChange: (query: string) => void;
   onScheduleStatusChange: (status: ScheduleStatus) => void;
+  onHideProjectsWithoutGalleryChange: (hide: boolean) => void;
 }
 
 export function ProjectFilters({
@@ -27,11 +29,13 @@ export function ProjectFilters({
   selectedYear,
   searchQuery,
   scheduleStatus,
+  hideProjectsWithoutGallery,
   onTypeChange,
   onKindChange,
   onYearChange,
   onSearchChange,
   onScheduleStatusChange,
+  onHideProjectsWithoutGalleryChange,
 }: ProjectFiltersProps) {
   return (
     <div className="project-filters">
@@ -105,6 +109,15 @@ export function ProjectFilters({
           <option value="unscheduled">⏳ Unscheduled</option>
         </select>
       </div>
+
+      <label className="filter-toggle" title="Hide projects that have no gallery images">
+        <input
+          type="checkbox"
+          checked={hideProjectsWithoutGallery}
+          onChange={(e) => onHideProjectsWithoutGalleryChange(e.target.checked)}
+        />
+        <span>Hide projects without images</span>
+      </label>
     </div>
   );
 }

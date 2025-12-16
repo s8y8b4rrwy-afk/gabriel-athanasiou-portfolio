@@ -247,6 +247,15 @@ export function PostPreview({
     return getCarouselTransformMode(imageDimensions, selectedImages);
   }, [imageDimensions, selectedImages]);
 
+  // Publishing uses a single target aspect ratio for the whole carousel.
+  // Keep the on-screen preview aligned with that same decision.
+  const publishTargetAspectRatio = useMemo(() => {
+    // Publish uses the same majority-rule decision as URL generation:
+    // - letterbox (wide-majority) → 1.91:1
+    // - crop (tall/normal-majority) → 4:5
+    return carouselMode.mode === 'letterbox' ? 1.91 : 0.8;
+  }, [carouselMode.mode]);
+
   // Load debug URLs when debug mode is enabled - fetches actual Cloudinary-transformed URLs
   useEffect(() => {
     if (!debugPreview || !project || selectedImages.length === 0) {
@@ -485,9 +494,7 @@ export function PostPreview({
               aspectRatio: showOriginal 
                 ? (imageDimensions.get(selectedImages[currentPreviewIndex])?.width || 4) / 
                   (imageDimensions.get(selectedImages[currentPreviewIndex])?.height || 5)
-                : debugPreview && debugUrls.length > 0
-                  ? undefined // Let the actual transformed image dictate aspect ratio
-                  : carouselMode.targetAspectRatio // Both Fill and Fit modes respect majority orientation
+                : publishTargetAspectRatio // Match Instagram publish ratio (4:5 or 1.91:1)
             }}>
               {selectedImages.length > 0 ? (
                 <>
@@ -501,11 +508,11 @@ export function PostPreview({
                       } 
                       alt={project.title}
                       style={{ 
-                        objectFit: debugPreview && debugUrls.length > 0 
-                          ? 'contain' // Show the actual transformed image as-is
-                          : showOriginal 
-                            ? 'contain' 
-                            : (imageMode === 'fill' ? 'cover' : carouselMode.objectFit) 
+                        objectFit: showOriginal
+                          ? 'contain'
+                          : imageMode === 'fill'
+                            ? 'cover' // FILL (c_lfill) crops to fill the chosen target ratio
+                            : 'contain' // FIT (c_pad) preserves full image; bars are expected
                       }}
                     />
                   )}

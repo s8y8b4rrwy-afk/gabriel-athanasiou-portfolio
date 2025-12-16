@@ -3,6 +3,7 @@ import type { Project } from '../../types';
 import { ProjectFilters, type ScheduleStatus } from './ProjectFilters';
 import { ProjectCard } from './ProjectCard';
 import { DraggableProjectCard } from '../DragDrop/DraggableProjectCard';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import './ProjectList.css';
 
 interface ProjectListProps {
@@ -39,6 +40,11 @@ export function ProjectList({
   const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
+  const [hideProjectsWithoutGallery, setHideProjectsWithoutGallery] = useLocalStorage<boolean>(
+    'igstudio:hideProjectsWithoutGallery',
+    true
+  );
+
   // Enhanced search function that searches all metadata
   const matchesSearchQuery = useMemo(() => {
     if (!searchQuery) return () => true;
@@ -72,6 +78,7 @@ export function ProjectList({
 
   // Apply local filters
   const filteredProjects = projects.filter((project) => {
+    if (hideProjectsWithoutGallery && (!project.gallery || project.gallery.length === 0)) return false;
     if (filterType && project.type !== filterType) return false;
     if (filterKind && !project.kinds.includes(filterKind)) return false;
     if (filterYear && project.year !== filterYear) return false;
@@ -113,11 +120,13 @@ export function ProjectList({
         selectedYear={filterYear}
         searchQuery={searchQuery}
         scheduleStatus={scheduleStatus}
+        hideProjectsWithoutGallery={hideProjectsWithoutGallery}
         onTypeChange={setFilterType}
         onKindChange={setFilterKind}
         onYearChange={setFilterYear}
         onSearchChange={setSearchQuery}
         onScheduleStatusChange={setScheduleStatus}
+        onHideProjectsWithoutGalleryChange={setHideProjectsWithoutGallery}
       />
 
       <div className="project-list-content">

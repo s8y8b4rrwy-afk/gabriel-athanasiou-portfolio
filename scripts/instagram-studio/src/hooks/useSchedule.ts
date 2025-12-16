@@ -237,16 +237,19 @@ export function useSchedule(): UseScheduleReturn {
   }, [scheduledPosts]);
 
   // Mark post as published
+  // IMPORTANT: Always stamp the actual moment it was marked/published.
+  // This is especially important for manual/retroactive publishing.
   const markAsPublished = useCallback((slotId: string, instagramPostId?: string, permalink?: string) => {
+    const now = new Date().toISOString();
     setScheduleSlots(prev => prev.map(slot => {
       if (slot.id === slotId) {
-        return { 
-          ...slot, 
+        return {
+          ...slot,
           status: 'published' as const,
           instagramPostId,
           instagramPermalink: permalink,
-          publishedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(), // Important for smart merge!
+          publishedAt: now,
+          updatedAt: now, // Important for smart merge!
         };
       }
       return slot;

@@ -34,6 +34,16 @@
 - **Schedules** posts via calendar interface
 - **Publishes** directly to Instagram via Graph API (Phase 3)
 
+### Scheduled Publishing (Server-Side)
+
+Instagram Studio supports automated publishing via a Netlify **Scheduled Function**.
+
+- **Function file:** `netlify/functions/instagram-scheduled-publish.mjs`
+- **Schedule (cron):** `0 * * * *` (runs **hourly**, at minute 0)
+- **Due window:** publishes posts scheduled within the last **1 hour** (a catch-up window)
+
+This is intentional: hourly execution is simpler and more reliable, and the 1-hour window ensures posts still get published if a single run is delayed.
+
 ### Tech Stack
 
 | Component | Technology |
