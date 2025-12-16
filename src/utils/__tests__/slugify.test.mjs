@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { slugify, makeUniqueSlug } from '../slugify.mjs';
+import { slugify, makeUniqueSlug } from '../generators/slugify.mjs';
 
 describe('slugify', () => {
   describe('slugify', () => {

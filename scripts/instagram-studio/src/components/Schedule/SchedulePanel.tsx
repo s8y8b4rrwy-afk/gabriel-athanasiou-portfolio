@@ -63,7 +63,9 @@ export function SchedulePanel({
   const viewMode = controlledViewMode ?? internalViewMode;
   const setViewMode = onSubViewModeChange ?? setInternalViewMode;
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string>(settings.defaultTimes[0] || '11:00');
+  // Defensive: ensure defaultTimes exists before accessing
+  const safeDefaultTimes = settings?.defaultTimes ?? ['11:00', '19:00'];
+  const [selectedTime, setSelectedTime] = useState<string>(safeDefaultTimes[0] || '11:00');
   const [rescheduleTarget, setRescheduleTarget] = useState<ScheduledPost | null>(null);
   
   // When an initial reschedule target is passed in (from edit view), use it
@@ -79,7 +81,7 @@ export function SchedulePanel({
   }, [initialRescheduleTarget]); // Only depend on the target, not the callback
   
   // Quick schedule defaults (applied when dragging projects to calendar)
-  const [quickScheduleTime, setQuickScheduleTime] = useState<string>(settings.defaultTimes[0] || '11:00');
+  const [quickScheduleTime, setQuickScheduleTime] = useState<string>(safeDefaultTimes[0] || '11:00');
   const [quickScheduleTemplateId, setQuickScheduleTemplateId] = useState<string>('default');
   
   // Track if a scheduled post is being dragged (to show delete zone)
@@ -304,7 +306,7 @@ export function SchedulePanel({
                       <TimeSlotPicker
                         selectedTime={selectedTime}
                         onTimeSelect={setSelectedTime}
-                        defaultTimes={settings.defaultTimes}
+                        defaultTimes={safeDefaultTimes}
                       />
                     </div>
 
@@ -372,7 +374,7 @@ export function SchedulePanel({
                 <TimeSlotPicker
                   selectedTime={quickScheduleTime}
                   onTimeSelect={setQuickScheduleTime}
-                  defaultTimes={settings.defaultTimes}
+                  defaultTimes={safeDefaultTimes}
                 />
                 
                 <div className={styles.templateSelector}>

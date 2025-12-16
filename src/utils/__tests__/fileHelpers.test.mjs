@@ -7,7 +7,7 @@ import {
   fileExists,
   getDataBaseDir,
   atomicWriteFile 
-} from '../fileHelpers.mjs';
+} from '../helpers/fileHelpers.mjs';
 import { existsSync } from 'fs';
 import { readFile, writeFile, mkdir, unlink, rmdir } from 'fs/promises';
 import path from 'path';

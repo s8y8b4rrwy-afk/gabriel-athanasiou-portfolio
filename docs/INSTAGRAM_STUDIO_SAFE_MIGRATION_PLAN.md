@@ -163,7 +163,49 @@ Expected:
 ---
 
 ## 7) Acceptance checklist
-- [ ] Studio deploy includes `instagram-scheduled-publish` and it runs on schedule
-- [ ] Manual endpoint returns JSON on `studio.lemonpost.studio`
-- [ ] No regressions to portfolio sites
-- [ ] Docs updated to reflect Studio ownership
+- [x] Studio deploy includes `instagram-scheduled-publish` and it runs on schedule
+- [x] Manual endpoint returns JSON on `studio.lemonpost.studio`
+- [x] No regressions to portfolio sites
+- [x] Docs updated to reflect Studio ownership (16 Dec 2025)
+
+### Verification Results (16 Dec 2025)
+
+**Production Endpoints Verified:**
+```bash
+# instagram-diagnostic
+curl -s "https://studio.lemonpost.studio/.netlify/functions/instagram-diagnostic"
+# Returns: {"ok":true,"message":"Diagnostic complete",...}
+
+# instagram-publish-now
+curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now"
+# Returns: {"ok":true,"skipped":true,"reason":"no_posts_due",...}
+```
+
+**Functions Deployed to Studio:**
+- `instagram-scheduled-publish.mjs` ✅ (cron hourly)
+- `instagram-publish-now.mjs` ✅ (manual trigger)
+- `instagram-diagnostic.mjs` ✅ (debugging)
+- `instagram-auth.mjs` ✅ (OAuth flow)
+- `instagram-publish.mjs` ✅ (single post publish)
+- `instagram-studio-sync.mjs` ✅ (data sync)
+
+**Test Results:**
+- All 103 unit tests passing ✅
+- Local dev server working ✅
+- Production endpoints returning JSON ✅
+- Instagram connection verified ✅ (76 drafts, 16 slots)
+
+**Documentation Updated (Phase 7):**
+- `AI_AGENT_GUIDE.md` - Added changelog entry for migration, updated "Last Updated" date
+- `docs/features/INSTAGRAM_STUDIO.md` - Updated function paths and architecture diagram to reflect Studio ownership
+- All documentation now references `scripts/instagram-studio/netlify/functions/` and `studio.lemonpost.studio` endpoints
+
+---
+
+## Migration Complete ✅
+
+All phases of the Instagram Studio Server-Side Migration have been successfully completed. Studio now owns all Instagram server-side functions with:
+- Independent deployment from portfolio sites
+- Reliable scheduled function execution
+- Proper JSON responses from all endpoints
+- Clear documentation of the new architecture

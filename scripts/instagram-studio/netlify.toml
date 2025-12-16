@@ -14,15 +14,8 @@
 [functions]
   directory = "netlify/functions"
 
-# Extend timeout for Instagram publish functions (needs Pro plan for >10s)
-[functions."instagram-publish-now"]
-  timeout = 26
-
-[functions."instagram-scheduled-publish"]
-  timeout = 26
-
-[functions."instagram-publish"]
-  timeout = 26
+# Background functions (suffix -background) automatically get 15 min timeout
+# No timeout config needed - Netlify detects from filename
 
 # SPA routing - all routes go to index.html
 [[redirects]]

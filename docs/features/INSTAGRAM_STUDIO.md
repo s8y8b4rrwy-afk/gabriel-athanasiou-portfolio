@@ -38,9 +38,13 @@
 
 Instagram Studio supports automated publishing via a Netlify **Scheduled Function**.
 
-- **Function file:** `netlify/functions/instagram-scheduled-publish.mjs`
+> **Note (Dec 16, 2025):** All Instagram server-side functions are now owned by the Studio site (`studio.lemonpost.studio`), not the main portfolio site. This ensures reliable endpoint responses and scheduled function execution.
+
+- **Function file:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish.mjs`
 - **Schedule (cron):** `0 * * * *` (runs **hourly**, at minute 0)
 - **Due window:** publishes posts scheduled within the last **1 hour** (a catch-up window)
+- **Manual trigger:** `POST https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now`
+- **Diagnostic:** `GET https://studio.lemonpost.studio/.netlify/functions/instagram-diagnostic`
 
 This is intentional: hourly execution is simpler and more reliable, and the 1-hour window ensures posts still get published if a single run is delayed.
 
@@ -696,7 +700,7 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
                       ▼
 ┌──────────────────────────────────────────────────────────────┐
 │           Netlify Function (Serverless)                       │
-│      lemonpost.studio/.netlify/functions/instagram-studio-sync│
+│  studio.lemonpost.studio/.netlify/functions/instagram-studio-sync│
 │                                                               │
 │   • Generates SHA-1 signature with API secret                 │
 │   • Uploads to Cloudinary with signed params                  │
@@ -789,7 +793,7 @@ When you click "Sync to Cloud", the app doesn't just overwrite - it **merges** i
 
 ### Netlify Function
 
-Located at `netlify/functions/instagram-studio-sync.mjs`:
+Located at `scripts/instagram-studio/netlify/functions/instagram-studio-sync.mjs`:
 
 ```javascript
 // Handles both GET (fetch) and POST (upload)
@@ -797,8 +801,10 @@ Located at `netlify/functions/instagram-studio-sync.mjs`:
 // Keeps API secret secure on server side
 ```
 
-Required environment variables on main site (lemonpost.studio):
+Required environment variables on Studio site (studio.lemonpost.studio):
 - `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
+- `CLOUDINARY_API_KEY`: Your Cloudinary API key
+- `CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name (date24ay6)
 
 ---
 

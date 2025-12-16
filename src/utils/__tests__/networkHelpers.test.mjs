@@ -6,7 +6,7 @@ import {
   retryWithBackoff,
   isRateLimitError,
   isNetworkError 
-} from '../networkHelpers.mjs';
+} from '../helpers/networkHelpers.mjs';
 
 // Mock getVideoId for testing parseExternalLinksData
 const mockGetVideoId = (url) => {

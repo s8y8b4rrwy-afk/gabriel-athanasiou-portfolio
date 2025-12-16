@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** December 6, 2025  
+> **Last Updated:** December 16, 2025  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 
@@ -54,6 +54,73 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 > **All major changes documented in reverse chronological order (newest first)**
 
 ### 🎉 Recent Major Changes
+
+### Dec 16 2025 - Instagram Studio Server-Side Migration Complete
+**What Changed:** Centralized all Instagram server-side functions under Studio (`studio.lemonpost.studio`) for single ownership.
+
+**The Problem:**
+- Instagram functions were deployed from repo root `netlify/functions/`
+- Unclear ownership between main site and Studio site
+- Production endpoints on `lemonpost.studio` returned HTML/404 instead of JSON
+- Scheduled functions weren't running reliably
+
+**The Solution:**
+1. **Created Studio-specific functions bundle:**
+   - `scripts/instagram-studio/netlify/functions/` now contains all Instagram functions
+   - Studio has its own `netlify.toml` configuration
+   - Functions deploy independently with the Studio site
+
+2. **Migrated functions:**
+   - `instagram-scheduled-publish.mjs` - Hourly cron for auto-publishing
+   - `instagram-publish-now.mjs` - Manual trigger endpoint
+   - `instagram-diagnostic.mjs` - Debugging and status checks
+   - `instagram-auth.mjs` - OAuth flow
+   - `instagram-publish.mjs` - Single post publish
+   - `instagram-studio-sync.mjs` - Data sync to Cloudinary
+
+3. **Production Endpoints (verified working):**
+   ```bash
+   # Diagnostic check
+   curl -s "https://studio.lemonpost.studio/.netlify/functions/instagram-diagnostic"
+   # Returns: {"ok":true,"message":"Diagnostic complete",...}
+
+   # Manual publish trigger
+   curl -s -X POST "https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now"
+   # Returns: {"ok":true,"skipped":true,"reason":"no_posts_due",...}
+   ```
+
+4. **Root functions retained as legacy:**
+   - Original functions in `netlify/functions/instagram-*.mjs` kept for reference
+   - Can be removed in future cleanup if desired
+
+**Files Changed:**
+- `scripts/instagram-studio/netlify.toml` - Studio-specific Netlify config
+- `scripts/instagram-studio/netlify/functions/` - All 6 Instagram functions
+- `docs/INSTAGRAM_STUDIO_SAFE_MIGRATION_PLAN.md` - Migration plan with checklist
+- `docs/features/INSTAGRAM_STUDIO.md` - Updated to reflect Studio ownership
+
+**Architecture:**
+```
+studio.lemonpost.studio (gram-studio.netlify.app)
+├── Frontend: React + Vite (port 5174)
+├── Functions: scripts/instagram-studio/netlify/functions/
+│   ├── instagram-scheduled-publish.mjs (cron: hourly)
+│   ├── instagram-publish-now.mjs (manual trigger)
+│   ├── instagram-diagnostic.mjs (debugging)
+│   ├── instagram-auth.mjs (OAuth)
+│   ├── instagram-publish.mjs (single publish)
+│   └── instagram-studio-sync.mjs (data sync)
+└── Config: scripts/instagram-studio/netlify.toml
+```
+
+**Benefits:**
+- ✅ Single source of truth: Studio owns all Instagram server-side
+- ✅ Endpoints return proper JSON responses
+- ✅ Scheduled functions run reliably
+- ✅ Clear separation from portfolio sites
+- ✅ Independent deployment cycle
+
+---
 
 ### Dec 6 2025 - Instagram Studio Fill/Fit Mode Toggle
 **What Changed:** Added Fill/Fit toggle for controlling how images are cropped for Instagram carousels.
