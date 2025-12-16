@@ -11,9 +11,10 @@ const GRAPH_API_VERSION = 'v21.0';
 const CLOUDINARY_CLOUD = 'date24ay6';
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 
-// Background functions have 15 min timeout, so we can wait longer for Instagram
-const MAX_PROCESSING_WAIT = 120000; // 2 minutes for carousel processing
-const POLL_INTERVAL = 3000; // Poll every 3 seconds
+// NOTE: Use instagram-publish-now-background.mjs for longer timeouts (2 min)
+// This non-background version has 10s timeout limit
+const MAX_PROCESSING_WAIT = 30000; // 30 seconds (will hit Netlify timeout first)
+const POLL_INTERVAL = 2000;
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
 
 // Use "today" window (midnight UTC to now) instead of 1-hour window

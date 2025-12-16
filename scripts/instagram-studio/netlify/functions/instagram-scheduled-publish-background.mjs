@@ -9,10 +9,11 @@ import crypto from 'crypto';
 const GRAPH_API_BASE = 'https://graph.instagram.com';
 const GRAPH_API_VERSION = 'v21.0';
 const CLOUDINARY_CLOUD = 'date24ay6';
-const CLOUDINARY_API_KEY = '889494878498498';
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 
-const MAX_PROCESSING_WAIT = 30000;
-const POLL_INTERVAL = 2000;
+// Background functions have 15 min timeout, so we can wait longer for Instagram
+const MAX_PROCESSING_WAIT = 120000; // 2 minutes for carousel processing
+const POLL_INTERVAL = 3000; // Poll every 3 seconds
 // Catch-up window: publish any pending posts from today that are past their scheduled time
 // This means a post scheduled for 11am will still publish if the function runs at 6pm
 const USE_TODAY_WINDOW = true; // Set to false to revert to 1-hour window
@@ -299,6 +300,9 @@ async function saveWithSmartMerge(statusUpdates) {
 
 async function uploadToCloudinary(data) {
 	const apiSecret = process.env.CLOUDINARY_API_SECRET;
+	if (!CLOUDINARY_API_KEY) {
+		throw new Error('CLOUDINARY_API_KEY not configured');
+	}
 	if (!apiSecret) {
 		throw new Error('CLOUDINARY_API_SECRET not configured');
 	}
