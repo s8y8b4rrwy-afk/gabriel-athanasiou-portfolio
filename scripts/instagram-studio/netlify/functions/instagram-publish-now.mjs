@@ -15,6 +15,10 @@ const MAX_PROCESSING_WAIT = 30000;
 const POLL_INTERVAL = 2000;
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
 
+// Use "today" window (midnight UTC to now) instead of 1-hour window
+// This catches any post scheduled for today that hasn't been published yet
+const USE_TODAY_WINDOW = true;
+
 async function sendNotification(results, scheduleData) {
 	const resendApiKey = process.env.RESEND_API_KEY;
 	const notificationEmail = process.env.NOTIFICATION_EMAIL;
@@ -135,7 +139,20 @@ export const handler = async (event) => {
 		const { accessToken, accountId } = scheduleData.instagram;
 
 		const now = new Date();
-		const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+		// Use "today" window: midnight UTC to now
+		let windowStart;
+		if (USE_TODAY_WINDOW) {
+			windowStart = new Date(now);
+			windowStart.setUTCHours(0, 0, 0, 0);
+		} else {
+			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+		}
+
+		console.log('📅 Window config:', {
+			now: now.toISOString(),
+			windowStart: windowStart.toISOString(),
+			useTodayWindow: USE_TODAY_WINDOW,
+		});
 
 		const draftsMap = new Map((scheduleData.drafts || []).map((d) => [d.id, d]));
 		const allSlots = scheduleData.scheduleSlots || [];
