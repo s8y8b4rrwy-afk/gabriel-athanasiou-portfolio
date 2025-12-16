@@ -89,11 +89,21 @@ export const handler = async (event) => {
 	console.log('🔫 Manual Instagram publish triggered at:', new Date().toISOString());
 
 	const dryRunParam = event?.queryStringParameters?.dryRun;
+	
+	// Debug: log env vars
+	console.log('🔍 Dry run check:', {
+		dryRunParam,
+		INSTAGRAM_DRY_RUN: process.env.INSTAGRAM_DRY_RUN,
+		DRY_RUN: process.env.DRY_RUN,
+	});
+	
 	const isDryRun =
 		dryRunParam === '1' ||
 		dryRunParam === 'true' ||
 		process.env.INSTAGRAM_DRY_RUN === 'true' ||
 		process.env.DRY_RUN === 'true';
+	
+	console.log('🔍 isDryRun result:', isDryRun);
 
 	const headers = {
 		'Content-Type': 'application/json',
