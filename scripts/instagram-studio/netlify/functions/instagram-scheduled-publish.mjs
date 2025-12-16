@@ -13,7 +13,10 @@ const CLOUDINARY_API_KEY = '889494878498498';
 
 const MAX_PROCESSING_WAIT = 30000;
 const POLL_INTERVAL = 2000;
-const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
+// Catch-up window: publish any pending posts from today that are past their scheduled time
+// This means a post scheduled for 11am will still publish if the function runs at 6pm
+const USE_TODAY_WINDOW = true; // Set to false to revert to 1-hour window
+const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // Fallback: 1 hour window
 
 export const config = {
 	schedule: '0 * * * *',
@@ -128,7 +131,19 @@ export const handler = async (event) => {
 		const { accessToken, accountId } = scheduleData.instagram;
 
 		const now = new Date();
-		const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+		
+		// Calculate window start based on mode
+		let windowStart;
+		if (USE_TODAY_WINDOW) {
+			// Today window: start of today (midnight UTC)
+			windowStart = new Date(now);
+			windowStart.setUTCHours(0, 0, 0, 0);
+			console.log(`📅 Using TODAY window: ${windowStart.toISOString()} to ${now.toISOString()}`);
+		} else {
+			// 1-hour window (original behavior)
+			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+			console.log(`⏰ Using 1-HOUR window: ${windowStart.toISOString()} to ${now.toISOString()}`);
+		}
 
 		const draftsMap = new Map((scheduleData.drafts || []).map((d) => [d.id, d]));
 		const allSlots = scheduleData.scheduleSlots || [];
@@ -145,7 +160,11 @@ export const handler = async (event) => {
 			.filter((slot) => {
 				if (slot.status !== 'pending') return false;
 				const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-				return scheduledDateTime <= now && scheduledDateTime >= windowStart;
+				const isDue = scheduledDateTime <= now && scheduledDateTime >= windowStart;
+				if (isDue) {
+					console.log(`   ✅ Due: ${slot.scheduledDate} ${slot.scheduledTime} (${slot.postDraftId})`);
+				}
+				return isDue;
 			})
 			.map((slot) => {
 				const draft = draftsMap.get(slot.postDraftId);

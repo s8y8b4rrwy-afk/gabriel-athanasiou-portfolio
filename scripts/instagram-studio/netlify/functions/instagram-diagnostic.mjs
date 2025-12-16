@@ -5,6 +5,8 @@
  */
 
 const CLOUDINARY_CLOUD = 'date24ay6';
+// Match the scheduled-publish window logic
+const USE_TODAY_WINDOW = true;
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
 
 async function fetchScheduleData() {
@@ -42,7 +44,16 @@ export const handler = async () => {
 		}
 
 		const now = new Date();
-		const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+		
+		// Calculate window start based on mode (match scheduled-publish logic)
+		let windowStart;
+		if (USE_TODAY_WINDOW) {
+			windowStart = new Date(now);
+			windowStart.setUTCHours(0, 0, 0, 0);
+		} else {
+			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+		}
+		
 		const allSlots = scheduleData.scheduleSlots || [];
 
 		const statusDist = {};
