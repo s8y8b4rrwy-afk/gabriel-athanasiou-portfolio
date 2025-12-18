@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { PostDraft, ScheduleSlot } from '../../types';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
+import { convertSlotToDisplayTimezone } from '../../utils/timezone';
 import './PostPreview.css';
 
 interface ScheduledPost extends PostDraft {
@@ -9,6 +10,7 @@ interface ScheduledPost extends PostDraft {
 
 interface ProjectScheduledPostsProps {
   posts: ScheduledPost[];
+  displayTimezone: string;
   onEditPost: (post: ScheduledPost) => void;
   onUnschedulePost: (slotId: string) => void;
   currentlyEditing?: string; // scheduledDate of the post being edited
@@ -42,6 +44,8 @@ function DeleteConfirmDialog({
 // Sub-component for rendering a scheduled post item
 function ScheduledPostItem({ 
   post, 
+  displayDate,
+  displayTime,
   onEditPost, 
   onUnschedulePost,
   getStatusClass,
@@ -51,6 +55,8 @@ function ScheduledPostItem({
   isCurrentlyEditing
 }: {
   post: ScheduledPost;
+  displayDate: string;
+  displayTime: string;
   onEditPost: (post: ScheduledPost) => void;
   onUnschedulePost: (slotId: string) => void;
   getStatusClass: (status: ScheduleSlot['status']) => string;
@@ -99,10 +105,10 @@ function ScheduledPostItem({
       <div className="scheduled-post-info">
         <div className="scheduled-post-datetime">
           <span className="scheduled-post-date">
-            {formatDate(post.scheduleSlot.scheduledDate)}
+            {formatDate(displayDate)}
           </span>
           <span className="scheduled-post-time">
-            {formatTime(post.scheduleSlot.scheduledTime)}
+            {formatTime(displayTime)}
           </span>
         </div>
         <div className="scheduled-post-meta">
@@ -130,8 +136,8 @@ function ScheduledPostItem({
       )}
       {showDeleteConfirm && (
         <DeleteConfirmDialog
-          date={formatDate(post.scheduleSlot.scheduledDate)}
-          time={formatTime(post.scheduleSlot.scheduledTime)}
+          date={formatDate(displayDate)}
+          time={formatTime(displayTime)}
           onConfirm={() => {
             onUnschedulePost(post.scheduleSlot.id);
             setShowDeleteConfirm(false);
@@ -144,7 +150,8 @@ function ScheduledPostItem({
 }
 
 export function ProjectScheduledPosts({ 
-  posts, 
+  posts,
+  displayTimezone,
   onEditPost, 
   onUnschedulePost,
   currentlyEditing 
@@ -192,7 +199,7 @@ export function ProjectScheduledPosts({
     }
   };
 
-  // Sort by date/time
+  // Sort by date/time (using storage times for consistent ordering)
   const sortedPosts = [...posts].sort((a, b) => {
     const dateA = new Date(`${a.scheduleSlot.scheduledDate}T${a.scheduleSlot.scheduledTime}`);
     const dateB = new Date(`${b.scheduleSlot.scheduledDate}T${b.scheduleSlot.scheduledTime}`);
@@ -205,19 +212,24 @@ export function ProjectScheduledPosts({
         <h3>📅 Scheduled Posts ({posts.length})</h3>
       </div>
       <div className="project-scheduled-posts-list">
-        {sortedPosts.map((post) => (
-          <ScheduledPostItem
-            key={post.scheduleSlot.id}
-            post={post}
-            onEditPost={onEditPost}
-            onUnschedulePost={onUnschedulePost}
-            getStatusClass={getStatusClass}
-            getStatusLabel={getStatusLabel}
-            formatDate={formatDate}
-            formatTime={formatTime}
-            isCurrentlyEditing={currentlyEditing === post.scheduleSlot.scheduledDate}
-          />
-        ))}
+        {sortedPosts.map((post) => {
+          const displaySlot = convertSlotToDisplayTimezone(post.scheduleSlot, displayTimezone);
+          return (
+            <ScheduledPostItem
+              key={post.scheduleSlot.id}
+              post={post}
+              displayDate={displaySlot.date}
+              displayTime={displaySlot.time}
+              onEditPost={onEditPost}
+              onUnschedulePost={onUnschedulePost}
+              getStatusClass={getStatusClass}
+              getStatusLabel={getStatusLabel}
+              formatDate={formatDate}
+              formatTime={formatTime}
+              isCurrentlyEditing={currentlyEditing === post.scheduleSlot.scheduledDate}
+            />
+          );
+        })}
       </div>
     </div>
   );

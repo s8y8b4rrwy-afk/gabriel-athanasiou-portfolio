@@ -155,12 +155,13 @@ export function useSchedule(): UseScheduleReturn {
       postDraftId: draft.id,
       scheduledDate: formatDateKey(date),
       scheduledTime: time,
+      scheduledTimezone: settings.timezone, // Store the timezone when scheduling
       status: 'pending',
       createdAt: now,
       updatedAt: now,
     };
     setScheduleSlots(prev => [...prev, slot]);
-  }, [setScheduleSlots]);
+  }, [setScheduleSlots, settings.timezone]);
 
   // Unschedule a post (and track deletion for cloud sync)
   const unschedulePost = useCallback((slotId: string) => {
@@ -179,13 +180,14 @@ export function useSchedule(): UseScheduleReturn {
           ...rest,
           scheduledDate: formatDateKey(newDate),
           scheduledTime: newTime,
+          scheduledTimezone: settings.timezone, // Update timezone on reschedule
           status: 'pending' as const, // Reset to pending so it can be retried
           updatedAt: new Date().toISOString(),
         };
       }
       return slot;
     }));
-  }, [setScheduleSlots]);
+  }, [setScheduleSlots, settings.timezone]);
 
   // Duplicate a post to a new date (Option+drag on macOS)
   const duplicatePost = useCallback((slotId: string, newDate: Date) => {
@@ -212,6 +214,7 @@ export function useSchedule(): UseScheduleReturn {
       postDraftId: newDraft.id,
       scheduledDate: formatDateKey(newDate),
       scheduledTime: originalSlot.scheduledTime,
+      scheduledTimezone: settings.timezone, // Use current timezone for duplicate
       status: 'pending',
       createdAt: now,
       updatedAt: now,
@@ -219,7 +222,7 @@ export function useSchedule(): UseScheduleReturn {
     setScheduleSlots(prev => [...prev, newSlot]);
     
     console.log('📋 Duplicated post to', formatDateKey(newDate), '- auto-sync will trigger in 5s');
-  }, [scheduleSlots, drafts, setDrafts, setScheduleSlots]);
+  }, [scheduleSlots, drafts, setDrafts, setScheduleSlots, settings.timezone]);
 
   // Get posts for a specific date
   const getPostsForDate = useCallback((date: Date): ScheduledPost[] => {

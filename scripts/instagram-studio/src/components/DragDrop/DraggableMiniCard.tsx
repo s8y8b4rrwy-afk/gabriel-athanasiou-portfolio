@@ -14,6 +14,7 @@ interface DragItem {
 
 interface DraggableMiniCardProps {
   post: ScheduledPost;
+  displayTime?: string; // Time converted to display timezone (HH:mm format)
   onClick?: () => void;
   onDoubleClick?: () => void;
   statusClass: string;
@@ -22,6 +23,7 @@ interface DraggableMiniCardProps {
 
 export function DraggableMiniCard({
   post,
+  displayTime,
   onClick,
   onDoubleClick,
   statusClass,
@@ -39,6 +41,18 @@ export function DraggableMiniCard({
     }),
   }), [post, isPublished]);
 
+  // Format time for display (convert HH:mm to 12-hour format)
+  const formatTime = (time: string | undefined) => {
+    if (!time) return '--:--';
+    const parts = time.split(':');
+    if (parts.length < 2) return time;
+    const [hours, minutes] = parts;
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   return (
     <div
       ref={isPublished ? undefined : drag}
@@ -55,7 +69,7 @@ export function DraggableMiniCard({
         e.stopPropagation();
         onDoubleClick?.();
       }}
-      title={`${post.project?.title || 'Untitled'} at ${post.scheduleSlot.scheduledTime}${isPublished ? ' (Published)' : ''}\nDouble-click to edit • ⌥+drag to duplicate`}
+      title={`${post.project?.title || 'Untitled'} at ${formatTime(displayTime)}${isPublished ? ' (Published)' : ''}\nDouble-click to edit • ⌥+drag to duplicate`}
     >
       <span className={styles.miniTitle}>{truncatedTitle}</span>
     </div>

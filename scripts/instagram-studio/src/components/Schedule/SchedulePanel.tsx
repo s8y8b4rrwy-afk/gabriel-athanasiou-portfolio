@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDragLayer } from 'react-dnd';
 import styles from './Schedule.module.css';
 import { Calendar, TimeSlotPicker } from '../Calendar';
 import { ScheduleQueue } from './ScheduleQueue';
 import { PublishedList } from './PublishedList';
 import { DeleteDropZone, ITEM_TYPES } from '../DragDrop';
+import { convertSlotToDisplayTimezone } from '../../utils/timezone';
 import type { ScheduleSlot, PostDraft, ScheduleSettings, Project, RecurringTemplate } from '../../types';
 
 interface ScheduledPost extends PostDraft {
@@ -113,7 +114,11 @@ export function SchedulePanel({
     
     // If there's a draft ready, immediately schedule it
     if (currentDraft && onSchedulePost) {
-      const dateKey = date.toISOString().split('T')[0];
+      // Format date as YYYY-MM-DD using local timezone, not UTC
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
       const postsOnDate = scheduledPosts.filter(p => p.scheduleSlot.scheduledDate === dateKey);
       
       // Check if we're at the limit
@@ -174,7 +179,11 @@ export function SchedulePanel({
 
   const getPostsForSelectedDate = () => {
     if (!selectedDate) return [];
-    const dateKey = selectedDate.toISOString().split('T')[0];
+    // Format date as YYYY-MM-DD using local timezone, not UTC
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
     return scheduledPosts.filter(p => p.scheduleSlot.scheduledDate === dateKey);
   };
 
@@ -232,6 +241,7 @@ export function SchedulePanel({
             <div className={styles.calendarMain}>
               <Calendar
                 scheduledPosts={scheduledPosts}
+                displayTimezone={settings.timezone}
                 selectedDate={selectedDate}
                 onDateSelect={handleDateSelect}
                 onPostClick={(post) => {
@@ -269,27 +279,30 @@ export function SchedulePanel({
                 {existingPostsOnDate.length > 0 && (
                   <div className={styles.existingPosts}>
                     <h4>Scheduled for this day:</h4>
-                    {existingPostsOnDate.map(post => (
-                      <div key={post.scheduleSlot.id} className={styles.existingPost}>
-                        <span className={styles.existingPostTime}>
-                          {post.scheduleSlot.scheduledTime}
-                        </span>
-                        <span 
-                          className={styles.existingPostTitle}
-                          onClick={() => onEditPost(post)}
-                          title="Click to edit"
-                        >
-                          {post.project?.title || 'Untitled'}
-                        </span>
-                        <button
-                          className={styles.deletePostButton}
-                          onClick={() => onUnschedulePost(post.scheduleSlot.id)}
-                          title="Remove from schedule"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                    {existingPostsOnDate.map(post => {
+                      const displaySlot = convertSlotToDisplayTimezone(post.scheduleSlot, settings.timezone);
+                      return (
+                        <div key={post.scheduleSlot.id} className={styles.existingPost}>
+                          <span className={styles.existingPostTime}>
+                            {displaySlot.displayTime}
+                          </span>
+                          <span 
+                            className={styles.existingPostTitle}
+                            onClick={() => onEditPost(post)}
+                            title="Click to edit"
+                          >
+                            {post.project?.title || 'Untitled'}
+                          </span>
+                          <button
+                            className={styles.deletePostButton}
+                            onClick={() => onUnschedulePost(post.scheduleSlot.id)}
+                            title="Remove from schedule"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -405,6 +418,7 @@ export function SchedulePanel({
       ) : viewMode === 'queue' ? (
         <ScheduleQueue
           posts={scheduledPosts}
+          displayTimezone={settings.timezone}
           onEditPost={onEditPost}
           onUnschedulePost={onUnschedulePost}
           onReschedulePost={handleReschedule}

@@ -36,9 +36,6 @@ export function TimeSlotPicker({
     <div className={styles.timeSlotPicker}>
       <div className={styles.timeSlotHeader}>
         <h4>Select Time</h4>
-        <span className={styles.timezone}>
-          {Intl.DateTimeFormat().resolvedOptions().timeZone}
-        </span>
       </div>
 
       <div className={styles.suggestedTimes}>

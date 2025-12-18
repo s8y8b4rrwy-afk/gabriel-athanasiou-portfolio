@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import styles from './Calendar.module.css';
 import { CalendarDay } from './CalendarDay';
 import { DroppableCalendarDay } from '../DragDrop/DroppableCalendarDay';
+import { convertSlotToDisplayTimezone } from '../../utils/timezone';
 import type { ScheduleSlot, PostDraft, Project } from '../../types';
 
 interface ScheduledPost extends PostDraft {
@@ -10,6 +11,7 @@ interface ScheduledPost extends PostDraft {
 
 interface CalendarProps {
   scheduledPosts: ScheduledPost[];
+  displayTimezone: string;
   onDateSelect: (date: Date) => void;
   selectedDate: Date | null;
   onPostClick?: (post: ScheduledPost) => void;
@@ -28,6 +30,7 @@ const MONTHS = [
 
 export function Calendar({ 
   scheduledPosts, 
+  displayTimezone,
   onDateSelect, 
   selectedDate,
   onPostClick,
@@ -87,16 +90,18 @@ export function Calendar({
     return days;
   }, [currentDate]);
 
-  // Create a map of date strings to posts
+  // Create a map of date strings to posts (using display timezone)
   const postsMap = useMemo(() => {
     const map = new Map<string, ScheduledPost[]>();
     scheduledPosts.forEach(post => {
-      const dateKey = post.scheduleSlot.scheduledDate;
+      // Convert to display timezone to get the date the post appears on
+      const displaySlot = convertSlotToDisplayTimezone(post.scheduleSlot, displayTimezone);
+      const dateKey = displaySlot.displayDate;
       const existing = map.get(dateKey) || [];
       map.set(dateKey, [...existing, post]);
     });
     return map;
-  }, [scheduledPosts]);
+  }, [scheduledPosts, displayTimezone]);
 
   const navigatePrev = () => {
     if (viewMode === 'month') {
@@ -194,6 +199,7 @@ export function Calendar({
               key={date ? date.toISOString() : `empty-${index}`}
               date={date}
               posts={date ? postsMap.get(formatDateKey(date)) || [] : []}
+              displayTimezone={displayTimezone}
               isToday={date ? isToday(date) : false}
               isSelected={date ? isSelected(date) : false}
               onClick={() => date && onDateSelect(date)}
@@ -209,6 +215,7 @@ export function Calendar({
               key={date ? date.toISOString() : `empty-${index}`}
               date={date}
               posts={date ? postsMap.get(formatDateKey(date)) || [] : []}
+              displayTimezone={displayTimezone}
               isToday={date ? isToday(date) : false}
               isSelected={date ? isSelected(date) : false}
               onClick={() => date && onDateSelect(date)}

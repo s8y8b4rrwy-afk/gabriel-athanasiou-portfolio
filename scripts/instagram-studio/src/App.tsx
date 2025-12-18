@@ -44,6 +44,7 @@ function App() {
     duplicatePost,
     saveDraft,
     updateDraft,
+    updateSettings,
     importScheduleData,
     markAsPublished,
     revertToScheduled,
@@ -588,6 +589,8 @@ function App() {
         lastSyncedAt={lastSyncedAt}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        timezone={settings.timezone}
+        onTimezoneChange={(tz) => updateSettings({ timezone: tz })}
       >
         <div className={`app-sidebar ${sidebarCollapsed ? 'app-sidebar--collapsed' : ''}`}>
           <ProjectList
@@ -614,7 +617,8 @@ function App() {
         <div className="app-content">
           {viewMode === 'create' && (
             <PostPreview 
-              project={selectedProject} 
+              project={selectedProject}
+              displayTimezone={settings.timezone}
               onSaveDraft={handleSaveDraft}
               currentDraft={currentDraft}
               onScheduleClick={() => setViewMode('schedule')}

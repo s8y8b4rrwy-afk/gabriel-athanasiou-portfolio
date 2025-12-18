@@ -22,6 +22,7 @@ type DragItem = ProjectDragItem | ScheduledPostDragItem;
 interface DroppableCalendarDayProps {
   date: Date | null;
   posts: ScheduledPost[];
+  displayTimezone: string;
   isToday: boolean;
   isSelected: boolean;
   onClick: () => void;
@@ -36,6 +37,7 @@ interface DroppableCalendarDayProps {
 export function DroppableCalendarDay({
   date,
   posts,
+  displayTimezone,
   isToday,
   isSelected,
   onClick,
@@ -89,7 +91,7 @@ export function DroppableCalendarDay({
   }), [date, onDropProject, onReschedulePost, onDuplicatePost]);
 
   if (!date) {
-    return <CalendarDay date={null} posts={[]} isToday={false} isSelected={false} onClick={() => {}} />;
+    return <CalendarDay date={null} posts={[]} displayTimezone={displayTimezone} isToday={false} isSelected={false} onClick={() => {}} />;
   }
 
   const dropStyle = {
@@ -103,6 +105,7 @@ export function DroppableCalendarDay({
       <CalendarDay
         date={date}
         posts={posts}
+        displayTimezone={displayTimezone}
         isToday={isToday}
         isSelected={isSelected}
         onClick={onClick}

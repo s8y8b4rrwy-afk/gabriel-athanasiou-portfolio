@@ -2,6 +2,7 @@ import styles from './Schedule.module.css';
 import { PublishButton } from './PublishButton';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
+import { convertSlotToDisplayTimezone, DEFAULT_STORAGE_TIMEZONE } from '../../utils/timezone';
 import type { ScheduleSlot, PostDraft } from '../../types';
 import { useMemo, useState } from 'react';
 
@@ -14,6 +15,7 @@ interface ScheduledPost extends PostDraft {
 
 interface ScheduleItemProps {
   post: ScheduledPost;
+  displayTimezone: string;
   onEdit: () => void;
   onUnschedule: () => void;
   onReschedule: () => void;
@@ -24,6 +26,7 @@ interface ScheduleItemProps {
 
 export function ScheduleItem({ 
   post, 
+  displayTimezone,
   onEdit, 
   onUnschedule, 
   onReschedule,
@@ -34,6 +37,11 @@ export function ScheduleItem({
   const { scheduleSlot, project } = post;
   const credentials = getCredentialsLocally();
   const [showDebugConfirm, setShowDebugConfirm] = useState(false);
+  
+  // Convert slot times to display timezone
+  const displaySlot = useMemo(() => {
+    return convertSlotToDisplayTimezone(scheduleSlot, displayTimezone);
+  }, [scheduleSlot, displayTimezone]);
   
   // Get thumbnail with Cloudinary conversion
   const thumbnail = useMemo(() => {
@@ -112,7 +120,7 @@ export function ScheduleItem({
         )}
         <div className={styles.compactInfo}>
           <span className={styles.compactTitle}>{project.title}</span>
-          <span className={styles.compactTime}>{formatTime(scheduleSlot.scheduledTime)}</span>
+          <span className={styles.compactTime}>{formatTime(displaySlot.displayTime)}</span>
         </div>
         {getStatusBadge()}
       </div>
@@ -123,8 +131,8 @@ export function ScheduleItem({
     <div className={`${styles.item} ${styles[scheduleSlot.status]}`}>
       <div className={styles.itemHeader}>
         <div className={styles.datetime}>
-          <span className={styles.date}>{formatDate(scheduleSlot.scheduledDate)}</span>
-          <span className={styles.time}>{formatTime(scheduleSlot.scheduledTime)}</span>
+          <span className={styles.date}>{formatDate(displaySlot.displayDate)}</span>
+          <span className={styles.time}>{formatTime(displaySlot.displayTime)}</span>
         </div>
         {getStatusBadge()}
       </div>

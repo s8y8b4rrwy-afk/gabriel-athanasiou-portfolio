@@ -15,6 +15,8 @@ interface LayoutProps {
   lastSyncedAt?: Date | string | null;
   sidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
+  timezone?: string;
+  onTimezoneChange?: (tz: string) => void;
 }
 
 export function Layout({ 
@@ -29,6 +31,8 @@ export function Layout({
   lastSyncedAt,
   sidebarCollapsed = false,
   onToggleSidebar,
+  timezone,
+  onTimezoneChange,
 }: LayoutProps) {
   return (
     <div className="layout">
@@ -43,6 +47,8 @@ export function Layout({
         lastSyncedAt={lastSyncedAt}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={onToggleSidebar}
+        timezone={timezone}
+        onTimezoneChange={onTimezoneChange}
       />
       <main className={`layout-main ${sidebarCollapsed ? 'layout-main--collapsed' : ''}`}>
         {children}

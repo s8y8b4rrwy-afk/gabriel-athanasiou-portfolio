@@ -16,6 +16,7 @@
 8. [Cloudinary Image URLs](#cloudinary-image-urls)
 9. [Instagram Preview Simulation](#instagram-preview-simulation)
 10. [Technical Specifications](#technical-specifications)
+    - [Timezone System](#timezone-system)
 11. [Post Format & Templates](#post-format--templates)
 12. [Hashtag Strategy](#hashtag-strategy)
 13. [API Integration](#api-integration)
@@ -499,6 +500,9 @@ scripts/
 - [x] Calendar entry hover states (visual feedback with transform and shadow)
 - [x] Double-click calendar entry to edit post
 - [x] Option+drag (⌥) to duplicate post to a new date
+- [x] Timezone selector in navbar (display times in any timezone)
+- [x] Timezone conversion for all scheduled post displays
+- [x] Posts store their original scheduled timezone
 
 #### Deliverables:
 - ✅ Visual calendar with scheduled posts showing titles
@@ -520,6 +524,8 @@ scripts/
 - ✅ Option+drag to duplicate scheduled posts to new dates
 - ✅ Toggle between original image and Instagram-cropped/letterboxed view
 - ✅ Queue mode: navigate between scheduled posts with prev/next buttons (auto-saves)
+- ✅ Timezone selector: view scheduled times in any timezone (London, Athens, New York, etc.)
+- ✅ Display-only conversion: posts maintain original publish time, just show in different timezone
 
 ---
 
@@ -1062,6 +1068,70 @@ Instagram Studio is designed to **never add black bars on the left/right sides**
 ---
 
 ## Technical Specifications
+
+### Timezone System
+
+Instagram Studio includes a timezone-aware scheduling system that allows viewing scheduled post times in any timezone while maintaining the original publish time.
+
+#### Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Storage Timezone** | The timezone a post was originally scheduled in (stored in `scheduledTimezone` field) |
+| **Display Timezone** | The timezone currently selected in the navbar dropdown |
+| **Conversion** | Display-only - posts always publish at their original scheduled time |
+
+#### How It Works
+
+1. **Scheduling a Post**: When you schedule a post, the time and the current settings timezone are stored together
+2. **Viewing Scheduled Posts**: Times are converted from storage timezone to display timezone
+3. **Changing Display Timezone**: All displayed times update immediately, but publish times remain unchanged
+
+#### Example
+
+```
+Post scheduled: 12:00 PM (Europe/London)
+Stored as: { date: "2025-12-18", time: "12:00", scheduledTimezone: "Europe/London" }
+
+View in Athens (Europe/Athens, UTC+2):
+  → Displays as: 2:00 PM
+
+View in New York (America/New_York, UTC-5):
+  → Displays as: 7:00 AM
+
+Post STILL publishes at 12:00 PM London time (when the server checks)
+```
+
+#### Available Timezones
+
+| Display Name | IANA Timezone |
+|--------------|---------------|
+| 🇬🇧 London | Europe/London |
+| 🇬🇷 Athens | Europe/Athens |
+| 🇫🇷 Paris | Europe/Paris |
+| 🇩🇪 Berlin | Europe/Berlin |
+| 🇺🇸 New York | America/New_York |
+| 🇺🇸 Los Angeles | America/Los_Angeles |
+| 🇺🇸 Chicago | America/Chicago |
+| 🇦🇪 Dubai | Asia/Dubai |
+| 🇸🇬 Singapore | Asia/Singapore |
+| 🇯🇵 Tokyo | Asia/Tokyo |
+| 🇦🇺 Sydney | Australia/Sydney |
+
+#### Implementation Files
+
+| File | Purpose |
+|------|---------|
+| `src/utils/timezone.ts` | Core conversion functions (`convertTimezone`, `convertSlotToDisplayTimezone`) |
+| `src/components/Layout/Header.tsx` | Timezone dropdown selector |
+| `src/types/schedule.ts` | `scheduledTimezone` field in ScheduleSlot type |
+| `src/hooks/useSchedule.ts` | Stores timezone when scheduling posts |
+
+#### Legacy Data
+
+Posts scheduled before this feature have no `scheduledTimezone` field. These default to `Europe/London` for conversion, matching the original app behavior.
+
+---
 
 ### Dependencies
 

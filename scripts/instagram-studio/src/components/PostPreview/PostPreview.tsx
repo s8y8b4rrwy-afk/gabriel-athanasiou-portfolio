@@ -26,6 +26,7 @@ interface EditingScheduleInfo {
 
 interface PostPreviewProps {
   project: Project | null;
+  displayTimezone: string;
   onSaveDraft?: (draft: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode: ImageDisplayMode }) => void;
   currentDraft?: { caption: string; hashtags: string[]; selectedImages: string[]; imageMode?: ImageDisplayMode } | null;
   onScheduleClick?: () => void;
@@ -47,7 +48,8 @@ interface PostPreviewProps {
 }
 
 export function PostPreview({ 
-  project, 
+  project,
+  displayTimezone,
   onSaveDraft, 
   currentDraft, 
   onScheduleClick,
@@ -840,6 +842,7 @@ export function PostPreview({
           {scheduledPostsForProject.length > 0 && onEditScheduledPost && onUnschedulePost ? (
             <ProjectScheduledPosts
               posts={scheduledPostsForProject}
+              displayTimezone={displayTimezone}
               onEditPost={onEditScheduledPost}
               onUnschedulePost={onUnschedulePost}
               currentlyEditing={isEditing ? editingScheduleInfo?.scheduledDate : undefined}

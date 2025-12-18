@@ -8,6 +8,7 @@ interface ScheduledPost extends PostDraft {
 
 interface ScheduleQueueProps {
   posts: ScheduledPost[];
+  displayTimezone: string;
   onEditPost: (post: ScheduledPost) => void;
   onUnschedulePost: (slotId: string) => void;
   onReschedulePost: (post: ScheduledPost) => void;
@@ -19,6 +20,7 @@ interface ScheduleQueueProps {
 
 export function ScheduleQueue({ 
   posts, 
+  displayTimezone,
   onEditPost, 
   onUnschedulePost, 
   onReschedulePost,
@@ -67,6 +69,7 @@ export function ScheduleQueue({
           <ScheduleItem
             key={post.scheduleSlot.id}
             post={post}
+            displayTimezone={displayTimezone}
             onEdit={() => onEditPost(post)}
             onUnschedule={() => onUnschedulePost(post.scheduleSlot.id)}
             onReschedule={() => onReschedulePost(post)}

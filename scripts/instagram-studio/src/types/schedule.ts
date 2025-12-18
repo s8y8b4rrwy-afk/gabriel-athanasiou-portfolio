@@ -1,8 +1,9 @@
 export interface ScheduleSlot {
   id: string;
   postDraftId: string;
-  scheduledDate: string; // ISO date string
+  scheduledDate: string; // ISO date string (YYYY-MM-DD)
   scheduledTime: string; // HH:mm format
+  scheduledTimezone?: string; // Timezone when scheduled (e.g., 'Europe/London')
   status: 'pending' | 'published' | 'failed';
   instagramPostId?: string; // Instagram media ID when published
   instagramPermalink?: string; // Direct link to Instagram post
@@ -14,6 +15,6 @@ export interface ScheduleSlot {
 
 export interface ScheduleSettings {
   defaultTimes: string[]; // Default posting times ['11:00', '19:00']
-  timezone: string;
+  timezone: string; // Display timezone for viewing schedules
   maxPostsPerDay: number;
 }
