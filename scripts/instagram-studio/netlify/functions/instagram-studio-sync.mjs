@@ -90,7 +90,27 @@ export const handler = async (event) => {
 
 		const signature = generateSignature(paramsToSign, apiSecret);
 
-		const jsonString = JSON.stringify(scheduleData, null, 2);
+		// Stringify with error handling for circular references
+		let jsonString;
+		try {
+			jsonString = JSON.stringify(scheduleData, null, 2);
+		} catch (stringifyError) {
+			console.error('Error stringifying schedule data:', stringifyError);
+			// Try to stringify without pretty printing
+			try {
+				jsonString = JSON.stringify(scheduleData);
+			} catch (fallbackError) {
+				console.error('Fatal: Cannot stringify schedule data:', fallbackError);
+				return {
+					statusCode: 400,
+					headers,
+					body: JSON.stringify({ 
+						error: 'Invalid schedule data: ' + (stringifyError instanceof Error ? stringifyError.message : 'Unknown error')
+					}),
+				};
+			}
+		}
+
 		const base64Data = Buffer.from(jsonString).toString('base64');
 		const dataUri = `data:application/json;base64,${base64Data}`;
 

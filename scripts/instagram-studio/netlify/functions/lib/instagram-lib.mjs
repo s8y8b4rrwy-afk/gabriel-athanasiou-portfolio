@@ -1,0 +1,433 @@
+/**
+ * Instagram Studio Shared Library
+ * 
+ * Centralized logic for:
+ * - Cloudinary data management (fetch/save/merge)
+ * - Instagram Graph API publishing (single/carousel)
+ * - Notification emails (Resend)
+ */
+
+import crypto from 'crypto';
+
+// Centralized Constants
+export const GRAPH_API_BASE = 'https://graph.instagram.com';
+export const GRAPH_API_VERSION = 'v21.0';
+export const CLOUDINARY_CLOUD = 'date24ay6';
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+/**
+ * Fetch schedule data from Cloudinary
+ */
+export async function fetchScheduleData() {
+  const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error(`Failed to fetch schedule data: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Error fetching schedule data:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Upload data to Cloudinary as a raw resource
+ */
+export async function uploadToCloudinary(data) {
+  if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    throw new Error('Cloudinary credentials not configured');
+  }
+
+  data.lastUpdated = new Date().toISOString();
+  data.lastMergedAt = new Date().toISOString();
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const publicId = 'instagram-studio/schedule-data';
+
+  // Cloudinary requires ALL parameters to be included in signature (alphabetically sorted)
+  const signatureString = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
+  const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
+
+  const formData = new URLSearchParams();
+  formData.append(
+    'file',
+    `data:application/json;base64,${Buffer.from(JSON.stringify(data, null, 2)).toString('base64')}`
+  );
+  formData.append('public_id', publicId);
+  formData.append('timestamp', timestamp.toString());
+  formData.append('api_key', CLOUDINARY_API_KEY);
+  formData.append('signature', signature);
+  formData.append('resource_type', 'raw');
+  formData.append('overwrite', 'true');
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorDetails = errorText;
+    try {
+      const firstLine = errorText.split('\n')[0];
+      errorDetails = `${response.status} ${response.statusText} - ${firstLine.substring(0, 500)}`;
+    } catch (e) {}
+    
+    console.error('❌ Cloudinary upload failed:', errorDetails);
+    throw new Error(`Failed to save to Cloudinary: ${errorDetails}`);
+  }
+
+  const result = await response.json();
+  console.log('✅ Cloudinary upload successful:', { publicId, url: result.secure_url?.substring(0, 100) });
+  return result;
+}
+
+/**
+ * Update the status of a specific schedule slot
+ */
+export async function updateScheduleStatus(slotId, status, mediaIdOrError) {
+  if (!slotId || slotId === 'direct-publish') return;
+
+  const update = { status };
+  if (status === 'published') {
+    update.publishedAt = new Date().toISOString();
+    update.instagramMediaId = mediaIdOrError;
+  } else if (status === 'failed') {
+    update.error = mediaIdOrError;
+  }
+
+  const statusUpdates = new Map([[slotId, update]]);
+  return await saveWithSmartMerge(statusUpdates);
+}
+
+/**
+ * Save status updates with smart merge and retry logic
+ */
+export async function saveWithSmartMerge(statusUpdates) {
+  const maxRetries = 3;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`💾 Saving status updates (attempt ${attempt}/${maxRetries})...`);
+      
+      const freshData = await fetchScheduleData();
+      if (!freshData) {
+        throw new Error('Cannot save: failed to fetch fresh data for merge');
+      }
+
+      let updatedCount = 0;
+      for (const slot of freshData.scheduleSlots || []) {
+        const update = statusUpdates.get(slot.id);
+        if (update) {
+          slot.status = update.status;
+          if (update.publishedAt) slot.publishedAt = update.publishedAt;
+          if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
+          if (update.error) slot.error = update.error;
+          slot.updatedAt = new Date().toISOString();
+          updatedCount++;
+          console.log(`  ✓ Applied status update to slot ${slot.id}: ${update.status}`);
+        }
+      }
+
+      console.log(`🔄 Smart merge: Applied ${updatedCount} status updates`);
+      await uploadToCloudinary(freshData);
+      console.log('💾 Status updates saved successfully');
+      return true;
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Save attempt ${attempt} failed: ${error.message}`);
+      
+      if (attempt < maxRetries) {
+        const waitMs = Math.pow(2, attempt) * 1000; // 2s, 4s
+        console.log(`⏳ Waiting ${waitMs}ms before retry...`);
+        await new Promise(r => setTimeout(r, waitMs));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Generate Instagram-ready URLs from Cloudinary portfolio IDs
+ */
+export async function getInstagramUrls(imageUrls, projectId) {
+  const results = [];
+  const ASPECT_PORTRAIT = '0.8';
+
+  for (let i = 0; i < imageUrls.length; i++) {
+    const url = imageUrls[i];
+    let imageIndex = i;
+
+    if (url.includes('res.cloudinary.com')) {
+      const match = url.match(/portfolio-projects-[^-]+-(\d+)/);
+      if (match) {
+        imageIndex = parseInt(match[1], 10);
+      }
+    }
+
+    const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
+    // Force JPG, portrait crop, and high quality for Instagram
+    const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_lfill,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
+
+    results.push(instagramUrl);
+  }
+
+  return results;
+}
+
+/**
+ * Publish a post (single or carousel) to Instagram
+ */
+export async function publishPost(post, accessToken, accountId, options = {}) {
+  const { imageUrls, caption } = post;
+  const { maxWait = 60000, pollInterval = 3000 } = options;
+
+  if (!imageUrls || imageUrls.length === 0) {
+    throw new Error('No images to publish');
+  }
+
+  if (imageUrls.length === 1) {
+    return await publishSingleImage(imageUrls[0], caption, accessToken, accountId, { maxWait, pollInterval });
+  } else {
+    return await publishCarousel(imageUrls, caption, accessToken, accountId, { maxWait, pollInterval });
+  }
+}
+
+/**
+ * Publish a single image post
+ */
+export async function publishSingleImage(imageUrl, caption, accessToken, accountId, options = {}) {
+  const containerResponse = await fetch(
+    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image_url: imageUrl,
+        caption: caption,
+        access_token: accessToken,
+      }),
+    }
+  );
+
+  const containerData = await containerResponse.json();
+  if (containerData.error) {
+    throw new Error(containerData.error.message);
+  }
+
+  const containerId = containerData.id;
+  await waitForMediaReady(containerId, accessToken, options);
+
+  const publishResponse = await fetch(
+    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creation_id: containerId,
+        access_token: accessToken,
+      }),
+    }
+  );
+
+  const publishData = await publishResponse.json();
+  if (publishData.error) {
+    throw new Error(publishData.error.message);
+  }
+
+  return { mediaId: publishData.id };
+}
+
+/**
+ * Publish a carousel post
+ */
+export async function publishCarousel(imageUrls, caption, accessToken, accountId, options = {}) {
+  const childIds = [];
+
+  for (const imageUrl of imageUrls) {
+    const childResponse = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageUrl,
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    const childData = await childResponse.json();
+    if (childData.error) {
+      throw new Error(`Failed to create carousel item: ${childData.error.message}`);
+    }
+
+    childIds.push(childData.id);
+    await waitForMediaReady(childData.id, accessToken, options);
+  }
+
+  const containerResponse = await fetch(
+    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        media_type: 'CAROUSEL',
+        children: childIds,
+        caption: caption,
+        access_token: accessToken,
+      }),
+    }
+  );
+
+  const containerData = await containerResponse.json();
+  if (containerData.error) {
+    throw new Error(containerData.error.message);
+  }
+
+  const containerId = containerData.id;
+  await waitForMediaReady(containerId, accessToken, options);
+
+  const publishResponse = await fetch(
+    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creation_id: containerId,
+        access_token: accessToken,
+      }),
+    }
+  );
+
+  const publishData = await publishResponse.json();
+  if (publishData.error) {
+    throw new Error(publishData.error.message);
+  }
+
+  return { mediaId: publishData.id };
+}
+
+/**
+ * Wait for Instagram media container to be ready
+ */
+export async function waitForMediaReady(mediaId, accessToken, options = {}) {
+  const { maxWait = 60000, pollInterval = 3000 } = options;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWait) {
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${mediaId}?fields=status_code&access_token=${accessToken}`
+    );
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(`Failed to check media status: ${data.error.message}`);
+    }
+
+    if (data.status_code === 'FINISHED') {
+      return { success: true };
+    }
+
+    if (data.status_code === 'ERROR' || data.status_code === 'EXPIRED') {
+      throw new Error(`Instagram media processing failed: ${data.status_code}`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error('Media processing timeout');
+}
+
+/**
+ * Send notification email via Resend
+ */
+export async function sendNotification(results, scheduleData, options = {}) {
+  const { 
+    type = 'Scheduled', 
+    saveSuccess = true, 
+    saveError = null 
+  } = options;
+  
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const notificationEmail = process.env.NOTIFICATION_EMAIL;
+
+  if (!resendApiKey || !notificationEmail) {
+    console.log('📧 Notification skipped: RESEND_API_KEY or NOTIFICATION_EMAIL not configured');
+    return;
+  }
+
+  const successful = results.filter((r) => r.success);
+  const failed = results.filter((r) => !r.success);
+
+  const subject =
+    failed.length > 0
+      ? `⚠️ Instagram ${type} Publish: ${successful.length} published, ${failed.length} failed`
+      : `✅ Instagram ${type} Publish: ${successful.length} post(s) published`;
+
+  let html = `<h2>Instagram ${type} Publish Report</h2>`;
+  html += `<p>Time: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>`;
+
+  if (!saveSuccess) {
+    html += `<div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin: 16px 0;">`;
+    html += `<p style="margin: 0; color: #856404;"><strong>⚠️ Status Update Warning</strong></p>`;
+    html += `<p style="margin: 8px 0 0 0; color: #856404; font-size: 14px;">Posts were published but status updates could not be saved to the schedule. Error: ${saveError?.message || 'Unknown error'}</p>`;
+    html += `</div>`;
+  }
+
+  if (successful.length > 0) {
+    html += `<h3>✅ Successfully Published (${successful.length})</h3><ul>`;
+    for (const r of successful) {
+      const post = (scheduleData.scheduleSlots || []).find((p) => p.id === r.postId);
+      html += `<li><strong>${post?.projectId || r.projectId || r.postId}</strong> - Media ID: ${r.mediaId}</li>`;
+    }
+    html += `</ul>`;
+  }
+
+  if (failed.length > 0) {
+    html += `<h3>❌ Failed (${failed.length})</h3><ul>`;
+    for (const r of failed) {
+      const post = (scheduleData.scheduleSlots || []).find((p) => p.id === r.postId);
+      html += `<li><strong>${post?.projectId || r.projectId || r.postId}</strong> - Error: ${r.error}</li>`;
+    }
+    html += `</ul>`;
+  }
+
+  html += `<p><a href="https://studio.lemonpost.studio">Open Instagram Studio →</a></p>`;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Instagram Studio <noreply@lemonpost.studio>',
+        to: [notificationEmail],
+        subject: subject,
+        html: html,
+      }),
+    });
+
+    if (response.ok) {
+      console.log('📧 Notification email sent successfully');
+    } else {
+      const error = await response.text();
+      console.error('📧 Failed to send notification:', error);
+    }
+  } catch (error) {
+    console.error('📧 Notification error:', error.message);
+  }
+}

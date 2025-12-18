@@ -172,6 +172,9 @@ export async function uploadScheduleToCloudinary(
     }
 
     // Upload data to Cloudinary
+    console.log('📤 Uploading to:', SYNC_FUNCTION_URL);
+    console.log('📦 Data size:', JSON.stringify(dataToUpload).length, 'bytes');
+    
     const response = await fetch(SYNC_FUNCTION_URL, {
       method: 'POST',
       headers: {
@@ -180,10 +183,23 @@ export async function uploadScheduleToCloudinary(
       body: JSON.stringify({ scheduleData: dataToUpload, profileId }),
     });
 
-    const result = await response.json();
+    // First, check if response is ok before trying to parse
+    if (!response.ok) {
+      console.error('Upload failed with status:', response.status, response.statusText);
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
 
-    if (!response.ok || result.error) {
-      throw new Error(result.error || `Upload failed: ${response.status}`);
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse response JSON:', parseError);
+      throw new Error(`Invalid JSON response from sync function: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+    }
+
+    if (result.error) {
+      console.error('Upload failed:', result);
+      throw new Error(result.error || `Upload failed with server error`);
     }
 
     console.log(`✅ Uploaded schedule to Cloudinary (profile: ${profileId}):`, result.url);

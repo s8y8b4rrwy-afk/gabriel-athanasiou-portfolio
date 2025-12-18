@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** December 16, 2025  
+> **Last Updated:** December 18, 2025  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 
@@ -54,6 +54,37 @@ This comprehensive guide consolidates ALL documentation into one master referenc
 > **All major changes documented in reverse chronological order (newest first)**
 
 ### 🎉 Recent Major Changes
+
+### Dec 18 2025 - Instagram Studio Local Dev Fixes
+**What Changed:** Fixed two issues preventing Instagram Studio from running locally.
+
+**The Problems:**
+1. **"Body is disturbed or locked" error** - Cloudinary sync was failing with this error when trying to fetch schedule data
+2. **Browser auto-opening on wrong port** - Vite was configured to auto-open browser on port 5174 instead of letting users access Netlify Dev on port 8888
+
+**The Solutions:**
+
+1. **Fixed double response body read in cloudinarySync.ts:**
+   - The `fetchFromCloud()` function was calling both `response.json()` and `response.text()` on the same response
+   - In Fetch API, the body can only be read once - reading it twice causes "Body is disturbed or locked" error
+   - Removed the redundant `await response.text()` call after `await response.json()`
+
+2. **Disabled auto-open in vite.config.ts:**
+   - Changed `open: true` to `open: false` in server config
+   - Users should access `http://localhost:8888` (Netlify Dev with functions) not `http://localhost:5174` (Vite only)
+
+**Files Changed:**
+- `scripts/instagram-studio/src/services/cloudinarySync.ts` - Removed duplicate response body read
+- `scripts/instagram-studio/vite.config.ts` - Set `open: false` to prevent auto-opening wrong port
+
+**Local Development:**
+```bash
+cd scripts/instagram-studio
+npm run dev
+# Access at http://localhost:8888 (NOT 5174)
+```
+
+---
 
 ### Dec 16 2025 - Instagram Studio Server-Side Migration Complete
 **What Changed:** Centralized all Instagram server-side functions under Studio (`studio.lemonpost.studio`) for single ownership.

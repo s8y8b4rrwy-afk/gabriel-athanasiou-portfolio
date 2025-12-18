@@ -7,7 +7,7 @@ export default defineConfig({
   root: resolve(__dirname),
   server: {
     port: 5174,
-    open: true,
+    open: false, // Don't auto-open - use Netlify Dev on 8888 instead
     allowedHosts: true, // Allow all hosts (for ngrok)
     fs: {
       // Allow serving files from the parent public folder
