@@ -173,32 +173,168 @@ export async function saveWithSmartMerge(statusUpdates) {
   throw lastError;
 }
 
+// ============================================
+// IMAGE MODE & ASPECT RATIO HELPERS
+// ============================================
+
+/**
+ * Instagram aspect ratio constants
+ * Instagram accepts: 4:5 (0.8) to 1.91:1 (1.91)
+ */
+const INSTAGRAM_ASPECT_RATIOS = {
+  PORTRAIT_4_5: '0.8',       // 4:5 as decimal
+  LANDSCAPE_191_100: '1.91', // 1.91:1 as decimal
+};
+
+/**
+ * Fetch image dimensions from Cloudinary via their API
+ * Uses fl_getinfo to get dimensions without downloading the full image
+ * 
+ * @param {string} projectId - Project record ID
+ * @param {number} imageIndex - Image index in the project gallery
+ * @returns {Promise<{width: number, height: number} | null>}
+ */
+async function getImageDimensions(projectId, imageIndex) {
+  try {
+    // Use Cloudinary's fl_getinfo to get dimensions without downloading full image
+    const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
+    const infoUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/fl_getinfo/${publicId}.jpg`;
+    
+    const response = await fetch(infoUrl);
+    if (!response.ok) {
+      console.warn(`Failed to get dimensions for ${publicId}: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    if (data.input && data.input.width && data.input.height) {
+      return { width: data.input.width, height: data.input.height };
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn(`Error getting image dimensions: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Build Cloudinary URL for Instagram carousel with consistent aspect ratio
+ * 
+ * @param {string} projectId - Project ID
+ * @param {number} imageIndex - Image index
+ * @param {string} aspectRatio - Target aspect ratio (e.g., "0.8", "1.91")
+ * @param {'lfill' | 'pad'} cropMode - 'lfill' = fill and crop (no bars), 'pad' = letterbox (preserve full image)
+ * @returns {string} Cloudinary URL
+ */
+function buildCloudinaryUrlForCarousel(projectId, imageIndex, aspectRatio, cropMode) {
+  const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
+  
+  // Build transformation based on crop mode
+  let transforms;
+  if (cropMode === 'pad') {
+    // FIT mode: letterbox with black bars, preserve full image
+    transforms = [
+      `ar_${aspectRatio}`,
+      'c_pad',
+      'b_black',
+      'g_center',
+      'q_95',
+      'f_jpg'
+    ].join(',');
+  } else {
+    // FILL mode: crop to fill, no letterbox bars
+    transforms = [
+      `ar_${aspectRatio}`,
+      'c_lfill',
+      'b_black',
+      'g_center',
+      'q_95',
+      'f_jpg'
+    ].join(',');
+  }
+  
+  // Chain width limit transformation
+  const widthLimit = 'w_1440,c_limit';
+  
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/${transforms}/${widthLimit}/${publicId}.jpg`;
+}
+
 /**
  * Generate Instagram-ready URLs from Cloudinary portfolio IDs
+ * Supports imageMode for fill (crop) vs fit (letterbox) behavior
+ * 
+ * @param {string[]} imageUrls - Original image URLs
+ * @param {string} projectId - Project record ID
+ * @param {'fill' | 'fit'} imageMode - 'fill' = crop to fill, 'fit' = letterbox (preserve full image)
+ * @returns {Promise<string[]>} Instagram-optimized Cloudinary URLs
  */
-export async function getInstagramUrls(imageUrls, projectId) {
-  const results = [];
-  const ASPECT_PORTRAIT = '0.8';
-
+export async function getInstagramUrls(imageUrls, projectId, imageMode = 'fill') {
+  console.log(`📐 getInstagramUrls called with imageMode: ${imageMode}`);
+  
+  // First pass: Get dimensions for all images and determine their categories
+  const imageData = [];
+  let landscapeCount = 0;
+  let portraitCount = 0;
+  let normalCount = 0;
+  
   for (let i = 0; i < imageUrls.length; i++) {
     const url = imageUrls[i];
+    
+    // Find the actual image index from the URL
     let imageIndex = i;
-
     if (url.includes('res.cloudinary.com')) {
-      const match = url.match(/portfolio-projects-[^-]+-(\d+)/);
+      const match = url.match(/portfolio-projects-[^-]+-([\d]+)/);
       if (match) {
         imageIndex = parseInt(match[1], 10);
       }
     }
-
-    const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
-    // Force JPG, portrait crop, and high quality for Instagram
-    const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_lfill,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
-
-    results.push(instagramUrl);
+    
+    // Get dimensions from Cloudinary
+    const dimensions = await getImageDimensions(projectId, imageIndex);
+    imageData.push({ url, imageIndex, dimensions });
+    
+    if (dimensions) {
+      const ratio = dimensions.width / dimensions.height;
+      // Categorize: landscape (>1.0), portrait (<0.8), or normal (0.8-1.0)
+      if (ratio > 1.0) {
+        landscapeCount++;
+      } else if (ratio < 0.8) {
+        portraitCount++;
+      } else {
+        normalCount++;
+      }
+    }
   }
-
-  return results;
+  
+  // Determine majority orientation
+  const isLandscapeMajority = landscapeCount >= portraitCount && landscapeCount >= normalCount;
+  
+  // Choose target aspect ratio based on majority
+  const targetAspectRatio = isLandscapeMajority
+    ? INSTAGRAM_ASPECT_RATIOS.LANDSCAPE_191_100
+    : INSTAGRAM_ASPECT_RATIOS.PORTRAIT_4_5;
+  
+  console.log(`📊 Orientation analysis: ${landscapeCount}L, ${portraitCount}P, ${normalCount}N → ${isLandscapeMajority ? 'Landscape' : 'Portrait'} majority`);
+  
+  // FILL MODE: Crop to fill (no letterbox), respecting majority orientation
+  if (imageMode === 'fill') {
+    console.log(`📐 FILL mode: Cropping to ${targetAspectRatio} with c_lfill`);
+    
+    return imageData.map(({ imageIndex }) => {
+      return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'lfill');
+    });
+  }
+  
+  // FIT MODE: Preserve full images with letterbox bars
+  console.log(`📐 FIT mode: Padding to ${targetAspectRatio} with c_pad`);
+  
+  return imageData.map(({ imageIndex, dimensions }, i) => {
+    console.log(
+      `📐 Image ${i + 1}/${imageUrls.length} (index ${imageIndex}): ${dimensions ? `${dimensions.width}x${dimensions.height}` : 'unknown'} → ${targetAspectRatio} c_pad`
+    );
+    return buildCloudinaryUrlForCarousel(projectId, imageIndex, targetAspectRatio, 'pad');
+  });
 }
 
 /**

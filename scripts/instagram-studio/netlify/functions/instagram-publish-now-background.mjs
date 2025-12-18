@@ -256,8 +256,8 @@ export const handler = async (event) => {
 				const fullCaption =
 					hashtags.length > 0 ? `${draft.caption}\n\n${hashtags.join(' ')}` : draft.caption;
 
-				// Use shared library for URL generation
-				const imageUrls = await getInstagramUrls(draft.selectedImages, draft.projectId);
+				// Pass imageMode to support 'fill' (crop) vs 'fit' (letterbox)
+				const imageUrls = await getInstagramUrls(draft.selectedImages, draft.projectId, draft.imageMode || 'fill');
 
 				if (isDryRun) {
 					console.log(`🧪 DRY_RUN: skipping publish for ${draft.projectId}`);
