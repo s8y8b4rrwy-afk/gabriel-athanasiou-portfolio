@@ -1,14 +1,16 @@
 import styles from './Calendar.module.css';
 import type { ScheduleSlot, PostDraft } from '../../types';
 import { DraggableMiniCard } from '../DragDrop/DraggableMiniCard';
+import { convertSlotToDisplayTimezone } from '../../utils/timezone';
 
-interface ScheduledPost extends PostDraft {
+export interface ScheduledPost extends PostDraft {
   scheduleSlot: ScheduleSlot;
 }
 
-interface CalendarDayProps {
+export interface CalendarDayProps {
   date: Date | null;
   posts: ScheduledPost[];
+  displayTimezone: string;
   isToday: boolean;
   isSelected: boolean;
   onClick: () => void;
@@ -20,6 +22,7 @@ interface CalendarDayProps {
 export function CalendarDay({ 
   date, 
   posts, 
+  displayTimezone,
   isToday, 
   isSelected, 
   onClick,
@@ -67,29 +70,37 @@ export function CalendarDay({
         <div className={styles.postsContainer}>
           {isWeekView ? (
             // Week view shows full post details (also draggable)
-            posts.slice(0, 4).map(post => (
-              <DraggableMiniCard
-                key={post.scheduleSlot.id}
-                post={post}
-                onClick={() => onPostClick?.(post)}
-                onDoubleClick={() => onPostDoubleClick?.(post)}
-                statusClass={getStatusClass(post.scheduleSlot.status)}
-                truncatedTitle={post.project?.title || 'Untitled'}
-              />
-            ))
-          ) : (
-            // Month view shows mini cards with truncated title
-            <div className={styles.miniCards}>
-              {posts.slice(0, 2).map(post => (
+            posts.slice(0, 4).map(post => {
+              const displaySlot = convertSlotToDisplayTimezone(post.scheduleSlot, displayTimezone);
+              return (
                 <DraggableMiniCard
                   key={post.scheduleSlot.id}
                   post={post}
+                  displayTime={displaySlot.displayTime}
                   onClick={() => onPostClick?.(post)}
                   onDoubleClick={() => onPostDoubleClick?.(post)}
                   statusClass={getStatusClass(post.scheduleSlot.status)}
-                  truncatedTitle={truncateTitle(post.project?.title || 'Untitled', 18)}
+                  truncatedTitle={post.project?.title || 'Untitled'}
                 />
-              ))}
+              );
+            })
+          ) : (
+            // Month view shows mini cards with truncated title
+            <div className={styles.miniCards}>
+              {posts.slice(0, 2).map(post => {
+                const displaySlot = convertSlotToDisplayTimezone(post.scheduleSlot, displayTimezone);
+                return (
+                  <DraggableMiniCard
+                    key={post.scheduleSlot.id}
+                    post={post}
+                    displayTime={displaySlot.displayTime}
+                    onClick={() => onPostClick?.(post)}
+                    onDoubleClick={() => onPostDoubleClick?.(post)}
+                    statusClass={getStatusClass(post.scheduleSlot.status)}
+                    truncatedTitle={truncateTitle(post.project?.title || 'Untitled', 18)}
+                  />
+                );
+              })}
               {posts.length > 2 && (
                 <div className={styles.moreCount}>+{posts.length - 2} more</div>
               )}

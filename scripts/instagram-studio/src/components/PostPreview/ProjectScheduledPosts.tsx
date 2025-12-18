@@ -218,8 +218,8 @@ export function ProjectScheduledPosts({
             <ScheduledPostItem
               key={post.scheduleSlot.id}
               post={post}
-              displayDate={displaySlot.date}
-              displayTime={displaySlot.time}
+              displayDate={displaySlot.displayDate}
+              displayTime={displaySlot.displayTime}
               onEditPost={onEditPost}
               onUnschedulePost={onUnschedulePost}
               getStatusClass={getStatusClass}
