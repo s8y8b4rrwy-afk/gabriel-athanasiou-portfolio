@@ -146,19 +146,49 @@ export const handler = async (event) => {
 
 		const { accessToken, accountId } = scheduleData.instagram;
 
+		// Get configured timezone from settings (default to Europe/London)
+		const configuredTimezone = scheduleData.settings?.timezone || 'Europe/London';
+		console.log(`🌍 Using timezone: ${configuredTimezone}`);
+
 		const now = new Date();
+		
+		// Format current time in the CONFIGURED timezone (not server UTC)
+		const formatter = new Intl.DateTimeFormat('en-CA', {
+			timeZone: configuredTimezone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false,
+		});
+		const parts = formatter.formatToParts(now);
+		const getPart = (type) => parts.find(p => p.type === type)?.value || '00';
+		
+		const todayDateStr = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+		const currentTimeStr = `${getPart('hour')}:${getPart('minute')}`;
+		
+		console.log(`⏰ Current time in ${configuredTimezone}: ${todayDateStr} ${currentTimeStr} (Server UTC: ${now.toISOString()})`);
 		
 		// Calculate window start based on mode
 		let windowStart;
+		let windowStartDateStr;
 		if (USE_TODAY_WINDOW) {
-			// Today window: start of today (midnight UTC)
+			// Today window: start of today (midnight local time)
 			windowStart = new Date(now);
-			windowStart.setUTCHours(0, 0, 0, 0);
-			console.log(`📅 Using TODAY window: ${windowStart.toISOString()} to ${now.toISOString()}`);
+			windowStart.setHours(0, 0, 0, 0);
+			windowStartDateStr = todayDateStr;
+			console.log(`📅 Using TODAY window: ${windowStartDateStr} 00:00 to ${todayDateStr} ${currentTimeStr}`);
 		} else {
 			// 1-hour window (original behavior)
 			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
-			console.log(`⏰ Using 1-HOUR window: ${windowStart.toISOString()} to ${now.toISOString()}`);
+			const wsYear = windowStart.getFullYear();
+			const wsMonth = String(windowStart.getMonth() + 1).padStart(2, '0');
+			const wsDay = String(windowStart.getDate()).padStart(2, '0');
+			const wsHour = String(windowStart.getHours()).padStart(2, '0');
+			const wsMin = String(windowStart.getMinutes()).padStart(2, '0');
+			windowStartDateStr = `${wsYear}-${wsMonth}-${wsDay}`;
+			console.log(`⏰ Using 1-HOUR window: ${wsYear}-${wsMonth}-${wsDay} ${wsHour}:${wsMin} to ${todayDateStr} ${currentTimeStr}`);
 		}
 
 		const draftsMap = new Map((scheduleData.drafts || []).map((d) => [d.id, d]));
@@ -175,8 +205,15 @@ export const handler = async (event) => {
 		const duePosts = allSlots
 			.filter((slot) => {
 				if (slot.status !== 'pending') return false;
-				const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-				const isDue = scheduledDateTime <= now && scheduledDateTime >= windowStart;
+				
+				// Compare dates and times as strings (local timezone)
+				const slotDateTime = `${slot.scheduledDate}T${slot.scheduledTime}`;
+				const currentDateTime = `${todayDateStr}T${currentTimeStr}`;
+				const windowStartDateTime = USE_TODAY_WINDOW ? `${todayDateStr}T00:00` : `${windowStartDateStr}T${String(windowStart.getHours()).padStart(2, '0')}:${String(windowStart.getMinutes()).padStart(2, '0')}`;
+				
+				// String comparison works for ISO format (YYYY-MM-DDTHH:MM)
+				const isDue = slotDateTime <= currentDateTime && slotDateTime >= windowStartDateTime;
+				
 				if (isDue) {
 					console.log(`   ✅ Due: ${slot.scheduledDate} ${slot.scheduledTime} (${slot.postDraftId})`);
 				}

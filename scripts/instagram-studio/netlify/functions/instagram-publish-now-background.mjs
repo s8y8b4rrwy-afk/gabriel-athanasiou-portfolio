@@ -150,18 +150,41 @@ export const handler = async (event) => {
 		const { accessToken, accountId } = scheduleData.instagram;
 
 		const now = new Date();
-		// Use "today" window: midnight UTC to now
+		
+		// Format today's date as YYYY-MM-DD (local timezone)
+		const todayYear = now.getFullYear();
+		const todayMonth = String(now.getMonth() + 1).padStart(2, '0');
+		const todayDay = String(now.getDate()).padStart(2, '0');
+		const todayDateStr = `${todayYear}-${todayMonth}-${todayDay}`;
+		
+		// Format current time as HH:MM (local timezone)
+		const currentHour = String(now.getHours()).padStart(2, '0');
+		const currentMin = String(now.getMinutes()).padStart(2, '0');
+		const currentTimeStr = `${currentHour}:${currentMin}`;
+		
+		// Use "today" window: midnight local time to now
 		let windowStart;
+		let windowStartDateStr;
+		let windowStartTimeStr;
 		if (USE_TODAY_WINDOW) {
 			windowStart = new Date(now);
-			windowStart.setUTCHours(0, 0, 0, 0);
+			windowStart.setHours(0, 0, 0, 0);
+			windowStartDateStr = todayDateStr;
+			windowStartTimeStr = '00:00';
 		} else {
 			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+			const wsYear = windowStart.getFullYear();
+			const wsMonth = String(windowStart.getMonth() + 1).padStart(2, '0');
+			const wsDay = String(windowStart.getDate()).padStart(2, '0');
+			const wsHour = String(windowStart.getHours()).padStart(2, '0');
+			const wsMin = String(windowStart.getMinutes()).padStart(2, '0');
+			windowStartDateStr = `${wsYear}-${wsMonth}-${wsDay}`;
+			windowStartTimeStr = `${wsHour}:${wsMin}`;
 		}
 
 		console.log('📅 Window config:', {
-			now: now.toISOString(),
-			windowStart: windowStart.toISOString(),
+			current: `${todayDateStr}T${currentTimeStr}`,
+			windowStart: `${windowStartDateStr}T${windowStartTimeStr}`,
 			useTodayWindow: USE_TODAY_WINDOW,
 		});
 
@@ -171,8 +194,14 @@ export const handler = async (event) => {
 		const duePosts = allSlots
 			.filter((slot) => {
 				if (slot.status !== 'pending') return false;
-				const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-				return scheduledDateTime <= now && scheduledDateTime >= windowStart;
+				
+				// Compare dates and times as strings (local timezone)
+				const slotDateTime = `${slot.scheduledDate}T${slot.scheduledTime}`;
+				const currentDateTime = `${todayDateStr}T${currentTimeStr}`;
+				const windowStartDateTime = `${windowStartDateStr}T${windowStartTimeStr}`;
+				
+				// String comparison works for ISO format (YYYY-MM-DDTHH:MM)
+				return slotDateTime <= currentDateTime && slotDateTime >= windowStartDateTime;
 			})
 			.map((slot) => {
 				const draft = draftsMap.get(slot.postDraftId);

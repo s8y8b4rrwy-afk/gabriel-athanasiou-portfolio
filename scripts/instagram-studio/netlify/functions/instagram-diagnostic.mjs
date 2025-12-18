@@ -25,6 +25,27 @@ async function fetchScheduleData() {
 	}
 }
 
+/**
+ * Get current date/time in a specific timezone
+ */
+function getTimeInTimezone(date, timezone) {
+	const formatter = new Intl.DateTimeFormat('en-CA', {
+		timeZone: timezone,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: false,
+	});
+	const parts = formatter.formatToParts(date);
+	const getPart = (type) => parts.find(p => p.type === type)?.value || '00';
+	return {
+		date: `${getPart('year')}-${getPart('month')}-${getPart('day')}`,
+		time: `${getPart('hour')}:${getPart('minute')}`,
+	};
+}
+
 export const handler = async () => {
 	console.log('🔍 Instagram diagnostic started at:', new Date().toISOString());
 
@@ -43,16 +64,16 @@ export const handler = async () => {
 			};
 		}
 
+		// Get configured timezone from settings (default to Europe/London)
+		const configuredTimezone = scheduleData.settings?.timezone || 'Europe/London';
+		console.log(`🌍 Using timezone: ${configuredTimezone}`);
+
 		const now = new Date();
+		const tzNow = getTimeInTimezone(now, configuredTimezone);
+		const currentDateTimeStr = `${tzNow.date}T${tzNow.time}`;
+		const windowStartDateTimeStr = USE_TODAY_WINDOW ? `${tzNow.date}T00:00` : null;
 		
-		// Calculate window start based on mode (match scheduled-publish logic)
-		let windowStart;
-		if (USE_TODAY_WINDOW) {
-			windowStart = new Date(now);
-			windowStart.setUTCHours(0, 0, 0, 0);
-		} else {
-			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
-		}
+		console.log(`⏰ Current time in ${configuredTimezone}: ${tzNow.date} ${tzNow.time} (Server UTC: ${now.toISOString()})`);
 		
 		const allSlots = scheduleData.scheduleSlots || [];
 
@@ -63,10 +84,13 @@ export const handler = async () => {
 
 		const draftsMap = new Map((scheduleData.drafts || []).map((d) => [d.id, d]));
 
+		// Filter due posts using string comparison in configured timezone
 		const dueSlots = allSlots.filter((slot) => {
 			if (slot.status !== 'pending') return false;
-			const scheduledDateTime = new Date(`${slot.scheduledDate}T${slot.scheduledTime}:00`);
-			return scheduledDateTime <= now && scheduledDateTime >= windowStart;
+			const slotDateTimeStr = `${slot.scheduledDate}T${slot.scheduledTime}`;
+			const isDue = slotDateTimeStr <= currentDateTimeStr && 
+				(USE_TODAY_WINDOW ? slotDateTimeStr >= windowStartDateTimeStr : true);
+			return isDue;
 		});
 
 		const dueWithDraft = dueSlots.map((slot) => {
@@ -84,8 +108,10 @@ export const handler = async () => {
 		const responsePayload = {
 			ok: true,
 			message: 'Diagnostic complete',
-			now: now.toISOString(),
-			windowStart: windowStart.toISOString(),
+			timezone: configuredTimezone,
+			nowInTimezone: `${tzNow.date} ${tzNow.time}`,
+			nowUTC: now.toISOString(),
+			windowStart: windowStartDateTimeStr,
 			scheduleData: {
 				version: scheduleData.version,
 				lastUpdated: scheduleData.lastUpdated,
