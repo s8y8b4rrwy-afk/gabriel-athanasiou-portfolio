@@ -21,7 +21,7 @@ const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
 // This catches any post scheduled for today that hasn't been published yet
 const USE_TODAY_WINDOW = true;
 
-async function sendNotification(results, scheduleData) {
+async function sendNotification(results, scheduleData, saveSuccess = true, saveError = null) {
 	const resendApiKey = process.env.RESEND_API_KEY;
 	const notificationEmail = process.env.NOTIFICATION_EMAIL;
 
@@ -57,6 +57,13 @@ async function sendNotification(results, scheduleData) {
 			html += `<li><strong>${post?.projectId || r.postId}</strong> - Error: ${r.error}</li>`;
 		}
 		html += `</ul>`;
+	}
+
+	if (!saveSuccess) {
+		html += `<div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin: 16px 0;">`;
+		html += `<p style="margin: 0; color: #856404;"><strong>⚠️ Status Update Warning</strong></p>`;
+		html += `<p style="margin: 8px 0 0 0; color: #856404; font-size: 14px;">Posts were published but status updates could not be saved to the schedule. Error: ${saveError?.message || 'Unknown error'}</p>`;
+		html += `</div>`;
 	}
 
 	html += `<p><a href="https://studio.lemonpost.studio">Open Instagram Studio →</a></p>`;
@@ -246,10 +253,42 @@ export const handler = async (event) => {
 		}
 
 		if (!isDryRun) {
-			await saveWithSmartMerge(statusUpdates);
-
-			const freshDataForEmail = await fetchScheduleData();
-			await sendNotification(results, freshDataForEmail || scheduleData);
+			// Always try to save status updates, with retry logic
+			let saveSuccess = false;
+			let saveError = null;
+			const maxRetries = 3;
+			
+			for (let attempt = 1; attempt <= maxRetries; attempt++) {
+				try {
+					console.log(`💾 Saving status updates (attempt ${attempt}/${maxRetries})...`);
+					await saveWithSmartMerge(statusUpdates);
+					console.log('💾 Status updates saved successfully');
+					saveSuccess = true;
+					break;
+				} catch (error) {
+					saveError = error;
+					console.error(`❌ Save attempt ${attempt} failed: ${error.message}`);
+					
+					// Wait before retry (exponential backoff: 2s, 4s, then give up)
+					if (attempt < maxRetries) {
+						const waitMs = Math.pow(2, attempt) * 1000;
+						console.log(`⏳ Waiting ${waitMs}ms before retry...`);
+						await new Promise(r => setTimeout(r, waitMs));
+					}
+				}
+			}
+			
+			// Always send notification
+			try {
+				const freshDataForEmail = await fetchScheduleData();
+				await sendNotification(results, freshDataForEmail || scheduleData, saveSuccess, saveError);
+			} catch (notificationError) {
+				console.error('❌ Failed to send notification:', notificationError.message);
+			}
+			
+			if (!saveSuccess) {
+				console.error('⚠️ WARNING: Status updates failed to save after 3 attempts');
+			}
 		}
 
 		console.log('✅ Manual publish complete:', results);

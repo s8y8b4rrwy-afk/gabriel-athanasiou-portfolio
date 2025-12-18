@@ -23,7 +23,7 @@ export const config = {
 	schedule: '0 * * * *',
 };
 
-async function sendNotification(results, scheduleData) {
+async function sendNotification(results, scheduleData, saveSuccess = true, saveError = null) {
 	const resendApiKey = process.env.RESEND_API_KEY;
 	const notificationEmail = process.env.NOTIFICATION_EMAIL;
 
@@ -42,6 +42,15 @@ async function sendNotification(results, scheduleData) {
 
 	let html = `<h2>Instagram Scheduled Publish Report</h2>`;
 	html += `<p>Time: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>`;
+	
+	// Add save status warning if applicable
+	if (!saveSuccess && saveError) {
+		html += `<div style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 4px;">`;
+		html += `<strong>⚠️ Data Save Failed:</strong> Status updates for published posts could not be saved to Cloudinary.`;
+		html += `<p>Error: ${saveError.message}</p>`;
+		html += `<p>The posts were published to Instagram, but their status may not be marked as "published" in the schedule.</p>`;
+		html += `</div>`;
+	}
 
 	if (successful.length > 0) {
 		html += `<h3>✅ Successfully Published (${successful.length})</h3><ul>`;
@@ -233,10 +242,45 @@ export const handler = async (event) => {
 		}
 
 		if (!isDryRun) {
-			await saveWithSmartMerge(statusUpdates);
-
-			const freshDataForEmail = await fetchScheduleData();
-			await sendNotification(results, freshDataForEmail || scheduleData);
+			// Always try to save status updates, with retry logic
+			let saveSuccess = false;
+			let saveError = null;
+			const maxRetries = 3;
+			
+			for (let attempt = 1; attempt <= maxRetries; attempt++) {
+				try {
+					console.log(`💾 Saving status updates (attempt ${attempt}/${maxRetries})...`);
+					await saveWithSmartMerge(statusUpdates);
+					console.log('💾 Status updates saved successfully');
+					saveSuccess = true;
+					break;
+				} catch (error) {
+					saveError = error;
+					console.error(`❌ Save attempt ${attempt} failed: ${error.message}`);
+					
+					// Wait before retry (exponential backoff: 2s, 4s, then give up)
+					if (attempt < maxRetries) {
+						const waitMs = Math.pow(2, attempt) * 1000;
+						console.log(`⏳ Waiting ${waitMs}ms before retry...`);
+						await new Promise(r => setTimeout(r, waitMs));
+					}
+				}
+			}
+			
+			// Always send notification, including save failure info if applicable
+			try {
+				const freshDataForEmail = await fetchScheduleData();
+				const notificationData = freshDataForEmail || scheduleData;
+				
+				await sendNotification(results, notificationData, saveSuccess, saveError);
+			} catch (notificationError) {
+				console.error('❌ Failed to send notification:', notificationError.message);
+			}
+			
+			// If save failed, include warning in response
+			if (!saveSuccess) {
+				console.error('⚠️ WARNING: Status updates failed to save to Cloudinary after 3 attempts');
+			}
 		}
 
 		console.log('✅ Scheduled publish complete:', results);
@@ -340,10 +384,20 @@ async function uploadToCloudinary(data) {
 
 	if (!response.ok) {
 		const error = await response.text();
-		throw new Error(`Failed to save to Cloudinary: ${error}`);
+		// Log detailed error info for debugging
+		console.error('Cloudinary upload details:', {
+			status: response.status,
+			statusText: response.statusText,
+			error: error.substring(0, 500), // First 500 chars
+			timestamp: timestamp,
+			publicId: publicId,
+		});
+		throw new Error(`Failed to save to Cloudinary (${response.status}): ${error.substring(0, 200)}`);
 	}
 
-	return await response.json();
+	const result = await response.json();
+	console.log('✅ Cloudinary upload successful:', { publicId, url: result.secure_url?.substring(0, 100) });
+	return result;
 }
 
 async function getInstagramUrls(imageUrls, projectId) {
