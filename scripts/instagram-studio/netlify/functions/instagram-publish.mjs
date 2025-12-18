@@ -16,14 +16,13 @@
  */
 
 import {
-  GRAPH_API_BASE,
-  GRAPH_API_VERSION,
   validateHashtags,
   waitForMediaReady,
   publishMediaContainer,
   verifyPublishStatus,
   createMediaContainer,
   createCarouselContainer,
+  checkMediaStatus,
 } from './lib/instagram-lib.mjs';
 
 // Netlify Pro has 26 second timeout, Free has 10 seconds
@@ -193,7 +192,8 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
       const url = imageUrls[i];
       console.log(`Creating carousel item ${i + 1}/${imageUrls.length}...`);
       
-      const result = await createMediaContainer(accessToken, accountId, url, null, true);
+      // Parameter order: imageUrl, caption, accessToken, accountId, isCarouselItem
+      const result = await createMediaContainer(url, null, accessToken, accountId, true);
       
       if (result.error) {
         console.error(`Carousel item ${i + 1} failed:`, result.error);
@@ -220,7 +220,8 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
 
     // Step 2: Create carousel container using shared lib
     console.log('Creating carousel container with children:', childIds);
-    const carouselResult = await createCarouselContainer(accessToken, accountId, childIds, caption);
+    // Parameter order: childIds, caption, accessToken, accountId
+    const carouselResult = await createCarouselContainer(childIds, caption, accessToken, accountId);
     
     if (carouselResult.error) {
       console.error('Carousel container creation failed:', carouselResult.error);
@@ -264,35 +265,24 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
 
 /**
  * Check media container status
+ * Uses shared library function for consistency
  */
 async function handleCheckStatus(headers, accessToken, containerId) {
-  try {
-    const response = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=status_code&access_token=${accessToken}`
-    );
-
-    const result = await response.json();
-    
-    if (result.error) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: result.error.message }),
-      };
-    }
-
+  const result = await checkMediaStatus(containerId, accessToken);
+  
+  if (!result.success) {
     return {
-      statusCode: 200,
+      statusCode: 400,
       headers,
-      body: JSON.stringify({ status: result.status_code }),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({ error: result.error }),
     };
   }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ status: result.status }),
+  };
 }
 
 /**
@@ -304,7 +294,8 @@ async function handleCreateCarouselItem(headers, accessToken, accountId, imageUr
     console.log('Creating carousel item:', imageUrl?.substring(0, 50));
     
     // Use shared lib to create carousel item
-    const result = await createMediaContainer(accessToken, accountId, imageUrl, null, true);
+    // Parameter order: imageUrl, caption, accessToken, accountId, isCarouselItem
+    const result = await createMediaContainer(imageUrl, null, accessToken, accountId, true);
     
     if (result.error) {
       return {
@@ -354,7 +345,8 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
       }
       
       // Use shared lib to create carousel container
-      const result = await createCarouselContainer(accessToken, accountId, childIds, caption);
+      // Parameter order: childIds, caption, accessToken, accountId
+      const result = await createCarouselContainer(childIds, caption, accessToken, accountId);
       
       if (result.error) {
         // Retry on "Unsupported get request" error - means children aren't ready yet

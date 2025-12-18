@@ -1,29 +1,15 @@
 /**
  * Instagram Diagnostic - Netlify Function (Studio-owned copy)
  *
- * Copied from repo root `netlify/functions/instagram-diagnostic.mjs`.
+ * Uses shared library for consistent behavior with other Instagram functions.
+ * @see lib/instagram-lib.mjs for shared functions
  */
 
-const CLOUDINARY_CLOUD = 'date24ay6';
+import { CLOUDINARY_CLOUD, fetchScheduleData } from './lib/instagram-lib.mjs';
+
 // Match the scheduled-publish window logic
 const USE_TODAY_WINDOW = true;
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
-
-async function fetchScheduleData() {
-	const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
-
-	try {
-		const response = await fetch(url);
-		if (!response.ok) {
-			if (response.status === 404) return null;
-			throw new Error(`Failed to fetch: ${response.status}`);
-		}
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching schedule data:', error);
-		return null;
-	}
-}
 
 /**
  * Get current date/time in a specific timezone

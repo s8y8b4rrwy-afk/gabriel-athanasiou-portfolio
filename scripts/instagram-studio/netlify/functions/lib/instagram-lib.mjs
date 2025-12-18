@@ -382,6 +382,31 @@ export async function publishCarousel(imageUrls, caption, accessToken, accountId
 }
 
 /**
+ * Check media container status (single check, no polling)
+ * Use this for client-side polling or one-shot status checks
+ * @param {string} containerId - Media container ID
+ * @param {string} accessToken - Instagram access token
+ * @returns {Promise<{success: boolean, status?: string, error?: string}>}
+ */
+export async function checkMediaStatus(containerId, accessToken) {
+  try {
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=status_code&access_token=${accessToken}`
+    );
+
+    const result = await response.json();
+    
+    if (result.error) {
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true, status: result.status_code };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Wait for Instagram media container to be ready
  * Includes retry logic for transient "Unsupported get request" errors
  * @param {string} mediaId - Media container ID

@@ -1,24 +1,24 @@
 /**
- * Instagram Scheduled Publish - Manual Trigger (Studio-owned copy)
+ * Instagram Manual Publish - Background Function (Studio-owned)
  *
- * Copied from repo root `netlify/functions/instagram-publish-now.mjs`.
+ * Manual trigger to publish scheduled posts immediately.
+ * Uses shared library for all Instagram API calls to ensure consistent behavior.
+ * 
+ * @see lib/instagram-lib.mjs for shared Instagram API functions
  */
 
-import crypto from 'crypto';
+import {
+	CLOUDINARY_CLOUD,
+	fetchScheduleData,
+	uploadToCloudinary,
+	getInstagramUrls,
+	publishPost,
+} from './lib/instagram-lib.mjs';
 
-const GRAPH_API_BASE = 'https://graph.instagram.com';
-const GRAPH_API_VERSION = 'v21.0';
-const CLOUDINARY_CLOUD = 'date24ay6';
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
-
-// Background functions have 15 min timeout, so we can wait longer for Instagram
-const MAX_PROCESSING_WAIT = 120000; // 2 minutes for carousel processing
-const POLL_INTERVAL = 3000; // Poll every 3 seconds
-const SCHEDULE_WINDOW_MS = 60 * 60 * 1000;
-
-// Use "today" window (midnight UTC to now) instead of 1-hour window
+// Use "today" window: midnight local time to now
 // This catches any post scheduled for today that hasn't been published yet
 const USE_TODAY_WINDOW = true;
+const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // Fallback: 1 hour window
 
 async function sendNotification(results, scheduleData) {
 	const resendApiKey = process.env.RESEND_API_KEY;
@@ -91,7 +91,6 @@ export const handler = async (event) => {
 
 	const dryRunParam = event?.queryStringParameters?.dryRun;
 	
-	// Debug: log env vars
 	console.log('🔍 Dry run check:', {
 		dryRunParam,
 		INSTAGRAM_DRY_RUN: process.env.INSTAGRAM_DRY_RUN,
@@ -149,30 +148,39 @@ export const handler = async (event) => {
 
 		const { accessToken, accountId } = scheduleData.instagram;
 
+		// Get configured timezone from settings (default to Europe/London)
+		const configuredTimezone = scheduleData.settings?.timezone || 'Europe/London';
+		console.log(`🌍 Using timezone: ${configuredTimezone}`);
+
 		const now = new Date();
 		
-		// Format today's date as YYYY-MM-DD (local timezone)
-		const todayYear = now.getFullYear();
-		const todayMonth = String(now.getMonth() + 1).padStart(2, '0');
-		const todayDay = String(now.getDate()).padStart(2, '0');
-		const todayDateStr = `${todayYear}-${todayMonth}-${todayDay}`;
+		// Format current time in the CONFIGURED timezone
+		const formatter = new Intl.DateTimeFormat('en-CA', {
+			timeZone: configuredTimezone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false,
+		});
+		const parts = formatter.formatToParts(now);
+		const getPart = (type) => parts.find(p => p.type === type)?.value || '00';
 		
-		// Format current time as HH:MM (local timezone)
-		const currentHour = String(now.getHours()).padStart(2, '0');
-		const currentMin = String(now.getMinutes()).padStart(2, '0');
-		const currentTimeStr = `${currentHour}:${currentMin}`;
+		const todayDateStr = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+		const currentTimeStr = `${getPart('hour')}:${getPart('minute')}`;
 		
-		// Use "today" window: midnight local time to now
-		let windowStart;
+		console.log(`⏰ Current time in ${configuredTimezone}: ${todayDateStr} ${currentTimeStr} (Server UTC: ${now.toISOString()})`);
+
+		// Calculate window start based on mode
 		let windowStartDateStr;
 		let windowStartTimeStr;
 		if (USE_TODAY_WINDOW) {
-			windowStart = new Date(now);
-			windowStart.setHours(0, 0, 0, 0);
 			windowStartDateStr = todayDateStr;
 			windowStartTimeStr = '00:00';
+			console.log(`📅 Using TODAY window: ${windowStartDateStr} 00:00 to ${todayDateStr} ${currentTimeStr}`);
 		} else {
-			windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
+			const windowStart = new Date(now.getTime() - SCHEDULE_WINDOW_MS);
 			const wsYear = windowStart.getFullYear();
 			const wsMonth = String(windowStart.getMonth() + 1).padStart(2, '0');
 			const wsDay = String(windowStart.getDate()).padStart(2, '0');
@@ -180,16 +188,13 @@ export const handler = async (event) => {
 			const wsMin = String(windowStart.getMinutes()).padStart(2, '0');
 			windowStartDateStr = `${wsYear}-${wsMonth}-${wsDay}`;
 			windowStartTimeStr = `${wsHour}:${wsMin}`;
+			console.log(`⏰ Using 1-HOUR window: ${windowStartDateStr} ${windowStartTimeStr} to ${todayDateStr} ${currentTimeStr}`);
 		}
-
-		console.log('📅 Window config:', {
-			current: `${todayDateStr}T${currentTimeStr}`,
-			windowStart: `${windowStartDateStr}T${windowStartTimeStr}`,
-			useTodayWindow: USE_TODAY_WINDOW,
-		});
 
 		const draftsMap = new Map((scheduleData.drafts || []).map((d) => [d.id, d]));
 		const allSlots = scheduleData.scheduleSlots || [];
+
+		console.log(`📋 Total schedule slots: ${allSlots.length}`);
 
 		const duePosts = allSlots
 			.filter((slot) => {
@@ -201,10 +206,18 @@ export const handler = async (event) => {
 				const windowStartDateTime = `${windowStartDateStr}T${windowStartTimeStr}`;
 				
 				// String comparison works for ISO format (YYYY-MM-DDTHH:MM)
-				return slotDateTime <= currentDateTime && slotDateTime >= windowStartDateTime;
+				const isDue = slotDateTime <= currentDateTime && slotDateTime >= windowStartDateTime;
+				
+				if (isDue) {
+					console.log(`   ✅ Due: ${slot.scheduledDate} ${slot.scheduledTime} (${slot.postDraftId})`);
+				}
+				return isDue;
 			})
 			.map((slot) => {
 				const draft = draftsMap.get(slot.postDraftId);
+				if (!draft) {
+					console.warn(`⚠️  Draft not found for slot ${slot.id} (postDraftId: ${slot.postDraftId})`);
+				}
 				return { slot, draft };
 			})
 			.filter(({ draft }) => draft !== undefined);
@@ -243,6 +256,7 @@ export const handler = async (event) => {
 				const fullCaption =
 					hashtags.length > 0 ? `${draft.caption}\n\n${hashtags.join(' ')}` : draft.caption;
 
+				// Use shared library for URL generation
 				const imageUrls = await getInstagramUrls(draft.selectedImages, draft.projectId);
 
 				if (isDryRun) {
@@ -251,15 +265,16 @@ export const handler = async (event) => {
 					continue;
 				}
 
+				// Use shared library for publishing
 				const result = await publishPost({ imageUrls, caption: fullCaption }, accessToken, accountId);
 
 				statusUpdates.set(slot.id, {
 					status: 'published',
 					publishedAt: new Date().toISOString(),
-					instagramMediaId: result.mediaId,
+					instagramMediaId: result.mediaId || result.postId,
 				});
 
-				results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId });
+				results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId || result.postId });
 				console.log(`✅ Published: ${draft.projectId}`);
 			} catch (error) {
 				console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
@@ -273,11 +288,63 @@ export const handler = async (event) => {
 			}
 		}
 
-		if (!isDryRun) {
-			await saveWithSmartMerge(statusUpdates);
+		if (!isDryRun && statusUpdates.size > 0) {
+			// Save status updates with smart merge
+			let saveSuccess = false;
+			let saveError = null;
+			const maxRetries = 3;
+			
+			for (let attempt = 1; attempt <= maxRetries; attempt++) {
+				try {
+					console.log(`💾 Saving status updates (attempt ${attempt}/${maxRetries})...`);
+					
+					const freshData = await fetchScheduleData();
+					if (!freshData) {
+						throw new Error('Cannot save: failed to fetch fresh data for merge');
+					}
 
-			const freshDataForEmail = await fetchScheduleData();
-			await sendNotification(results, freshDataForEmail || scheduleData);
+					let updatedCount = 0;
+					for (const slot of freshData.scheduleSlots || []) {
+						const update = statusUpdates.get(slot.id);
+						if (update) {
+							slot.status = update.status;
+							if (update.publishedAt) slot.publishedAt = update.publishedAt;
+							if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
+							if (update.error) slot.error = update.error;
+							slot.updatedAt = new Date().toISOString();
+							updatedCount++;
+							console.log(`  ✓ Applied status update to slot ${slot.id}: ${update.status}`);
+						}
+					}
+
+					console.log(`🔄 Smart merge: Applied ${updatedCount} status updates`);
+					await uploadToCloudinary(freshData);
+					console.log('💾 Status updates saved successfully');
+					saveSuccess = true;
+					break;
+				} catch (error) {
+					saveError = error;
+					console.error(`❌ Save attempt ${attempt} failed: ${error.message}`);
+					
+					if (attempt < maxRetries) {
+						const waitMs = Math.pow(2, attempt) * 1000;
+						console.log(`⏳ Waiting ${waitMs}ms before retry...`);
+						await new Promise(r => setTimeout(r, waitMs));
+					}
+				}
+			}
+
+			// Send notification
+			try {
+				const freshDataForEmail = await fetchScheduleData();
+				await sendNotification(results, freshDataForEmail || scheduleData);
+			} catch (notificationError) {
+				console.error('📧 Failed to send notification:', notificationError.message);
+			}
+			
+			if (!saveSuccess) {
+				console.error('⚠️ WARNING: Status updates failed to save to Cloudinary after 3 attempts');
+			}
 		}
 
 		console.log('✅ Manual publish complete:', results);
@@ -299,269 +366,3 @@ export const handler = async (event) => {
 		};
 	}
 };
-
-async function fetchScheduleData() {
-	const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
-
-	try {
-		const response = await fetch(url);
-		if (!response.ok) {
-			if (response.status === 404) return null;
-			throw new Error(`Failed to fetch: ${response.status}`);
-		}
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching schedule data:', error);
-		return null;
-	}
-}
-
-async function saveWithSmartMerge(statusUpdates) {
-	console.log('🔄 Smart merge: Fetching fresh cloud data before save...');
-
-	const freshData = await fetchScheduleData();
-
-	if (!freshData) {
-		throw new Error('Cannot save: failed to fetch fresh data for merge');
-	}
-
-	let updatedCount = 0;
-	for (const slot of freshData.scheduleSlots || []) {
-		const update = statusUpdates.get(slot.id);
-		if (update) {
-			slot.status = update.status;
-			if (update.publishedAt) slot.publishedAt = update.publishedAt;
-			if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
-			if (update.error) slot.error = update.error;
-			slot.updatedAt = new Date().toISOString();
-			updatedCount++;
-			console.log(`  ✓ Applied status update to slot ${slot.id}: ${update.status}`);
-		}
-	}
-
-	console.log(`🔄 Smart merge: Applied ${updatedCount} status updates`);
-
-	return await uploadToCloudinary(freshData);
-}
-
-async function uploadToCloudinary(data) {
-	const apiSecret = process.env.CLOUDINARY_API_SECRET;
-	if (!CLOUDINARY_API_KEY) {
-		throw new Error('CLOUDINARY_API_KEY not configured');
-	}
-	if (!apiSecret) {
-		throw new Error('CLOUDINARY_API_SECRET not configured');
-	}
-
-	data.lastUpdated = new Date().toISOString();
-	data.lastMergedAt = new Date().toISOString();
-
-	const timestamp = Math.floor(Date.now() / 1000);
-	const publicId = 'instagram-studio/schedule-data';
-
-	// Cloudinary requires ALL parameters to be included in signature (alphabetically sorted)
-	const signatureString = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
-	const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
-
-	const formData = new URLSearchParams();
-	formData.append(
-		'file',
-		`data:application/json;base64,${Buffer.from(JSON.stringify(data, null, 2)).toString('base64')}`
-	);
-	formData.append('public_id', publicId);
-	formData.append('timestamp', timestamp.toString());
-	formData.append('api_key', CLOUDINARY_API_KEY);
-	formData.append('signature', signature);
-	formData.append('resource_type', 'raw');
-	formData.append('overwrite', 'true');
-
-	const response = await fetch(
-		`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: formData.toString(),
-		}
-	);
-
-	if (!response.ok) {
-		const error = await response.text();
-		throw new Error(`Failed to save to Cloudinary: ${error}`);
-	}
-
-	return await response.json();
-}
-
-async function getInstagramUrls(imageUrls, projectId) {
-	const results = [];
-	const ASPECT_PORTRAIT = '0.8';
-	const CLOUDINARY_CLOUD = 'date24ay6';
-
-	for (let i = 0; i < imageUrls.length; i++) {
-		const url = imageUrls[i];
-		let imageIndex = i;
-
-		if (url.includes('res.cloudinary.com')) {
-			const match = url.match(/portfolio-projects-[^-]+-(\d+)/);
-			if (match) {
-				imageIndex = parseInt(match[1], 10);
-			}
-		}
-
-		const publicId = `portfolio-projects-${projectId}-${imageIndex}`;
-		const instagramUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/ar_${ASPECT_PORTRAIT},c_lfill,b_black,g_center,q_95,f_jpg/w_1440,c_limit/${publicId}.jpg`;
-
-		results.push(instagramUrl);
-	}
-
-	return results;
-}
-
-async function publishPost(post, accessToken, accountId) {
-	const { imageUrls, caption } = post;
-
-	if (!imageUrls || imageUrls.length === 0) {
-		throw new Error('No images to publish');
-	}
-
-	if (imageUrls.length === 1) {
-		return await publishSingleImage(imageUrls[0], caption, accessToken, accountId);
-	} else {
-		return await publishCarousel(imageUrls, caption, accessToken, accountId);
-	}
-}
-
-async function publishSingleImage(imageUrl, caption, accessToken, accountId) {
-	const containerResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				image_url: imageUrl,
-				caption: caption,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const containerData = await containerResponse.json();
-	if (containerData.error) {
-		throw new Error(containerData.error.message);
-	}
-
-	const containerId = containerData.id;
-	await waitForMediaReady(containerId, accessToken);
-
-	const publishResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				creation_id: containerId,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const publishData = await publishResponse.json();
-	if (publishData.error) {
-		throw new Error(publishData.error.message);
-	}
-
-	return { mediaId: publishData.id };
-}
-
-async function publishCarousel(imageUrls, caption, accessToken, accountId) {
-	const childIds = [];
-
-	for (const imageUrl of imageUrls) {
-		const childResponse = await fetch(
-			`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					image_url: imageUrl,
-					access_token: accessToken,
-				}),
-			}
-		);
-
-		const childData = await childResponse.json();
-		if (childData.error) {
-			throw new Error(`Failed to create carousel item: ${childData.error.message}`);
-		}
-
-		childIds.push(childData.id);
-	}
-
-	const containerResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				media_type: 'CAROUSEL',
-				children: childIds,
-				caption: caption,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const containerData = await containerResponse.json();
-	if (containerData.error) {
-		throw new Error(containerData.error.message);
-	}
-
-	const containerId = containerData.id;
-	await waitForMediaReady(containerId, accessToken);
-
-	const publishResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				creation_id: containerId,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const publishData = await publishResponse.json();
-	if (publishData.error) {
-		throw new Error(publishData.error.message);
-	}
-
-	return { mediaId: publishData.id };
-}
-
-async function waitForMediaReady(mediaId, accessToken) {
-	const startTime = Date.now();
-
-	while (Date.now() - startTime < MAX_PROCESSING_WAIT) {
-		const response = await fetch(
-			`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${mediaId}?fields=status&access_token=${accessToken}`
-		);
-
-		const data = await response.json();
-		if (data.error) {
-			throw new Error(`Failed to check media status: ${data.error.message}`);
-		}
-
-		if (data.status === 'READY') {
-			return;
-		}
-
-		if (data.status === 'ERROR') {
-			throw new Error('Instagram media processing failed');
-		}
-
-		await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-	}
-
-	throw new Error('Media processing timeout');
-}

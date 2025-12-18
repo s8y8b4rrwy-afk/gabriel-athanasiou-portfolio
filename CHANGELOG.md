@@ -7,6 +7,41 @@ For current architecture and developer guide, see [AI_AGENT_GUIDE.md](AI_AGENT_G
 
 ---
 
+### Dec 18 2025 - Instagram Studio Shared Library Bug Fixes ✅
+**What Fixed:** Corrected parameter order and removed duplicate functions in Instagram Studio Netlify functions.
+
+**Issues Found & Fixed:**
+
+1. **`instagram-publish.mjs` - Wrong Parameter Order:**
+   - `createMediaContainer()` was called with wrong order: `(accessToken, accountId, imageUrl, null, true)`
+   - Fixed to correct order: `(imageUrl, null, accessToken, accountId, true)`
+   - Same fix applied to `createCarouselContainer()` calls
+
+2. **`instagram-scheduled-publish.mjs` - Duplicate Functions:**
+   - Had local copies of `fetchScheduleData`, `saveWithSmartMerge`, `uploadToCloudinary`, `getInstagramUrls`, `publishPost`, `sendNotification`
+   - Removed all duplicates, now imports from shared library
+   - Updated `sendNotification` call to use options object format: `{ type, saveSuccess, saveError }`
+   - Removed unused `crypto` import
+
+3. **`instagram-diagnostic.mjs` - Duplicate Functions:**
+   - Had local `fetchScheduleData` function and `CLOUDINARY_CLOUD` constant
+   - Now imports from shared library
+
+**Verification:**
+- ✅ All 6 Instagram functions load successfully
+- ✅ TypeScript compilation passes
+- ✅ Vite build succeeds
+- ✅ **Live test: Successfully published a post to Instagram** via local scheduled publish
+
+**Published Post:** https://www.instagram.com/p/DSap1TgjZCx/
+
+**Files Changed:**
+- `scripts/instagram-studio/netlify/functions/instagram-publish.mjs` - Fixed parameter order
+- `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish.mjs` - Removed duplicates, use shared lib
+- `scripts/instagram-studio/netlify/functions/instagram-diagnostic.mjs` - Use shared lib imports
+
+---
+
 ### Dec 18 2025 - Instagram Studio Refactoring Verification Complete ✅
 **What Verified:** Complete Instagram scheduled publishing system with logging, email notifications, and environment variable verification.
 
