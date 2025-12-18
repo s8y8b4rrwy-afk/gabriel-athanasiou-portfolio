@@ -16,6 +16,12 @@
 [functions]
   directory = "netlify/functions"
 
+# Scheduled function configuration
+# Runs hourly at minute 0 to check for scheduled Instagram posts
+# Note: schedule() wrapper in code is the primary config, this is backup
+[functions."instagram-scheduled-publish"]
+  schedule = "@hourly"
+
 # Background functions (suffix -background) automatically get 15 min timeout
 # No timeout config needed - Netlify detects from filename
 

@@ -4,10 +4,14 @@
  * Runs hourly to check for scheduled posts and publish them to Instagram.
  * Uses shared library for all Instagram API calls to ensure consistent behavior.
  * 
+ * IMPORTANT: This uses @netlify/functions schedule() wrapper for proper scheduling.
+ * The schedule is defined at the bottom of the file with the handler export.
+ * 
  * @see lib/instagram-lib.mjs for shared Instagram API functions
  */
 
 import crypto from 'crypto';
+import { schedule } from '@netlify/functions';
 import {
 	GRAPH_API_BASE,
 	GRAPH_API_VERSION,
@@ -24,10 +28,6 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 // This means a post scheduled for 11am will still publish if the function runs at 6pm
 const USE_TODAY_WINDOW = true; // Set to false to revert to 1-hour window
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // Fallback: 1 hour window
-
-export const config = {
-	schedule: '0 * * * *',
-};
 
 async function sendNotification(results, scheduleData, saveSuccess = true, saveError = null) {
 	const resendApiKey = process.env.RESEND_API_KEY;
@@ -104,7 +104,8 @@ async function sendNotification(results, scheduleData, saveSuccess = true, saveE
 	}
 }
 
-export const handler = async (event) => {
+// The actual scheduled function logic
+const scheduledHandler = async (event) => {
 	console.log('⏰ Scheduled publish check started at:', new Date().toISOString());
 
 	const dryRunParam = event?.queryStringParameters?.dryRun;
@@ -341,6 +342,10 @@ export const handler = async (event) => {
 		};
 	}
 };
+
+// Export handler wrapped with schedule() - runs every hour at minute 0 (UTC)
+// Cron: '0 * * * *' = minute 0 of every hour
+export const handler = schedule('0 * * * *', scheduledHandler);
 
 async function fetchScheduleData() {
 	const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/instagram-studio/schedule-data?t=${Date.now()}`;
