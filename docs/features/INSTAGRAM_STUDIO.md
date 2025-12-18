@@ -36,14 +36,20 @@
 
 ### Scheduled Publishing (Server-Side)
 
-Instagram Studio supports automated publishing via a Netlify **Scheduled Function**.
+Instagram Studio supports automated publishing via a Netlify **Background Function**.
 
-> **Note (Dec 16, 2025):** All Instagram server-side functions are now owned by the Studio site (`studio.lemonpost.studio`), not the main portfolio site. This ensures reliable endpoint responses and scheduled function execution.
+> **Note (Dec 18, 2025):** All Instagram server-side functions are now owned by the Studio site (`studio.lemonpost.studio`), not the main portfolio site. Functions have been consolidated into a shared library (`lib/instagram-lib.mjs`) for maintainability.
 
-- **Function file:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish.mjs`
+**Function Files:**
+- **Shared Library:** `scripts/instagram-studio/netlify/functions/lib/instagram-lib.mjs` - All Instagram API logic
+- **Scheduled Publisher:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish-background.mjs`
+- **Manual Trigger:** `scripts/instagram-studio/netlify/functions/instagram-publish-now-background.mjs`
+- **UI Publish Button:** `scripts/instagram-studio/netlify/functions/instagram-publish.mjs`
+
+**Endpoints:**
 - **Schedule (cron):** `0 * * * *` (runs **hourly**, at minute 0)
 - **Due window:** publishes posts scheduled within the last **1 hour** (a catch-up window)
-- **Manual trigger:** `POST https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now`
+- **Manual trigger:** `POST https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now-background`
 - **Diagnostic:** `GET https://studio.lemonpost.studio/.netlify/functions/instagram-diagnostic`
 
 This is intentional: hourly execution is simpler and more reliable, and the 1-hour window ensures posts still get published if a single run is delayed.

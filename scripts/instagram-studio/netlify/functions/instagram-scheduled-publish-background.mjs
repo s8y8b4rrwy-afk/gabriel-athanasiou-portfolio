@@ -1,19 +1,25 @@
 /**
  * Instagram Scheduled Publish - Netlify Scheduled Function (Studio-owned copy)
  *
- * Copied from repo root `netlify/functions/instagram-scheduled-publish.mjs`.
+ * Runs hourly to check for scheduled posts and publish them to Instagram.
+ * Uses shared library for all Instagram API calls to ensure consistent behavior.
+ * 
+ * @see lib/instagram-lib.mjs for shared Instagram API functions
  */
 
 import crypto from 'crypto';
+import {
+	GRAPH_API_BASE,
+	GRAPH_API_VERSION,
+	CLOUDINARY_CLOUD,
+	waitForMediaReady,
+	publishMediaContainer,
+	createMediaContainer,
+	createCarouselContainer,
+} from './lib/instagram-lib.mjs';
 
-const GRAPH_API_BASE = 'https://graph.instagram.com';
-const GRAPH_API_VERSION = 'v21.0';
-const CLOUDINARY_CLOUD = 'date24ay6';
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 
-// Background functions have 15 min timeout, so we can wait longer for Instagram
-const MAX_PROCESSING_WAIT = 120000; // 2 minutes for carousel processing
-const POLL_INTERVAL = 3000; // Poll every 3 seconds
 // Catch-up window: publish any pending posts from today that are past their scheduled time
 // This means a post scheduled for 11am will still publish if the function runs at 6pm
 const USE_TODAY_WINDOW = true; // Set to false to revert to 1-hour window
@@ -439,138 +445,82 @@ async function publishPost(post, accessToken, accountId) {
 	}
 }
 
+/**
+ * Publish a single image to Instagram
+ * Uses shared library functions from instagram-lib.mjs
+ */
 async function publishSingleImage(imageUrl, caption, accessToken, accountId) {
-	const containerResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				image_url: imageUrl,
-				caption: caption,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const containerData = await containerResponse.json();
-	if (containerData.error) {
-		throw new Error(containerData.error.message);
+	// Create media container using shared lib
+	const containerResult = await createMediaContainer(accessToken, accountId, imageUrl, caption, false);
+	
+	if (containerResult.error) {
+		throw new Error(containerResult.error);
 	}
 
-	const containerId = containerData.id;
-	await waitForMediaReady(containerId, accessToken);
-
-	const publishResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				creation_id: containerId,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const publishData = await publishResponse.json();
-	if (publishData.error) {
-		throw new Error(publishData.error.message);
+	const containerId = containerResult.id;
+	
+	// Wait for processing using shared lib
+	const ready = await waitForMediaReady(containerId, accessToken);
+	if (!ready.success) {
+		throw new Error(ready.error || 'Media processing failed');
 	}
 
-	return { mediaId: publishData.id };
+	// Publish using shared lib (includes rate limit handling)
+	const publishResult = await publishMediaContainer(containerId, accessToken, accountId);
+	
+	if (!publishResult.success) {
+		throw new Error(publishResult.error || 'Publish failed');
+	}
+
+	return { mediaId: publishResult.postId };
 }
 
+/**
+ * Publish a carousel (multiple images) to Instagram
+ * Uses shared library functions from instagram-lib.mjs
+ */
 async function publishCarousel(imageUrls, caption, accessToken, accountId) {
 	const childIds = [];
 
+	// Create child containers for each image using shared lib
 	for (const imageUrl of imageUrls) {
-		const childResponse = await fetch(
-			`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					image_url: imageUrl,
-					access_token: accessToken,
-				}),
-			}
-		);
-
-		const childData = await childResponse.json();
-		if (childData.error) {
-			throw new Error(`Failed to create carousel item: ${childData.error.message}`);
+		const childResult = await createMediaContainer(accessToken, accountId, imageUrl, null, true);
+		
+		if (childResult.error) {
+			throw new Error(`Failed to create carousel item: ${childResult.error}`);
 		}
 
-		childIds.push(childData.id);
-		await waitForMediaReady(childData.id, accessToken);
-	}
-
-	const containerResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				media_type: 'CAROUSEL',
-				children: childIds,
-				caption: caption,
-				access_token: accessToken,
-			}),
+		childIds.push(childResult.id);
+		
+		// Wait for each item using shared lib
+		const ready = await waitForMediaReady(childResult.id, accessToken);
+		if (!ready.success) {
+			throw new Error(`Carousel item processing failed: ${ready.error}`);
 		}
-	);
-
-	const containerData = await containerResponse.json();
-	if (containerData.error) {
-		throw new Error(containerData.error.message);
 	}
 
-	const containerId = containerData.id;
-	await waitForMediaReady(containerId, accessToken);
-
-	const publishResponse = await fetch(
-		`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				creation_id: containerId,
-				access_token: accessToken,
-			}),
-		}
-	);
-
-	const publishData = await publishResponse.json();
-	if (publishData.error) {
-		throw new Error(publishData.error.message);
+	// Create carousel container using shared lib
+	const containerResult = await createCarouselContainer(accessToken, accountId, childIds, caption);
+	
+	if (containerResult.error) {
+		throw new Error(containerResult.error);
 	}
 
-	return { mediaId: publishData.id };
+	const containerId = containerResult.id;
+	
+	// Wait for carousel processing using shared lib
+	const ready = await waitForMediaReady(containerId, accessToken);
+	if (!ready.success) {
+		throw new Error(ready.error || 'Carousel processing failed');
+	}
+
+	// Publish using shared lib (includes rate limit handling)
+	const publishResult = await publishMediaContainer(containerId, accessToken, accountId);
+	
+	if (!publishResult.success) {
+		throw new Error(publishResult.error || 'Publish failed');
+	}
+
+	return { mediaId: publishResult.postId };
 }
 
-async function waitForMediaReady(mediaId, accessToken) {
-	const startTime = Date.now();
-
-	while (Date.now() - startTime < MAX_PROCESSING_WAIT) {
-		const response = await fetch(
-			`${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${mediaId}?fields=status&access_token=${accessToken}`
-		);
-
-		const data = await response.json();
-		if (data.error) {
-			throw new Error(`Failed to check media status: ${data.error.message}`);
-		}
-
-		if (data.status === 'READY') {
-			return;
-		}
-
-		if (data.status === 'ERROR') {
-			throw new Error('Instagram media processing failed');
-		}
-
-		await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-	}
-
-	throw new Error('Media processing timeout');
-}

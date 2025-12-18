@@ -140,29 +140,29 @@ export function buildCaption(caption, hashtags) { ... }
 
 ### Phase 1: Preparation (No Code Changes)
 
-- [ ] **1.1** Create feature branch: `feature/instagram-studio-refactor`
-- [ ] **1.2** Document current working behavior (screenshots, test cases)
-- [ ] **1.3** Set up local testing environment
+- [x] **1.1** Create feature branch: `feature/instagram-studio-refactor`
+- [x] **1.2** Document current working behavior (screenshots, test cases)
+- [x] **1.3** Set up local testing environment
 
 ### Phase 2: Enhance Shared Library
 
-- [ ] **2.1** Add missing constants to `lib/instagram-lib.mjs`
-- [ ] **2.2** Consolidate `waitForProcessing()` / `waitForMediaReady()` into one function
+- [x] **2.1** Add missing constants to `lib/instagram-lib.mjs`
+- [x] **2.2** Consolidate `waitForProcessing()` / `waitForMediaReady()` into one function
   - Use `status_code` field (newer API, used by working `instagram-publish.mjs`)
   - Support both `FINISHED` and `READY` status values for backward compatibility
-- [ ] **2.3** Add `createMediaContainer()` primitive function
-- [ ] **2.4** Add `publishMediaContainer()` primitive function
-- [ ] **2.5** Update `publishSingleImage()` to use primitives
-- [ ] **2.6** Update `publishCarousel()` to use primitives
-- [ ] **2.7** Add `validateHashtags()` utility
-- [ ] **2.8** Add `buildCaption()` utility
+- [x] **2.3** Add `createMediaContainer()` primitive function
+- [x] **2.4** Add `publishMediaContainer()` primitive function
+- [x] **2.5** Update `publishSingleImage()` to use primitives
+- [x] **2.6** Update `publishCarousel()` to use primitives
+- [x] **2.7** Add `validateHashtags()` utility
+- [x] **2.8** Add `buildCaption()` utility
 
 ### Phase 3: Migrate instagram-publish.mjs
 
-- [ ] **3.1** Import constants and functions from `lib/instagram-lib.mjs`
-- [ ] **3.2** Replace inline `waitForProcessing()` with lib version
-- [ ] **3.3** Replace inline `publishMedia()` with lib version
-- [ ] **3.4** Keep CORS handling and action routing (function-specific)
+- [x] **3.1** Import constants and functions from `lib/instagram-lib.mjs`
+- [x] **3.2** Replace inline `waitForProcessing()` with lib version
+- [x] **3.3** Replace inline `publishMedia()` with lib version
+- [x] **3.4** Keep CORS handling and action routing (function-specific)
 - [ ] **3.5** Test UI "Publish Now" button thoroughly
   - Single image publish
   - Carousel publish (2-10 images)
@@ -171,10 +171,10 @@ export function buildCaption(caption, hashtags) { ... }
 
 ### Phase 4: Migrate Scheduled Functions
 
-- [ ] **4.1** **DELETE** `instagram-publish-now.mjs` (redundant - use background version)
+- [x] **4.1** **DELETE** `instagram-publish-now.mjs` (redundant - use background version)
 - [ ] **4.2** Rename `instagram-publish-now-background.mjs` → `instagram-publish-now.mjs` with background config
-- [ ] **4.3** Update renamed file to use lib imports
-- [ ] **4.4** Update `instagram-scheduled-publish-background.mjs` to use lib
+- [x] **4.3** Update renamed file to use lib imports
+- [x] **4.4** Update `instagram-scheduled-publish-background.mjs` to use lib
 - [ ] **4.5** Test scheduled publishing flow
   - Manual trigger via function URL
   - Dry run mode
@@ -183,10 +183,31 @@ export function buildCaption(caption, hashtags) { ... }
 
 ### Phase 5: Cleanup & Documentation
 
-- [ ] **5.1** Remove dead code from all files
-- [ ] **5.2** Update JSDoc comments
-- [ ] **5.3** Update this refactoring plan with completion notes
+- [x] **5.1** Remove dead code from all files
+- [x] **5.2** Update JSDoc comments
+- [x] **5.3** Update this refactoring plan with completion notes
 - [ ] **5.4** Create PR for review
+
+---
+
+## ✅ Completion Notes (Dec 18 2025)
+
+**What was accomplished:**
+- Enhanced `lib/instagram-lib.mjs` from 434 to 755 lines with all shared functions
+- Migrated `instagram-publish.mjs` from 686 to 451 lines
+- Migrated `instagram-scheduled-publish-background.mjs` from 577 to 526 lines
+- **DELETED** `instagram-publish-now.mjs` (579 lines) - redundant
+- Fixed bug: scheduled functions now use `status_code`/`FINISHED` (not `status`/`READY`)
+- Added rate limit handling with verification fallback
+
+**Results:**
+- Before: 2,276 lines across 4 files
+- After: 1,732 lines across 3 files
+- Saved: 544 lines (~24% reduction)
+
+**Still TODO (deferred):**
+- Testing: Need to test live publishing in production
+- Rename: Optionally rename `instagram-publish-now-background.mjs` to `instagram-publish-now.mjs`
 
 ---
 

@@ -52,12 +52,12 @@ CLOUDINARY_API_SECRET=your_api_secret
 ### 📘 Master Guide
 - **[AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation (START HERE)
   - Project architecture and system design
-  - Complete changelog of all changes
   - Data structures and Airtable schema
   - Environment setup and workflows
   - Deployment and CI/CD processes
   - Performance optimization
   - Troubleshooting guides
+- **[CHANGELOG.md](./CHANGELOG.md)** - Complete history of all changes
 
 ### 📚 Quick Reference
 - **[DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)** - Guide to all documentation files

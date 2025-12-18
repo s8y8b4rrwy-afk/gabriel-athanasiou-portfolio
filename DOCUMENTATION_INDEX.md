@@ -9,7 +9,7 @@
 
 This is the single source of truth for the entire codebase. Contains:
 - ✅ Complete project overview and architecture
-- ✅ All recent changes (changelog at top)
+- ✅ All recent changes (see [CHANGELOG.md](./CHANGELOG.md) for complete history)
 - ✅ Data structures and Airtable schema mappings
 - ✅ Environment setup instructions
 - ✅ Development workflows
@@ -146,7 +146,7 @@ gabriel-athanasiou-portfolio--TEST/
 ### For AI Agents
 1. Always read `AI_AGENT_GUIDE.md` before making changes
 2. Update the guide after every code change
-3. Keep changelog at top of file updated
+3. Keep changelog in [CHANGELOG.md](./CHANGELOG.md) updated
 4. Verify data structure mappings are current
 
 ### For Developers
@@ -173,7 +173,8 @@ gabriel-athanasiou-portfolio--TEST/
 - ✅ After deployment changes
 
 **What to Update:**
-- Primary: `AI_AGENT_GUIDE.md` changelog section
+- Primary: [CHANGELOG.md](./CHANGELOG.md) (complete history)
+- Secondary: `AI_AGENT_GUIDE.md` (recent changes only)
 - Secondary: Relevant supplementary docs
 - Tertiary: This index if file structure changes
 

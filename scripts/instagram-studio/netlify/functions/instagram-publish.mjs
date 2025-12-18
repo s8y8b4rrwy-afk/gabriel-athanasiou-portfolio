@@ -11,10 +11,20 @@
  * 
  * NOTE: Netlify functions have a 10-second timeout on free tier.
  * We use shorter polling intervals and fail fast if processing takes too long.
+ * 
+ * @see lib/instagram-lib.mjs for shared Instagram API functions
  */
 
-const GRAPH_API_BASE = 'https://graph.instagram.com';
-const GRAPH_API_VERSION = 'v21.0';
+import {
+  GRAPH_API_BASE,
+  GRAPH_API_VERSION,
+  validateHashtags,
+  waitForMediaReady,
+  publishMediaContainer,
+  verifyPublishStatus,
+  createMediaContainer,
+  createCarouselContainer,
+} from './lib/instagram-lib.mjs';
 
 // Netlify Pro has 26 second timeout, Free has 10 seconds
 // We'll use 25 seconds to be safe - if on free tier, it will just timeout
@@ -106,56 +116,27 @@ async function handlePublishSingle(headers, accessToken, accountId, imageUrl, ca
     console.log('   accountId:', accountId);
     
     // Validate hashtag count (Instagram max is 30)
-    const hashtagCount = (caption?.match(/#\w+/g) || []).length;
-    console.log('   hashtag count:', hashtagCount);
-    if (hashtagCount > 30) {
-      console.error('Too many hashtags:', hashtagCount);
+    const hashtagValidation = validateHashtags(caption);
+    console.log('   hashtag count:', hashtagValidation.count);
+    if (!hashtagValidation.valid) {
+      console.error('Too many hashtags:', hashtagValidation.count);
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ 
-          error: `Too many hashtags (${hashtagCount}). Instagram allows maximum 30 hashtags.` 
-        }),
+        body: JSON.stringify({ error: hashtagValidation.error }),
       };
     }
     
-    // Step 1: Create media container
-    const requestBody = {
-      image_url: imageUrl,
-      caption: caption,
-      access_token: accessToken,
-    };
-    
-    console.log('   Request to Instagram API:', JSON.stringify({ ...requestBody, access_token: '[HIDDEN]' }));
-    
-    const containerResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      }
-    );
-
-    const containerResult = await containerResponse.json();
-    console.log('   Instagram API response:', JSON.stringify(containerResult));
-    
-    if (containerResult.error) {
-      console.error('Container creation failed:', containerResult.error);
-      // Include more details in the error message
-      const errorDetail = containerResult.error.error_user_msg || containerResult.error.message || 'Unknown error';
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: errorDetail, details: containerResult.error }),
-      };
-    }
-
-    const containerId = containerResult.id;
+    // Step 1: Create media container using lib function
+    const container = await createMediaContainer(imageUrl, caption, accessToken, accountId, false);
+    const containerId = container.id;
     console.log('✅ Container created:', containerId);
 
-    // Step 2: Wait for processing
-    const ready = await waitForProcessing(containerId, accessToken);
+    // Step 2: Wait for processing using lib function
+    const ready = await waitForMediaReady(containerId, accessToken, { 
+      maxWait: MAX_PROCESSING_WAIT, 
+      pollInterval: POLL_INTERVAL 
+    });
     if (!ready.success) {
       return {
         statusCode: 400,
@@ -164,11 +145,11 @@ async function handlePublishSingle(headers, accessToken, accountId, imageUrl, ca
       };
     }
 
-    // Step 3: Publish
-    const publishResult = await publishMedia(containerId, accessToken, accountId);
+    // Step 3: Publish using lib function (includes rate limit detection)
+    const publishResult = await publishMediaContainer(containerId, accessToken, accountId);
     
     return {
-      statusCode: 200,
+      statusCode: publishResult.success ? 200 : 400,
       headers,
       body: JSON.stringify(publishResult),
     };
@@ -184,6 +165,7 @@ async function handlePublishSingle(headers, accessToken, accountId, imageUrl, ca
 
 /**
  * Publish a carousel post (multiple images)
+ * Uses shared library functions from instagram-lib.mjs
  */
 async function handlePublishCarousel(headers, accessToken, accountId, imageUrls, caption) {
   try {
@@ -205,41 +187,28 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
 
     console.log(`📸 Creating carousel with ${imageUrls.length} images...`);
 
-    // Step 1: Create child containers for each image
+    // Step 1: Create child containers for each image using shared lib
     const childIds = [];
     for (let i = 0; i < imageUrls.length; i++) {
       const url = imageUrls[i];
       console.log(`Creating carousel item ${i + 1}/${imageUrls.length}...`);
       
-      const response = await fetch(
-        `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image_url: url,
-            is_carousel_item: true,
-            access_token: accessToken,
-          }),
-        }
-      );
-
-      const result = await response.json();
+      const result = await createMediaContainer(accessToken, accountId, url, null, true);
       
       if (result.error) {
         console.error(`Carousel item ${i + 1} failed:`, result.error);
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: `Failed to create carousel item ${i + 1}: ${result.error.message}` }),
+          body: JSON.stringify({ error: `Failed to create carousel item ${i + 1}: ${result.error}` }),
         };
       }
 
       childIds.push(result.id);
       console.log(`✅ Carousel item ${i + 1} created:`, result.id);
 
-      // Wait for each item to be processed
-      const ready = await waitForProcessing(result.id, accessToken);
+      // Wait for each item to be processed using shared lib
+      const ready = await waitForMediaReady(result.id, accessToken);
       if (!ready.success) {
         return {
           statusCode: 400,
@@ -249,40 +218,24 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
       }
     }
 
-    // Step 2: Create carousel container
+    // Step 2: Create carousel container using shared lib
     console.log('Creating carousel container with children:', childIds);
-    
-    // Instagram API expects children as an array, not comma-separated string
-    const carouselResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: 'CAROUSEL',
-          children: childIds,  // Pass as array, not string
-          caption: caption,
-          access_token: accessToken,
-        }),
-      }
-    );
-
-    const carouselResult = await carouselResponse.json();
+    const carouselResult = await createCarouselContainer(accessToken, accountId, childIds, caption);
     
     if (carouselResult.error) {
       console.error('Carousel container creation failed:', carouselResult.error);
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: carouselResult.error.message }),
+        body: JSON.stringify({ error: carouselResult.error }),
       };
     }
 
     const carouselContainerId = carouselResult.id;
     console.log('✅ Carousel container created:', carouselContainerId);
 
-    // Step 3: Wait for carousel processing
-    const ready = await waitForProcessing(carouselContainerId, accessToken);
+    // Step 3: Wait for carousel processing using shared lib
+    const ready = await waitForMediaReady(carouselContainerId, accessToken);
     if (!ready.success) {
       return {
         statusCode: 400,
@@ -291,11 +244,11 @@ async function handlePublishCarousel(headers, accessToken, accountId, imageUrls,
       };
     }
 
-    // Step 4: Publish
-    const publishResult = await publishMedia(carouselContainerId, accessToken, accountId);
+    // Step 4: Publish using shared lib (includes rate limit handling)
+    const publishResult = await publishMediaContainer(carouselContainerId, accessToken, accountId);
     
     return {
-      statusCode: 200,
+      statusCode: publishResult.success ? 200 : 400,
       headers,
       body: JSON.stringify(publishResult),
     };
@@ -343,202 +296,26 @@ async function handleCheckStatus(headers, accessToken, containerId) {
 }
 
 /**
- * Wait for media container to finish processing
- */
-async function waitForProcessing(containerId, accessToken) {
-  const startTime = Date.now();
-  let retryCount = 0;
-  const maxRetries = 3;
-  
-  while (Date.now() - startTime < MAX_PROCESSING_WAIT) {
-    const response = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=status_code&access_token=${accessToken}`
-    );
-
-    const result = await response.json();
-    
-    if (result.error) {
-      // Handle "Unsupported get request" - this can happen temporarily
-      // Retry a few times before failing
-      if (result.error.message?.includes('Unsupported get request') && retryCount < maxRetries) {
-        console.log(`⚠️ Got "Unsupported get request" for ${containerId}, retrying (${retryCount + 1}/${maxRetries})...`);
-        retryCount++;
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL * 2));
-        continue;
-      }
-      return { success: false, error: result.error.message };
-    }
-    
-    // Reset retry count on successful response
-    retryCount = 0;
-
-    const status = result.status_code;
-    console.log(`Container ${containerId} status: ${status}`);
-
-    if (status === 'FINISHED') {
-      return { success: true };
-    }
-    
-    if (status === 'ERROR' || status === 'EXPIRED') {
-      return { success: false, error: `Container status: ${status}` };
-    }
-
-    // Wait before polling again
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
-  }
-
-  return { success: false, error: 'Processing timeout' };
-}
-
-/**
- * Verify if a container was successfully published by checking recent media
- * This is useful when the publish call returns an error but the post might have succeeded
- */
-async function verifyPublishStatus(containerId, accessToken, accountId) {
-  try {
-    // First, try to get the container status - if it was published, it might show that
-    const containerResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${containerId}?fields=id,status_code&access_token=${accessToken}`
-    );
-    const containerResult = await containerResponse.json();
-    
-    // If we can't access the container (might be consumed after publish), check recent media
-    if (containerResult.error) {
-      console.log('Container not accessible, checking recent media...');
-    }
-    
-    // Check recent media from the account to see if our content was published
-    const mediaResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media?fields=id,timestamp,permalink&limit=5&access_token=${accessToken}`
-    );
-    const mediaResult = await mediaResponse.json();
-    
-    if (mediaResult.error) {
-      console.log('Could not verify publish status:', mediaResult.error.message);
-      return { verified: false, error: mediaResult.error.message };
-    }
-    
-    // Check if there's a recent post (within last 5 minutes)
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const recentPosts = (mediaResult.data || []).filter(post => {
-      const postTime = new Date(post.timestamp);
-      return postTime > fiveMinutesAgo;
-    });
-    
-    if (recentPosts.length > 0) {
-      console.log('✅ Found recent post that may be ours:', recentPosts[0].id);
-      return { 
-        verified: true, 
-        postId: recentPosts[0].id, 
-        permalink: recentPosts[0].permalink,
-        message: 'Post appears to have been published successfully'
-      };
-    }
-    
-    return { verified: false, message: 'Could not find recently published post' };
-  } catch (error) {
-    console.error('Error verifying publish status:', error);
-    return { verified: false, error: error.message };
-  }
-}
-
-/**
- * Publish a media container
- */
-async function publishMedia(containerId, accessToken, accountId) {
-  const response = await fetch(
-    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media_publish`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        creation_id: containerId,
-        access_token: accessToken,
-      }),
-    }
-  );
-
-  const result = await response.json();
-  
-  if (result.error) {
-    // If we hit a rate limit, the post might still have succeeded
-    // Try to verify by checking recent media
-    const isRateLimit = result.error.message?.toLowerCase().includes('rate limit') ||
-                        result.error.message?.toLowerCase().includes('request limit') ||
-                        result.error.code === 4 || // OAuthException rate limit
-                        result.error.code === 32;  // Rate limit error code
-    
-    if (isRateLimit) {
-      console.log('⚠️ Rate limit error during publish, verifying status...');
-      const verification = await verifyPublishStatus(containerId, accessToken, accountId);
-      
-      if (verification.verified) {
-        console.log('✅ Post was actually published despite rate limit error!');
-        return { 
-          success: true, 
-          postId: verification.postId, 
-          permalink: verification.permalink,
-          rateLimitHit: true 
-        };
-      }
-    }
-    
-    return { success: false, error: result.error.message };
-  }
-
-  const postId = result.id;
-  console.log('✅ Published! Post ID:', postId);
-
-  // Fetch the permalink for the published post
-  let permalink = null;
-  try {
-    const mediaResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${postId}?fields=permalink&access_token=${accessToken}`
-    );
-    const mediaResult = await mediaResponse.json();
-    if (mediaResult.permalink) {
-      permalink = mediaResult.permalink;
-      console.log('📎 Permalink:', permalink);
-    }
-  } catch (err) {
-    console.warn('Could not fetch permalink:', err.message);
-  }
-
-  return { success: true, postId, permalink };
-}
-
-/**
  * Create a single carousel item (for step-by-step approach)
+ * Uses shared library functions from instagram-lib.mjs
  */
 async function handleCreateCarouselItem(headers, accessToken, accountId, imageUrl) {
   try {
     console.log('Creating carousel item:', imageUrl?.substring(0, 50));
     
-    const response = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          is_carousel_item: true,
-          access_token: accessToken,
-        }),
-      }
-    );
-
-    const result = await response.json();
+    // Use shared lib to create carousel item
+    const result = await createMediaContainer(accessToken, accountId, imageUrl, null, true);
     
     if (result.error) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: result.error.message }),
+        body: JSON.stringify({ error: result.error }),
       };
     }
 
-    // Wait briefly for processing
-    const ready = await waitForProcessing(result.id, accessToken);
+    // Wait briefly for processing using shared lib
+    const ready = await waitForMediaReady(result.id, accessToken);
     
     // Don't include error field on success - client checks for it
     return {
@@ -561,6 +338,7 @@ async function handleCreateCarouselItem(headers, accessToken, accountId, imageUr
 
 /**
  * Create carousel container from child IDs
+ * Uses shared library functions from instagram-lib.mjs
  */
 async function handleCreateCarouselContainer(headers, accessToken, accountId, childIds, caption) {
   const maxRetries = 3;
@@ -575,27 +353,13 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
       
-      // Instagram API expects children as an array, not comma-separated string
-      const response = await fetch(
-        `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            media_type: 'CAROUSEL',
-            children: childIds,  // Pass as array, not string
-            caption: caption,
-            access_token: accessToken,
-          }),
-        }
-      );
-
-      const result = await response.json();
+      // Use shared lib to create carousel container
+      const result = await createCarouselContainer(accessToken, accountId, childIds, caption);
       
       if (result.error) {
         // Retry on "Unsupported get request" error - means children aren't ready yet
-        if (result.error.message?.includes('Unsupported') && attempt < maxRetries) {
-          console.log(`Got "${result.error.message}", retrying in ${retryDelay}ms...`);
+        if (result.error.includes('Unsupported') && attempt < maxRetries) {
+          console.log(`Got "${result.error}", retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           continue;
         }
@@ -603,12 +367,12 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: result.error.message }),
+          body: JSON.stringify({ error: result.error }),
         };
       }
 
-      // Wait briefly for processing
-      const ready = await waitForProcessing(result.id, accessToken);
+      // Wait briefly for processing using shared lib
+      const ready = await waitForMediaReady(result.id, accessToken);
       
       // Don't include error field on success - client checks for it
       return {
@@ -643,10 +407,12 @@ async function handleCreateCarouselContainer(headers, accessToken, accountId, ch
 
 /**
  * Publish a container by ID
+ * Uses shared library functions from instagram-lib.mjs
  */
 async function handlePublishContainer(headers, accessToken, accountId, containerId) {
   try {
-    const result = await publishMedia(containerId, accessToken, accountId);
+    // Use shared lib for publishing (includes rate limit handling)
+    const result = await publishMediaContainer(containerId, accessToken, accountId);
     
     return {
       statusCode: result.success ? 200 : 400,
