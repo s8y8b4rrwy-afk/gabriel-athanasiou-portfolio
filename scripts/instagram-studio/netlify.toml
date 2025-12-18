@@ -17,13 +17,8 @@
 # Background functions (suffix -background) automatically get 15 min timeout
 # No timeout config needed - Netlify detects from filename
 
-# SPA routing - EXCLUDE function calls from redirect
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
+# SPA routing - Netlify automatically prioritizes /.netlify/functions/* routes
+# Functions are served BEFORE this catch-all redirect is evaluated
 [[redirects]]
   from = "/*"
   to = "/index.html"
