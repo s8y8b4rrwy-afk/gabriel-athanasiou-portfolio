@@ -55,6 +55,25 @@ npm run build:postprod     # Production build for postproduction
 
 ---
 
+## 🚫 Deployment Policy
+
+**NEVER automatically add `[deploy]` or `[force-deploy]` markers to commit messages.**
+
+- Only add deploy markers when the user **explicitly requests** a deployment
+- Both the main portfolio sites AND Instagram Studio respect the `[deploy]` marker convention
+- Without the marker, Netlify will skip the build (saving build minutes)
+- If the user says "push to main" without mentioning deployment, push **without** the marker
+
+**When to add `[deploy]`:**
+- User says: "push and deploy", "deploy to production", "trigger a build"
+- User explicitly asks for the `[deploy]` marker
+
+**When NOT to add `[deploy]`:**
+- User says: "push to main", "commit changes", "push the fix"
+- User doesn't mention deployment at all
+
+---
+
 ## ⚡ Key Implementation Notes
 
 ### Procedural Hero Fallback

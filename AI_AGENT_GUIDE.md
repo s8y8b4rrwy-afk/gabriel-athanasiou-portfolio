@@ -73,9 +73,17 @@ This comprehensive guide consolidates ALL documentation into one master referenc
    - Changed `open: true` to `open: false` in server config
    - Users should access `http://localhost:8888` (Netlify Dev with functions) not `http://localhost:5174` (Vite only)
 
+3. **Added ignore-build.sh to Studio's netlify.toml:**
+   - Configured `ignore = "bash scripts/ignore-build.sh"` in [build] section
+   - Studio now respects the `[deploy]` marker convention like the main portfolio sites
+   - Without `[deploy]` or `[force-deploy]` in commit message, Netlify skips the build
+   - Saves build minutes when pushing code changes that don't need deployment
+
 **Files Changed:**
 - `scripts/instagram-studio/src/services/cloudinarySync.ts` - Removed duplicate response body read
 - `scripts/instagram-studio/vite.config.ts` - Set `open: false` to prevent auto-opening wrong port
+- `scripts/instagram-studio/netlify.toml` - Added `ignore` command for build control
+- `.github/copilot-instructions.md` - Added Deployment Policy section
 
 **Local Development:**
 ```bash
@@ -83,6 +91,11 @@ cd scripts/instagram-studio
 npm run dev
 # Access at http://localhost:8888 (NOT 5174)
 ```
+
+**Deployment Policy:**
+- **NEVER** automatically add `[deploy]` markers to commits
+- Only add when user explicitly requests deployment
+- Both main portfolio sites AND Instagram Studio respect this convention
 
 ---
 
