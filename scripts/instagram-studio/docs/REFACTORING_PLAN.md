@@ -128,11 +128,11 @@ export function buildCaption(caption, hashtags) { ... }
 |------|---------|---------------------|
 | `lib/instagram-lib.mjs` | Enhanced with all shared logic | +200 lines (consolidated) |
 | `instagram-publish.mjs` | Import from lib, keep CORS handlers | -300 lines (~45%) |
-| `instagram-publish-now.mjs` | Import from lib, keep handler logic | -350 lines (~60%) |
+| `instagram-publish-now.mjs` | **DELETE** - redundant file | -579 lines (100%) |
+| `instagram-publish-now-background.mjs` | Import from lib, rename to `instagram-publish-now.mjs` | -350 lines (~65%) |
 | `instagram-scheduled-publish-background.mjs` | Import from lib, keep cron config | -350 lines (~60%) |
-| `instagram-publish-now-background.mjs` | Same changes | -350 lines (~60%) |
 
-**Total Estimated Code Reduction:** ~1,350 lines of duplicated code
+**Total Estimated Code Reduction:** ~1,580 lines (including deleted redundant file)
 
 ---
 
@@ -171,10 +171,11 @@ export function buildCaption(caption, hashtags) { ... }
 
 ### Phase 4: Migrate Scheduled Functions
 
-- [ ] **4.1** Update `instagram-publish-now.mjs` to use lib
-- [ ] **4.2** Update `instagram-scheduled-publish-background.mjs` to use lib
-- [ ] **4.3** Update `instagram-publish-now-background.mjs` to use lib
-- [ ] **4.4** Test scheduled publishing flow
+- [ ] **4.1** **DELETE** `instagram-publish-now.mjs` (redundant - use background version)
+- [ ] **4.2** Rename `instagram-publish-now-background.mjs` → `instagram-publish-now.mjs` with background config
+- [ ] **4.3** Update renamed file to use lib imports
+- [ ] **4.4** Update `instagram-scheduled-publish-background.mjs` to use lib
+- [ ] **4.5** Test scheduled publishing flow
   - Manual trigger via function URL
   - Dry run mode
   - Status updates to Cloudinary
@@ -222,6 +223,46 @@ export function buildCaption(caption, hashtags) { ... }
 | **Breaking scheduled publish** | Medium | Medium | Test manual trigger first |
 | **Import path issues** | Low | Low | Use consistent relative paths |
 | **Different status field names** | Medium | High | Support both `status_code` and `status` |
+
+---
+
+## 🗑️ Redundant Files to Remove
+
+### `instagram-publish-now.mjs` vs `instagram-publish-now-background.mjs`
+
+**Analysis:** These two files are **99% identical** (~540-579 lines each), differing only in timeout constants:
+
+| File | Timeout | Poll Interval | Netlify Mode |
+|------|---------|---------------|--------------|
+| `instagram-publish-now.mjs` | 30s (hits 10s limit) | 2s | Standard (10s timeout) |
+| `instagram-publish-now-background.mjs` | 120s (2 min) | 3s | Background (15 min timeout) |
+
+**Recommendation:** **Keep only `instagram-publish-now-background.mjs`** and delete `instagram-publish-now.mjs`.
+
+**Rationale:**
+1. The standard function has a 10s timeout - too short for carousel processing
+2. The background version with 15-minute timeout is more reliable
+3. Maintaining two nearly identical files is error-prone
+4. Background functions can be called the same way - just use `-background` endpoint
+
+**Migration:**
+- Update any code/docs referencing `/instagram-publish-now` to use `/instagram-publish-now-background`
+- Or keep the endpoint name by renaming the background file to `instagram-publish-now.mjs` with `config.type = "background"`
+
+### Summary of Files After Full Refactoring
+
+| File | Status | Action |
+|------|--------|--------|
+| `instagram-publish.mjs` | ✅ Keep | Refactor to use lib |
+| `instagram-publish-now.mjs` | ❌ Remove | Redundant - use background version |
+| `instagram-publish-now-background.mjs` | ✅ Keep (rename?) | Refactor to use lib |
+| `instagram-scheduled-publish-background.mjs` | ✅ Keep | Refactor to use lib |
+| `lib/instagram-lib.mjs` | ✅ Keep | Enhance with all shared logic |
+| `instagram-auth.mjs` | ✅ Keep | No changes needed |
+| `instagram-diagnostic.mjs` | ✅ Keep | No changes needed |
+| `instagram-studio-sync.mjs` | ✅ Keep | No changes needed |
+
+**Total Files After Refactoring:** 7 (down from 8)
 
 ---
 
@@ -690,7 +731,8 @@ After each phase, verify:
 - [ ] Rate limit handling still works
 
 ### Phase 4 (Scheduled Functions Migration)
-- [ ] `instagram-publish-now.mjs` uses library imports
+- [ ] `instagram-publish-now.mjs` is deleted (redundant)
+- [ ] `instagram-publish-now-background.mjs` renamed and uses library imports
 - [ ] `instagram-scheduled-publish-background.mjs` uses library imports
 - [ ] Manual trigger works: `curl -X POST https://studio.lemonpost.studio/.netlify/functions/instagram-publish-now`
 - [ ] Status updates save to Cloudinary
