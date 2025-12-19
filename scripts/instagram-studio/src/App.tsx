@@ -48,6 +48,7 @@ function App() {
     importScheduleData,
     markAsPublished,
     revertToScheduled,
+    trackTemplateDeletion,
   } = useSchedule();
 
   // Enhance scheduled posts with project data lookup
@@ -96,7 +97,7 @@ function App() {
     });
   }, [rawScheduledPosts, projects]);
 
-  // Template management
+  // Template management - pass deletion tracker for cloud sync
   const {
     templates,
     defaultTemplate,
@@ -106,7 +107,7 @@ function App() {
     deleteTemplate,
     duplicateTemplate,
     importTemplates,
-  } = useTemplates();
+  } = useTemplates({ onDelete: trackTemplateDeletion });
 
   const [selectedTemplate, setSelectedTemplate] = useState<RecurringTemplate | null>(null);
   

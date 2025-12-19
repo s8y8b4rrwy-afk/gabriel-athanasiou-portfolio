@@ -38,6 +38,7 @@ interface UseScheduleReturn {
   markAsFailed: (slotId: string, error: string) => void;
   revertToScheduled: (slotId: string) => void;
   importScheduleData: (drafts: PostDraft[], slots: ScheduleSlot[], settings: ScheduleSettings, deletedIds?: DeletedIds) => void;
+  trackTemplateDeletion: (templateId: string) => void;
 }
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
@@ -318,6 +319,11 @@ export function useSchedule(): UseScheduleReturn {
     }
   }, [setDrafts, setScheduleSlots, setSettings, setDeletedIds]);
 
+  // Track template deletion for cloud sync (called from useTemplates)
+  const trackTemplateDeletion = useCallback((templateId: string) => {
+    setDeletedIds(prev => trackDeletion(prev, 'templates', templateId));
+  }, [setDeletedIds]);
+
   return {
     scheduledPosts,
     drafts,
@@ -338,5 +344,6 @@ export function useSchedule(): UseScheduleReturn {
     markAsFailed,
     revertToScheduled,
     importScheduleData,
+    trackTemplateDeletion,
   };
 }

@@ -18,6 +18,10 @@ const BUILT_IN_DEFAULT: RecurringTemplate = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
 
+interface UseTemplatesOptions {
+  onDelete?: (templateId: string) => void;
+}
+
 interface UseTemplatesReturn {
   templates: RecurringTemplate[];
   defaultTemplate: RecurringTemplate;
@@ -29,7 +33,7 @@ interface UseTemplatesReturn {
   importTemplates: (templates: RecurringTemplate[], defaultTemplate?: RecurringTemplate) => void;
 }
 
-export function useTemplates(): UseTemplatesReturn {
+export function useTemplates(options?: UseTemplatesOptions): UseTemplatesReturn {
   const [templates, setTemplates] = useLocalStorage<RecurringTemplate[]>(
     'instagram-studio-templates',
     []
@@ -81,8 +85,10 @@ export function useTemplates(): UseTemplatesReturn {
   }, [setDefaultTemplate]);
 
   const deleteTemplate = useCallback((id: string) => {
+    // Notify parent about deletion for cloud sync tracking
+    options?.onDelete?.(id);
     setTemplates((prev) => prev.filter((t) => t.id !== id));
-  }, [setTemplates]);
+  }, [setTemplates, options]);
 
   const duplicateTemplate = useCallback((id: string): RecurringTemplate | null => {
     // Check if duplicating the default template
