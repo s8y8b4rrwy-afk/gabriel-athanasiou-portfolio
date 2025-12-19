@@ -198,7 +198,26 @@ export const handler = async (event) => {
 
 		const duePosts = allSlots
 			.filter((slot) => {
-				if (slot.status !== 'pending') return false;
+				// Skip if not pending
+				if (slot.status !== 'pending') {
+					if (slot.status === 'failed') {
+						console.log(`   ⏭️ Skipping ${slot.id}: status is 'failed' - will not auto-retry`);
+					}
+					return false;
+				}
+				
+				// IDEMPOTENCY GUARD: Skip if already published (even if status was reset to pending by stale UI sync)
+				// This prevents duplicate publishes when UI auto-sync overwrites status back to 'pending'
+				if (slot.instagramMediaId || slot.publishedAt) {
+					console.log(`   ⏭️ Skipping ${slot.id}: already has instagramMediaId or publishedAt (status may have been reset by stale sync)`);
+					return false;
+				}
+				
+				// Skip if has error from previous attempt (prevents retry loop for persistently failing posts)
+				if (slot.error) {
+					console.log(`   ⏭️ Skipping ${slot.id}: has previous error - "${slot.error.substring(0, 50)}..."`);
+					return false;
+				}
 				
 				// Compare dates and times as strings (local timezone)
 				const slotDateTime = `${slot.scheduledDate}T${slot.scheduledTime}`;
