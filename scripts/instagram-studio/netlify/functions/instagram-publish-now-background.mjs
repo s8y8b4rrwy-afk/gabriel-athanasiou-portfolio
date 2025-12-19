@@ -13,78 +13,13 @@ import {
 	uploadToCloudinary,
 	getInstagramUrls,
 	publishPost,
+	sendNotification,
 } from './lib/instagram-lib.mjs';
 
 // Use "today" window: midnight local time to now
 // This catches any post scheduled for today that hasn't been published yet
 const USE_TODAY_WINDOW = true;
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // Fallback: 1 hour window
-
-async function sendNotification(results, scheduleData) {
-	const resendApiKey = process.env.RESEND_API_KEY;
-	const notificationEmail = process.env.NOTIFICATION_EMAIL;
-
-	if (!resendApiKey || !notificationEmail) {
-		console.log('📧 Notification skipped: RESEND_API_KEY or NOTIFICATION_EMAIL not configured');
-		return;
-	}
-
-	const successful = results.filter((r) => r.success);
-	const failed = results.filter((r) => !r.success);
-
-	const subject =
-		failed.length > 0
-			? `⚠️ Instagram Manual Publish: ${successful.length} published, ${failed.length} failed`
-			: `✅ Instagram Manual Publish: ${successful.length} post(s) published`;
-
-	let html = `<h2>Instagram Manual Publish Report</h2>`;
-	html += `<p>Time: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>`;
-
-	if (successful.length > 0) {
-		html += `<h3>✅ Successfully Published (${successful.length})</h3><ul>`;
-		for (const r of successful) {
-			const post = (scheduleData.schedules || []).find((p) => p.id === r.postId);
-			html += `<li><strong>${post?.projectId || r.postId}</strong> - Media ID: ${r.mediaId}</li>`;
-		}
-		html += `</ul>`;
-	}
-
-	if (failed.length > 0) {
-		html += `<h3>❌ Failed (${failed.length})</h3><ul>`;
-		for (const r of failed) {
-			const post = (scheduleData.schedules || []).find((p) => p.id === r.postId);
-			html += `<li><strong>${post?.projectId || r.postId}</strong> - Error: ${r.error}</li>`;
-		}
-		html += `</ul>`;
-	}
-
-	html += `<p><a href="https://studio.lemonpost.studio">Open Instagram Studio →</a></p>`;
-
-	try {
-		const response = await fetch('https://api.resend.com/emails', {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${resendApiKey}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				from: 'Instagram Studio <noreply@lemonpost.studio>',
-				to: [notificationEmail],
-				subject: subject,
-				html: html,
-			}),
-		});
-
-		if (response.ok) {
-			console.log('📧 Notification email sent successfully');
-		} else {
-			const error = await response.text();
-			console.error('📧 Failed to send notification:', error);
-		}
-	} catch (error) {
-		console.error('📧 Notification error:', error.message);
-	}
-}
 
 export const handler = async (event) => {
 	console.log('🔫 Manual Instagram publish triggered at:', new Date().toISOString());
@@ -356,7 +291,11 @@ export const handler = async (event) => {
 			// Send notification
 			try {
 				const freshDataForEmail = await fetchScheduleData();
-				await sendNotification(results, freshDataForEmail || scheduleData);
+				await sendNotification(results, freshDataForEmail || scheduleData, { 
+					type: 'Manual',
+					saveSuccess,
+					saveError
+				});
 			} catch (notificationError) {
 				console.error('📧 Failed to send notification:', notificationError.message);
 			}

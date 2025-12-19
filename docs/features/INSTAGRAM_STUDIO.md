@@ -39,13 +39,36 @@
 
 Instagram Studio supports automated publishing via a Netlify **Background Function**.
 
-> **Note (Dec 18, 2025):** All Instagram server-side functions are now owned by the Studio site (`studio.lemonpost.studio`), not the main portfolio site. Functions have been consolidated into a shared library (`lib/instagram-lib.mjs`) for maintainability.
+> **Note (Dec 19, 2025):** All Instagram server-side functions are now owned by the Studio site (`studio.lemonpost.studio`), not the main portfolio site. Functions have been consolidated into a shared library (`lib/instagram-lib.mjs`) for maintainability. The library uses a **building block architecture** where high-level functions (`publishSingleImage`, `publishCarousel`) compose low-level building blocks (`createMediaContainer`, `waitForMediaReady`, `publishMediaContainer`). This ensures UI publishing and scheduled publishing use **identical code paths**.
 
 **Function Files:**
 - **Shared Library:** `scripts/instagram-studio/netlify/functions/lib/instagram-lib.mjs` - All Instagram API logic
 - **Scheduled Publisher:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish-background.mjs`
 - **Manual Trigger:** `scripts/instagram-studio/netlify/functions/instagram-publish-now-background.mjs`
 - **UI Publish Button:** `scripts/instagram-studio/netlify/functions/instagram-publish.mjs`
+
+**Library Architecture (Refactored Dec 19, 2025):**
+```
+instagram-lib.mjs (SINGLE SOURCE OF TRUTH)
+│
+├── LOW-LEVEL BUILDING BLOCKS:
+│   ├── createMediaContainer()      ← Creates single media container
+│   ├── createCarouselContainer()   ← Creates carousel from child IDs
+│   ├── waitForMediaReady()         ← Polls until FINISHED
+│   ├── publishMediaContainer()     ← Final publish call
+│   ├── checkMediaStatus()          ← Single status check
+│   └── verifyPublishStatus()       ← Rate limit recovery
+│
+├── HIGH-LEVEL ORCHESTRATION (uses building blocks):
+│   ├── publishSingleImage()        ← Composes: create → wait → publish
+│   ├── publishCarousel()           ← Composes: create items → create carousel → wait → publish
+│   └── publishPost()               ← Routes to single/carousel based on image count
+│
+└── UTILITIES:
+    ├── validateHashtags()
+    ├── buildCaption()
+    └── getInstagramUrls()
+```
 
 **Endpoints:**
 - **Schedule (cron):** `0 * * * *` (runs **hourly**, at minute 0)
@@ -1761,6 +1784,29 @@ git push origin main
 
 ---
 
+### Version 1.5.0 (19 December 2025)
+**Publishing Architecture Refactoring**
+
+- **Unified publishing code paths** - UI and scheduled publishing now use identical code paths
+- **Refactored `publishSingleImage()`** - Now uses building blocks: `createMediaContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
+- **Refactored `publishCarousel()`** - Now uses building blocks: `createMediaContainer()` (per item) → `waitForMediaReady()` → `createCarouselContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
+- **Removed duplicate API calls** - High-level functions no longer make direct Instagram API calls; they compose building blocks
+- **Consistent behavior** - Scheduled publishing and UI publishing now behave identically since they use the same orchestration functions
+- **Better maintainability** - Fixes to building blocks automatically apply to both UI and scheduled publishing
+
+**Architecture:**
+```
+instagram-lib.mjs (SINGLE SOURCE OF TRUTH)
+├── Building Blocks: createMediaContainer, createCarouselContainer, waitForMediaReady, publishMediaContainer
+├── High-Level: publishSingleImage, publishCarousel, publishPost (use building blocks)
+└── Consumers: instagram-publish.mjs (UI), instagram-scheduled-publish.mjs (cron)
+```
+
+**Files Changed:**
+- `lib/instagram-lib.mjs` - Refactored `publishSingleImage()` and `publishCarousel()` to use building blocks
+
+---
+
 ### Version 1.4.1 (7 January 2025)
 **UI/UX Improvements & Bug Fixes**
 
@@ -1779,5 +1825,5 @@ git push origin main
 
 ---
 
-*Last Updated: 6 December 2025*
-*Version: 1.4.2 - Duplicate post auto-sync and logging improvements*
+*Last Updated: 19 December 2025*
+*Version: 1.5.0 - Publishing architecture refactoring for unified code paths*

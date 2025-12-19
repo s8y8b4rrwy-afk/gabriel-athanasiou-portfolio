@@ -363,6 +363,8 @@ export async function publishPost(post, accessToken, accountId, options = {}) {
 
 /**
  * Publish a single image post
+ * Uses building block functions for consistent behavior across UI and scheduled publishing.
+ * 
  * @param {string} imageUrl - Image URL
  * @param {string} caption - Post caption
  * @param {string} accessToken - Instagram access token
@@ -371,37 +373,32 @@ export async function publishPost(post, accessToken, accountId, options = {}) {
  * @returns {Promise<{success: boolean, postId?: string, mediaId?: string, permalink?: string, error?: string}>}
  */
 export async function publishSingleImage(imageUrl, caption, accessToken, accountId, options = {}) {
-  console.log('📸 Creating single image container...');
+  const { maxWait = DEFAULT_MAX_WAIT, pollInterval = DEFAULT_POLL_INTERVAL } = options;
   
-  const containerResponse = await fetch(
-    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        caption: caption,
-        access_token: accessToken,
-      }),
-    }
-  );
-
-  const containerData = await containerResponse.json();
-  if (containerData.error) {
-    const errorDetail = containerData.error.error_user_msg || containerData.error.message || 'Unknown error';
-    throw new Error(errorDetail);
+  console.log('📸 Creating single image container...');
+  console.log('   imageUrl:', imageUrl);
+  console.log('   caption length:', caption?.length);
+  console.log('   accountId:', accountId);
+  
+  // Validate hashtag count (Instagram max is 30)
+  const hashtagValidation = validateHashtags(caption);
+  console.log('   hashtag count:', hashtagValidation.count);
+  if (!hashtagValidation.valid) {
+    throw new Error(hashtagValidation.error);
   }
-
-  const containerId = containerData.id;
+  
+  // Step 1: Create media container using building block
+  const container = await createMediaContainer(imageUrl, caption, accessToken, accountId, false);
+  const containerId = container.id;
   console.log('✅ Container created:', containerId);
 
-  // Wait for processing
-  const ready = await waitForMediaReady(containerId, accessToken, options);
+  // Step 2: Wait for processing using building block
+  const ready = await waitForMediaReady(containerId, accessToken, { maxWait, pollInterval });
   if (!ready.success) {
     throw new Error(ready.error || 'Media processing failed');
   }
 
-  // Publish with rate limit detection
+  // Step 3: Publish using building block (includes rate limit detection)
   const publishResult = await publishMediaContainer(containerId, accessToken, accountId);
   
   if (!publishResult.success) {
@@ -419,6 +416,8 @@ export async function publishSingleImage(imageUrl, caption, accessToken, account
 
 /**
  * Publish a carousel post (2-10 images)
+ * Uses building block functions for consistent behavior across UI and scheduled publishing.
+ * 
  * @param {string[]} imageUrls - Array of image URLs
  * @param {string} caption - Post caption
  * @param {string} accessToken - Instagram access token
@@ -427,6 +426,8 @@ export async function publishSingleImage(imageUrl, caption, accessToken, account
  * @returns {Promise<{success: boolean, postId?: string, mediaId?: string, permalink?: string, error?: string}>}
  */
 export async function publishCarousel(imageUrls, caption, accessToken, accountId, options = {}) {
+  const { maxWait = DEFAULT_MAX_WAIT, pollInterval = DEFAULT_POLL_INTERVAL } = options;
+  
   if (imageUrls.length < 2) {
     throw new Error('Carousel requires at least 2 images');
   }
@@ -437,71 +438,37 @@ export async function publishCarousel(imageUrls, caption, accessToken, accountId
   console.log(`📸 Creating carousel with ${imageUrls.length} images...`);
   const childIds = [];
 
-  // Step 1: Create child containers for each image
+  // Step 1: Create child containers for each image using building block
   for (let i = 0; i < imageUrls.length; i++) {
     const imageUrl = imageUrls[i];
     console.log(`Creating carousel item ${i + 1}/${imageUrls.length}...`);
+    console.log(`  📎 Image URL: ${imageUrl}`);
     
-    const childResponse = await fetch(
-      `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          is_carousel_item: true,
-          access_token: accessToken,
-        }),
-      }
-    );
+    // Use createMediaContainer building block (isCarouselItem = true)
+    const result = await createMediaContainer(imageUrl, null, accessToken, accountId, true);
+    childIds.push(result.id);
+    console.log(`✅ Carousel item ${i + 1} created:`, result.id);
 
-    const childData = await childResponse.json();
-    if (childData.error) {
-      throw new Error(`Failed to create carousel item ${i + 1}: ${childData.error.message}`);
-    }
-
-    childIds.push(childData.id);
-    console.log(`✅ Carousel item ${i + 1} created:`, childData.id);
-
-    // Wait for each item to be processed
-    const ready = await waitForMediaReady(childData.id, accessToken, options);
+    // Wait for each item to be processed using building block
+    const ready = await waitForMediaReady(result.id, accessToken, { maxWait, pollInterval });
     if (!ready.success) {
       throw new Error(`Carousel item ${i + 1} processing failed: ${ready.error}`);
     }
   }
 
-  // Step 2: Create carousel container
+  // Step 2: Create carousel container using building block
   console.log('Creating carousel container with children:', childIds);
-  
-  const containerResponse = await fetch(
-    `${GRAPH_API_BASE}/${GRAPH_API_VERSION}/${accountId}/media`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        media_type: 'CAROUSEL',
-        children: childIds,
-        caption: caption,
-        access_token: accessToken,
-      }),
-    }
-  );
-
-  const containerData = await containerResponse.json();
-  if (containerData.error) {
-    throw new Error(containerData.error.message);
-  }
-
-  const containerId = containerData.id;
+  const carouselResult = await createCarouselContainer(childIds, caption, accessToken, accountId);
+  const containerId = carouselResult.id;
   console.log('✅ Carousel container created:', containerId);
 
-  // Step 3: Wait for carousel processing
-  const ready = await waitForMediaReady(containerId, accessToken, options);
+  // Step 3: Wait for carousel processing using building block
+  const ready = await waitForMediaReady(containerId, accessToken, { maxWait, pollInterval });
   if (!ready.success) {
     throw new Error(ready.error || 'Carousel processing failed');
   }
 
-  // Step 4: Publish with rate limit detection
+  // Step 4: Publish using building block (includes rate limit detection)
   const publishResult = await publishMediaContainer(containerId, accessToken, accountId);
   
   if (!publishResult.success) {
