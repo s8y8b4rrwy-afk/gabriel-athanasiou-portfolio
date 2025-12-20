@@ -7,6 +7,61 @@ For current architecture and developer guide, see [AI_AGENT_GUIDE.md](AI_AGENT_G
 
 ---
 
+### Dec 20 2025 - Instagram Studio Project Data Deduplication ✅
+**What Changed:** Removed duplicate project data from drafts, reducing storage by 97%.
+
+**Problem:**
+- Each `PostDraft` stored a complete copy of the `Project` object (~50-100 fields)
+- Same project duplicated across multiple drafts
+- `schedule-data.json` bloated to ~6.6MB (6,685 lines)
+- Project updates in Airtable didn't reflect in existing drafts (stale data)
+
+**Solution:**
+Store only `projectId` in drafts, fetch live project data from `portfolio-data-postproduction.json` at runtime.
+
+**Implementation:**
+1. **New `useProjectLookup` hook** (`src/hooks/useProjectLookup.ts`):
+   - O(1) project lookups via Map
+   - `getProject(id)` - returns Project or undefined
+   - `getProjectWithFallback(id)` - returns stub for deleted projects
+   - `hasProject(id)` - boolean check
+
+2. **Updated `PostDraft` type** - removed embedded `project` field (deprecated)
+
+3. **App.tsx enhancement** - builds `ScheduledPost[]` with project lookup:
+   - Tries fresh project data from projects list first
+   - Falls back to embedded data (backwards compat)
+   - Creates stub project for deleted/hidden projects
+
+4. **All components updated** to use `project` from `ScheduledPost` (guaranteed)
+
+**Results:**
+| Metric | Before | After |
+|--------|--------|-------|
+| `schedule-data.json` size | ~6.6 MB | 145 KB |
+| Storage reduction | - | **97%** |
+| Project data freshness | Stale (snapshot) | Always fresh |
+
+**Edge Cases Handled:**
+- Deleted projects show stub with `type='unknown'`
+- 3 synthetic `published-*` IDs handled gracefully
+- All 100 drafts maintain valid `projectId`
+
+**Files Changed:**
+- `scripts/instagram-studio/src/hooks/useProjectLookup.ts` (NEW)
+- `scripts/instagram-studio/src/App.tsx`
+- `scripts/instagram-studio/src/types/post.ts`
+- `scripts/instagram-studio/src/types/schedule.ts`
+- `scripts/instagram-studio/src/hooks/useSchedule.ts`
+- `scripts/instagram-studio/src/services/cloudinarySync.ts`
+- Multiple Schedule/PostPreview/Calendar components
+
+**Verification Scripts:**
+- `scripts/migrate-strip-project.mjs` - verifies clean data
+- `scripts/test-orphaned-drafts.mjs` - checks for orphaned references
+
+---
+
 ### Dec 20 2025 - Instagram Studio Template Deletion Tracking Fix ✅
 **What Fixed:** Templates kept reappearing after deletion when sync was triggered.
 
