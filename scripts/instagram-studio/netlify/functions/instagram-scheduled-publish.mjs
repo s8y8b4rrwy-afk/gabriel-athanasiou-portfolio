@@ -217,12 +217,14 @@ const scheduledHandler = async (event) => {
 					status: 'published',
 					publishedAt: new Date().toISOString(),
 					instagramMediaId: result.mediaId,
+					instagramPermalink: result.permalink,  // Save the Instagram post URL
 				}]]);
 				
 				try {
 					console.log(`💾 Saving status for ${slot.id} immediately...`);
 					await saveWithSmartMerge(statusUpdate);
 					console.log(`✅ Published AND saved: ${draft.projectId}`);
+					console.log(`📎 Permalink: ${result.permalink || 'not available'}`);
 				} catch (saveError) {
 					console.error(`⚠️ Published but save failed for ${draft.projectId}: ${saveError.message}`);
 					console.error(`⚠️ WARNING: This post may be re-published on next run if save doesn't succeed!`);
@@ -230,7 +232,7 @@ const scheduledHandler = async (event) => {
 					lastSaveError = saveError;
 				}
 
-				results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId });
+				results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId, permalink: result.permalink });
 			} catch (error) {
 				console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
 

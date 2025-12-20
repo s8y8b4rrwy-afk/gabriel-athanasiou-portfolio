@@ -374,6 +374,7 @@ async function saveWithSmartMerge(statusUpdates) {
 			slot.status = update.status;
 			if (update.publishedAt) slot.publishedAt = update.publishedAt;
 			if (update.instagramMediaId) slot.instagramMediaId = update.instagramMediaId;
+			if (update.instagramPermalink) slot.instagramPermalink = update.instagramPermalink;
 			if (update.error) slot.error = update.error;
 			slot.updatedAt = new Date().toISOString();
 			updatedCount++;
