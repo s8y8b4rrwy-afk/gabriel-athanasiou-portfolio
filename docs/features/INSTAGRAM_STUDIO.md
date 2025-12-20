@@ -1853,5 +1853,5 @@ After:  PostDraft { projectId, caption, ... }
 
 ---
 
-*Last Updated: 19 December 2025*
-*Version: 1.5.0 - Publishing architecture refactoring for unified code paths*
+*Last Updated: 20 December 2025*
+*Version: 1.6.0 - Project data deduplication (97% storage reduction)*
