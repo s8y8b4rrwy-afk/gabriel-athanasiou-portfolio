@@ -59,11 +59,32 @@ export interface PublishResult {
   error?: string;
 }
 
-// Rate limit tracking
+// Rate limit tracking - now sourced from Instagram API headers
 export interface RateLimitInfo {
+  // Legacy fields for backwards compatibility
   callsRemaining: number;
   callsLimit: number;
   resetTime: string | null;
   postsToday: number;
   postsLimit: number; // 25 per day
+  
+  // New fields from Instagram API headers
+  lastUpdated?: string;
+  appUsage?: {
+    callCount: number;      // Percentage of calls used (0-100)
+    totalCpuTime: number;   // Percentage of CPU time used
+    totalTime: number;      // Percentage of total time used
+  };
+  businessUsage?: {
+    businessId: string;
+    useCases: {
+      [key: string]: {
+        type: string;
+        callCount: number;              // Percentage used (0-100)
+        totalCpuTime: number;
+        totalTime: number;
+        estimatedTimeToRegainAccess: number; // Minutes until rate limit reset
+      };
+    };
+  };
 }

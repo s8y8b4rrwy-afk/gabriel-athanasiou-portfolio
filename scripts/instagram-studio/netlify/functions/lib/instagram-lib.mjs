@@ -31,6 +31,138 @@ export const DEFAULT_MAX_WAIT = 60000;  // 60 seconds
 export const DEFAULT_POLL_INTERVAL = 2000;  // 2 seconds
 export const MAX_RETRIES = 3;  // For status check retries
 
+// ============================================
+// RATE LIMIT TRACKING
+// ============================================
+
+/**
+ * Parse Instagram API rate limit headers from a fetch Response
+ * Instagram returns rate limit info in these headers:
+ * - x-app-usage: {"call_count":0,"total_cputime":0,"total_time":0}
+ * - x-business-use-case-usage: {"<business_id>":{"<use_case>":[{"type":"...","call_count":0,"total_cputime":0,"total_time":0,"estimated_time_to_regain_access":0}]}}
+ * 
+ * @param {Response} response - Fetch response object
+ * @returns {Object|null} Parsed rate limit data or null if headers not present
+ */
+export function parseRateLimitHeaders(response) {
+  try {
+    const rateLimitData = {
+      timestamp: new Date().toISOString(),
+    };
+    
+    // Parse x-app-usage header (app-level rate limits)
+    const appUsage = response.headers.get('x-app-usage');
+    if (appUsage) {
+      try {
+        const parsed = JSON.parse(appUsage);
+        rateLimitData.appUsage = {
+          callCount: parsed.call_count || 0,
+          totalCpuTime: parsed.total_cputime || 0,
+          totalTime: parsed.total_time || 0,
+        };
+        console.log('📊 App Usage:', rateLimitData.appUsage);
+      } catch (e) {
+        console.warn('Failed to parse x-app-usage header:', e.message);
+      }
+    }
+    
+    // Parse x-business-use-case-usage header (business-level rate limits)
+    const businessUsage = response.headers.get('x-business-use-case-usage');
+    if (businessUsage) {
+      try {
+        const parsed = JSON.parse(businessUsage);
+        // Extract the first business ID's usage (typically only one)
+        const businessIds = Object.keys(parsed);
+        if (businessIds.length > 0) {
+          const businessId = businessIds[0];
+          const useCases = parsed[businessId];
+          
+          // Find content publishing limits specifically
+          rateLimitData.businessUsage = {
+            businessId,
+            useCases: {},
+          };
+          
+          for (const [useCase, limits] of Object.entries(useCases)) {
+            if (Array.isArray(limits) && limits.length > 0) {
+              const limit = limits[0];
+              rateLimitData.businessUsage.useCases[useCase] = {
+                type: limit.type,
+                callCount: limit.call_count || 0,
+                totalCpuTime: limit.total_cputime || 0,
+                totalTime: limit.total_time || 0,
+                estimatedTimeToRegainAccess: limit.estimated_time_to_regain_access || 0,
+              };
+            }
+          }
+          console.log('📊 Business Usage:', rateLimitData.businessUsage);
+        }
+      } catch (e) {
+        console.warn('Failed to parse x-business-use-case-usage header:', e.message);
+      }
+    }
+    
+    // Only return if we got some data
+    if (rateLimitData.appUsage || rateLimitData.businessUsage) {
+      return rateLimitData;
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Error parsing rate limit headers:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Save rate limit data to the schedule-data.json in Cloudinary
+ * Merges with existing rate limit data
+ * 
+ * @param {Object} rateLimitData - Parsed rate limit data from parseRateLimitHeaders
+ * @returns {Promise<boolean>} Success status
+ */
+export async function saveRateLimitData(rateLimitData) {
+  if (!rateLimitData) return false;
+  
+  try {
+    const scheduleData = await fetchScheduleData();
+    if (!scheduleData) {
+      console.warn('Cannot save rate limits: no schedule data found');
+      return false;
+    }
+    
+    // Initialize or update rateLimit section
+    scheduleData.rateLimit = {
+      ...scheduleData.rateLimit,
+      ...rateLimitData,
+      lastUpdated: new Date().toISOString(),
+    };
+    
+    // Track historical high watermarks for call counts
+    if (!scheduleData.rateLimit.history) {
+      scheduleData.rateLimit.history = [];
+    }
+    
+    // Add to history (keep last 50 entries)
+    scheduleData.rateLimit.history.push({
+      timestamp: rateLimitData.timestamp,
+      appCallCount: rateLimitData.appUsage?.callCount,
+      businessCallCount: rateLimitData.businessUsage?.useCases?.['IG_CONTENT_PUBLISHING']?.callCount,
+    });
+    
+    if (scheduleData.rateLimit.history.length > 50) {
+      scheduleData.rateLimit.history = scheduleData.rateLimit.history.slice(-50);
+    }
+    
+    await uploadToCloudinary(scheduleData);
+    console.log('💾 Rate limit data saved to Cloudinary');
+    return true;
+  } catch (error) {
+    console.error('Failed to save rate limit data:', error.message);
+    return false;
+  }
+}
+
 /**
  * Fetch schedule data from Cloudinary
  */
@@ -641,7 +773,7 @@ export async function verifyPublishStatus(containerId, accessToken, accountId) {
  * @param {string} containerId - Container ID to publish
  * @param {string} accessToken - Instagram access token
  * @param {string} accountId - Instagram account ID
- * @returns {Promise<{success: boolean, postId?: string, permalink?: string, error?: string, rateLimitHit?: boolean}>}
+ * @returns {Promise<{success: boolean, postId?: string, permalink?: string, error?: string, rateLimitHit?: boolean, rateLimit?: Object}>}
  */
 export async function publishMediaContainer(containerId, accessToken, accountId) {
   const response = await fetch(
@@ -655,6 +787,14 @@ export async function publishMediaContainer(containerId, accessToken, accountId)
       }),
     }
   );
+
+  // Capture rate limit headers before parsing JSON
+  const rateLimitData = parseRateLimitHeaders(response);
+  
+  // Save rate limit data asynchronously (always, even on error)
+  if (rateLimitData) {
+    saveRateLimitData(rateLimitData).catch(e => console.warn('Failed to save rate limit:', e.message));
+  }
 
   const result = await response.json();
   
@@ -681,7 +821,7 @@ export async function publishMediaContainer(containerId, accessToken, accountId)
       }
     }
     
-    return { success: false, error: result.error.message };
+    return { success: false, error: result.error.message, rateLimit: rateLimitData };
   }
 
   const postId = result.id;
@@ -702,7 +842,7 @@ export async function publishMediaContainer(containerId, accessToken, accountId)
     console.warn('Could not fetch permalink:', err.message);
   }
 
-  return { success: true, postId, permalink };
+  return { success: true, postId, permalink, rateLimit: rateLimitData };
 }
 
 /**
@@ -835,7 +975,7 @@ export function buildCaption(caption, hashtags = []) {
  * @param {string} accessToken - Instagram access token
  * @param {string} accountId - Instagram account ID
  * @param {boolean} isCarouselItem - Whether this is a carousel item
- * @returns {Promise<{id: string}>} Container ID
+ * @returns {Promise<{id: string, rateLimit?: Object}>} Container ID and rate limit data
  */
 export async function createMediaContainer(imageUrl, caption, accessToken, accountId, isCarouselItem = false) {
   const body = {
@@ -858,14 +998,26 @@ export async function createMediaContainer(imageUrl, caption, accessToken, accou
     }
   );
 
+  // Capture rate limit headers before parsing JSON
+  const rateLimitData = parseRateLimitHeaders(response);
+
   const result = await response.json();
   
   if (result.error) {
     const errorDetail = result.error.error_user_msg || result.error.message || 'Unknown error';
+    // Still save rate limit data even on error
+    if (rateLimitData) {
+      saveRateLimitData(rateLimitData).catch(e => console.warn('Failed to save rate limit on error:', e.message));
+    }
     throw new Error(errorDetail);
   }
 
-  return { id: result.id };
+  // Save rate limit data asynchronously (don't block)
+  if (rateLimitData) {
+    saveRateLimitData(rateLimitData).catch(e => console.warn('Failed to save rate limit:', e.message));
+  }
+
+  return { id: result.id, rateLimit: rateLimitData };
 }
 
 /**
@@ -874,7 +1026,7 @@ export async function createMediaContainer(imageUrl, caption, accessToken, accou
  * @param {string} caption - Carousel caption
  * @param {string} accessToken - Instagram access token
  * @param {string} accountId - Instagram account ID
- * @returns {Promise<{id: string}>} Container ID
+ * @returns {Promise<{id: string, rateLimit?: Object}>} Container ID and rate limit data
  */
 export async function createCarouselContainer(childIds, caption, accessToken, accountId) {
   const response = await fetch(
@@ -891,11 +1043,23 @@ export async function createCarouselContainer(childIds, caption, accessToken, ac
     }
   );
 
+  // Capture rate limit headers before parsing JSON
+  const rateLimitData = parseRateLimitHeaders(response);
+
   const result = await response.json();
   
   if (result.error) {
+    // Still save rate limit data even on error
+    if (rateLimitData) {
+      saveRateLimitData(rateLimitData).catch(e => console.warn('Failed to save rate limit on error:', e.message));
+    }
     throw new Error(result.error.message);
   }
 
-  return { id: result.id };
+  // Save rate limit data asynchronously (don't block)
+  if (rateLimitData) {
+    saveRateLimitData(rateLimitData).catch(e => console.warn('Failed to save rate limit:', e.message));
+  }
+
+  return { id: result.id, rateLimit: rateLimitData };
 }

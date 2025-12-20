@@ -43,9 +43,14 @@ Instagram Studio supports automated publishing via a Netlify **Background Functi
 
 **Function Files:**
 - **Shared Library:** `scripts/instagram-studio/netlify/functions/lib/instagram-lib.mjs` - All Instagram API logic
-- **Scheduled Publisher:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish-background.mjs`
-- **Manual Trigger:** `scripts/instagram-studio/netlify/functions/instagram-publish-now-background.mjs`
-- **UI Publish Button:** `scripts/instagram-studio/netlify/functions/instagram-publish.mjs`
+- **Scheduled Publisher:** `scripts/instagram-studio/netlify/functions/instagram-scheduled-publish.mjs` - Hourly cron (the ONLY scheduled function)
+- **Manual Trigger:** `scripts/instagram-studio/netlify/functions/instagram-publish-now-background.mjs` - "Publish Now" button
+- **UI Publish Button:** `scripts/instagram-studio/netlify/functions/instagram-publish.mjs` - API for creating/publishing posts
+- **Auth:** `scripts/instagram-studio/netlify/functions/instagram-auth.mjs` - OAuth token exchange/refresh
+- **Diagnostic:** `scripts/instagram-studio/netlify/functions/instagram-diagnostic.mjs` - Debug endpoint
+- **Storage:** `scripts/instagram-studio/netlify/functions/instagram-studio-sync.mjs` - Cloudinary save/load
+
+> **Note (Dec 20, 2025):** `instagram-scheduled-publish-background.mjs` was DELETED - it was a 578-line duplicate that caused posts to publish 2-4x. Only `instagram-scheduled-publish.mjs` should be scheduled.
 
 **Library Architecture (Refactored Dec 19, 2025):**
 ```

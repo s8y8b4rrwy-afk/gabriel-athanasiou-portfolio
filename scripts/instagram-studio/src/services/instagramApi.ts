@@ -866,8 +866,54 @@ export function disconnectInstagram(): void {
 
 // ===== Rate Limit Tracking =====
 
+// Cloudinary URL for schedule data (contains rate limit info)
+const SCHEDULE_DATA_URL = 'https://res.cloudinary.com/date24ay6/raw/upload/instagram-studio/schedule-data';
+
+/**
+ * Fetch rate limit info from Cloudinary schedule data
+ * This is the source of truth - populated by server-side API calls
+ */
+export async function fetchRateLimitFromCloud(): Promise<RateLimitInfo | null> {
+  try {
+    const response = await fetch(`${SCHEDULE_DATA_URL}?t=${Date.now()}`);
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    if (!data.rateLimit) return null;
+    
+    const cloudRateLimit = data.rateLimit;
+    
+    // Convert cloud format to RateLimitInfo format
+    const info: RateLimitInfo = {
+      // Calculate remaining calls from percentage (Instagram returns % used)
+      callsRemaining: cloudRateLimit.appUsage 
+        ? Math.max(0, 200 - Math.floor(cloudRateLimit.appUsage.callCount * 2))
+        : 200,
+      callsLimit: 200,
+      resetTime: cloudRateLimit.businessUsage?.useCases?.['IG_CONTENT_PUBLISHING']?.estimatedTimeToRegainAccess
+        ? new Date(Date.now() + cloudRateLimit.businessUsage.useCases['IG_CONTENT_PUBLISHING'].estimatedTimeToRegainAccess * 60000).toISOString()
+        : null,
+      postsToday: 0, // Not directly available from headers
+      postsLimit: 25,
+      lastUpdated: cloudRateLimit.lastUpdated,
+      appUsage: cloudRateLimit.appUsage,
+      businessUsage: cloudRateLimit.businessUsage,
+    };
+    
+    // Cache in localStorage for offline access
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(info));
+    
+    return info;
+  } catch (error) {
+    console.warn('Failed to fetch rate limit from cloud:', error);
+    return null;
+  }
+}
+
 /**
  * Get current rate limit info
+ * First tries to use cached data, falls back to defaults
+ * Call fetchRateLimitFromCloud() for fresh data from server
  */
 export function getRateLimitInfo(): RateLimitInfo {
   const stored = localStorage.getItem(RATE_LIMIT_KEY);
@@ -884,12 +930,28 @@ export function getRateLimitInfo(): RateLimitInfo {
   try {
     const info = JSON.parse(stored) as RateLimitInfo;
     
-    // Reset if it's a new hour
-    if (info.resetTime) {
-      const resetDate = new Date(info.resetTime);
-      if (new Date() >= resetDate) {
-        info.callsRemaining = info.callsLimit;
-        info.resetTime = null;
+    // If we have actual API data, use the appUsage to calculate remaining
+    if (info.appUsage) {
+      // Instagram returns percentage used (0-100)
+      // 200 calls/hour standard rate, so remaining = 200 - (callCount% * 2)
+      info.callsRemaining = Math.max(0, 200 - Math.floor(info.appUsage.callCount * 2));
+    }
+    
+    // Check if we have estimated time to regain access
+    if (info.businessUsage?.useCases?.['IG_CONTENT_PUBLISHING']?.estimatedTimeToRegainAccess) {
+      const minutes = info.businessUsage.useCases['IG_CONTENT_PUBLISHING'].estimatedTimeToRegainAccess;
+      if (minutes > 0) {
+        // We're rate limited - calculate when we can resume
+        const lastUpdated = info.lastUpdated ? new Date(info.lastUpdated) : new Date();
+        const resetTime = new Date(lastUpdated.getTime() + minutes * 60000);
+        
+        if (new Date() >= resetTime) {
+          // Rate limit should have reset
+          info.callsRemaining = 200;
+          info.resetTime = null;
+        } else {
+          info.resetTime = resetTime.toISOString();
+        }
       }
     }
     

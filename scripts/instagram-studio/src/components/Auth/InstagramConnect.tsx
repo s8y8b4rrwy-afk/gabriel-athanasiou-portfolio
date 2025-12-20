@@ -7,6 +7,7 @@ import {
   shouldRefreshToken,
   isTokenExpired,
   getRateLimitInfo,
+  fetchRateLimitFromCloud,
   canPublishPost,
 } from '../../services/instagramApi';
 import type { InstagramCredentials, RateLimitInfo } from '../../types/instagram';
@@ -22,10 +23,18 @@ export function InstagramConnect({ credentials, onCredentialsChange }: Instagram
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  // Load rate limit info
+  // Load rate limit info - first from cache, then fetch fresh from cloud
   useEffect(() => {
-    const info = getRateLimitInfo();
-    setRateLimitInfo(info);
+    // Immediately show cached data
+    const cachedInfo = getRateLimitInfo();
+    setRateLimitInfo(cachedInfo);
+    
+    // Then fetch fresh data from Cloudinary
+    fetchRateLimitFromCloud().then((cloudInfo) => {
+      if (cloudInfo) {
+        setRateLimitInfo(cloudInfo);
+      }
+    });
   }, []);
 
   // Check if token needs refresh on mount
@@ -128,15 +137,38 @@ export function InstagramConnect({ credentials, onCredentialsChange }: Instagram
               {rateLimitInfo && (
                 <>
                   <div className={styles.detailRow}>
-                    <span>API Calls Remaining:</span>
-                    <span>{rateLimitInfo.callsRemaining} / {rateLimitInfo.callsLimit}</span>
+                    <span>API Usage:</span>
+                    <span>
+                      {rateLimitInfo.appUsage 
+                        ? `${rateLimitInfo.appUsage.callCount}% used` 
+                        : `${rateLimitInfo.callsRemaining} / ${rateLimitInfo.callsLimit} remaining`}
+                    </span>
                   </div>
+                  {rateLimitInfo.businessUsage?.useCases?.['IG_CONTENT_PUBLISHING'] && (
+                    <div className={styles.detailRow}>
+                      <span>Content Publishing:</span>
+                      <span>
+                        {rateLimitInfo.businessUsage.useCases['IG_CONTENT_PUBLISHING'].callCount}% used
+                        {rateLimitInfo.businessUsage.useCases['IG_CONTENT_PUBLISHING'].estimatedTimeToRegainAccess > 0 && (
+                          <span className={styles.warning}>
+                            {' '}(reset in {rateLimitInfo.businessUsage.useCases['IG_CONTENT_PUBLISHING'].estimatedTimeToRegainAccess}m)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
                   <div className={styles.detailRow}>
                     <span>Posts Today:</span>
                     <span className={!canPost ? styles.warning : ''}>
                       {rateLimitInfo.postsToday} / {rateLimitInfo.postsLimit}
                     </span>
                   </div>
+                  {rateLimitInfo.lastUpdated && (
+                    <div className={styles.detailRow}>
+                      <span>Rate Limit Updated:</span>
+                      <span>{formatDate(rateLimitInfo.lastUpdated)}</span>
+                    </div>
+                  )}
                 </>
               )}
             </div>
