@@ -1,7 +1,7 @@
 # 📘 Master Development Guide
 ## Gabriel Athanasiou Portfolio Website
 
-> **Last Updated:** December 18, 2025 - Instagram Studio Refactoring Verification Complete  
+> **Last Updated:** December 20, 2025 - Instagram Studio Rate Limit Tracking  
 > **Purpose:** Complete technical documentation for AI agents and developers  
 > **This is the single source of truth for the entire codebase**
 

@@ -7,6 +7,77 @@ For current architecture and developer guide, see [AI_AGENT_GUIDE.md](AI_AGENT_G
 
 ---
 
+### Dec 20 2025 - Instagram Studio Rate Limit Tracking ✅
+**What Added:** Proper Instagram API rate limit tracking using actual response headers instead of client-side estimates.
+
+**Problem:**
+- Frontend was using hardcoded estimates (`callsRemaining: 200`) not based on actual API usage
+- Server-side functions had no rate limit tracking at all
+- Reset times were calculated as "1 hour from first call" instead of Instagram's actual rolling window
+
+**Solution:**
+Implemented real rate limit tracking by parsing Instagram API response headers and saving to Cloudinary:
+
+1. **`parseRateLimitHeaders(response)`** - New function in `instagram-lib.mjs`:
+   - Parses `x-app-usage` header → app-level call count percentages
+   - Parses `x-business-use-case-usage` header → business-level limits including `IG_CONTENT_PUBLISHING`
+   - Returns structured rate limit data with timestamps
+
+2. **`saveRateLimitData(rateLimitData)`** - Persists to `schedule-data.json`:
+   - Merges with existing schedule data
+   - Maintains history of last 50 rate limit readings
+   - Non-blocking async save to avoid slowing API calls
+
+3. **Updated API Functions:**
+   - `createMediaContainer()` - Now captures and saves rate limit headers
+   - `createCarouselContainer()` - Now captures and saves rate limit headers
+   - `publishMediaContainer()` - Now captures and saves rate limit headers
+   - All return `rateLimit` object in response
+
+4. **Frontend Updates:**
+   - `fetchRateLimitFromCloud()` - New function to fetch real data from Cloudinary
+   - `getRateLimitInfo()` - Now uses actual API percentages when available
+   - `InstagramConnect.tsx` - Shows actual API usage percentages and reset times
+   - Extended `RateLimitInfo` type with `appUsage` and `businessUsage` fields
+
+**Data Saved to schedule-data.json:**
+```json
+{
+  "rateLimit": {
+    "timestamp": "2025-12-20T...",
+    "lastUpdated": "2025-12-20T...",
+    "appUsage": {
+      "callCount": 5,
+      "totalCpuTime": 2,
+      "totalTime": 3
+    },
+    "businessUsage": {
+      "businessId": "123456789",
+      "useCases": {
+        "IG_CONTENT_PUBLISHING": {
+          "type": "CONTENT_PUBLISHING",
+          "callCount": 10,
+          "totalCpuTime": 5,
+          "totalTime": 8,
+          "estimatedTimeToRegainAccess": 0
+        }
+      }
+    },
+    "history": [...]
+  }
+}
+```
+
+**Files Changed:**
+- `scripts/instagram-studio/netlify/functions/lib/instagram-lib.mjs` - Added rate limit parsing and saving
+- `scripts/instagram-studio/src/services/instagramApi.ts` - Added cloud fetch, updated getRateLimitInfo
+- `scripts/instagram-studio/src/types/instagram.ts` - Extended RateLimitInfo interface
+- `scripts/instagram-studio/src/components/Auth/InstagramConnect.tsx` - Show actual API data
+
+**Note:** This implements tracking only - no protective rate limiting added. The system records actual Instagram API usage for visibility.
+
+---
+
 ### Dec 18 2025 - Instagram Studio Shared Library Bug Fixes ✅
 **What Fixed:** Corrected parameter order and removed duplicate functions in Instagram Studio Netlify functions.
 
