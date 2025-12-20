@@ -1771,6 +1771,52 @@ git push origin main
 
 ## Changelog
 
+### Version 1.6.0 (20 December 2025)
+**Project Data Deduplication (97% Storage Reduction)**
+
+- **Removed duplicate project data from drafts** - Each draft now stores only `projectId` instead of the full project object
+- **New `useProjectLookup` hook** - O(1) project lookups via Map with fallback for deleted projects
+- **Runtime project data lookup** - Fresh project data fetched from `portfolio-data-postproduction.json` at runtime
+- **Stub project support** - Graceful handling of deleted/hidden projects with placeholder display
+- **`schedule-data.json` reduced from ~6.6MB to 145KB** - 97% storage reduction
+
+**Benefits:**
+- Project updates in Airtable now reflect immediately in existing drafts
+- No more stale embedded project data
+- Significantly faster sync operations
+
+**Architecture:**
+```
+Before: PostDraft { projectId, project: { ...50-100 fields... }, caption, ... }
+After:  PostDraft { projectId, caption, ... }
+        ↓
+        App.tsx: scheduledPosts = rawScheduledPosts.map(post => ({
+          ...post,
+          project: projectMap.get(post.projectId) || stubProject
+        }))
+```
+
+**Files Changed:**
+- `src/hooks/useProjectLookup.ts` (NEW) - Project lookup hook
+- `src/types/post.ts` - Removed embedded `project` field
+- `src/types/schedule.ts` - Updated `ScheduledPost` type
+- `src/App.tsx` - Added project lookup enhancement
+- `src/hooks/useSchedule.ts` - Removed project embedding on save
+- `src/services/cloudinarySync.ts` - Updated CSV export to use lookup
+- Multiple Schedule/PostPreview/Calendar components
+
+---
+
+### Version 1.5.0 (19 December 2025)
+**Publishing Architecture Refactoring**
+
+- **Unified publishing code paths** - UI and scheduled publishing now use identical code paths
+- **Refactored `publishSingleImage()`** - Now uses building blocks: `createMediaContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
+- **Refactored `publishCarousel()`** - Now uses building blocks: `createMediaContainer()` (per item) → `waitForMediaReady()` → `createCarouselContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
+- **Removed duplicate API calls** - High-level functions no longer make direct Instagram API calls; they compose building blocks
+
+---
+
 ### Version 1.4.2 (6 December 2025)
 **Duplicate Post Auto-Sync & Logging**
 
@@ -1786,29 +1832,6 @@ git push origin main
 **Files Changed:**
 - `useSchedule.ts` - Added duplicate confirmation log
 - `useCloudinarySync.ts` - Added detailed sync flow logging with lock status
-
----
-
-### Version 1.5.0 (19 December 2025)
-**Publishing Architecture Refactoring**
-
-- **Unified publishing code paths** - UI and scheduled publishing now use identical code paths
-- **Refactored `publishSingleImage()`** - Now uses building blocks: `createMediaContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
-- **Refactored `publishCarousel()`** - Now uses building blocks: `createMediaContainer()` (per item) → `waitForMediaReady()` → `createCarouselContainer()` → `waitForMediaReady()` → `publishMediaContainer()`
-- **Removed duplicate API calls** - High-level functions no longer make direct Instagram API calls; they compose building blocks
-- **Consistent behavior** - Scheduled publishing and UI publishing now behave identically since they use the same orchestration functions
-- **Better maintainability** - Fixes to building blocks automatically apply to both UI and scheduled publishing
-
-**Architecture:**
-```
-instagram-lib.mjs (SINGLE SOURCE OF TRUTH)
-├── Building Blocks: createMediaContainer, createCarouselContainer, waitForMediaReady, publishMediaContainer
-├── High-Level: publishSingleImage, publishCarousel, publishPost (use building blocks)
-└── Consumers: instagram-publish.mjs (UI), instagram-scheduled-publish.mjs (cron)
-```
-
-**Files Changed:**
-- `lib/instagram-lib.mjs` - Refactored `publishSingleImage()` and `publishCarousel()` to use building blocks
 
 ---
 
