@@ -1,15 +1,11 @@
 import { useDrop } from 'react-dnd';
-import type { Project, ScheduleSlot, PostDraft } from '../../types';
+import type { Project, ScheduledPost } from '../../types';
 import { CalendarDay } from '../Calendar/CalendarDay';
 import { ITEM_TYPES } from './DraggableProjectCard';
 
 interface ProjectDragItem {
   type: typeof ITEM_TYPES.PROJECT;
   project: Project;
-}
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
 }
 
 interface ScheduledPostDragItem {

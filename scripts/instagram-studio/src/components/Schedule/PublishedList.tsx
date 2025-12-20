@@ -1,11 +1,7 @@
 import styles from './Schedule.module.css';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import type { ScheduledPost } from '../../types';
 import { useMemo } from 'react';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface PublishedListProps {
   posts: ScheduledPost[];

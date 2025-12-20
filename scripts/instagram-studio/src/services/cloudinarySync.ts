@@ -23,6 +23,43 @@ import {
 const CLOUDINARY_CLOUD_NAME = 'date24ay6';
 const CLOUDINARY_FOLDER = 'instagram-studio';
 
+/**
+ * Migration: Strip embedded project data from drafts
+ * 
+ * Old drafts stored the entire Project object (~50-100 fields per draft).
+ * This caused:
+ * - Duplicate data (same project stored multiple times across drafts)
+ * - Stale data (project updates in Airtable don't reflect in existing drafts)
+ * - Bloated schedule-data.json
+ * 
+ * Now we only store projectId, and look up project data at runtime.
+ * This function strips the embedded project from legacy drafts.
+ */
+export function migrateOldDrafts(drafts: PostDraft[]): PostDraft[] {
+  let migratedCount = 0;
+  
+  const migrated = drafts.map(draft => {
+    // Check if draft has embedded project data that needs removal
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const draftAny = draft as any;
+    if (draftAny.project !== undefined) {
+      migratedCount++;
+      // Strip the project field, keep everything else
+      const { project: _removed, ...cleanDraft } = draftAny;
+      return cleanDraft as PostDraft;
+    }
+    return draft;
+  });
+  
+  if (migratedCount > 0) {
+    console.log(`🔄 Migration: Stripped embedded project data from ${migratedCount} drafts`);
+  } else {
+    console.log('📋 Migration: No embedded project data found to strip');
+  }
+  
+  return migrated;
+}
+
 // Default profile ID - will be replaced with Instagram user ID when multi-profile is implemented
 // For now, use 'default' to maintain backwards compatibility
 const DEFAULT_PROFILE_ID = 'default';
@@ -100,6 +137,13 @@ export async function fetchScheduleFromCloudinary(profileId: string = DEFAULT_PR
     
     const data: ScheduleData = await response.json();
     console.log(`✅ Fetched schedule from Cloudinary (profile: ${profileId}):`, data.exportedAt);
+    
+    // Apply migration: strip embedded project data from old drafts
+    // This keeps data clean and ensures fresh project data is always used
+    if (data.drafts && data.drafts.length > 0) {
+      data.drafts = migrateOldDrafts(data.drafts);
+    }
+    
     return data;
   } catch (error) {
     console.error('Error fetching schedule from Cloudinary:', error);
@@ -132,13 +176,16 @@ export async function uploadScheduleToCloudinary(
   forceOverwrite: boolean = false
 ): Promise<{ success: boolean; url?: string; error?: string; mergedData?: ScheduleData; mergeStats?: string }> {
   try {
+    // Strip embedded project data before upload (migration cleanup)
+    const cleanDrafts = migrateOldDrafts(drafts);
+    
     // Build local data object
     const localData: ScheduleDataWithMerge = {
       version: '1.4.0', // Version bump for merge support
       exportedAt: new Date().toISOString(),
       profileId,
       settings,
-      drafts,
+      drafts: cleanDrafts,
       scheduleSlots,
       templates: templates || [],
       defaultTemplate,
@@ -159,6 +206,11 @@ export async function uploadScheduleToCloudinary(
       console.log('📥 Fetching cloud data for merge...');
       const cloudData = await fetchScheduleFromCloudinary(profileId);
       
+      // Step 1.5: Strip embedded project data from cloud data too (migration cleanup)
+      if (cloudData && cloudData.drafts) {
+        cloudData.drafts = migrateOldDrafts(cloudData.drafts);
+      }
+      
       // Step 2: Merge local and cloud data
       console.log('🔄 Merging local and cloud data...');
       const mergeResult: MergeResult = mergeScheduleData(localData, cloudData as ScheduleDataWithMerge | null);
@@ -169,6 +221,17 @@ export async function uploadScheduleToCloudinary(
       dataToUpload = mergeResult.data;
       mergeStatsMessage = formatMergeStats(mergeResult.stats);
       console.log('📊 Merge stats:', mergeStatsMessage);
+    }
+
+    // FINAL cleanup: ensure no embedded project data in upload
+    // This catches any edge cases from merge logic
+    console.log('🔍 Pre-final cleanup drafts count:', dataToUpload.drafts?.length || 0);
+    if (dataToUpload.drafts && dataToUpload.drafts.length > 0) {
+      const beforeCount = dataToUpload.drafts.filter((d: PostDraft) => 'project' in d).length;
+      console.log(`🔍 Drafts with project field before cleanup: ${beforeCount}`);
+      dataToUpload.drafts = migrateOldDrafts(dataToUpload.drafts);
+      const afterCount = dataToUpload.drafts.filter((d: PostDraft) => 'project' in d).length;
+      console.log(`🔍 Drafts with project field after cleanup: ${afterCount}`);
     }
 
     // Upload data to Cloudinary
@@ -230,11 +293,14 @@ export function exportScheduleAsJson(
   instagram?: InstagramCredentials | null,
   deletedIds?: ScheduleData['deletedIds']
 ): void {
+  // Strip embedded project data before export (migration cleanup)
+  const cleanDrafts = migrateOldDrafts(drafts);
+  
   const scheduleData: ScheduleData = {
     version: '1.4.0',
     exportedAt: new Date().toISOString(),
     settings,
-    drafts,
+    drafts: cleanDrafts,
     scheduleSlots,
     templates: templates || [],
     defaultTemplate,
@@ -257,13 +323,32 @@ export function exportScheduleAsJson(
 
 /**
  * Export schedule data as a downloadable CSV file
+ * @param projects - Optional projects array for looking up project data (if not embedded in drafts)
  */
 export function exportScheduleAsCsv(
   drafts: PostDraft[],
-  scheduleSlots: ScheduleSlot[]
+  scheduleSlots: ScheduleSlot[],
+  projects?: Array<{ id: string; title: string; year: string }>
 ): void {
   // Create a map of draft IDs to drafts
   const draftMap = new Map(drafts.map(d => [d.id, d]));
+  // Create a map of project IDs to projects (for runtime lookup)
+  const projectMap = new Map(projects?.map(p => [p.id, p]) || []);
+  
+  // Helper to get project data (from embedded or lookup)
+  const getProjectData = (draft: PostDraft): { title: string; year: string } => {
+    // First try embedded project (legacy drafts)
+    if (draft.project?.title) {
+      return { title: draft.project.title, year: draft.project.year || '' };
+    }
+    // Then try project lookup
+    const project = projectMap.get(draft.projectId);
+    if (project) {
+      return { title: project.title, year: project.year || '' };
+    }
+    // Fallback
+    return { title: 'Unknown Project', year: '' };
+  };
   
   // CSV headers
   const headers = [
@@ -284,12 +369,14 @@ export function exportScheduleAsCsv(
       const draft = draftMap.get(slot.postDraftId);
       if (!draft) return null;
       
+      const projectData = getProjectData(draft);
+      
       return [
         slot.scheduledDate,
         slot.scheduledTime,
         slot.status,
-        `"${draft.project.title.replace(/"/g, '""')}"`,
-        draft.project.year,
+        `"${projectData.title.replace(/"/g, '""')}"`,
+        projectData.year,
         `"${draft.caption.substring(0, 100).replace(/"/g, '""').replace(/\n/g, ' ')}..."`,
         `"${draft.hashtags.join(' ')}"`,
         draft.selectedImages.length,

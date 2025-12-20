@@ -907,3 +907,33 @@
   margin-bottom: 8px;
   width: 100%;
 }
+
+/* Stub project styles (deleted/hidden projects) */
+.stubProject {
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.stubWarning {
+  font-size: 12px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  border: 1px dashed rgba(251, 191, 36, 0.3);
+}
+
+.noThumbnail {
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 20px;
+}
+
+.noThumbnailText {
+  font-size: 10px;
+  margin-top: 2px;
+}

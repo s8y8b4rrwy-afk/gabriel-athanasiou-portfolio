@@ -3,15 +3,11 @@ import { PublishButton } from './PublishButton';
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import { convertSlotToDisplayTimezone, DEFAULT_STORAGE_TIMEZONE } from '../../utils/timezone';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import type { ScheduledPost } from '../../types';
 import { useMemo, useState } from 'react';
 
 // Debug mode: hold Shift and double-click on status badge to toggle
 const DEBUG_ENABLED = true;
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface ScheduleItemProps {
   post: ScheduledPost;
@@ -38,6 +34,10 @@ export function ScheduleItem({
   const credentials = getCredentialsLocally();
   const [showDebugConfirm, setShowDebugConfirm] = useState(false);
   
+  // Check if this is a stub project (project was deleted/hidden from Airtable)
+  // Stub projects have type 'unknown' and minimal data
+  const isStubProject = project.type === 'unknown' || !project.title || project.title.startsWith('Project ');
+  
   // Convert slot times to display timezone
   const displaySlot = useMemo(() => {
     return convertSlotToDisplayTimezone(scheduleSlot, displayTimezone);
@@ -45,12 +45,19 @@ export function ScheduleItem({
   
   // Get thumbnail with Cloudinary conversion
   const thumbnail = useMemo(() => {
+    // For stub projects, try to use selectedImages directly
     const rawThumbnail = post.selectedImages[0] || project.gallery?.[0] || '';
     if (!rawThumbnail) return '';
     
     // If already Cloudinary, just optimize it
     if (rawThumbnail.includes('res.cloudinary.com')) {
       return getOptimizedCloudinaryUrl(rawThumbnail);
+    }
+    
+    // For stub projects, we can't build Cloudinary URLs reliably
+    // Just return the raw URL (may be expired Airtable URL)
+    if (isStubProject) {
+      return rawThumbnail;
     }
     
     // Find the index in the gallery
@@ -66,7 +73,7 @@ export function ScheduleItem({
     }
     
     return rawThumbnail;
-  }, [post.selectedImages, project.gallery, project.id]);
+  }, [post.selectedImages, project.gallery, project.id, isStubProject]);
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -114,12 +121,17 @@ export function ScheduleItem({
 
   if (compact) {
     return (
-      <div className={`${styles.item} ${styles.compact}`}>
-        {thumbnail && (
+      <div className={`${styles.item} ${styles.compact} ${isStubProject ? styles.stubProject : ''}`}>
+        {thumbnail ? (
           <img src={thumbnail} alt={project.title} className={styles.thumbnailSmall} />
+        ) : (
+          <div className={`${styles.thumbnailSmall} ${styles.noThumbnail}`}>📷</div>
         )}
         <div className={styles.compactInfo}>
-          <span className={styles.compactTitle}>{project.title}</span>
+          <span className={styles.compactTitle}>
+            {isStubProject && <span title="Project no longer available">⚠️ </span>}
+            {project.title}
+          </span>
           <span className={styles.compactTime}>{formatTime(displaySlot.displayTime)}</span>
         </div>
         {getStatusBadge()}
@@ -128,7 +140,7 @@ export function ScheduleItem({
   }
 
   return (
-    <div className={`${styles.item} ${styles[scheduleSlot.status]}`}>
+    <div className={`${styles.item} ${styles[scheduleSlot.status]} ${isStubProject ? styles.stubProject : ''}`}>
       <div className={styles.itemHeader}>
         <div className={styles.datetime}>
           <span className={styles.date}>{formatDate(displaySlot.displayDate)}</span>
@@ -137,17 +149,29 @@ export function ScheduleItem({
         {getStatusBadge()}
       </div>
 
+      {/* Warning banner for stub projects */}
+      {isStubProject && (
+        <div className={styles.stubWarning}>
+          ⚠️ Project no longer available — You can still publish, but project data may be incomplete
+        </div>
+      )}
+
       <div className={styles.itemContent}>
-        {thumbnail && (
+        {thumbnail ? (
           <img 
             src={thumbnail} 
             alt={project.title} 
             className={styles.thumbnail} 
           />
+        ) : (
+          <div className={`${styles.thumbnail} ${styles.noThumbnail}`}>
+            <span>📷</span>
+            <span className={styles.noThumbnailText}>No image</span>
+          </div>
         )}
         <div className={styles.itemDetails}>
           <h4 className={styles.projectTitle}>{project.title}</h4>
-          <p className={styles.projectYear}>{project.year}</p>
+          {project.year && <p className={styles.projectYear}>{project.year}</p>}
           <div className={styles.imageCount}>
             📷 {post.selectedImages.length || project.gallery?.length || 0} images
           </div>

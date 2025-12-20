@@ -1,11 +1,7 @@
 import { useDrop } from 'react-dnd';
 import { ITEM_TYPES } from './DraggableProjectCard';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import type { ScheduledPost } from '../../types';
 import styles from './DeleteDropZone.module.css';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface DragItem {
   type: typeof ITEM_TYPES.SCHEDULED_POST;

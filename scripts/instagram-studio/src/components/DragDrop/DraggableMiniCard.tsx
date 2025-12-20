@@ -1,11 +1,7 @@
 import { useDrag } from 'react-dnd';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import type { ScheduledPost } from '../../types';
 import { ITEM_TYPES } from './DraggableProjectCard';
 import styles from '../Calendar/Calendar.module.css';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface DragItem {
   type: typeof ITEM_TYPES.SCHEDULED_POST;

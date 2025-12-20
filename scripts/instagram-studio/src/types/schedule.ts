@@ -1,3 +1,6 @@
+import type { PostDraft } from './post';
+import type { Project } from './project';
+
 export interface ScheduleSlot {
   id: string;
   postDraftId: string;
@@ -11,6 +14,16 @@ export interface ScheduleSlot {
   updatedAt?: string; // ISO date string - used for smart merge
   createdAt?: string; // ISO date string - used for smart merge
   error?: string; // Error message if failed
+}
+
+/**
+ * A scheduled post with guaranteed project data.
+ * Used after App.tsx enhances rawScheduledPosts with project lookup.
+ * This type guarantees `project` is always present (either from lookup or stub).
+ */
+export interface ScheduledPost extends Omit<PostDraft, 'project'> {
+  scheduleSlot: ScheduleSlot;
+  project: Project; // Guaranteed to exist after enhancement in App.tsx
 }
 
 export interface ScheduleSettings {

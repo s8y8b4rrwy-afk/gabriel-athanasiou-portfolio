@@ -1,11 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import type { PostDraft, ScheduleSlot, ScheduleSettings, ImageDisplayMode } from '../types';
+import type { PostDraft, ScheduleSlot, ScheduleSettings, ImageDisplayMode, ScheduledPost } from '../types';
 import type { Project } from '../types';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface DeletedIdEntry {
   id: string;
@@ -100,6 +96,8 @@ export function useSchedule(): UseScheduleReturn {
   }, [drafts, scheduleSlots]);
 
   // Save a new draft
+  // NOTE: We only store projectId, not the full project object.
+  // Project data is looked up at runtime to keep data fresh and reduce duplication.
   const saveDraft = useCallback((
     project: Project,
     caption: string,
@@ -111,7 +109,8 @@ export function useSchedule(): UseScheduleReturn {
     const draft: PostDraft = {
       id: generateId(),
       projectId: project.id,
-      project,
+      // NOTE: project is intentionally NOT stored here anymore
+      // It will be looked up at runtime via useProjectLookup
       caption,
       hashtags,
       selectedImages,

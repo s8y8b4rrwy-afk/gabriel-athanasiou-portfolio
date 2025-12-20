@@ -3,11 +3,7 @@ import styles from './Calendar.module.css';
 import { CalendarDay } from './CalendarDay';
 import { DroppableCalendarDay } from '../DragDrop/DroppableCalendarDay';
 import { convertSlotToDisplayTimezone } from '../../utils/timezone';
-import type { ScheduleSlot, PostDraft, Project } from '../../types';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
+import type { ScheduledPost, Project } from '../../types';
 
 interface CalendarProps {
   scheduledPosts: ScheduledPost[];

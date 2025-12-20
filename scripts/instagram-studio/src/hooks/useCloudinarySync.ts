@@ -7,7 +7,7 @@ import {
   importScheduleFromFile,
   type ScheduleData,
 } from '../services/cloudinarySync';
-import type { PostDraft, ScheduleSlot, ScheduleSettings } from '../types';
+import type { PostDraft, ScheduleSlot, ScheduleSettings, Project } from '../types';
 import type { RecurringTemplate } from '../types/template';
 import type { InstagramCredentials } from '../types/instagram';
 
@@ -25,6 +25,7 @@ interface UseCloudinarySyncOptions {
   defaultTemplate: RecurringTemplate;
   instagramCredentials: InstagramCredentials | null;
   deletedIds?: DeletedIds;
+  projects?: Project[]; // For CSV export project lookup
   onImport: (data: ScheduleData) => void;
 }
 
@@ -50,6 +51,7 @@ export function useCloudinarySync({
   defaultTemplate,
   instagramCredentials,
   deletedIds,
+  projects,
   onImport,
 }: UseCloudinarySyncOptions): UseCloudinarySyncReturn {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -199,8 +201,8 @@ export function useCloudinarySync({
   }, [drafts, scheduleSlots, settings, templates, defaultTemplate, instagramCredentials, deletedIds]);
 
   const exportAsCsv = useCallback(() => {
-    exportScheduleAsCsv(drafts, scheduleSlots);
-  }, [drafts, scheduleSlots]);
+    exportScheduleAsCsv(drafts, scheduleSlots, projects);
+  }, [drafts, scheduleSlots, projects]);
 
   const importFromFile = useCallback(async (file: File): Promise<boolean> => {
     const data = await importScheduleFromFile(file);

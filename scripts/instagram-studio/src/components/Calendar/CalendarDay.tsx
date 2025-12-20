@@ -1,11 +1,8 @@
 import styles from './Calendar.module.css';
-import type { ScheduleSlot, PostDraft } from '../../types';
+import type { ScheduledPost, ScheduleSlot } from '../../types';
 import { DraggableMiniCard } from '../DragDrop/DraggableMiniCard';
 import { convertSlotToDisplayTimezone } from '../../utils/timezone';
-
-export interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
+import type { FC } from 'react';
 
 export interface CalendarDayProps {
   date: Date | null;
@@ -19,7 +16,7 @@ export interface CalendarDayProps {
   isWeekView?: boolean;
 }
 
-export function CalendarDay({ 
+export const CalendarDay: FC<CalendarDayProps> = ({ 
   date, 
   posts, 
   displayTimezone,
@@ -29,7 +26,7 @@ export function CalendarDay({
   onPostClick,
   onPostDoubleClick,
   isWeekView = false
-}: CalendarDayProps) {
+}) => {
   if (!date) {
     return <div className={styles.emptyDay}></div>;
   }
@@ -114,4 +111,4 @@ export function CalendarDay({
       )}
     </div>
   );
-}
+};

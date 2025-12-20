@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ImageDisplayMode } from '../../types';
+import type { Project, RecurringTemplate, ImageDisplayMode, ScheduledPost } from '../../types';
 import type { PublishResult } from '../../types/instagram';
 import { ImageCarousel } from './ImageCarousel';
 import { CaptionEditor } from './CaptionEditor';
@@ -12,10 +12,6 @@ import { buildCloudinaryUrl, getOptimizedCloudinaryUrl, getInstagramPreviewStyle
 import { getCredentialsLocally } from '../../services/instagramApi';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from '../../types/template';
 import './PostPreview.css';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface EditingScheduleInfo {
   slotId: string;
@@ -82,6 +78,10 @@ export function PostPreview({
   const [debugUrls, setDebugUrls] = useState<string[]>([]); // Cached debug URLs from getInstagramPublishUrls
   const [debugLoading, setDebugLoading] = useState(false); // Loading state for debug URLs
   const loadedDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map());
+  
+  // Check if this is a stub project (project was deleted/hidden from Airtable)
+  // Stub projects have type 'unknown' and minimal data (created in App.tsx)
+  const isStubProject = project?.type === 'unknown' || (project && !project.title) || (project?.title?.startsWith('Project ') && project.type === 'unknown');
   
   // Check if Instagram is connected
   const credentials = getCredentialsLocally();
@@ -477,6 +477,17 @@ export function PostPreview({
             </span>
             <span className="post-nav-arrow">→</span>
           </button>
+        </div>
+      )}
+      
+      {/* Warning banner for stub projects (deleted/hidden from Airtable) */}
+      {isStubProject && (
+        <div className="stub-project-warning">
+          <span className="stub-project-warning-icon">⚠️</span>
+          <div className="stub-project-warning-content">
+            <strong>Project no longer available</strong>
+            <p>This project was removed or hidden from the portfolio. You can still publish, but some features may be limited.</p>
+          </div>
         </div>
       )}
       

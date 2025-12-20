@@ -5,13 +5,9 @@ import { generateCaption } from './utils/generateCaption';
 import { generateHashtags } from './utils/generateHashtags';
 import { applyTemplateToProject, getHashtagsFromGroups, HashtagGroupKey } from './types/template';
 import { getCredentialsLocally, saveCredentialsLocally } from './services/instagramApi';
-import type { Project, PostDraft, ScheduleSlot, RecurringTemplate, ScheduleSettings, InstagramCredentials, ImageDisplayMode } from './types';
+import type { Project, PostDraft, RecurringTemplate, ScheduleSettings, InstagramCredentials, ImageDisplayMode, ScheduledPost } from './types';
 import type { ScheduleData } from './services/cloudinarySync';
 import './App.css';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 type ViewMode = 'create' | 'schedule' | 'templates' | 'sync' | 'settings';
 
@@ -54,27 +50,27 @@ function App() {
   // Enhance scheduled posts with project data lookup
   // ALWAYS use fresh project data from projects list (has current Cloudinary URLs)
   // Saved project data may have old/expired Airtable URLs
-  const scheduledPosts = useMemo(() => {
+  const scheduledPosts = useMemo((): ScheduledPost[] => {
     return rawScheduledPosts.map(post => {
       // Always try to look up fresh project data first
       const projectFromList = projects.find(p => p.id === post.projectId);
       if (projectFromList) {
         // Use fresh project data, but keep selectedImages from the saved post
         // (selectedImages may have Airtable URLs but PostPreview handles conversion)
-        return { ...post, project: projectFromList };
+        return { ...post, project: projectFromList } as ScheduledPost;
       }
       // Fallback: use saved project data if project not in list
       if (post.project?.title) {
-        return post;
+        return { ...post, project: post.project } as ScheduledPost;
       }
       // Create stub project if project not found (deleted/hidden project)
       // This prevents crashes and shows meaningful info
-      const stubProject = {
+      const stubProject: Project = {
         id: post.projectId,
         title: `Project ${post.projectId?.slice(-6) || 'Unknown'}`,
         year: '',
         gallery: post.selectedImages || [],
-        type: 'unknown' as const,
+        type: 'unknown',
         slug: '',
         kinds: [],
         genre: [],
@@ -93,7 +89,7 @@ function App() {
         externalLinks: [],
         relatedArticleId: null,
       };
-      return { ...post, project: stubProject };
+      return { ...post, project: stubProject } as ScheduledPost;
     });
   }, [rawScheduledPosts, projects]);
 
@@ -182,6 +178,7 @@ function App() {
     defaultTemplate,
     instagramCredentials,
     deletedIds,
+    projects, // Pass projects for CSV export lookup
     onImport: handleImportScheduleData,
   });
   

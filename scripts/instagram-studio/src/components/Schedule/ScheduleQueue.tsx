@@ -1,10 +1,6 @@
 import styles from './Schedule.module.css';
 import { ScheduleItem } from './ScheduleItem';
-import type { ScheduleSlot, PostDraft } from '../../types';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
+import type { ScheduledPost } from '../../types';
 
 interface ScheduleQueueProps {
   posts: ScheduledPost[];

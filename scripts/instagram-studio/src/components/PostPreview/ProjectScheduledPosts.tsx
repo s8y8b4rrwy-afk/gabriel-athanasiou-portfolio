@@ -1,12 +1,8 @@
 import { useMemo, useState } from 'react';
-import type { PostDraft, ScheduleSlot } from '../../types';
+import type { ScheduledPost, ScheduleSlot } from '../../types';
 import { buildCloudinaryUrl, findImageIndex, getOptimizedCloudinaryUrl } from '../../utils/imageUtils';
 import { convertSlotToDisplayTimezone } from '../../utils/timezone';
 import './PostPreview.css';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
 
 interface ProjectScheduledPostsProps {
   posts: ScheduledPost[];

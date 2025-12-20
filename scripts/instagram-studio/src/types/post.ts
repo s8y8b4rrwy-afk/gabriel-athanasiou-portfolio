@@ -8,7 +8,12 @@ export type ImageDisplayMode = 'fill' | 'fit';
 export interface PostDraft {
   id: string;
   projectId: string;
-  project: Project;
+  /**
+   * @deprecated Project data is now looked up at runtime via useProjectLookup.
+   * This field will be removed after migration. Use projectId instead.
+   * Keeping optional for backwards compatibility with existing saved data.
+   */
+  project?: Project;
   caption: string;
   hashtags: string[];
   selectedImages: string[];

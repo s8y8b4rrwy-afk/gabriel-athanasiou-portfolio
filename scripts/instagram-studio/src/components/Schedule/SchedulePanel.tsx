@@ -6,11 +6,7 @@ import { ScheduleQueue } from './ScheduleQueue';
 import { PublishedList } from './PublishedList';
 import { DeleteDropZone, ITEM_TYPES } from '../DragDrop';
 import { convertSlotToDisplayTimezone } from '../../utils/timezone';
-import type { ScheduleSlot, PostDraft, ScheduleSettings, Project, RecurringTemplate } from '../../types';
-
-interface ScheduledPost extends PostDraft {
-  scheduleSlot: ScheduleSlot;
-}
+import type { ScheduledPost, ScheduleSettings, Project, RecurringTemplate } from '../../types';
 
 interface SchedulePanelProps {
   scheduledPosts: ScheduledPost[];
