@@ -121,10 +121,39 @@ function App() {
   const handleImportScheduleData = useCallback((data: ScheduleData) => {
     // Import schedule data (including deletedIds for smart merge)
     importScheduleData(data.drafts, data.scheduleSlots, data.settings, data.deletedIds);
-    // Import templates if present
+    
+    // Import templates if present, filtering out deleted ones
     if (data.templates || data.defaultTemplate) {
-      importTemplates(data.templates || [], data.defaultTemplate);
+      // Read deletedIds directly from localStorage to get the LATEST value
+      // (React state might be stale due to closure)
+      const storedDeletedIds = localStorage.getItem('instagram-studio-deleted-ids');
+      const freshLocalDeletedIds: { id: string; deletedAt: string }[] = storedDeletedIds 
+        ? JSON.parse(storedDeletedIds).templates || []
+        : [];
+      
+      // Combine deleted template IDs from cloud data AND fresh localStorage
+      const cloudDeletedIds = (data.deletedIds?.templates || []).map(d => d.id);
+      const localDeletedIds = freshLocalDeletedIds.map(d => d.id);
+      const allDeletedTemplateIds = new Set([...cloudDeletedIds, ...localDeletedIds]);
+      
+      // Filter out templates that are in either deleted list
+      const filteredTemplates = (data.templates || []).filter(
+        template => !allDeletedTemplateIds.has(template.id)
+      );
+      
+      console.log(`📝 Importing templates: ${filteredTemplates.length} active, ${allDeletedTemplateIds.size} deleted (cloud: ${cloudDeletedIds.length}, local: ${localDeletedIds.length})`);
+      
+      // Log which templates were filtered out for debugging
+      const filteredOutIds = (data.templates || [])
+        .filter(t => allDeletedTemplateIds.has(t.id))
+        .map(t => t.name);
+      if (filteredOutIds.length > 0) {
+        console.log(`🗑️ Filtered out deleted templates: ${filteredOutIds.join(', ')}`);
+      }
+      
+      importTemplates(filteredTemplates, data.defaultTemplate);
     }
+    
     // Import Instagram credentials if present (for persistence across sessions)
     if (data.instagram && data.instagram.accessToken) {
       console.log('📷 Restoring Instagram credentials from cloud...');

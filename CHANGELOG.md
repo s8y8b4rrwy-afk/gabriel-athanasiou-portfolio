@@ -7,6 +7,50 @@ For current architecture and developer guide, see [AI_AGENT_GUIDE.md](AI_AGENT_G
 
 ---
 
+### Dec 20 2025 - Instagram Studio Template Deletion Tracking Fix ✅
+**What Fixed:** Templates kept reappearing after deletion when sync was triggered.
+
+**Problem:**
+- When deleting a template, the deletion was tracked in `deletedIds` state
+- But React's `useCallback` closures held stale state values
+- During sync, the old `deletedIds` (before deletion was tracked) was used
+- After merge + import, deleted templates reappeared in the UI
+
+**Root Cause:**
+The `syncToCloudinary` callback in `useCloudinarySync.ts` captured `deletedIds` in its closure at creation time. When a template was deleted:
+1. `deleteTemplate` removed it from `templates` array
+2. `trackTemplateDeletion` updated `deletedIds` state
+3. Auto-sync triggered after 5s debounce
+4. BUT the callback still had the OLD `deletedIds` value
+
+**Solution:**
+Read `deletedIds` directly from localStorage at sync time instead of relying on React state closures:
+
+1. **In `useCloudinarySync.ts` - `syncToCloudinary`:**
+   ```typescript
+   const storedDeletedIds = localStorage.getItem('instagram-studio-deleted-ids');
+   const freshDeletedIds = storedDeletedIds 
+     ? JSON.parse(storedDeletedIds) 
+     : { drafts: [], scheduleSlots: [], templates: [] };
+   ```
+
+2. **In `App.tsx` - `handleImportScheduleData`:**
+   - Combined deleted IDs from both cloud AND fresh localStorage
+   - Filters out templates before importing to prevent resurrection
+   - Added debug logging to show which templates were filtered
+
+**Files Changed:**
+- `scripts/instagram-studio/src/hooks/useCloudinarySync.ts`
+- `scripts/instagram-studio/src/App.tsx`
+
+**Key Learning:**
+When using React callbacks that need the "latest" state value, either:
+- Read directly from localStorage/other persistent storage
+- Use `useRef` to track the latest value
+- Use functional updates that receive current state
+
+---
+
 ### Dec 20 2025 - Instagram Studio Rate Limit Tracking ✅
 **What Added:** Proper Instagram API rate limit tracking using actual response headers instead of client-side estimates.
 

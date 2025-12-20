@@ -97,6 +97,19 @@ export function useCloudinarySync({
     lastSyncTimeRef.current = now;
 
     try {
+      // Read deletedIds fresh from localStorage to ensure we have the LATEST value
+      // React state closures can be stale, but localStorage is always current
+      const storedDeletedIds = localStorage.getItem('instagram-studio-deleted-ids');
+      const freshDeletedIds = storedDeletedIds 
+        ? JSON.parse(storedDeletedIds) 
+        : { drafts: [], scheduleSlots: [], templates: [] };
+      
+      console.log('🔄 Syncing with deletedIds:', {
+        drafts: freshDeletedIds.drafts?.length || 0,
+        scheduleSlots: freshDeletedIds.scheduleSlots?.length || 0,
+        templates: freshDeletedIds.templates?.length || 0,
+      });
+
       // Smart merge: fetch cloud data, merge with local, upload merged result
       const result = await uploadScheduleToCloudinary(
         drafts, 
@@ -105,7 +118,7 @@ export function useCloudinarySync({
         templates, 
         defaultTemplate, 
         instagramCredentials,
-        deletedIds
+        freshDeletedIds // Use fresh localStorage value instead of potentially stale state
       );
       
       if (result.success) {
@@ -121,7 +134,7 @@ export function useCloudinarySync({
           console.log('🔓 justSyncedRef reset to false - auto-sync now allowed');
         }, 10000); // Reset after 10s
         
-        // Update the data hash after successful sync
+        // Update the data hash after successful sync (use fresh deletedIds)
         dataHashRef.current = JSON.stringify({
           drafts: drafts.map(d => ({ id: d.id, updatedAt: d.updatedAt })),
           scheduleSlots: scheduleSlots.map(s => ({ id: s.id, status: s.status, scheduledDate: s.scheduledDate, scheduledTime: s.scheduledTime })),
@@ -129,7 +142,7 @@ export function useCloudinarySync({
           templates: templates.map(t => ({ id: t.id, updatedAt: t.updatedAt })),
           defaultTemplate: defaultTemplate?.id,
           instagramCredentials: instagramCredentials?.accountId,
-          deletedIds,
+          deletedIds: freshDeletedIds, // Use fresh localStorage value
         });
         
         // Update local state with the merged result
