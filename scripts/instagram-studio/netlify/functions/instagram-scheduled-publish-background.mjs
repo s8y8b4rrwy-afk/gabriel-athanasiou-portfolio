@@ -25,9 +25,9 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const USE_TODAY_WINDOW = true; // Set to false to revert to 1-hour window
 const SCHEDULE_WINDOW_MS = 60 * 60 * 1000; // Fallback: 1 hour window
 
-export const config = {
-	schedule: '0 * * * *',
-};
+// NOTE: This background function is NOT scheduled - it's only for manual invocation.
+// The main scheduled publish function is instagram-scheduled-publish.mjs
+// Having two scheduled functions would cause duplicate posts!
 
 async function sendNotification(results, scheduleData, saveSuccess = true, saveError = null) {
 	const resendApiKey = process.env.RESEND_API_KEY;
