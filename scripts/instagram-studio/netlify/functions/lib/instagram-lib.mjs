@@ -52,6 +52,9 @@ export async function fetchScheduleData() {
 
 /**
  * Upload data to Cloudinary as a raw resource
+ * 
+ * IMPORTANT: Signature must include ALL parameters being sent (alphabetically sorted)
+ * This matches the working implementation in instagram-studio-sync.mjs
  */
 export async function uploadToCloudinary(data) {
   if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
@@ -62,30 +65,44 @@ export async function uploadToCloudinary(data) {
   data.lastMergedAt = new Date().toISOString();
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const publicId = 'instagram-studio/schedule-data';
+  const folder = 'instagram-studio';
+  const publicId = 'schedule-data';  // Just the filename, folder is separate
 
   // Cloudinary requires ALL parameters to be included in signature (alphabetically sorted)
-  const signatureString = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
-  const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
+  // Must match exactly what's sent in form data
+  const paramsToSign = {
+    folder: folder,
+    invalidate: 'true',
+    overwrite: 'true',
+    public_id: publicId,
+    timestamp: timestamp,
+  };
+
+  // Generate signature with alphabetically sorted params
+  const sortedParams = Object.keys(paramsToSign)
+    .sort()
+    .map((key) => `${key}=${paramsToSign[key]}`)
+    .join('&');
+  const signature = crypto.createHash('sha1').update(sortedParams + CLOUDINARY_API_SECRET).digest('hex');
 
   const formData = new URLSearchParams();
   formData.append(
     'file',
     `data:application/json;base64,${Buffer.from(JSON.stringify(data, null, 2)).toString('base64')}`
   );
-  formData.append('public_id', publicId);
-  formData.append('timestamp', timestamp.toString());
   formData.append('api_key', CLOUDINARY_API_KEY);
+  formData.append('timestamp', timestamp.toString());
   formData.append('signature', signature);
-  formData.append('resource_type', 'raw');
+  formData.append('folder', folder);
+  formData.append('public_id', publicId);
   formData.append('overwrite', 'true');
+  formData.append('invalidate', 'true');
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString(),
+      body: formData,  // Let URLSearchParams handle content-type
     }
   );
 

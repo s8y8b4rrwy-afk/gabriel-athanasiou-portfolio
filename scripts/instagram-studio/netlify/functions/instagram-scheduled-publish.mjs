@@ -185,7 +185,8 @@ const scheduledHandler = async (event) => {
 		console.log(`📬 Found ${duePosts.length} post(s) to publish`);
 
 		const results = [];
-		const statusUpdates = new Map();
+		let overallSaveSuccess = true;
+		let lastSaveError = null;
 
 		for (const { slot, draft } of duePosts) {
 			try {
@@ -210,50 +211,56 @@ const scheduledHandler = async (event) => {
 
 				const result = await publishPost({ imageUrls, caption: fullCaption }, accessToken, accountId);
 
-				statusUpdates.set(slot.id, {
+				// CRITICAL: Save status IMMEDIATELY after successful publish to prevent duplicate posts
+				// If we batch saves at the end and it fails, the next hourly run will republish
+				const statusUpdate = new Map([[slot.id, {
 					status: 'published',
 					publishedAt: new Date().toISOString(),
 					instagramMediaId: result.mediaId,
-				});
+				}]]);
+				
+				try {
+					console.log(`💾 Saving status for ${slot.id} immediately...`);
+					await saveWithSmartMerge(statusUpdate);
+					console.log(`✅ Published AND saved: ${draft.projectId}`);
+				} catch (saveError) {
+					console.error(`⚠️ Published but save failed for ${draft.projectId}: ${saveError.message}`);
+					console.error(`⚠️ WARNING: This post may be re-published on next run if save doesn't succeed!`);
+					overallSaveSuccess = false;
+					lastSaveError = saveError;
+				}
 
 				results.push({ postId: slot.id, projectId: draft.projectId, success: true, mediaId: result.mediaId });
-				console.log(`✅ Published: ${draft.projectId}`);
 			} catch (error) {
 				console.error(`❌ Failed to publish ${draft.projectId}:`, error.message);
 
-				statusUpdates.set(slot.id, {
+				// Save failed status immediately too
+				const statusUpdate = new Map([[slot.id, {
 					status: 'failed',
 					error: error.message,
-				});
+				}]]);
+				
+				try {
+					await saveWithSmartMerge(statusUpdate);
+				} catch (saveError) {
+					console.error(`⚠️ Failed to save error status: ${saveError.message}`);
+					overallSaveSuccess = false;
+					lastSaveError = saveError;
+				}
 
 				results.push({ postId: slot.id, projectId: draft.projectId, success: false, error: error.message });
 			}
 		}
 
 		if (!isDryRun) {
-			// Always try to save status updates, with retry logic
-			let saveSuccess = false;
-			let saveError = null;
-			const maxRetries = 3;
+			// Status updates are now saved immediately after each publish
+			// This section just handles notifications
+			let saveSuccess = overallSaveSuccess;
+			let saveError = lastSaveError;
 			
-			for (let attempt = 1; attempt <= maxRetries; attempt++) {
-				try {
-					console.log(`💾 Saving status updates (attempt ${attempt}/${maxRetries})...`);
-					await saveWithSmartMerge(statusUpdates);
-					console.log('💾 Status updates saved successfully');
-					saveSuccess = true;
-					break;
-				} catch (error) {
-					saveError = error;
-					console.error(`❌ Save attempt ${attempt} failed: ${error.message}`);
-					
-					// Wait before retry (exponential backoff: 2s, 4s, then give up)
-					if (attempt < maxRetries) {
-						const waitMs = Math.pow(2, attempt) * 1000;
-						console.log(`⏳ Waiting ${waitMs}ms before retry...`);
-						await new Promise(r => setTimeout(r, waitMs));
-					}
-				}
+			// No batch save needed - already saved per-post above
+			if (!saveSuccess) {
+				console.error('⚠️ WARNING: Some status updates failed to save to Cloudinary');
 			}
 			
 			// Always send notification, including save failure info if applicable
@@ -268,11 +275,6 @@ const scheduledHandler = async (event) => {
 				});
 			} catch (notificationError) {
 				console.error('❌ Failed to send notification:', notificationError.message);
-			}
-			
-			// If save failed, include warning in response
-			if (!saveSuccess) {
-				console.error('⚠️ WARNING: Status updates failed to save to Cloudinary after 3 attempts');
 			}
 		}
 
