@@ -1,4 +1,4 @@
-import { syncAirtableData } from './scheduled-sync-realtime.mjs';
+import { syncAirtableData } from '../../Old Sync Functions/scheduled-sync-realtime.mjs';
 
 /**
  * Manual trigger endpoint for the realtime sync function

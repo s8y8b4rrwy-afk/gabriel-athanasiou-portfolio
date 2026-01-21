@@ -51,7 +51,7 @@ npm run build:postprod     # Production build for postproduction
 
 1. **Before making changes:** Read relevant section in `AI_AGENT_GUIDE.md`
 2. **After making changes:** Update `AI_AGENT_GUIDE.md` immediately
-3. **Before committing:** Verify documentation matches code
+3. **Before committing:** Verify documentation matches code and update it if needed.
 
 ---
 

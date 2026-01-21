@@ -3,7 +3,7 @@
 
 > **Last Updated:** December 20, 2025 - Instagram Studio Project Data Deduplication (97% storage reduction)  
 > **Purpose:** Complete technical documentation for AI agents and developers  
-> **This is the single source of truth for the entire codebase**
+> **This is the single source of truth for the entire codebase, however check INSTAGRAM_STUDIO.md for Studio specific things**
 
 ---
 

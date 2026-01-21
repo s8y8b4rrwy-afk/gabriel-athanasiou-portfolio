@@ -8,4 +8,4 @@ Highlights:
 - CTA: when no hero video, navigate to `/about` and track `contact_cta_click`; center CTA on mobile, bottom-right on md+.
 - Next Project: generate textless procedural fallback if no hero image/video.
 
-For details, architecture, and checklists, open `AI_AGENT_GUIDE.md`.
+For details, architecture, and checklists, open for portfolio websites and main navigation: `AI_AGENT_GUIDE.md`, for Instagram Studio stuff: "INSTAGRAM_STUDIO.md"
